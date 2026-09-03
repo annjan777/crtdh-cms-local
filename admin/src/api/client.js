@@ -1,0 +1,92 @@
+import axios from 'axios';
+
+// API base URL — override via .env / .env.local with VITE_API_BASE_URL.
+// Falls back to the Django dev server default from API_CONTRACT.md.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+const ACCESS_KEY = 'crtdh_admin_access';
+const REFRESH_KEY = 'crtdh_admin_refresh';
+
+export function getAccessToken() {
+  return localStorage.getItem(ACCESS_KEY);
+}
+
+export function getRefreshToken() {
+  return localStorage.getItem(REFRESH_KEY);
+}
+
+export function setTokens({ access, refresh }) {
+  if (access) localStorage.setItem(ACCESS_KEY, access);
+  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
+}
+
+export function clearTokens() {
+  localStorage.removeItem(ACCESS_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+}
+
+// Main client used for all resource calls — carries the access token and
+// silently refreshes it on a 401.
+const apiClient = axios.create({ baseURL: API_BASE_URL });
+
+// Bare instance (no interceptors) used only for the refresh call itself,
+// so a failed refresh can never recursively trigger another refresh.
+const refreshClient = axios.create({ baseURL: API_BASE_URL });
+
+apiClient.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+let refreshPromise = null;
+
+function goToLogin() {
+  clearTokens();
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.assign('/login');
+  }
+}
+
+async function refreshAccessToken() {
+  const refresh = getRefreshToken();
+  if (!refresh) {
+    throw new Error('No refresh token available');
+  }
+  const { data } = await refreshClient.post('/auth/token/refresh/', { refresh });
+  setTokens({ access: data.access });
+  return data.access;
+}
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const { config, response } = error;
+
+    const isAuthEndpoint = config?.url?.includes('/auth/token');
+    if (!response || response.status !== 401 || !config || config._retry || isAuthEndpoint) {
+      return Promise.reject(error);
+    }
+
+    config._retry = true;
+    try {
+      // Coalesce concurrent 401s into a single refresh call.
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken().finally(() => {
+          refreshPromise = null;
+        });
+      }
+      const newAccess = await refreshPromise;
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${newAccess}`;
+      return apiClient(config);
+    } catch (refreshError) {
+      goToLogin();
+      return Promise.reject(refreshError);
+    }
+  },
+);
+
+export default apiClient;

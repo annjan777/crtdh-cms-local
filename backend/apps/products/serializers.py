@@ -1,0 +1,24 @@
+from rest_framework import serializers
+
+from .models import Product, ProductImage, ProductPartner
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ["id", "product", "image", "order"]
+
+
+class ProductPartnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductPartner
+        fields = ["id", "product", "name", "logo"]
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+    partners = ProductPartnerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "order", "images", "partners"]

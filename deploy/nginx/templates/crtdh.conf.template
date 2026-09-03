@@ -1,0 +1,102 @@
+# Rendered from this .template file at container start by the official
+# nginx:alpine entrypoint, which envsubst's $PUBLIC_DOMAIN / $ADMIN_DOMAIN
+# (set as environment on the `nginx` service in docker-compose.yml) into
+# /etc/nginx/conf.d/crtdh.conf. Do not edit the rendered file directly —
+# edit this template and restart the container.
+
+# ---------------------------------------------------------------------------
+# Plain HTTP on both domains: only used for the ACME (Let's Encrypt) webroot
+# challenge and to redirect everything else to HTTPS.
+# ---------------------------------------------------------------------------
+server {
+    listen 80;
+    server_name ${PUBLIC_DOMAIN} ${ADMIN_DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Public site — https://${PUBLIC_DOMAIN}
+# ---------------------------------------------------------------------------
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${PUBLIC_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${PUBLIC_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${PUBLIC_DOMAIN}/privkey.pem;
+
+    client_max_body_size 20m;
+
+    location /api/ {
+        proxy_pass http://backend:8000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /media/ {
+        alias /media/;
+    }
+
+    location /static/ {
+        alias /static/;
+    }
+
+    location / {
+        proxy_pass http://frontend:80/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Admin SPA — https://${ADMIN_DOMAIN}
+# Same backend API (CORS on the Django side allows this origin — see
+# CORS_ALLOWED_ORIGINS in deploy/.env), separate static app + separate
+# (sub)domain so it's easy to further restrict access later (e.g. an
+# `allow`/`deny` IP allowlist added to this server block).
+# ---------------------------------------------------------------------------
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${ADMIN_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${PUBLIC_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${PUBLIC_DOMAIN}/privkey.pem;
+
+    client_max_body_size 20m;
+
+    location /api/ {
+        proxy_pass http://backend:8000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /media/ {
+        alias /media/;
+    }
+
+    location /static/ {
+        alias /static/;
+    }
+
+    location / {
+        proxy_pass http://admin:80/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

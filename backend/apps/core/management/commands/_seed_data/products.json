@@ -1,0 +1,55 @@
+[
+  {
+    "name": "Gluco QR",
+    "images": [
+      "images/product/gluco1.jpg",
+      "images/product/gluco2.jpg"
+    ],
+    "partners": [
+      {"name": "HealthLedger Diagnostics Pvt. Ltd.", "logo": "images/product/logo/HealthLedger.png"}
+    ]
+  },
+  {
+    "name": "Sense-Hb",
+    "images": [
+      "images/product/sensehb1.jpg",
+      "images/product/sensehb2.jpg"
+    ],
+    "partners": [
+      {"name": "IMEDTECH LLP", "logo": "images/product/logo/imedtech.jpg"}
+    ]
+  },
+  {
+    "name": "Oral Cancer",
+    "images": [
+      "images/product/oralcancer1.jpg",
+      "images/product/oralcancer2.jpg"
+    ],
+    "partners": [
+      {"name": "IMEDTECH LLP", "logo": "images/product/logo/imedtech.jpg"}
+    ]
+  },
+  {
+    "name": "Hemomeasure",
+    "images": [
+      "images/product/hemomeasure1.jpg",
+      "images/product/hemomeasure2.jpeg"
+    ],
+    "partners": [
+      {"name": "Huwel Lifesciences Private Limited", "logo": "images/product/logo/huwel.jpeg"}
+    ]
+  },
+  {
+    "name": "COVIRAP",
+    "images": [
+      "images/product/covirap1.jpg",
+      "images/product/covirap3.jpg"
+    ],
+    "partners": [
+      {"name": "InnoDx Solutions Private Limited", "logo": null},
+      {"name": "Aspen Biomedical Private Limited", "logo": null},
+      {"name": "Surbhi Satcom Private Limited", "logo": null},
+      {"name": "ICMR-National Institute of Cholera & Enteric Diseases", "logo": null}
+    ]
+  }
+]

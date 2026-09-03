@@ -1,0 +1,66 @@
+// Central icon registry: schemas.js declares icons as plain string names
+// (kept framework-free) and this module maps those names to lucide-react
+// components. Add an entry here whenever a schema references a new icon.
+import {
+  Link2,
+  Megaphone,
+  GalleryHorizontal,
+  Presentation,
+  FolderTree,
+  Users,
+  Wrench,
+  Briefcase,
+  Lightbulb,
+  Package,
+  Building2,
+  CalendarDays,
+  Newspaper,
+  Images,
+  LayoutGrid,
+  Video,
+  FileText,
+  Target,
+  ListChecks,
+  History,
+  Globe,
+  Image,
+  Info,
+  LayoutDashboard,
+  Settings,
+  Mail,
+  Boxes,
+} from 'lucide-react';
+
+const ICONS = {
+  'link-2': Link2,
+  megaphone: Megaphone,
+  'gallery-horizontal': GalleryHorizontal,
+  presentation: Presentation,
+  'folder-tree': FolderTree,
+  users: Users,
+  wrench: Wrench,
+  briefcase: Briefcase,
+  lightbulb: Lightbulb,
+  package: Package,
+  building: Building2,
+  calendar: CalendarDays,
+  newspaper: Newspaper,
+  images: Images,
+  'layout-grid': LayoutGrid,
+  video: Video,
+  file: FileText,
+  target: Target,
+  'list-checks': ListChecks,
+  history: History,
+  globe: Globe,
+  image: Image,
+  info: Info,
+  dashboard: LayoutDashboard,
+  settings: Settings,
+  mail: Mail,
+  boxes: Boxes,
+};
+
+export function getIcon(name) {
+  return ICONS[name] || Boxes;
+}

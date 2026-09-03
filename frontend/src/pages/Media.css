@@ -1,0 +1,42 @@
+.media-events {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.media-event {
+  scroll-margin-top: 5rem;
+}
+
+.media-event h2 {
+  font-size: 1.4rem;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-teal-100);
+}
+
+.coverage-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.coverage-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  font-weight: 600;
+  color: var(--color-ink-800);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.coverage-list__item:hover {
+  border-color: var(--brand-primary);
+  background: var(--color-teal-50);
+}
+
+.coverage-list__arrow {
+  color: var(--brand-primary);
+}

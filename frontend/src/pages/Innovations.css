@@ -1,0 +1,80 @@
+.project-slide {
+  position: relative;
+  height: 360px;
+}
+
+.project-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-slide__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: var(--space-4) var(--space-5);
+  background: linear-gradient(0deg, rgba(11, 30, 43, 0.85), transparent);
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.innovation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.innovation {
+  padding: var(--space-6);
+}
+
+.innovation h2 {
+  font-size: 1.5rem;
+}
+
+.innovation__gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.innovation__gallery figure {
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-gray-100);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.innovation__gallery img {
+  width: 100%;
+  height: 100%;
+  /* `contain` (not `cover`) so diagrams/screenshots of very different
+     aspect ratios never get cropped or over-zoomed — they letterbox on a
+     neutral panel instead, which reads as intentional/catalog-style. */
+  object-fit: contain;
+  object-position: center;
+}
+
+.innovation__video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--space-4);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.innovation__video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}

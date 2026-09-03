@@ -1,0 +1,104 @@
+name: crtdh-cms
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+    restart: unless-stopped
+    # Run migrations + collectstatic on every start, then hand off to gunicorn.
+    # Safe to re-run: migrate is idempotent, collectstatic --noinput overwrites.
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    environment:
+      SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DEBUG: ${DJANGO_DEBUG}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL}
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - backend
+
+  admin:
+    build:
+      context: ../admin
+      args:
+        VITE_API_BASE_URL: ${ADMIN_API_BASE_URL}
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - static_data:/static:ro
+      - media_data:/media:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+      - admin
+    # nginx:alpine's entrypoint auto-renders any *.template in
+    # /etc/nginx/templates (envsubst'ing the two domain vars above) into
+    # /etc/nginx/conf.d/ before starting — see nginx/templates/crtdh.conf.template.
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    # Idle by default; `docker compose run --rm certbot ...` is used to
+    # request/renew certs (see deploy/README.md for the bootstrap steps).
+    entrypoint: >
+      sh -c "while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h; done"
+
+volumes:
+  pgdata:
+  media_data:
+  static_data:
+  certbot_www:
+  certbot_conf:

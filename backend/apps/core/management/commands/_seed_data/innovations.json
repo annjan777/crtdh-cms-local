@@ -1,0 +1,120 @@
+[
+  {
+    "title": "Diagnostics with 1-Drop of Body Fluid at the Point of Care",
+    "body": "<p>Diagnostics with 1-Drop of Body Fluid at the Point of Care.</p><h3>Advantages</h3><ul><li>Portable and thus spot diagnosis is possible</li><li>Functional with limited resources</li><li>Easy handling</li><li>Mass fabrication is possible</li><li>Inexpensive</li><li>Involvement of minimal infrastructures</li><li>Rapid and easy monitoring</li><li>Automated</li></ul>",
+    "video_url": "",
+    "images": [
+      {"path": "images/diagnostics.jpg", "caption": "Diagnostics"}
+    ]
+  },
+  {
+    "title": "Manufacturing Printed Paper Strips For Disease Detection",
+    "body": "<h3>A. Single Sided</h3><h3>B. Double sided</h3><p>Printed Paper Channels for Blood Pathology</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/printed-paper-strips.jpg", "caption": "Printed Paper Channels for Blood Pathology"},
+      {"path": "images/lateral-flow-paper-strip.jpg", "caption": "Lateral flow paper strip"},
+      {"path": "images/img-charging.jpg", "caption": "Charging"}
+    ]
+  },
+  {
+    "title": "Testing Blood on a Portable Spinning Disc",
+    "body": "<p>Testing Blood on a Portable Spinning Disc.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/c-mems.jpg", "caption": ""},
+      {"path": "images/spinning-disc-02.jpg", "caption": ""}
+    ]
+  },
+  {
+    "title": "Blood Glucose Detection on a Printed Paper Strip",
+    "body": "<p>Blood Glucose Detection on a Printed Paper Strip, from the mobile app that guides the user through the test, through the paper strip and detection box, to the smartphone-based analysis of the result. See the project carousel below for the individual components (Mobie App, Paper Strip, Detection Box, Smartphone based analysis).</p>",
+    "video_url": "",
+    "images": []
+  },
+  {
+    "title": "Hemoglobin Detection: Screening of Anemia",
+    "body": "<p>Hemoglobin Detection: Screening of Anemia, using a printed microfluidic chip read by a smartphone camera and app.</p><ol><li>Printed microfluidic chip</li><li>Adding whole blood + diluting reagent to the reaction pad</li><li>Bluish green colour developed in reaction pad</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>In built app in smart phone performs robust image processing and displaying haemoglobin concentration</li></ol>",
+    "video_url": "",
+    "images": [
+      {"path": "images/hemoglobin-img.jpg", "caption": "Hemoglobin detection"},
+      {"path": "images/screening-of-anemia/01.jpg", "caption": "Printed microfluidic chip"},
+      {"path": "images/screening-of-anemia/02.jpg", "caption": "Adding whole blood + diluting reagent to the reaction pad"},
+      {"path": "images/screening-of-anemia/03.jpg", "caption": "Bluish green colour developed in reaction pad"},
+      {"path": "images/screening-of-anemia/04.jpg", "caption": "Picture of the reaction pad captured with smartphone camera."},
+      {"path": "images/screening-of-anemia/05.jpg", "caption": "Picture of the reaction pad captured with smartphone camera."},
+      {"path": "images/screening-of-anemia/06.jpg", "caption": "In built app in smart phone performs robust image processing and displaying haemoglobin concentration"}
+    ]
+  },
+  {
+    "title": "COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19",
+    "body": "<p>COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19.</p>",
+    "video_url": "https://www.youtube.com/watch?v=ZkZXzuaIeoQ",
+    "images": [
+      {"path": "images/nucleic-acid-img.jpg", "caption": ""},
+      {"path": "images/nucleic-acid-big-img.jpg", "caption": ""}
+    ]
+  },
+  {
+    "title": "Low-Cost Portable Imaging Device for Early Screening of Oral Cancer",
+    "body": "<p>Lifestyle factors in the underserved community.</p><p>Current methods of diagnostics require sophisticated lab-based procedures.</p><p>A low cost, portable, handheld imaging device to screen oral cancer and pre-cancer based on measured change in blood flow rate of the tissue from thermal imaging and analytics.</p><p>Successful phase-I clinical trial with more than 60 patients indicated more than 96.66% accuracy in detecting oral cancer and pre-cancer.</p><p>The early prototype developed is ready to be deployed in the field by minor sophistication and automation.</p><p>Method can be extended to other forms of cancer.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/oral-cancer.jpg", "caption": ""}
+    ]
+  },
+  {
+    "title": "Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings-Uday",
+    "body": "<p>Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings &mdash; Uday.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/clinical-algorithm.jpg", "caption": ""},
+      {"path": "images/technology-development/01.jpg", "caption": ""},
+      {"path": "images/technology-development/02.jpg", "caption": ""},
+      {"path": "images/technology-development/03.jpg", "caption": ""}
+    ]
+  },
+  {
+    "title": "Covicube",
+    "body": "<p>&ldquo;COVICUBE&rdquo; &ndash; which can simultaneously measure respiration rate, Oxygen saturation, breathing rate, Temperature has been prototyped and validated in rural settings. This will provide a much-needed low-cost integrated solution for screening the rural population through the same women rural health workers.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/covicube-img.jpg", "caption": ""}
+    ]
+  },
+  {
+    "title": "Lipidest",
+    "body": "<p>Lipidest.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/innovations/Lipidest.png", "caption": ""},
+      {"path": "images/innovations/Lipidest1.png", "caption": ""}
+    ]
+  },
+  {
+    "title": "Reagent-free Anemia screening using paper and smartphone",
+    "body": "<ol><li>Apply glycerin on the paper pad of the cartridge with paint brush. Make sure that the glycerin is completely absorbed within the paper and no surplus volume of glycerin remains on the paper surface.</li><li>Properly align the paper cartridge and the smartphone on the designated slot of the image acquisition platform.</li><li>Open the camera of the smartphone and adjust the magnification to 2.5X.</li><li>Perform finger pricking and deposit one drop of finger pricked blood on the wet paper cartridge just by touching the blood drop on the paper surface.</li><li>Capture the image of the blood pattern after 3-4 secs of dispensing blood.</li><li>Open smartphone app &lsquo;Hemo-app&rsquo;.</li><li>Click on &lsquo;Start a new test&rsquo;.</li><li>Click on &lsquo;Upload image from Gallery&rsquo;.</li><li>Choose the recently captured blood pattern image.</li><li>Wait for the result display on the smartphone app.</li><li>Dispense the used paper cartridge into biosafety-waste bin.</li></ol>",
+    "video_url": "",
+    "images": [
+      {"path": "images/innovations/Reagent-free Anemia.png", "caption": ""}
+    ]
+  },
+  {
+    "title": "Hematocrit and Hemoglobin Measurement using EIS",
+    "body": "<ol><li>Start with calibrating the impedance analyzer.</li><li>Connect the device electrodes with the impedance analyzer.</li><li>Dispense a drop of blood on the strip.</li><li>Instantly record the impedance magnitude at desired optimal frequency.</li><li>Feed the obtained impedance magnitude in the smartphone app.</li><li>Get the Hematocrit and Hemoglobin value result in the smartphone app.</li></ol>",
+    "video_url": "",
+    "images": [
+      {"path": "images/innovations/Hematocrit and Hemoglobin Measuremen7.png", "caption": ""},
+      {"path": "images/innovations/Hematocrit and Hemoglobin Measuremen8.png", "caption": ""},
+      {"path": "images/innovations/Hematocrit and Hemoglobin Measuremen9.png", "caption": ""}
+    ]
+  },
+  {
+    "title": "ChestXAI",
+    "body": "<p>This is a deep learning-enabled android app to predict the vulnerable COVID-19 patients based on digital frontal chest X-ray images. This app is designed to individuate COVID-19 cases from no-findings and non-COVID Pneumonia. Using this application, you can get the automated classification of frontal chest X-rays revealing fine-grained variability in appearance that are not distinguishable by Pulmonologist. Here, deep convolutional neural networks (CNN) were used to accomplish highly variable tasks in many types of fine-grained objects in the images. For the development of the CNN model, the classification of chest X-rays was carried out using a single CNN with transfer learning, formed end-to-end from direct images, using only pixels and disease tags as entries. The used CNN model was trained on a dataset accessed from public repository consisting of a total of 1697 frontal X-ray images (549 samples of COVID-19, 576 samples of no findings, and 572 samples of non-COVID pneumonia) with high classification accuracy.</p>",
+    "video_url": "",
+    "images": [
+      {"path": "images/innovations/ChestXAI5.png", "caption": ""}
+    ]
+  }
+]

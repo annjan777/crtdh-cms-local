@@ -1,0 +1,70 @@
+name: crtdh-cms-local
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crtdh
+      POSTGRES_USER: crtdh
+      POSTGRES_PASSWORD: localpassword
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crtdh -d crtdh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py bootstrap_local &&
+             python manage.py collectstatic --noinput &&
+             python manage.py createsuperuser --noinput --username admin --email admin@example.com || true &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    environment:
+      SECRET_KEY: local-insecure-secret-key
+      DEBUG: "True"
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001"
+      DATABASE_URL: "postgres://crtdh:localpassword@db:5432/crtdh"
+      DJANGO_SUPERUSER_PASSWORD: "adminpassword"
+    volumes:
+      - media_data_local:/app/media
+      - static_data_local:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: "http://localhost:8000/api/v1"
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  admin:
+    build:
+      context: ./admin
+      args:
+        VITE_API_BASE_URL: "http://localhost:8000/api/v1"
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata_local:
+  media_data_local:
+  static_data_local:
