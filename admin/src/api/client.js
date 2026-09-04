@@ -3,7 +3,9 @@ import axios from 'axios';
 // API base URL — override via .env / .env.local with VITE_API_BASE_URL.
 // Falls back to the Django dev server default from API_CONTRACT.md.
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-export const PUBLIC_SITE_URL = import.meta.env.VITE_PUBLIC_SITE_URL || 'http://localhost:3000';
+export const PUBLIC_SITE_URL =
+  import.meta.env.VITE_PUBLIC_SITE_URL ||
+  (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}` : 'http://localhost:3000');
 
 const ACCESS_KEY = 'crtdh_admin_access';
 const REFRESH_KEY = 'crtdh_admin_refresh';
