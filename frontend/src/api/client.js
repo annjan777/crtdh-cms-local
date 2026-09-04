@@ -16,7 +16,11 @@ export const API_BASE_URL =
  */
 function buildUrl(path, params) {
   const cleanPath = path.startsWith('/') ? path : `/${path}`
-  const url = new URL(`${API_BASE_URL}${cleanPath}`)
+  const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8000'
+  const fullUrl = API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')
+    ? `${API_BASE_URL}${cleanPath}`
+    : `${base}${API_BASE_URL}${cleanPath}`
+  const url = new URL(fullUrl)
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== '') {
