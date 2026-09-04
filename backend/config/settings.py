@@ -21,7 +21,7 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key-change-me-in-pro
 
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 
 
 # Application definition
@@ -158,7 +158,8 @@ SIMPLE_JWT = {
 # CORS
 # https://github.com/adamchainz/django-cors-headers
 
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
-    default=["http://localhost:5173", "http://localhost:5174"],
+    default=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://localhost:3001"],
 )

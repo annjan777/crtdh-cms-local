@@ -28,10 +28,10 @@ services:
              python manage.py collectstatic --noinput &&
              gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
-      SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DEBUG: ${DJANGO_DEBUG}
-      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SECRET_KEY: ${DJANGO_SECRET_KEY:-local-secret-key-123}
+      DEBUG: ${DJANGO_DEBUG:-True}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+      CORS_ALLOW_ALL_ORIGINS: "True"
       DATABASE_URL: ${DATABASE_URL}
     volumes:
       - media_data:/app/media
