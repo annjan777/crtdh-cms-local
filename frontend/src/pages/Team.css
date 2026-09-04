@@ -158,8 +158,8 @@
 
 .team-featured__photo {
   flex-shrink: 0;
-  width: 180px;
-  height: 200px;
+  width: 220px;
+  aspect-ratio: 4 / 5;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-gray-100);
@@ -167,6 +167,7 @@
   align-items: center;
   justify-content: center;
   color: var(--color-gray-400);
+  border: 1px solid var(--border-subtle);
 }
 
 .team-featured__photo img {
@@ -280,7 +281,7 @@
 
 .team-card__photo {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 5;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--color-gray-100);
@@ -289,6 +290,7 @@
   align-items: center;
   justify-content: center;
   color: var(--color-gray-400);
+  border: 1px solid var(--border-subtle);
 }
 
 .team-card__photo img {
