@@ -81,7 +81,7 @@ class HomePageSerializer(serializers.ModelSerializer):
 class NavItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = NavItem
-        fields = ["id", "label", "url", "order"]
+        fields = ["id", "label", "url", "order", "in_more"]
 
 
 class NewsItemSerializer(serializers.ModelSerializer):

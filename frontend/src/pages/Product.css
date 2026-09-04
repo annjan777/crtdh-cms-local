@@ -1,18 +1,23 @@
 .product-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-7);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
 }
 
 .product {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .product__carousel img {
   width: 100%;
-  height: 320px;
-  object-fit: cover;
+  aspect-ratio: 16/9;
+  object-fit: contain;
+  background-color: var(--color-gray-900);
 }
 
 .product__body {
@@ -44,24 +49,25 @@
 .partner-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   background: var(--color-teal-50);
   border-radius: 999px;
-  padding: 0.4rem 0.9rem 0.4rem 0.4rem;
-  font-size: 0.88rem;
+  padding: 0.4rem 1.2rem 0.4rem 0.4rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--brand-primary-dark);
 }
 
 .partner-chip img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 100px;
+  height: 55px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  background-color: white;
 }
 
 @media (max-width: 780px) {
-  .product {
+  .product-list {
     grid-template-columns: 1fr;
   }
 

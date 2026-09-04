@@ -6,7 +6,7 @@ from .models import HeroSlide, ProjectSlide
 class HeroSlideSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroSlide
-        fields = ["id", "image", "order"]
+        fields = "__all__"
 
 
 class ProjectSlideSerializer(serializers.ModelSerializer):

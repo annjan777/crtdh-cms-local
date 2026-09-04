@@ -112,21 +112,26 @@ export default function ResourceFormPage() {
       </div>
 
       <form className="resource-form" onSubmit={handleSubmit}>
-        {schema.fields.map((field) => (
-          <div className="form-row" key={field.name}>
-            <label htmlFor={`field-${field.name}`}>
-              {field.label}
-              {field.required && <span className="required-mark"> *</span>}
-            </label>
-            <FormField field={field} value={values[field.name]} onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))} />
-            {field.hint && <span className="field-hint">{field.hint}</span>}
-          </div>
-        ))}
+        <div className="resource-form-grid">
+          {schema.fields.map((field) => {
+            const isFull = field.type === 'textarea' || field.type === 'image' || field.type === 'file' || field.type === 'richtext';
+            return (
+              <div className={`form-row ${isFull ? 'form-row--full' : ''}`} key={field.name}>
+                <label htmlFor={`field-${field.name}`}>
+                  {field.label}
+                  {field.required && <span className="required-mark"> *</span>}
+                </label>
+                <FormField field={field} value={values[field.name]} onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))} />
+                {field.hint && <span className="field-hint">{field.hint}</span>}
+              </div>
+            );
+          })}
+        </div>
 
         {error && <div className="form-error">{error}</div>}
         {success && <div className="form-success">{success}</div>}
 
-        <div className="form-actions">
+        <div className="form-actions mt-4">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'Saving…' : isCreate ? 'Create' : 'Save changes'}
           </button>

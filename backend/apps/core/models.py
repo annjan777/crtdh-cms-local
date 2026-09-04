@@ -46,6 +46,7 @@ class NavItem(models.Model):
     label = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
     order = models.IntegerField(default=0)
+    in_more = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["order"]

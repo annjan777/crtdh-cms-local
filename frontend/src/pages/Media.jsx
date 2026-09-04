@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero from '../components/PageHero'
-import ImageGrid from '../components/ImageGrid'
+import GallerySection from '../components/GallerySection'
+import Lightbox from '../components/Lightbox'
 import { ExternalLink } from 'lucide-react'
 import { DataState } from '../components/StateBlock'
 import Reveal from '../components/Reveal'
@@ -22,6 +23,33 @@ export default function Media() {
     [],
   )
   const location = useLocation()
+
+  // Lightbox state
+  const [lightboxState, setLightboxState] = useState({
+    isOpen: false,
+    images: [],
+    currentIndex: 0
+  })
+
+  const openLightbox = (images, startIndex) => {
+    setLightboxState({
+      isOpen: true,
+      images,
+      currentIndex: startIndex
+    })
+  }
+
+  const closeLightbox = () => setLightboxState(prev => ({ ...prev, isOpen: false }))
+  
+  const nextImage = () => setLightboxState(prev => ({ 
+    ...prev, 
+    currentIndex: (prev.currentIndex + 1) % prev.images.length 
+  }))
+  
+  const prevImage = () => setLightboxState(prev => ({ 
+    ...prev, 
+    currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length 
+  }))
 
   // Deep links like /media#pathologyandeyeclinic must keep working: once the
   // event sections have rendered, scroll the matching anchor into view.
@@ -54,9 +82,13 @@ export default function Media() {
             {(items) => (
               <div className="media-events">
                 {items.map((event, i) => (
-                  <Reveal as="section" className="media-event" id={event.slug} key={event.id} delay={Math.min(i, 4) * 0.05}>
-                    <h2>{event.title}</h2>
-                    <ImageGrid items={event.images} columns={4} aspect="wide" />
+                  <Reveal as="div" className="media-event" id={event.slug} key={event.id} delay={Math.min(i, 4) * 0.05}>
+                    <GallerySection 
+                      title={event.title} 
+                      description={event.description}
+                      images={event.images} 
+                      onImageClick={(index) => openLightbox(event.images, index)} 
+                    />
                   </Reveal>
                 ))}
               </div>
@@ -68,11 +100,14 @@ export default function Media() {
       {!galleryLoading && galleryImages && galleryImages.length > 0 && (
         <section className="section section--alt">
           <div className="container">
-            <Reveal className="section-head">
-              <span className="eyebrow">Gallery</span>
-              <h2 className="section-title">More from CRTDH</h2>
+            <Reveal>
+              <GallerySection 
+                title="More from CRTDH" 
+                description="Additional photos from our campus, team, and facility."
+                images={galleryImages} 
+                onImageClick={(index) => openLightbox(galleryImages, index)} 
+              />
             </Reveal>
-            <ImageGrid items={galleryImages} columns={4} />
           </div>
         </section>
       )}
@@ -98,6 +133,16 @@ export default function Media() {
             </ul>
           </div>
         </section>
+      )}
+
+      {lightboxState.isOpen && (
+        <Lightbox 
+          images={lightboxState.images}
+          currentIndex={lightboxState.currentIndex}
+          onClose={closeLightbox}
+          onNext={nextImage}
+          onPrev={prevImage}
+        />
       )}
     </div>
   )

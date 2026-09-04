@@ -1,136 +1,122 @@
 :root {
-  /* --- Brand palette: institutional oxblood + warm paper, in the register
-     of a research institute / government hub rather than a startup product.
-     No purple/teal gradient-mesh, no glassmorphism — flatter, print-informed. --- */
-  --color-paper: #faf6ee;
-  --color-paper-dim: #f2ead9;
-  --color-paper-deep: #e9dfc7;
+  /* --- Brand palette: Clean, light, professional lab/institution --- */
+  --color-paper: #ffffff;
+  --color-paper-dim: #f5f7fa;
+  --color-paper-deep: #e4e7eb;
 
-  --color-ink-900: #1c1712;
-  --color-ink-800: #2a2219;
-  --color-ink-700: #40352a;
-  --color-ink-600: #5a4c3d;
+  --color-ink-900: #1a202c;
+  --color-ink-800: #2d3748;
+  --color-ink-700: #4a5568;
+  --color-ink-600: #718096;
 
-  --color-maroon-900: #3c0912;
-  --color-maroon-800: #560d19;
-  --color-maroon-700: #74111f;
-  --color-maroon-600: #8f1626;
-  --color-maroon-500: #ad2135;
-  --color-maroon-300: #d98a97;
-  --color-maroon-100: #f3dde1;
-  --color-maroon-50: #faf0f1;
+  --color-brand-900: #0f4c75;
+  --color-brand-800: #1a6b9c;
+  --color-brand-700: #3282b8;
+  --color-brand-600: #479ed3;
+  --color-brand-500: #bbe1fa;
+  --color-brand-300: #d6ecfc;
+  --color-brand-100: #eaf5ff;
+  --color-brand-50: #f4fafe;
 
-  --color-navy-900: #0e1626;
-  --color-navy-800: #16223a;
-  --color-navy-700: #1f3153;
-
-  --color-gold-700: #8a6416;
-  --color-gold-600: #a9812a;
-  --color-gold-500: #c49a3f;
-  --color-gold-300: #e0c581;
-  --color-gold-100: #f6ecd3;
+  --color-accent-700: #2d6a4f;
+  --color-accent-600: #40916c;
+  --color-accent-500: #52b788;
+  --color-accent-300: #74c69d;
+  --color-accent-100: #d8f3dc;
 
   --color-white: #ffffff;
-  --color-gray-50: #f8f6f2;
-  --color-gray-100: #efeae1;
-  --color-gray-200: #e1d9cb;
-  --color-gray-300: #c8bda9;
-  --color-gray-400: #a3947c;
-  --color-gray-500: #7d6f5c;
-  --color-gray-600: #5c5142;
-  --color-gray-700: #3f372c;
-  --color-gray-800: #292319;
+  --color-gray-50: #f7fafc;
+  --color-gray-100: #edf2f7;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e0;
+  --color-gray-400: #a0aec0;
+  --color-gray-500: #718096;
+  --color-gray-600: #4a5568;
+  --color-gray-700: #2d3748;
+  --color-gray-800: #1a202c;
 
-  --color-success: #2f6b3f;
-  --color-error: #a3313a;
+  --color-success: #38a169;
+  --color-error: #e53e3e;
 
   /* Semantic tokens */
   --bg-page: var(--color-paper);
   --bg-surface: var(--color-white);
   --bg-surface-alt: var(--color-paper-dim);
-  --bg-inverse: var(--color-navy-900);
+  --bg-inverse: var(--color-brand-900);
   --text-primary: var(--color-ink-800);
   --text-secondary: var(--color-gray-600);
-  --text-on-inverse: #f3ede0;
-  --text-on-inverse-muted: #b9ad98;
+  --text-on-inverse: #ffffff;
+  --text-on-inverse-muted: var(--color-brand-100);
   --border-subtle: var(--color-gray-200);
-  --border-strong: var(--color-ink-900);
-  --brand-primary: var(--color-maroon-700);
-  --brand-primary-dark: var(--color-maroon-900);
-  --brand-accent: var(--color-gold-600);
+  --border-strong: var(--color-gray-300);
+  --brand-primary: var(--color-brand-700);
+  --brand-primary-dark: var(--color-brand-900);
+  --brand-accent: var(--color-accent-600);
 
-  /* Flat brand fills — used sparingly, no blurred gradient blobs */
-  --fill-inverse: linear-gradient(165deg, var(--color-navy-900) 0%, #14213a 60%, var(--color-maroon-900) 130%);
-  --fill-brand: var(--color-maroon-700);
-  --rule-gold: linear-gradient(90deg, var(--color-gold-600), var(--color-maroon-600));
+  /* Flat brand fills */
+  --fill-inverse: linear-gradient(135deg, var(--color-brand-900) 0%, var(--color-brand-800) 100%);
+  --fill-brand: var(--color-brand-700);
+  --rule-gold: linear-gradient(90deg, var(--color-accent-600), var(--color-brand-600));
 
-  --glass-bg: rgba(14, 22, 38, 0.92);
-  --glass-border: rgba(243, 237, 224, 0.14);
-  --glass-bg-light: rgba(250, 246, 238, 0.96);
-  --glass-border-light: rgba(28, 23, 18, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(203, 213, 224, 0.5);
+  --glass-bg-light: rgba(255, 255, 255, 0.96);
+  --glass-border-light: rgba(226, 232, 240, 0.8);
 
-  /* Typography — a warm editorial serif for display, a neutral
-     government-grade sans (Public Sans, the USWDS/US federal typeface) for
-     body and UI copy. Deliberately not the Space Grotesk / Inter pairing. */
-  --font-heading: 'Fraunces Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --font-body: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Typography */
+  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Spacing scale */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 3rem;
-  --space-8: 4rem;
-  --space-9: 6rem;
-  --space-10: 8rem;
+  /* Spacing scale - Compacted */
+  --space-1: 0.15rem;
+  --space-2: 0.35rem;
+  --space-3: 0.5rem;
+  --space-4: 0.75rem;
+  --space-5: 1.1rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.75rem;
+  --space-9: 3.5rem;
+  --space-10: 5rem;
 
-  /* Radii / shadows — smaller radii, crisper edges than the previous
-     glass/gradient system */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --shadow-sm: 0 1px 2px rgba(28, 23, 18, 0.07), 0 1px 1px rgba(28, 23, 18, 0.05);
-  --shadow-md: 0 8px 24px rgba(28, 23, 18, 0.1);
-  --shadow-lg: 0 20px 44px rgba(28, 23, 18, 0.16);
-  --shadow-glow: 0 0 0 1px rgba(116, 17, 31, 0.12), 0 16px 40px rgba(60, 9, 18, 0.18);
+  /* Radii / shadows */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  --shadow-glow: 0 0 0 1px rgba(50, 130, 184, 0.1), 0 10px 25px rgba(50, 130, 184, 0.2);
 
   --content-max: 1240px;
-
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-
   color-scheme: light;
 
-  /* --- Back-compat aliases: earlier components reference the old
-     teal/amber/gradient-mesh token names. Rather than touch every file,
-     the old names are re-pointed at the new institutional palette so the
-     whole site retints consistently from here. --- */
-  --color-teal-900: var(--color-navy-900);
-  --color-teal-800: var(--color-navy-800);
-  --color-teal-700: var(--color-navy-700);
-  --color-teal-600: var(--color-maroon-700);
-  --color-teal-500: var(--color-maroon-600);
-  --color-teal-400: var(--color-maroon-500);
-  --color-teal-200: var(--color-maroon-100);
-  --color-teal-100: var(--color-maroon-50);
-  --color-teal-50: var(--color-paper);
+  /* Back-compat aliases */
+  --color-teal-900: var(--color-brand-900);
+  --color-teal-800: var(--color-brand-800);
+  --color-teal-700: var(--color-brand-700);
+  --color-teal-600: var(--color-brand-600);
+  --color-teal-500: var(--color-brand-500);
+  --color-teal-400: var(--color-brand-300);
+  --color-teal-200: var(--color-brand-100);
+  --color-teal-100: var(--color-brand-50);
+  --color-teal-50: var(--color-white);
 
-  --color-amber-700: var(--color-gold-700);
-  --color-amber-600: var(--color-gold-600);
-  --color-amber-500: var(--color-gold-500);
-  --color-amber-400: var(--color-gold-500);
-  --color-amber-300: var(--color-gold-300);
-  --color-amber-100: var(--color-gold-100);
+  --color-amber-700: var(--color-accent-700);
+  --color-amber-600: var(--color-accent-600);
+  --color-amber-500: var(--color-accent-500);
+  --color-amber-400: var(--color-accent-500);
+  --color-amber-300: var(--color-accent-300);
+  --color-amber-100: var(--color-accent-100);
 
-  --color-violet-500: var(--color-maroon-500);
-  --color-cyan-400: var(--color-gold-500);
+  --color-violet-500: var(--color-brand-600);
+  --color-cyan-400: var(--color-brand-500);
 
   --gradient-hero: var(--fill-inverse);
-  --gradient-brand: var(--color-maroon-700);
-  --gradient-accent: linear-gradient(120deg, var(--color-gold-600) 0%, var(--color-gold-300) 100%);
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-800) 0%, var(--color-brand-700) 100%);
+  --gradient-accent: linear-gradient(120deg, var(--color-accent-600) 0%, var(--color-brand-600) 100%);
   --gradient-mesh: none;
-  --gradient-text: linear-gradient(120deg, var(--color-maroon-600) 0%, var(--color-gold-600) 100%);
+  --gradient-text: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 100%);
 }

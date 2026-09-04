@@ -3,6 +3,7 @@ import apiClient from '../api/client';
 import FormField from '../components/FormField';
 import Spinner from '../components/Spinner';
 import { useToast } from '../context/ToastContext';
+import LivePreviewPane from '../components/LivePreviewPane';
 
 // Generic edit form for a singleton resource (a GET/PATCH endpoint with no
 // id in the path and no list — SiteSettings, AboutPage, HomePage all use
@@ -104,36 +105,55 @@ export default function SingletonFormPage({ title, description, icon: Icon, endp
   if (loading) return <Spinner label={`Loading ${title}…`} />;
   if (!item) return <div className="form-error">{error || `Could not load ${title}.`}</div>;
 
+  const previewType = endpoint.includes('about')
+    ? 'about'
+    : endpoint.includes('site-settings')
+    ? 'site-settings'
+    : 'default';
+
   return (
-    <div>
-      <h1>
-        {Icon && <Icon size={20} className="page-title-icon" aria-hidden="true" />}
-        {title}
-      </h1>
-      {description && <p className="page-lead">{description}</p>}
+    <div className="singleton-page-wrap">
+      <div className="page-header mb-4">
+        <h1>
+          {Icon && <Icon size={20} className="page-title-icon" aria-hidden="true" />}
+          {title}
+        </h1>
+        {description && <p className="page-lead">{description}</p>}
+      </div>
 
-      <form className="resource-form" onSubmit={handleSubmit}>
-        {fields.map((field) => (
-          <div className="form-row" key={field.name}>
-            <label htmlFor={`field-${field.name}`}>{field.label}</label>
-            <FormField
-              field={field}
-              value={values[field.name]}
-              onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
-            />
-            {field.hint && <span className="field-hint">{field.hint}</span>}
+      <div className="singleton-split-layout">
+        <form className="resource-form" onSubmit={handleSubmit}>
+          <div className="resource-form-grid">
+            {fields.map((field) => {
+              const isFull = field.type === 'textarea' || field.type === 'image' || field.type === 'file';
+              return (
+                <div className={`form-row ${isFull ? 'form-row--full' : ''}`} key={field.name}>
+                  <label htmlFor={`field-${field.name}`}>{field.label}</label>
+                  <FormField
+                    field={field}
+                    value={values[field.name]}
+                    onChange={(v) => setValues((prev) => ({ ...prev, [field.name]: v }))}
+                  />
+                  {field.hint && <span className="field-hint">{field.hint}</span>}
+                </div>
+              );
+            })}
           </div>
-        ))}
 
-        {success && <div className="form-success">{success}</div>}
-        {error && <div className="form-error">{error}</div>}
+          {success && <div className="form-success">{success}</div>}
+          {error && <div className="form-error">{error}</div>}
 
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Saving…' : 'Save changes'}
-          </button>
+          <div className="form-actions mt-4">
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+
+        <div className="singleton-preview-side">
+          <LivePreviewPane type={previewType} data={values} />
         </div>
-      </form>
+      </div>
     </div>
   );
 }

@@ -11,18 +11,18 @@ import './Layout.css'
 // header never renders completely empty (and the site stays navigable
 // even if the backend is briefly down).
 const FALLBACK_NAV = [
-  { id: 'home', label: 'Home', url: '/' },
-  { id: 'about', label: 'About', url: '/about' },
-  { id: 'team', label: 'Team', url: '/team' },
-  { id: 'innovations', label: 'Innovations', url: '/innovations' },
-  { id: 'facilities', label: 'Facilities', url: '/facilities' },
-  { id: 'services', label: 'Services', url: '/services' },
-  { id: 'enterprises', label: 'Enterprises', url: '/enterprises' },
-  { id: 'product', label: 'Product', url: '/product' },
-  { id: 'social-impact', label: 'Social Impact', url: '/social-impact' },
-  { id: 'covid-19', label: 'Covid-19', url: '/covid-19' },
-  { id: 'media', label: 'Media', url: '/media' },
-  { id: 'contact', label: 'Contact', url: '/contact' },
+  { id: 'home', label: 'Home', url: '/', in_more: false },
+  { id: 'about', label: 'About', url: '/about', in_more: false },
+  { id: 'team', label: 'Team', url: '/team', in_more: false },
+  { id: 'innovations', label: 'Innovations', url: '/innovations', in_more: false },
+  { id: 'facilities', label: 'Facilities', url: '/facilities', in_more: false },
+  { id: 'services', label: 'Services', url: '/services', in_more: false },
+  { id: 'enterprises', label: 'Enterprises', url: '/enterprises', in_more: false },
+  { id: 'product', label: 'Product', url: '/product', in_more: false },
+  { id: 'media', label: 'Media & Gallery', url: '/media', in_more: false },
+  { id: 'social-impact', label: 'Social Outreach', url: '/social-impact', in_more: true },
+  { id: 'covid-19', label: 'Covid-19', url: '/covid-19', in_more: true },
+  { id: 'contact', label: 'Contact Us', url: '/contact', in_more: false },
 ]
 
 // The 12 real nav items are too many for one row at laptop widths. We keep
@@ -31,7 +31,17 @@ const FALLBACK_NAV = [
 // complaint. Matching is by route slug so it stays correct even if the CMS
 // relabels an item, and any unrecognised item safely falls into "More"
 // rather than disappearing.
-const PRIMARY_SLUGS = new Set(['/', 'about', 'team', 'innovations', 'facilities', 'services', 'enterprises'])
+const PRIMARY_SLUGS = new Set([
+  '/',
+  'about',
+  'team',
+  'innovations',
+  'facilities',
+  'services',
+  'enterprises',
+  'product',
+  'media',
+])
 const CONTACT_SLUG = 'contact'
 
 function slugOf(url) {
@@ -155,9 +165,13 @@ function SiteHeader({ navItems, siteSettings, menuOpen, setMenuOpen }) {
     let contact = null
     navItems.forEach((item) => {
       const slug = slugOf(item.url)
-      if (slug === CONTACT_SLUG) contact = item
-      else if (PRIMARY_SLUGS.has(slug)) primary.push(item)
-      else more.push(item)
+      if (slug === CONTACT_SLUG) {
+        contact = item
+      } else if (item.in_more) {
+        more.push(item)
+      } else {
+        primary.push(item)
+      }
     })
     return { primary, more, contact }
   }, [navItems])

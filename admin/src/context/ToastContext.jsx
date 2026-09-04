@@ -42,6 +42,7 @@ export function ToastProvider({ children }) {
   const api = useMemo(
     () => ({
       show: push,
+      addToast: (message, type = 'info') => push(message, { type }),
       success: (message, opts) => push(message, { ...opts, type: 'success' }),
       error: (message, opts) => push(message, { ...opts, type: 'error' }),
       info: (message, opts) => push(message, { ...opts, type: 'info' }),

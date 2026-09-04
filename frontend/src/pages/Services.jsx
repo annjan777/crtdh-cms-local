@@ -23,7 +23,7 @@ export default function Services() {
             <h2 className="section-title">Services for healthcare innovators</h2>
           </Reveal>
           <DataState loading={loading} error={error} data={services} emptyProps={{ title: 'Services list coming soon' }}>
-            {(items) => <ImageGrid items={items} labelKey="title" columns={3} aspect="wide" />}
+            {(items) => <ImageGrid items={items.map(i => ({ ...i, title: i.title?.replace('R & D', 'R&D') }))} labelKey="title" columns={3} aspect="wide" />}
           </DataState>
         </div>
       </section>

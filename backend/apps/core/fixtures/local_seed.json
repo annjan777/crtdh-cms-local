@@ -1,3528 +1,3746 @@
 [
-  {
-    "model": "core.sitesettings",
-    "pk": 1,
-    "fields": {
-      "address": "Second Floor (204), Bioscience Building, Diamond Jubilee Complex, IIT Kharagpur, West Midnapur- 721302",
-      "phone_primary": "+91-88200 51894",
-      "phone_secondary": "",
-      "email_primary": "suman@mech.iitkgp.ac.in",
-      "email_secondary": "sohom.banner@gmail.com",
-      "map_embed_url": "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14764.096494212994!2d87.3105311!3d22.3149274!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a1d440255555547%3A0x6f2f20dd0c0d6793!2sIndian%20Institute%20of%20Technology%20Kharagpur!5e0!3m2!1sen!2sin!4v1689086915720!5m2!1sen!2sin",
-      "facebook_url": "",
-      "linkedin_url": "",
-      "instagram_url": "",
-      "twitter_url": "",
-      "logo_left": "brand/iit-kgp-logo.png",
-      "logo_right": "brand/dsir-logo.png",
-      "site_logo": "brand/CRTDH-LOGO.png"
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 13,
-    "fields": {
-      "label": "Home",
-      "url": "/",
-      "order": 0
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 14,
-    "fields": {
-      "label": "About",
-      "url": "/about",
-      "order": 1
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 15,
-    "fields": {
-      "label": "Team",
-      "url": "/team",
-      "order": 2
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 16,
-    "fields": {
-      "label": "Innovations",
-      "url": "/innovations",
-      "order": 3
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 17,
-    "fields": {
-      "label": "Facilities",
-      "url": "/facilities",
-      "order": 4
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 18,
-    "fields": {
-      "label": "Services",
-      "url": "/services",
-      "order": 5
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 19,
-    "fields": {
-      "label": "Enterprises",
-      "url": "/enterprises",
-      "order": 6
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 20,
-    "fields": {
-      "label": "Product",
-      "url": "/product",
-      "order": 7
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 21,
-    "fields": {
-      "label": "Social Outreach",
-      "url": "/social-impact",
-      "order": 8
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 22,
-    "fields": {
-      "label": "Covid-19",
-      "url": "/covid-19",
-      "order": 9
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 23,
-    "fields": {
-      "label": "Media & Gallery",
-      "url": "/media",
-      "order": 10
-    }
-  },
-  {
-    "model": "core.navitem",
-    "pk": 24,
-    "fields": {
-      "label": "Contact Us",
-      "url": "/contact",
-      "order": 11
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 57,
-    "fields": {
-      "title": "Medical Device and Diagnostics",
-      "color": "#520000",
-      "order": 0
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 58,
-    "fields": {
-      "title": "Sensors & Materials for Healthcare",
-      "color": "#005521",
-      "order": 1
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 59,
-    "fields": {
-      "title": "System Modeling",
-      "color": "#001455",
-      "order": 2
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 60,
-    "fields": {
-      "title": "Technology for Healthcare",
-      "color": "#2c0055",
-      "order": 3
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 61,
-    "fields": {
-      "title": "Understanding the Science of Human Health",
-      "color": "#2b2a2a",
-      "order": 4
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 62,
-    "fields": {
-      "title": "Digital Convergence in Medical Technology",
-      "color": "#4c5500",
-      "order": 5
-    }
-  },
-  {
-    "model": "core.focusarea",
-    "pk": 63,
-    "fields": {
-      "title": "Interconnection of Biosystems",
-      "color": "#004b55",
-      "order": 6
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 113,
-    "fields": {
-      "category": "Ideation",
-      "task": "MSMEs state their ideas about new products/services based on their understanding of market needs",
-      "outcome": "Builds two-way traffic for idea-sharing and more relevant products",
-      "order": 0
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 114,
-    "fields": {
-      "category": "Ideation",
-      "task": "MSMEs state their ideas about new products/services based on their understanding of market needs",
-      "outcome": "Selection of product/device/service",
-      "order": 1
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 115,
-    "fields": {
-      "category": "Capacity-building",
-      "task": "Hands-on training to MSMEs for prototype development using CRTDH facilities",
-      "outcome": "Addresses the key challenge of 'Training & R&D Capability' for MSMEs",
-      "order": 2
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 116,
-    "fields": {
-      "category": "Capacity-building",
-      "task": "Imparting fundamental knowledge to MSMEs about the technology platform of the device/service and how it works",
-      "outcome": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 117,
-    "fields": {
-      "category": "Key risks mitigation",
-      "task": "Provide access to rural healthcare network and super-speciality hospitals for initial validation study of the device/service",
-      "outcome": "Addresses the challenge faced by MSMEs towards investment in risky early-stage development",
-      "order": 4
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 118,
-    "fields": {
-      "category": "Key risks mitigation",
-      "task": "Patenting support",
-      "outcome": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 119,
-    "fields": {
-      "category": "Key risks mitigation",
-      "task": "Data analysis and iterative development for MSMEs",
-      "outcome": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 120,
-    "fields": {
-      "category": "Key risks mitigation",
-      "task": "Develop product to 'Design-for-Manufacture' stage",
-      "outcome": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 121,
-    "fields": {
-      "category": "Trial and final validation",
-      "task": "Create access for MSMEs to multi-centric trials with appropriate IRB clearances",
-      "outcome": "Provides a knowledge base for conducting validated trials and data analysis",
-      "order": 8
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 122,
-    "fields": {
-      "category": "Trial and final validation",
-      "task": "Data analysis and validation",
-      "outcome": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 123,
-    "fields": {
-      "category": "Technology transfer",
-      "task": "Transfer technologies to MSMEs through appropriate agreements on royalty share",
-      "outcome": "",
-      "order": 10
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 124,
-    "fields": {
-      "category": "Certification",
-      "task": "Assist MSMEs through the certification process",
-      "outcome": "Assistance in regulatory clearances",
-      "order": 11
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 125,
-    "fields": {
-      "category": "Certification",
-      "task": "CDSCO, DCGI, CE, European CE, ISI, BIS (as appropriate)",
-      "outcome": "",
-      "order": 12
-    }
-  },
-  {
-    "model": "core.objectiverow",
-    "pk": 126,
-    "fields": {
-      "category": "Initial market access",
-      "task": "Provide immediate sale support to MSMEs via access to IIT Kharagpur's rural healthcare network, building initial confidence and success stories",
-      "outcome": "Initial sale and revenue stream creation",
-      "order": 13
-    }
-  },
-  {
-    "model": "core.timelineentry",
-    "pk": 25,
-    "fields": {
-      "year": "2001",
-      "title": "School of Medical Science and Technology",
-      "image": "timeline/2001.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "core.timelineentry",
-    "pk": 26,
-    "fields": {
-      "year": "2013-14",
-      "title": "Signals and Systems for Life Science",
-      "image": "timeline/2013-14.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "core.timelineentry",
-    "pk": 27,
-    "fields": {
-      "year": "2021",
-      "title": "Super Specialty Hospital",
-      "image": "timeline/2021.jpg",
-      "order": 2
-    }
-  },
-  {
-    "model": "core.aboutpage",
-    "pk": 1,
-    "fields": {
-      "intro": "Innovation plays a critical role in shaping the industrial competitiveness of any nation. India, being a developing nation, has its own set of unique situations and challenges that impede the innovation potential of MSMEs operating in it. Many of these challenges are related to public policy, funding constraints, access to suitable equipment, shortage of skilled R&D workforce and weak linkages between institutions and industry. DSIR has therefore initiated a program aimed at the creation of Common Research & Technology Development Hubs (CRTDHs) to encourage research and technology development by MSMEs and develop synergy between academia and industry, facilitating hands-on training, skill development and R&D infrastructure.\n\nDSIR-CRTDH is now a strong family of 18 CRTDHs located across the country, working in sectors such as electronics/renewable energy, affordable health, environmental interventions, low-cost machining and new materials/chemical processes — all engaged in R&D activity with real societal impact, helping MSMEs remain competitive while DSIR expands the network across every state and Union Territory.",
-      "mission_vision": "Almost half of the world's population is forced to live without access to basic healthcare, health education and public health measures — a cycle that pushes millions below the poverty line every year through health-related expenses. Breaking that cycle means intermingling advances in healthcare technology, including digital healthcare, with value-added human resource development — the central principle behind CRTDH's vision at IIT Kharagpur.\n\nThe CRTDH for Affordable Health at IIT Kharagpur was established in 2019 to support MSMEs, startups and entrepreneurs working in the healthcare domain, offering R&D support, state-of-the-art facilities, a manufacturing plant and licensing support. In spite of the constraints of the COVID-19 pandemic, CRTDH developed several point-of-care technologies, trained community health workers, ran medical and validation camps in remote settings, and set up a Pathology and Imaging Lab in collaboration with an NGO — continuing to make healthcare accessible to the last-mile population.",
-      "focus_intro": "Affordable healthcare for a billion people\nDiligence in Basic Sciences and Mathematical Modelling",
-      "ecosystem_heading": "An Advanced Institute of Medical Science and Research",
-      "ecosystem_image": "about/eco-system.jpg",
-      "pi_desk_image": "about/from-pi-desk.jpg",
-      "pi_desk_document": "",
-      "dsir_about": "The Department of Scientific and Industrial Research (DSIR) is part of the Ministry of Science and Technology, established through a Presidential Notification dated January 4, 1985, under the 164th Amendment of the Government of India (Allocation of Business) Rules, 1961. DSIR carries out activities relating to indigenous technology promotion, development, utilisation and transfer.\n\nIts primary endeavour is to promote R&D by industry, support small and medium industrial units in developing globally competitive technologies, catalyse faster commercialisation of lab-scale R&D, and strengthen industrial consultancy and technology management capabilities — linking scientific laboratories with industrial establishments through the National Research Development Corporation (NRDC) and facilitating R&D investment through Central Electronics Limited (CEL). dsir.gov.in",
-      "iitkgp_about": "The Indian Institute of Technology Kharagpur (IIT Kharagpur) is a public institute of technology and research university established by the Government of India in Kharagpur, West Bengal. Established in 1951, it is the first of the IITs and is recognised as an Institute of National Importance."
-    }
-  },
-  {
-    "model": "core.homepage",
-    "pk": 1,
-    "fields": {
-      "objective_text": "Access to health is one of the fundamental rights enshrined in the constitution over the world. However, almost 50% of the world's 7.5 billion people is forced to live at underserved locations without access to basic healthcare and health education and public health measures, due to a multitude of reasons. This results in accumulation of diseases among the most vulnerable segment, delayed presentation and intervention, and consequent need of specialty treatment at high secondary and tertiary cost and health-related poverty shocks.",
-      "enterprises_text": "One key area of focus of the CRTDH is supporting the growth and development of precision manufacturing of innovative medical devices through emerging micro-small-medium scale Industrial enterprises so that India can reduce their massive burden of imported healthcare technologies and spread the technology availability in the last-mile. The CRTDH has already established a template pilot plant to promote indigenously developed healthcare technologies for rural healthcare — solving a major problem for the common people, fostering manufacturing growth, creating rural jobs, and introducing advanced technologies into the ambit of public health.",
-      "enterprises_image_1": "home/enterprises-engagement01.jpg",
-      "enterprises_image_2": "home/enterprises-engagement02.jpg",
-      "msme_map_image": "home/msmemap.png",
-      "msme_caption": "MSME cluster supported by CRTDH, IIT KGP",
-      "women_text_1": "The CRTDH & its implementation partner, FIH, has pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centers do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process.",
-      "women_image_1": "home/women-empowerment01.jpg",
-      "women_image_2": "home/women-empowerment02.jpg",
-      "women_text_2": "Empowered by a 'primary-care software', this has led to all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc.",
-      "location_address": "Second Floor, Diamond Jubilee Building, IIT Kharagpur",
-      "location_description": "Available pilot plant and laboratories at CRTDH facility for research, MSME training and prototype development",
-      "facility_card_1_title": "CRTDH Conference Room & Office",
-      "facility_card_1_image": "home/facility/facility-01.jpg",
-      "facility_card_1_link": "",
-      "facility_card_2_title": "Pilot Plant and Manufacturing Units",
-      "facility_card_2_image": "home/facility/facility-02.jpg",
-      "facility_card_2_link": "/facilities#manufacturing-plants",
-      "facility_card_3_title": "CRTDH Sterile Room",
-      "facility_card_3_image": "home/facility/facility-03.jpg",
-      "facility_card_3_link": "",
-      "chintan_shivir_youtube_id": "PumM2298Zaw",
-      "viksit_bharat_youtube_id": "62PfmqDvzG4",
-      "office_image": "home/office.png",
-      "membership_heading": "Annual Membership for MSME / Startup",
-      "membership_pdf": "home/Membership-CDH.pdf"
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 18,
-    "fields": {
-      "image": "hero_slides/banner06_lgqeCRO.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 19,
-    "fields": {
-      "image": "hero_slides/banner11_TxP5OFL.JPG",
-      "order": 1
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 20,
-    "fields": {
-      "image": "hero_slides/banner12_Hpy1i0A.jpg",
-      "order": 2
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 21,
-    "fields": {
-      "image": "hero_slides/banner13_mw1SsJD.jpeg",
-      "order": 3
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 22,
-    "fields": {
-      "image": "hero_slides/banner14_CDlqeuA.jpeg",
-      "order": 4
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 23,
-    "fields": {
-      "image": "hero_slides/banner15_1q1F6R9.jpg",
-      "order": 5
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 24,
-    "fields": {
-      "image": "hero_slides/banner16_hc8vKBX.jpg",
-      "order": 6
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 25,
-    "fields": {
-      "image": "hero_slides/banner17_1MFOdYN.jpeg",
-      "order": 7
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 26,
-    "fields": {
-      "image": "hero_slides/banner08_rHURmbi.jpg",
-      "order": 8
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 27,
-    "fields": {
-      "image": "hero_slides/banner07_NtxqFGW.jpg",
-      "order": 9
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 28,
-    "fields": {
-      "image": "hero_slides/banner01_QS1K2Ct.jpg",
-      "order": 10
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 29,
-    "fields": {
-      "image": "hero_slides/banner02_97irbZ0.jpg",
-      "order": 11
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 30,
-    "fields": {
-      "image": "hero_slides/banner03_dohXnHM.jpg",
-      "order": 12
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 31,
-    "fields": {
-      "image": "hero_slides/banner04_OrpjyLz.jpg",
-      "order": 13
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 32,
-    "fields": {
-      "image": "hero_slides/banner05_60xjUKj.jpg",
-      "order": 14
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 33,
-    "fields": {
-      "image": "hero_slides/banner09_9SU77B6.jpg",
-      "order": 15
-    }
-  },
-  {
-    "model": "carousel.heroslide",
-    "pk": 34,
-    "fields": {
-      "image": "hero_slides/banner10_9CtGCoF.JPG",
-      "order": 16
-    }
-  },
-  {
-    "model": "carousel.projectslide",
-    "pk": 5,
-    "fields": {
-      "image": "project_slides/project-image01_4c1dehi.jpg",
-      "title": "Mobie App",
-      "order": 0
-    }
-  },
-  {
-    "model": "carousel.projectslide",
-    "pk": 6,
-    "fields": {
-      "image": "project_slides/project-image02_u0cJgct.jpg",
-      "title": "Paper Strip",
-      "order": 1
-    }
-  },
-  {
-    "model": "carousel.projectslide",
-    "pk": 7,
-    "fields": {
-      "image": "project_slides/project-image03_QMsP600.jpg",
-      "title": "Detection Box",
-      "order": 2
-    }
-  },
-  {
-    "model": "carousel.projectslide",
-    "pk": 8,
-    "fields": {
-      "image": "project_slides/project-image04_r9THCIb.jpg",
-      "title": "Smartphone based analysis",
-      "order": 3
-    }
-  },
-  {
-    "model": "common.imagegridblock",
-    "pk": 3,
-    "fields": {
-      "page": "facilities",
-      "section_title": "Manufacturing plants and demonstration units",
-      "anchor_slug": "manufacturingplants",
-      "intro": ""
-    }
-  },
-  {
-    "model": "common.imagegridblock",
-    "pk": 4,
-    "fields": {
-      "page": "enterprises",
-      "section_title": "Demonstration And Training Of MSMEs",
-      "anchor_slug": "demonstration",
-      "intro": ""
-    }
-  },
-  {
-    "model": "common.imagegridblock",
-    "pk": 21,
-    "fields": {
-      "page": "social-impact",
-      "section_title": "Community outreach",
-      "anchor_slug": "",
-      "intro": "Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
-    }
-  },
-  {
-    "model": "common.imagegridblock",
-    "pk": 22,
-    "fields": {
-      "page": "covid-19",
-      "section_title": "Combating the pandemic",
-      "anchor_slug": "",
-      "intro": "In response to COVID-19, the CRTDH team developed PINAT — a piece-wise isothermal nucleic acid test platform for diagnosing pathogen-associated infections — an ultra-low-cost, accurate point-of-care nucleic acid test with the simplicity of a common rapid test. CRTDH also trained community health workers to prepare masks and sanitisers and ran medical/validation camps in remote settings during the pandemic."
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 16,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/07_3UGZ23A.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 17,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/08_8sp3dqP.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 18,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/03_wKFNh2y.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 19,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/04_K574iWF.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 20,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/05_X5AkcLQ.jpg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 21,
-    "fields": {
-      "block": 3,
-      "image": "image_grid_items/09_2yqJdOL.jpg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 22,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/01_BniKaqI.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 23,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/02_RV6p4gw.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 24,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/03_ZaKs3yO.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 25,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/04_2cGd6X8.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 26,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/05_dEib8dQ.jpg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 27,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/06_QZD1QPL.jpg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 28,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/42_8zRNa93.jpg",
-      "caption": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 29,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/47_QH75Zus.jpg",
-      "caption": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 30,
-    "fields": {
-      "block": 4,
-      "image": "image_grid_items/54_ZKPTIlp.jpeg",
-      "caption": "",
-      "order": 8
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 159,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-01.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 160,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-02.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 161,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-03.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 162,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-04.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 163,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-05.png",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 164,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-06.png",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 165,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-07.png",
-      "caption": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 166,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-08.JPG",
-      "caption": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 167,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-09.JPG",
-      "caption": "",
-      "order": 8
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 168,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-10.JPG",
-      "caption": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 169,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-11.jpg",
-      "caption": "",
-      "order": 10
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 170,
-    "fields": {
-      "block": 21,
-      "image": "image_grid_items/social-impact-12.jpg",
-      "caption": "",
-      "order": 11
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 171,
-    "fields": {
-      "block": 22,
-      "image": "image_grid_items/covid-19-01.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 172,
-    "fields": {
-      "block": 22,
-      "image": "image_grid_items/covid-19-02.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 173,
-    "fields": {
-      "block": 22,
-      "image": "image_grid_items/covid-19-03.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "common.imagegriditem",
-    "pk": 174,
-    "fields": {
-      "block": 22,
-      "image": "image_grid_items/covid-19-04.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "common.videoblock",
-    "pk": 17,
-    "fields": {
-      "title": "CRTDH Covid-19 response",
-      "page": "covid-19",
-      "youtube_url": "https://www.youtube.com/watch?v=ZkZXzuaIeoQ",
-      "video_file": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.videoblock",
-    "pk": 18,
-    "fields": {
-      "title": "PINAT diagnostic platform",
-      "page": "covid-19",
-      "youtube_url": "https://www.youtube.com/watch?v=0adKih1-0Ms",
-      "video_file": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.document",
-    "pk": 4,
-    "fields": {
-      "title": "Quarterly Newsletter 1",
-      "file": "documents/Quarterly-news-letter-1_Jd3mQ6s.pdf",
-      "category": "newsletter",
-      "order": 0
-    }
-  },
-  {
-    "model": "common.document",
-    "pk": 5,
-    "fields": {
-      "title": "Quarterly Newsletter 2",
-      "file": "documents/Quarterly-news-letter-2_qSvykKH.pdf",
-      "category": "newsletter",
-      "order": 1
-    }
-  },
-  {
-    "model": "common.document",
-    "pk": 6,
-    "fields": {
-      "title": "Membership Details (CRTDH)",
-      "file": "documents/Membership-CDH_dK8r8Z2.pdf",
-      "category": "membership",
-      "order": 2
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 7,
-    "fields": {
-      "name": "Principal Investigator",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 8,
-    "fields": {
-      "name": "Co-Principal Investigator",
-      "order": 1
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 9,
-    "fields": {
-      "name": "Other Members",
-      "order": 2
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 10,
-    "fields": {
-      "name": "Project Manager",
-      "order": 3
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 11,
-    "fields": {
-      "name": "Project Staff",
-      "order": 4
-    }
-  },
-  {
-    "model": "team.teamcategory",
-    "pk": 12,
-    "fields": {
-      "name": "Medical Staff",
-      "order": 5
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 10,
-    "fields": {
-      "category": 7,
-      "name": "Prof. Suman Chakraborty",
-      "photo": "team_members/team01_lL65B7f.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 11,
-    "fields": {
-      "category": 8,
-      "name": "Prof. Gautam Saha",
-      "photo": "team_members/team02_fMWogjW.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 12,
-    "fields": {
-      "category": 8,
-      "name": "Prof. Jayanta Mukhopadhyay",
-      "photo": "team_members/team03_J1Z6a7D.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 13,
-    "fields": {
-      "category": 8,
-      "name": "Prof. Satadal Saha",
-      "photo": "team_members/team05_4oe9bjF.jpg",
-      "order": 2
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 14,
-    "fields": {
-      "category": 9,
-      "name": "Dr. Aditya Bandyopadhyay",
-      "photo": "team_members/aditya_gprDllg.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 15,
-    "fields": {
-      "category": 9,
-      "name": "Dr. Arindam Mondal",
-      "photo": "team_members/arindam_35E1Icn.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 16,
-    "fields": {
-      "category": 10,
-      "name": "Sohom Banerjee",
-      "photo": "team_members/sohom_DpdcKWt.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 17,
-    "fields": {
-      "category": 11,
-      "name": "Shawan Kundu",
-      "photo": "team_members/shawan_MSUd5qy.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "team.teammember",
-    "pk": 18,
-    "fields": {
-      "category": 12,
-      "name": "Shyamal Manna",
-      "photo": "team_members/shyamal_ZQq0pv4.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 22,
-    "fields": {
-      "name": "Two Sterile rooms BSL level 2",
-      "image": "equipment/Two_Sterile_rooms_BSL_level_2_i8KPoy0.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 23,
-    "fields": {
-      "name": "Pilot Plant for Paper based Devices",
-      "image": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 24,
-    "fields": {
-      "name": "Electronic Dispenser",
-      "image": "equipment/Electronic_Dispenser_naXSmFj.jpg",
-      "order": 2
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 25,
-    "fields": {
-      "name": "Vacuum Packaging Machine",
-      "image": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 26,
-    "fields": {
-      "name": "Two Cryogenic Refrigerators (-80 & -20 degree)",
-      "image": "equipment/Two_Cryogenic_Refrigerators_NNqmNbH.jpg",
-      "order": 4
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 27,
-    "fields": {
-      "name": "Wave Soldering Machine",
-      "image": "equipment/Wave_Soldering_Machine_T93xGBX.jpg",
-      "order": 5
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 28,
-    "fields": {
-      "name": "Heat Chamber/ Autoclave",
-      "image": "equipment/Heat_Chamber_mY1wIyQ.jpg",
-      "order": 6
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 29,
-    "fields": {
-      "name": "Programmable syringe pump",
-      "image": "equipment/programmable_syringe_pump_harvard_EjvglHx.jpg",
-      "order": 7
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 30,
-    "fields": {
-      "name": "High frequency (up to GHz) amplifier",
-      "image": "equipment/High_frequency_up_to_GHz_amplifier_SW9Yz7u.png",
-      "order": 8
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 31,
-    "fields": {
-      "name": "Digital ECG and APIs",
-      "image": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 32,
-    "fields": {
-      "name": "Server and computer accessories",
-      "image": "equipment/Server_and_computer_accessories_ZAtfvMn.jpg",
-      "order": 10
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 33,
-    "fields": {
-      "name": "Laser Cutter",
-      "image": "equipment/Laser_Cutte_IWIw2WY.jpg",
-      "order": 11
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 34,
-    "fields": {
-      "name": "Thermal Imaging System with IR Fusion Technology",
-      "image": "equipment/Thermal_Imaging_System_with_IR_Fusion_Technology_Xu8UEj7.jpg",
-      "order": 12
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 35,
-    "fields": {
-      "name": "Arbitrary Waveform Generator, DC Power Supply | Multimeter, Spectrum Analyzer",
-      "image": "equipment/Waveform_Generato_DwN1eMh.jpeg",
-      "order": 13
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 36,
-    "fields": {
-      "name": "LFA manufacturing unit",
-      "image": "equipment/LFA_manufacturing_unit_i00yiyN.jpg",
-      "order": 14
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 37,
-    "fields": {
-      "name": "Covirap manufacturing unit",
-      "image": "equipment/03_jak2gI0.jpg",
-      "order": 15
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 38,
-    "fields": {
-      "name": "Kit preparation plant",
-      "image": "",
-      "order": 16
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 39,
-    "fields": {
-      "name": "Paper based device pilot plant",
-      "image": "equipment/01_XD8x1pa.jpg",
-      "order": 17
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 40,
-    "fields": {
-      "name": "Prototyping for PCB",
-      "image": "equipment/Prototyping_for_PCB_4E0grh8.jpg",
-      "order": 18
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 41,
-    "fields": {
-      "name": "3d Printing Facilities",
-      "image": "",
-      "order": 19
-    }
-  },
-  {
-    "model": "facilities.equipment",
-    "pk": 42,
-    "fields": {
-      "name": "Pathology Lab at Midnapur",
-      "image": "equipment/Pathology_Lab_at_Midnapur_AkBxOaz.jpeg",
-      "order": 20
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 7,
-    "fields": {
-      "title": "R & D support",
-      "image": "services/rd_9vfOSma.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 8,
-    "fields": {
-      "title": "Prototyping and testing facilities",
-      "image": "services/testing_0Pj1MBi.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 9,
-    "fields": {
-      "title": "Regulatory guidance",
-      "image": "services/guidance_CK7jve8.jpg",
-      "order": 2
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 10,
-    "fields": {
-      "title": "Training & capacity-building",
-      "image": "services/tranning1_XCg00na.jpg",
-      "order": 3
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 11,
-    "fields": {
-      "title": "Market access opportunities",
-      "image": "services/market_access_mlx9Buh.jpg",
-      "order": 4
-    }
-  },
-  {
-    "model": "services.service",
-    "pk": 12,
-    "fields": {
-      "title": "Support for scalability and sustainability",
-      "image": "services/scalability_msSzrCj.jpg",
-      "order": 5
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 14,
-    "fields": {
-      "title": "Diagnostics with 1-Drop of Body Fluid at the Point of Care",
-      "body": "<p>Diagnostics with 1-Drop of Body Fluid at the Point of Care.</p><h3>Advantages</h3><ul><li>Portable and thus spot diagnosis is possible</li><li>Functional with limited resources</li><li>Easy handling</li><li>Mass fabrication is possible</li><li>Inexpensive</li><li>Involvement of minimal infrastructures</li><li>Rapid and easy monitoring</li><li>Automated</li></ul>",
-      "video_url": null,
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 15,
-    "fields": {
-      "title": "Manufacturing Printed Paper Strips For Disease Detection",
-      "body": "<h3>A. Single Sided</h3><h3>B. Double sided</h3><p>Printed Paper Channels for Blood Pathology</p>",
-      "video_url": null,
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 16,
-    "fields": {
-      "title": "Testing Blood on a Portable Spinning Disc",
-      "body": "<p>Testing Blood on a Portable Spinning Disc.</p>",
-      "video_url": null,
-      "order": 2
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 17,
-    "fields": {
-      "title": "Blood Glucose Detection on a Printed Paper Strip",
-      "body": "<p>Blood Glucose Detection on a Printed Paper Strip, from the mobile app that guides the user through the test, through the paper strip and detection box, to the smartphone-based analysis of the result. See the project carousel below for the individual components (Mobie App, Paper Strip, Detection Box, Smartphone based analysis).</p>",
-      "video_url": null,
-      "order": 3
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 18,
-    "fields": {
-      "title": "Hemoglobin Detection: Screening of Anemia",
-      "body": "<p>Hemoglobin Detection: Screening of Anemia, using a printed microfluidic chip read by a smartphone camera and app.</p><ol><li>Printed microfluidic chip</li><li>Adding whole blood + diluting reagent to the reaction pad</li><li>Bluish green colour developed in reaction pad</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>In built app in smart phone performs robust image processing and displaying haemoglobin concentration</li></ol>",
-      "video_url": null,
-      "order": 4
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 19,
-    "fields": {
-      "title": "COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19",
-      "body": "<p>COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19.</p>",
-      "video_url": "https://www.youtube.com/watch?v=ZkZXzuaIeoQ",
-      "order": 5
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 20,
-    "fields": {
-      "title": "Low-Cost Portable Imaging Device for Early Screening of Oral Cancer",
-      "body": "<p>Lifestyle factors in the underserved community.</p><p>Current methods of diagnostics require sophisticated lab-based procedures.</p><p>A low cost, portable, handheld imaging device to screen oral cancer and pre-cancer based on measured change in blood flow rate of the tissue from thermal imaging and analytics.</p><p>Successful phase-I clinical trial with more than 60 patients indicated more than 96.66% accuracy in detecting oral cancer and pre-cancer.</p><p>The early prototype developed is ready to be deployed in the field by minor sophistication and automation.</p><p>Method can be extended to other forms of cancer.</p>",
-      "video_url": null,
-      "order": 6
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 21,
-    "fields": {
-      "title": "Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings-Uday",
-      "body": "<p>Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings &mdash; Uday.</p>",
-      "video_url": null,
-      "order": 7
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 22,
-    "fields": {
-      "title": "Covicube",
-      "body": "<p>&ldquo;COVICUBE&rdquo; &ndash; which can simultaneously measure respiration rate, Oxygen saturation, breathing rate, Temperature has been prototyped and validated in rural settings. This will provide a much-needed low-cost integrated solution for screening the rural population through the same women rural health workers.</p>",
-      "video_url": null,
-      "order": 8
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 23,
-    "fields": {
-      "title": "Lipidest",
-      "body": "<p>Lipidest.</p>",
-      "video_url": null,
-      "order": 9
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 24,
-    "fields": {
-      "title": "Reagent-free Anemia screening using paper and smartphone",
-      "body": "<ol><li>Apply glycerin on the paper pad of the cartridge with paint brush. Make sure that the glycerin is completely absorbed within the paper and no surplus volume of glycerin remains on the paper surface.</li><li>Properly align the paper cartridge and the smartphone on the designated slot of the image acquisition platform.</li><li>Open the camera of the smartphone and adjust the magnification to 2.5X.</li><li>Perform finger pricking and deposit one drop of finger pricked blood on the wet paper cartridge just by touching the blood drop on the paper surface.</li><li>Capture the image of the blood pattern after 3-4 secs of dispensing blood.</li><li>Open smartphone app &lsquo;Hemo-app&rsquo;.</li><li>Click on &lsquo;Start a new test&rsquo;.</li><li>Click on &lsquo;Upload image from Gallery&rsquo;.</li><li>Choose the recently captured blood pattern image.</li><li>Wait for the result display on the smartphone app.</li><li>Dispense the used paper cartridge into biosafety-waste bin.</li></ol>",
-      "video_url": null,
-      "order": 10
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 25,
-    "fields": {
-      "title": "Hematocrit and Hemoglobin Measurement using EIS",
-      "body": "<ol><li>Start with calibrating the impedance analyzer.</li><li>Connect the device electrodes with the impedance analyzer.</li><li>Dispense a drop of blood on the strip.</li><li>Instantly record the impedance magnitude at desired optimal frequency.</li><li>Feed the obtained impedance magnitude in the smartphone app.</li><li>Get the Hematocrit and Hemoglobin value result in the smartphone app.</li></ol>",
-      "video_url": null,
-      "order": 11
-    }
-  },
-  {
-    "model": "innovations.innovation",
-    "pk": 26,
-    "fields": {
-      "title": "ChestXAI",
-      "body": "<p>This is a deep learning-enabled android app to predict the vulnerable COVID-19 patients based on digital frontal chest X-ray images. This app is designed to individuate COVID-19 cases from no-findings and non-COVID Pneumonia. Using this application, you can get the automated classification of frontal chest X-rays revealing fine-grained variability in appearance that are not distinguishable by Pulmonologist. Here, deep convolutional neural networks (CNN) were used to accomplish highly variable tasks in many types of fine-grained objects in the images. For the development of the CNN model, the classification of chest X-rays was carried out using a single CNN with transfer learning, formed end-to-end from direct images, using only pixels and disease tags as entries. The used CNN model was trained on a dataset accessed from public repository consisting of a total of 1697 frontal X-ray images (549 samples of COVID-19, 576 samples of no findings, and 572 samples of non-COVID pneumonia) with high classification accuracy.</p>",
-      "video_url": null,
-      "order": 12
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 29,
-    "fields": {
-      "innovation": 14,
-      "image": "innovation_images/diagnostics_DunwRMe.jpg",
-      "caption": "Diagnostics",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 30,
-    "fields": {
-      "innovation": 15,
-      "image": "innovation_images/printed-paper-strips_W624pMK.jpg",
-      "caption": "Printed Paper Channels for Blood Pathology",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 31,
-    "fields": {
-      "innovation": 15,
-      "image": "innovation_images/lateral-flow-paper-strip_0cJUZrU.jpg",
-      "caption": "Lateral flow paper strip",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 32,
-    "fields": {
-      "innovation": 15,
-      "image": "innovation_images/img-charging_VRsjfWr.jpg",
-      "caption": "Charging",
-      "order": 2
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 33,
-    "fields": {
-      "innovation": 16,
-      "image": "innovation_images/c-mems_2aIgfWj.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 34,
-    "fields": {
-      "innovation": 16,
-      "image": "innovation_images/spinning-disc-02_0FMkufI.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 35,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/hemoglobin-img_XaHLzmX.jpg",
-      "caption": "Hemoglobin detection",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 36,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/01_7NZs17q.jpg",
-      "caption": "Printed microfluidic chip",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 37,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/02_b1xmJNg.jpg",
-      "caption": "Adding whole blood + diluting reagent to the reaction pad",
-      "order": 2
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 38,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/03_CgyoMP2.jpg",
-      "caption": "Bluish green colour developed in reaction pad",
-      "order": 3
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 39,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/04_fSA2Nyw.jpg",
-      "caption": "Picture of the reaction pad captured with smartphone camera.",
-      "order": 4
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 40,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/05_Ba1KbaO.jpg",
-      "caption": "Picture of the reaction pad captured with smartphone camera.",
-      "order": 5
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 41,
-    "fields": {
-      "innovation": 18,
-      "image": "innovation_images/06_OKZgrVW.jpg",
-      "caption": "In built app in smart phone performs robust image processing and displaying haemoglobin concentration",
-      "order": 6
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 42,
-    "fields": {
-      "innovation": 19,
-      "image": "innovation_images/nucleic-acid-img_9IfYSNw.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 43,
-    "fields": {
-      "innovation": 19,
-      "image": "innovation_images/nucleic-acid-big-img_RsEFTAI.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 44,
-    "fields": {
-      "innovation": 20,
-      "image": "innovation_images/oral-cancer_IznS7HX.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 45,
-    "fields": {
-      "innovation": 21,
-      "image": "innovation_images/clinical-algorithm_Fj3QW1B.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 46,
-    "fields": {
-      "innovation": 21,
-      "image": "innovation_images/01_W30JyEY.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 47,
-    "fields": {
-      "innovation": 21,
-      "image": "innovation_images/02_EviJxxz.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 48,
-    "fields": {
-      "innovation": 21,
-      "image": "innovation_images/03_OYQMDsj.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 49,
-    "fields": {
-      "innovation": 22,
-      "image": "innovation_images/covicube-img_7fkI16W.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 50,
-    "fields": {
-      "innovation": 23,
-      "image": "innovation_images/Lipidest_liElQiF.png",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 51,
-    "fields": {
-      "innovation": 23,
-      "image": "innovation_images/Lipidest1_1c2JgGP.png",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 52,
-    "fields": {
-      "innovation": 24,
-      "image": "innovation_images/Reagent-free_Anemia_MuC9izQ.png",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 53,
-    "fields": {
-      "innovation": 25,
-      "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen7_DB5Ohet.png",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 54,
-    "fields": {
-      "innovation": 25,
-      "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen8_BYskVYB.png",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 55,
-    "fields": {
-      "innovation": 25,
-      "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen9_p67M93t.png",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "innovations.innovationimage",
-    "pk": 56,
-    "fields": {
-      "innovation": 26,
-      "image": "innovation_images/ChestXAI5_nib8uIo.png",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.product",
-    "pk": 6,
-    "fields": {
-      "name": "Gluco QR",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.product",
-    "pk": 7,
-    "fields": {
-      "name": "Sense-Hb",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.product",
-    "pk": 8,
-    "fields": {
-      "name": "Oral Cancer",
-      "order": 2
-    }
-  },
-  {
-    "model": "products.product",
-    "pk": 9,
-    "fields": {
-      "name": "Hemomeasure",
-      "order": 3
-    }
-  },
-  {
-    "model": "products.product",
-    "pk": 10,
-    "fields": {
-      "name": "COVIRAP",
-      "order": 4
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 11,
-    "fields": {
-      "product": 6,
-      "image": "product_images/gluco1_fnflMmH.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 12,
-    "fields": {
-      "product": 6,
-      "image": "product_images/gluco2_DfsThzg.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 13,
-    "fields": {
-      "product": 7,
-      "image": "product_images/sensehb1_96xCyYI.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 14,
-    "fields": {
-      "product": 7,
-      "image": "product_images/sensehb2_Ri4dY29.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 15,
-    "fields": {
-      "product": 8,
-      "image": "product_images/oralcancer1_qMjwVzT.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 16,
-    "fields": {
-      "product": 8,
-      "image": "product_images/oralcancer2_b0WE9IJ.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 17,
-    "fields": {
-      "product": 9,
-      "image": "product_images/hemomeasure1_kNGriPD.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 18,
-    "fields": {
-      "product": 9,
-      "image": "product_images/hemomeasure2_qFxGMMm.jpeg",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 19,
-    "fields": {
-      "product": 10,
-      "image": "product_images/covirap1_8Ky5VVD.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "products.productimage",
-    "pk": 20,
-    "fields": {
-      "product": 10,
-      "image": "product_images/covirap3_KgKCjVM.jpg",
-      "order": 1
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 9,
-    "fields": {
-      "product": 6,
-      "name": "HealthLedger Diagnostics Pvt. Ltd.",
-      "logo": "product_partners/HealthLedger_dyliB80.png"
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 10,
-    "fields": {
-      "product": 7,
-      "name": "IMEDTECH LLP",
-      "logo": "product_partners/imedtech_uUpeViZ.jpg"
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 11,
-    "fields": {
-      "product": 8,
-      "name": "IMEDTECH LLP",
-      "logo": "product_partners/imedtech_4PCQevW.jpg"
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 12,
-    "fields": {
-      "product": 9,
-      "name": "Huwel Lifesciences Private Limited",
-      "logo": "product_partners/huwel_Cf5WUoK.jpeg"
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 13,
-    "fields": {
-      "product": 10,
-      "name": "InnoDx Solutions Private Limited",
-      "logo": ""
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 14,
-    "fields": {
-      "product": 10,
-      "name": "Aspen Biomedical Private Limited",
-      "logo": ""
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 15,
-    "fields": {
-      "product": 10,
-      "name": "Surbhi Satcom Private Limited",
-      "logo": ""
-    }
-  },
-  {
-    "model": "products.productpartner",
-    "pk": 16,
-    "fields": {
-      "product": 10,
-      "name": "ICMR-National Institute of Cholera & Enteric Diseases",
-      "logo": ""
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 29,
-    "fields": {
-      "name": "IMEDTECH LLP",
-      "subtitle": "(IIT KGP Spin-off)",
-      "logo": "enterprises/imedtech_R2YqNXn.jpg",
-      "order": 0
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 30,
-    "fields": {
-      "name": "M/s IB Engineers Pvt Ltd.",
-      "subtitle": "Foundation for Innovations in Health",
-      "logo": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 31,
-    "fields": {
-      "name": "M/s Revolut Healthtech Pvt. Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/REVOLUT_HEALTHTECH_PRIVATE_LIMITED_eXHAxJf.png",
-      "order": 2
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 32,
-    "fields": {
-      "name": "M/s JSV Innovations Pvt Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/jsv-innovation-logo_WPL9qji.jpg",
-      "order": 3
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 33,
-    "fields": {
-      "name": "Aspen Biomedical Private Ltd.",
-      "subtitle": "(Rapid Diagnostic Group of Companies)",
-      "logo": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 34,
-    "fields": {
-      "name": "Bramerton Holdings LLC and VeenaNxt Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/Bramerton_Holdings_LLC_buCBvRz.webp",
-      "order": 5
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 35,
-    "fields": {
-      "name": "Softmed Technologies LLP.",
-      "subtitle": "",
-      "logo": "enterprises/softmed_Logo1_kxmk6t6.png",
-      "order": 6
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 36,
-    "fields": {
-      "name": "Trivitron Healthcare Private Limited",
-      "subtitle": "",
-      "logo": "enterprises/Trivitron_Healthcare_Private_Limited_bzXZo6M.png",
-      "order": 7
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 37,
-    "fields": {
-      "name": "Educare International Foundation",
-      "subtitle": "",
-      "logo": "enterprises/educare_logo_hbbMHb9.png",
-      "order": 8
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 38,
-    "fields": {
-      "name": "Focus R&D Pvt Limited",
-      "subtitle": "",
-      "logo": "enterprises/Focus_RD_Pvt_Limited_rJiC7Fc.png",
-      "order": 9
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 39,
-    "fields": {
-      "name": "Foundation for Innovations in health",
-      "subtitle": "",
-      "logo": "enterprises/Foundation_for_Innovations_in_health_VvjY17l.png",
-      "order": 10
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 40,
-    "fields": {
-      "name": "Robot Jam Pvt Limited",
-      "subtitle": "",
-      "logo": "enterprises/robot-jam-india-private-limited_rl1dxAi.png",
-      "order": 11
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 41,
-    "fields": {
-      "name": "Supreme Infotech",
-      "subtitle": "",
-      "logo": "",
-      "order": 12
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 42,
-    "fields": {
-      "name": "Neo Equipment",
-      "subtitle": "",
-      "logo": "",
-      "order": 13
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 43,
-    "fields": {
-      "name": "Inno-Dx solutions",
-      "subtitle": "",
-      "logo": "enterprises/inno-dx-logo_F5m1O54.png",
-      "order": 14
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 44,
-    "fields": {
-      "name": "Bioart Azure Research & Development Pvt Ltd",
-      "subtitle": "",
-      "logo": "",
-      "order": 15
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 45,
-    "fields": {
-      "name": "Sharobi technologies Pvt Ltd",
-      "subtitle": "",
-      "logo": "enterprises/sharobi_logo_JXYlChb.png",
-      "order": 16
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 46,
-    "fields": {
-      "name": "Bramerton Holdings LLC",
-      "subtitle": "",
-      "logo": "enterprises/Bramerton_Holdings_LLC_qQ2gbeC.webp",
-      "order": 17
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 47,
-    "fields": {
-      "name": "Invitreo Healthtech Ventures Private Limited",
-      "subtitle": "",
-      "logo": "enterprises/Invitreo_Healthtech_Ventures_Pvt._Ltd._aHXeGHi.png",
-      "order": 18
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 48,
-    "fields": {
-      "name": "Sopaana Brand-Living Foundation",
-      "subtitle": "",
-      "logo": "",
-      "order": 19
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 49,
-    "fields": {
-      "name": "SPATIAL KARMA RESOURCES PVT. LTD.",
-      "subtitle": "",
-      "logo": "",
-      "order": 20
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 50,
-    "fields": {
-      "name": "Kurious Kosmonauts Technology Services Private Limited",
-      "subtitle": "",
-      "logo": "",
-      "order": 21
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 51,
-    "fields": {
-      "name": "Huwel Lifesciences Private Limited",
-      "subtitle": "",
-      "logo": "enterprises/huwel_TiRRmu4.jpeg",
-      "order": 22
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 52,
-    "fields": {
-      "name": "Mouthwise Diagnostics Private Limited",
-      "subtitle": "",
-      "logo": "",
-      "order": 23
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 53,
-    "fields": {
-      "name": "HealthLedger Diagnostics Pvt. Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/HealthLedger_OMSmJ8V.png",
-      "order": 24
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 54,
-    "fields": {
-      "name": "Jio Platforms Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/Jio-Logo_x6J49Gx.png",
-      "order": 25
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 55,
-    "fields": {
-      "name": "Accuster Pvt. Ltd.",
-      "subtitle": "",
-      "logo": "enterprises/cropped-Accuster-Logo-trans-1_86JCT9t.png",
-      "order": 26
-    }
-  },
-  {
-    "model": "enterprises.enterprise",
-    "pk": 56,
-    "fields": {
-      "name": "Smart QR",
-      "subtitle": "",
-      "logo": "enterprises/smartqrlogo_9OSEviv.png",
-      "order": 27
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 9,
-    "fields": {
-      "title": "Pathology and Eye Clinic",
-      "slug": "pathologyandeyeclinic",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 10,
-    "fields": {
-      "title": "Rural Healthcare Foundation",
-      "slug": "ruralhealthcarefoundation",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 11,
-    "fields": {
-      "title": "Anemia detection camp at Kuchlachati Primary School",
-      "slug": "anemiacampkuchlachati",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 12,
-    "fields": {
-      "title": "Arjun Malhotra",
-      "slug": "arjunmalhotra",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 13,
-    "fields": {
-      "title": "Conclave",
-      "slug": "conclave",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 14,
-    "fields": {
-      "title": "Chintan Shivir",
-      "slug": "chintanshivir",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 15,
-    "fields": {
-      "title": "Jio",
-      "slug": "jio",
-      "order": 6
-    }
-  },
-  {
-    "model": "media_gallery.mediaevent",
-    "pk": 16,
-    "fields": {
-      "title": "Other Ongoing Activities",
-      "slug": "other-ongoing-activities",
-      "order": 7
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 103,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/1_nE2rdcb.jpeg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 104,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/2_p8Pcrxi.jpeg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 105,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/3_lVDhyoK.jpeg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 106,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/4_miRHPMs.jpeg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 107,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/5_agyRh1v.jpeg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 108,
-    "fields": {
-      "event": 9,
-      "image": "media_event_images/6_Ts6KBXf.jpeg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 109,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/1_jnw9Bgg.jpeg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 110,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/2_XQTbKi6.jpeg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 111,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/3_eMgMd0M.jpeg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 112,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/4_bd8TS5q.jpeg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 113,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/5_6AJGgA8.jpeg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 114,
-    "fields": {
-      "event": 10,
-      "image": "media_event_images/6_cS5hgmS.jpeg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 115,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/1_hZbNjdC.JPG",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 116,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/2_M8wlZdX.JPG",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 117,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/3_5aEwkD5.JPG",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 118,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/4_rKHsWIJ.JPG",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 119,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/5_tf1gl1Y.JPG",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 120,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/6_fQskJPs.JPG",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 121,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/7_MjfMQvR.JPG",
-      "caption": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 122,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/8_8mayfa7.JPG",
-      "caption": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 123,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/9_f1OxHau.JPG",
-      "caption": "",
-      "order": 8
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 124,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/10_6uHhOEy.JPG",
-      "caption": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 125,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/11_ATY2oFo.JPG",
-      "caption": "",
-      "order": 10
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 126,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/12_fMdCNYI.JPG",
-      "caption": "",
-      "order": 11
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 127,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/13_6hzLD1X.JPG",
-      "caption": "",
-      "order": 12
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 128,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/14_WPDRiuw.JPG",
-      "caption": "",
-      "order": 13
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 129,
-    "fields": {
-      "event": 11,
-      "image": "media_event_images/15_2TieMQb.JPG",
-      "caption": "",
-      "order": 14
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 130,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/1_XE94381.jpeg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 131,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/2_xfVbAiR.jpeg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 132,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/3_5YNnD2q.jpeg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 133,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/4_PE9ccrS.jpeg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 134,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/5_tcMHC63.jpeg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 135,
-    "fields": {
-      "event": 12,
-      "image": "media_event_images/6_CQrk89J.jpeg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 136,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/1_ip9mkXS.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 137,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/2_j5dwZM4.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 138,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/3_vrdgmIJ.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 139,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/4_WWPmJeb.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 140,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/5_fxJMeqv.jpg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 141,
-    "fields": {
-      "event": 13,
-      "image": "media_event_images/6_1fsKQXO.jpg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 142,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/15_haMU3Kt.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 143,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/1_HkLnoAw.JPG",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 144,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/2_d5Nlk5R.JPG",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 145,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/3_BsKtuog.JPG",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 146,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/4_fwDz3we.JPG",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 147,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/5_QZaRrDM.JPG",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 148,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/6_lBpMnmH.JPG",
-      "caption": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 149,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/7_HwtQnvT.JPG",
-      "caption": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 150,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/8_Fb1ozm8.JPG",
-      "caption": "",
-      "order": 8
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 151,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/9_9cGxbYK.JPG",
-      "caption": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 152,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/10_X5gocwd.JPG",
-      "caption": "",
-      "order": 10
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 153,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/11_aDHaotn.JPG",
-      "caption": "",
-      "order": 11
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 154,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/12_P0bSp8z.JPG",
-      "caption": "",
-      "order": 12
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 155,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/13_IXEyhzL.JPG",
-      "caption": "",
-      "order": 13
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 156,
-    "fields": {
-      "event": 14,
-      "image": "media_event_images/14_yy75wIP.JPG",
-      "caption": "",
-      "order": 14
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 157,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/01_7Cs86k4.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 158,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/02_AlSAFOi.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 159,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/03_4WvotHc.jpg",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 160,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/04_X78Dg4r.jpg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 161,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/05_dbQ3uG4.jpg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 162,
-    "fields": {
-      "event": 15,
-      "image": "media_event_images/06_T8pAswW.jpg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 163,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/01_9myiWSO.jpg",
-      "caption": "",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 164,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/02_AjvXm0w.jpg",
-      "caption": "",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 165,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/51_2J6oA3u.png",
-      "caption": "",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 166,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/52_s38qF3Q.jpeg",
-      "caption": "",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 167,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/54_IGzVrMp.jpg",
-      "caption": "",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 168,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/33_CzKNib2.jpg",
-      "caption": "",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 169,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/32_FMVf95Z.jpg",
-      "caption": "",
-      "order": 6
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 170,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/31_kjHASCG.jpg",
-      "caption": "",
-      "order": 7
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 171,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/30_l3dUYEq.jpg",
-      "caption": "",
-      "order": 8
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 172,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/29_7aSaufx.jpg",
-      "caption": "",
-      "order": 9
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 173,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/28_prjm5I7.jpg",
-      "caption": "",
-      "order": 10
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 174,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/27_Dqqf2Ft.jpg",
-      "caption": "",
-      "order": 11
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 175,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/26_LKKo71w.jpg",
-      "caption": "",
-      "order": 12
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 176,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/24_pkqnecv.jpg",
-      "caption": "",
-      "order": 13
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 177,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/23_rylhgkV.jpg",
-      "caption": "",
-      "order": 14
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 178,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/22_mbS2i2M.jpg",
-      "caption": "",
-      "order": 15
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 179,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/21_AhKCRI8.jpg",
-      "caption": "",
-      "order": 16
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 180,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/20_faWn9pf.jpg",
-      "caption": "",
-      "order": 17
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 181,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/19_fJQK4G8.jpg",
-      "caption": "",
-      "order": 18
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 182,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/18_W5r2b4X.jpg",
-      "caption": "",
-      "order": 19
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 183,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/17_nvIAU69.jpg",
-      "caption": "",
-      "order": 20
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 184,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/16_48VoeB5.jpg",
-      "caption": "",
-      "order": 21
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 185,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/15_7UmALy1.jpg",
-      "caption": "",
-      "order": 22
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 186,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/14_3fZalnj.jpg",
-      "caption": "",
-      "order": 23
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 187,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/13_VF9jW0P.jpg",
-      "caption": "",
-      "order": 24
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 188,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/12_e3E5Ho5.jpg",
-      "caption": "",
-      "order": 25
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 189,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/11_lA5OXb1.jpg",
-      "caption": "",
-      "order": 26
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 190,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/10_G3pRqVW.jpg",
-      "caption": "",
-      "order": 27
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 191,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/09_qjtSsf5.jpg",
-      "caption": "",
-      "order": 28
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 192,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/08_9M4QYRn.jpg",
-      "caption": "",
-      "order": 29
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 193,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/07_Az874En.jpg",
-      "caption": "",
-      "order": 30
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 194,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/06_j7OMNJu.jpg",
-      "caption": "",
-      "order": 31
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 195,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/05_UN402O2.jpg",
-      "caption": "",
-      "order": 32
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 196,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/04_VkVMctD.jpg",
-      "caption": "",
-      "order": 33
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 197,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/53_Vyl0zoR.jpeg",
-      "caption": "",
-      "order": 34
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 198,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/02_YPHl5xH.jpg",
-      "caption": "",
-      "order": 35
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 199,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/01_5T4pagm.jpg",
-      "caption": "",
-      "order": 36
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 200,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/45_AVBtDqN.jpg",
-      "caption": "",
-      "order": 37
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 201,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/46_1VGiAge.jpg",
-      "caption": "",
-      "order": 38
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 202,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/47_E3hjHUy.jpg",
-      "caption": "",
-      "order": 39
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 203,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/48_OUdauFi.jpg",
-      "caption": "",
-      "order": 40
-    }
-  },
-  {
-    "model": "media_gallery.mediaeventimage",
-    "pk": 204,
-    "fields": {
-      "event": 16,
-      "image": "media_event_images/50_a1TDQpg.jpg",
-      "caption": "",
-      "order": 41
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 9,
-    "fields": {
-      "title": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
-      "url": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 10,
-    "fields": {
-      "title": "https://indianexpress.com/article/explained/covirap-iit-kharagpur-covid-test-explained-6830805/",
-      "url": "https://indianexpress.com/article/explained/covirap-iit-kharagpur-covid-test-explained-6830805/",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 11,
-    "fields": {
-      "title": "https://www.telegraphindia.com/states/west-bengal/research-hub-at-iit-kharagpur-hospital/cid/1683564",
-      "url": "https://www.telegraphindia.com/states/west-bengal/research-hub-at-iit-kharagpur-hospital/cid/1683564",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 12,
-    "fields": {
-      "title": "https://www.dnaindia.com/business/report-iit-kgp-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-2715269",
-      "url": "https://www.dnaindia.com/business/report-iit-kgp-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-2715269",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 13,
-    "fields": {
-      "title": "https://www.ndtv.com/education/iit-kharagpur-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-1987360",
-      "url": "https://www.ndtv.com/education/iit-kharagpur-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-1987360",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 14,
-    "fields": {
-      "title": "https://yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msmes-in-healthcare",
-      "url": "https://yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msmes-in-healthcare",
-      "order": 5
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 15,
-    "fields": {
-      "title": "http://www.uniindia.com/iit-to-set-up-msme-hub/east/news/1486337.html",
-      "url": "http://www.uniindia.com/iit-to-set-up-msme-hub/east/news/1486337.html",
-      "order": 6
-    }
-  },
-  {
-    "model": "media_gallery.mediacoveragelink",
-    "pk": 16,
-    "fields": {
-      "title": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
-      "url": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
-      "order": 7
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 7,
-    "fields": {
-      "image": "gallery_images/55_vu3PoNw.jpeg",
-      "caption": "CRTDH Supported Pathology Lab",
-      "order": 0
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 8,
-    "fields": {
-      "image": "gallery_images/02_qvacMzs.jpg",
-      "caption": "Medical camp maintaining Covid Protocol",
-      "order": 1
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 9,
-    "fields": {
-      "image": "gallery_images/03_Yxs7b3k.jpg",
-      "caption": "CHW on a bicycle unit",
-      "order": 2
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 10,
-    "fields": {
-      "image": "gallery_images/04_0WEKt4u.jpg",
-      "caption": "E-Consultation at Balpai e-Clinic",
-      "order": 3
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 11,
-    "fields": {
-      "image": "gallery_images/05_jBqocUC.jpg",
-      "caption": "Consultation at the doorstep",
-      "order": 4
-    }
-  },
-  {
-    "model": "media_gallery.galleryimage",
-    "pk": 12,
-    "fields": {
-      "image": "gallery_images/06_LIJpbh6.jpg",
-      "caption": "Handwashing training",
-      "order": 5
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 1,
-    "fields": {
-      "text": "CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation",
-      "link_url": "/media#pathologyandeyeclinic",
-      "order": 0
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 2,
-    "fields": {
-      "text": "Anemia detection camp by CRTDH IIT Kharagpur at Kuchlachati Primary School",
-      "link_url": "/media#anemiacampkuchlachati",
-      "order": 1
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 3,
-    "fields": {
-      "text": "Lab visit by Mr. Arjun Malhotra, Founder & ex-Chairman of HCL Technologies",
-      "link_url": "/media#arjunmalhotra",
-      "order": 2
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 4,
-    "fields": {
-      "text": "Health Awareness Programme and Conclave",
-      "link_url": "/media#conclave",
-      "order": 3
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 5,
-    "fields": {
-      "text": "Chintan Shivir held at CRTDH, IIT Kharagpur",
-      "link_url": "/media#chintanshivir",
-      "order": 4
-    }
-  },
-  {
-    "model": "core.newsitem",
-    "pk": 6,
-    "fields": {
-      "text": "IIT Kharagpur launches COVIRAP diagnostic technology — The Hindu",
-      "link_url": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
-      "order": 5
-    }
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$720000$xluHEoVwwiGFOiPXioFbCj$H8eRvucn9nm6UvBzrOb6IMsurf8J/TirGj0FPUPsFCI=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-09-04T19:38:09.126Z",
+    "groups": [],
+    "user_permissions": []
   }
+},
+{
+  "model": "common.imagegridblock",
+  "pk": 3,
+  "fields": {
+    "page": "facilities",
+    "section_title": "Manufacturing plants and demonstration units",
+    "anchor_slug": "manufacturingplants",
+    "intro": ""
+  }
+},
+{
+  "model": "common.imagegridblock",
+  "pk": 4,
+  "fields": {
+    "page": "enterprises",
+    "section_title": "Demonstration And Training Of MSMEs",
+    "anchor_slug": "demonstration",
+    "intro": ""
+  }
+},
+{
+  "model": "common.imagegridblock",
+  "pk": 21,
+  "fields": {
+    "page": "social-impact",
+    "section_title": "Community outreach",
+    "anchor_slug": "",
+    "intro": "Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
+  }
+},
+{
+  "model": "common.imagegridblock",
+  "pk": 22,
+  "fields": {
+    "page": "covid-19",
+    "section_title": "Combating the pandemic",
+    "anchor_slug": "",
+    "intro": "In response to COVID-19, the CRTDH team developed PINAT — a piece-wise isothermal nucleic acid test platform for diagnosing pathogen-associated infections — an ultra-low-cost, accurate point-of-care nucleic acid test with the simplicity of a common rapid test. CRTDH also trained community health workers to prepare masks and sanitisers and ran medical/validation camps in remote settings during the pandemic."
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 16,
+  "fields": {
+    "block": 3,
+    "image": "image_grid_items/07.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 17,
+  "fields": {
+    "block": 3,
+    "image": "image_grid_items/08_8sp3dqP.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 18,
+  "fields": {
+    "block": 3,
+    "image": "equipment/03.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 19,
+  "fields": {
+    "block": 3,
+    "image": "image_grid_items/04.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 20,
+  "fields": {
+    "block": 3,
+    "image": "image_grid_items/05.jpg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 21,
+  "fields": {
+    "block": 3,
+    "image": "image_grid_items/09_lnylnfw.jpg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 22,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/01.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 23,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/02.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 24,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/03_rVj3pIh.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 25,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/04_1b1Mmgo.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 26,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/05_dEib8dQ.jpg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 27,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/06.jpg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 28,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/42.jpg",
+    "caption": "",
+    "order": 6
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 29,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/47.jpg",
+    "caption": "",
+    "order": 7
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 30,
+  "fields": {
+    "block": 4,
+    "image": "image_grid_items/54.jpeg",
+    "caption": "",
+    "order": 8
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 159,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/01_po3tjTm.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 160,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/02_NsOEs3v.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 161,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/03_Zonwr0I.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 162,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/04_URyl2xD.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 163,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/05.png",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 164,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/06.png",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 165,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/07.png",
+    "caption": "",
+    "order": 6
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 166,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/08.jpg",
+    "caption": "",
+    "order": 7
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 167,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/09.jpg",
+    "caption": "",
+    "order": 8
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 168,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/10.JPG",
+    "caption": "",
+    "order": 9
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 169,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/11.jpg",
+    "caption": "",
+    "order": 10
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 170,
+  "fields": {
+    "block": 21,
+    "image": "image_grid_items/12.jpg",
+    "caption": "",
+    "order": 11
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 171,
+  "fields": {
+    "block": 22,
+    "image": "image_grid_items/01_ABCL4j2.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 172,
+  "fields": {
+    "block": 22,
+    "image": "image_grid_items/02_9GvNaBJ.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 173,
+  "fields": {
+    "block": 22,
+    "image": "image_grid_items/03_WacJ8H1.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "common.imagegriditem",
+  "pk": 174,
+  "fields": {
+    "block": 22,
+    "image": "image_grid_items/04_BIUuk38.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "common.videoblock",
+  "pk": 17,
+  "fields": {
+    "title": "CRTDH Covid-19 response",
+    "page": "covid-19",
+    "youtube_url": "https://www.youtube.com/watch?v=ZkZXzuaIeoQ",
+    "video_file": "",
+    "order": 0
+  }
+},
+{
+  "model": "common.videoblock",
+  "pk": 18,
+  "fields": {
+    "title": "PINAT diagnostic platform",
+    "page": "covid-19",
+    "youtube_url": "https://www.youtube.com/watch?v=0adKih1-0Ms",
+    "video_file": "",
+    "order": 1
+  }
+},
+{
+  "model": "common.document",
+  "pk": 4,
+  "fields": {
+    "title": "Quarterly Newsletter 1",
+    "file": "documents/Quarterly-news-letter-1.pdf",
+    "category": "newsletter",
+    "order": 0
+  }
+},
+{
+  "model": "common.document",
+  "pk": 5,
+  "fields": {
+    "title": "Quarterly Newsletter 2",
+    "file": "documents/Quarterly-news-letter-2.pdf",
+    "category": "newsletter",
+    "order": 1
+  }
+},
+{
+  "model": "common.document",
+  "pk": 6,
+  "fields": {
+    "title": "Membership Details (CRTDH)",
+    "file": "home/Membership-CDH.pdf",
+    "category": "membership",
+    "order": 2
+  }
+},
+{
+  "model": "core.sitesettings",
+  "pk": 1,
+  "fields": {
+    "address": "Second Floor (204), Bioscience Building, Diamond Jubilee Complex, IIT Kharagpur, West Midnapur- 721302",
+    "phone_primary": "+91-88200 51894",
+    "phone_secondary": "",
+    "email_primary": "suman@mech.iitkgp.ac.in",
+    "email_secondary": "sohom.banner@gmail.com",
+    "map_embed_url": "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14764.096494212994!2d87.3105311!3d22.3149274!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a1d440255555547%3A0x6f2f20dd0c0d6793!2sIndian%20Institute%20of%20Technology%20Kharagpur!5e0!3m2!1sen!2sin!4v1689086915720!5m2!1sen!2sin",
+    "facebook_url": "",
+    "linkedin_url": "",
+    "instagram_url": "",
+    "twitter_url": "",
+    "logo_left": "brand/iit-kgp-logo.png",
+    "logo_right": "brand/dsir-logo.png",
+    "site_logo": "brand/CRTDH-LOGO.png"
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 13,
+  "fields": {
+    "label": "Home",
+    "url": "/",
+    "order": 0,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 14,
+  "fields": {
+    "label": "About",
+    "url": "/about",
+    "order": 1,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 15,
+  "fields": {
+    "label": "Team",
+    "url": "/team",
+    "order": 2,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 16,
+  "fields": {
+    "label": "Innovations",
+    "url": "/innovations",
+    "order": 3,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 17,
+  "fields": {
+    "label": "Facilities",
+    "url": "/facilities",
+    "order": 4,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 18,
+  "fields": {
+    "label": "Services",
+    "url": "/services",
+    "order": 5,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 19,
+  "fields": {
+    "label": "Enterprises",
+    "url": "/enterprises",
+    "order": 7,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 20,
+  "fields": {
+    "label": "Product",
+    "url": "/product",
+    "order": 6,
+    "in_more": false
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 21,
+  "fields": {
+    "label": "Social Outreach",
+    "url": "/social-impact",
+    "order": 9,
+    "in_more": true
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 22,
+  "fields": {
+    "label": "Covid-19",
+    "url": "/covid-19",
+    "order": 10,
+    "in_more": true
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 23,
+  "fields": {
+    "label": "Media & Gallery",
+    "url": "/media",
+    "order": 11,
+    "in_more": true
+  }
+},
+{
+  "model": "core.navitem",
+  "pk": 24,
+  "fields": {
+    "label": "Contact Us",
+    "url": "/contact",
+    "order": 8,
+    "in_more": false
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 1,
+  "fields": {
+    "text": "CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation",
+    "link_url": "/media#pathologyandeyeclinic",
+    "order": 0
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 2,
+  "fields": {
+    "text": "Anemia detection camp by CRTDH IIT Kharagpur at Kuchlachati Primary School",
+    "link_url": "/media#anemiacampkuchlachati",
+    "order": 1
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 3,
+  "fields": {
+    "text": "Lab visit by Mr. Arjun Malhotra, Founder & ex-Chairman of HCL Technologies",
+    "link_url": "/media#arjunmalhotra",
+    "order": 2
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 4,
+  "fields": {
+    "text": "Health Awareness Programme and Conclave",
+    "link_url": "/media#conclave",
+    "order": 3
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 5,
+  "fields": {
+    "text": "Chintan Shivir held at CRTDH, IIT Kharagpur",
+    "link_url": "/media#chintanshivir",
+    "order": 4
+  }
+},
+{
+  "model": "core.newsitem",
+  "pk": 6,
+  "fields": {
+    "text": "IIT Kharagpur launches COVIRAP diagnostic technology — The Hindu",
+    "link_url": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
+    "order": 5
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 57,
+  "fields": {
+    "title": "Medical Device and Diagnostics",
+    "color": "#520000",
+    "order": 0
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 58,
+  "fields": {
+    "title": "Sensors & Materials for Healthcare",
+    "color": "#005521",
+    "order": 1
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 59,
+  "fields": {
+    "title": "System Modeling",
+    "color": "#001455",
+    "order": 2
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 60,
+  "fields": {
+    "title": "Technology for Healthcare",
+    "color": "#2c0055",
+    "order": 3
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 61,
+  "fields": {
+    "title": "Understanding the Science of Human Health",
+    "color": "#2b2a2a",
+    "order": 4
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 62,
+  "fields": {
+    "title": "Digital Convergence in Medical Technology",
+    "color": "#4c5500",
+    "order": 5
+  }
+},
+{
+  "model": "core.focusarea",
+  "pk": 63,
+  "fields": {
+    "title": "Interconnection of Biosystems",
+    "color": "#004b55",
+    "order": 6
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 113,
+  "fields": {
+    "category": "Ideation",
+    "task": "MSMEs state their ideas about new products/services based on their understanding of market needs",
+    "outcome": "Builds two-way traffic for idea-sharing and more relevant products",
+    "order": 0
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 114,
+  "fields": {
+    "category": "Ideation",
+    "task": "MSMEs state their ideas about new products/services based on their understanding of market needs",
+    "outcome": "Selection of product/device/service",
+    "order": 1
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 115,
+  "fields": {
+    "category": "Capacity-building",
+    "task": "Hands-on training to MSMEs for prototype development using CRTDH facilities",
+    "outcome": "Addresses the key challenge of 'Training & R&D Capability' for MSMEs",
+    "order": 2
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 116,
+  "fields": {
+    "category": "Capacity-building",
+    "task": "Imparting fundamental knowledge to MSMEs about the technology platform of the device/service and how it works",
+    "outcome": "",
+    "order": 3
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 117,
+  "fields": {
+    "category": "Key risks mitigation",
+    "task": "Provide access to rural healthcare network and super-speciality hospitals for initial validation study of the device/service",
+    "outcome": "Addresses the challenge faced by MSMEs towards investment in risky early-stage development",
+    "order": 4
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 118,
+  "fields": {
+    "category": "Key risks mitigation",
+    "task": "Patenting support",
+    "outcome": "",
+    "order": 5
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 119,
+  "fields": {
+    "category": "Key risks mitigation",
+    "task": "Data analysis and iterative development for MSMEs",
+    "outcome": "",
+    "order": 6
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 120,
+  "fields": {
+    "category": "Key risks mitigation",
+    "task": "Develop product to 'Design-for-Manufacture' stage",
+    "outcome": "",
+    "order": 7
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 121,
+  "fields": {
+    "category": "Trial and final validation",
+    "task": "Create access for MSMEs to multi-centric trials with appropriate IRB clearances",
+    "outcome": "Provides a knowledge base for conducting validated trials and data analysis",
+    "order": 8
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 122,
+  "fields": {
+    "category": "Trial and final validation",
+    "task": "Data analysis and validation",
+    "outcome": "",
+    "order": 9
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 123,
+  "fields": {
+    "category": "Technology transfer",
+    "task": "Transfer technologies to MSMEs through appropriate agreements on royalty share",
+    "outcome": "",
+    "order": 10
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 124,
+  "fields": {
+    "category": "Certification",
+    "task": "Assist MSMEs through the certification process",
+    "outcome": "Assistance in regulatory clearances",
+    "order": 11
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 125,
+  "fields": {
+    "category": "Certification",
+    "task": "CDSCO, DCGI, CE, European CE, ISI, BIS (as appropriate)",
+    "outcome": "",
+    "order": 12
+  }
+},
+{
+  "model": "core.objectiverow",
+  "pk": 126,
+  "fields": {
+    "category": "Initial market access",
+    "task": "Provide immediate sale support to MSMEs via access to IIT Kharagpur's rural healthcare network, building initial confidence and success stories",
+    "outcome": "Initial sale and revenue stream creation",
+    "order": 13
+  }
+},
+{
+  "model": "core.timelineentry",
+  "pk": 25,
+  "fields": {
+    "year": "2001",
+    "title": "School of Medical Science and Technology",
+    "image": "timeline/2001.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "core.timelineentry",
+  "pk": 26,
+  "fields": {
+    "year": "2013-14",
+    "title": "Signals and Systems for Life Science",
+    "image": "timeline/2013-14.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "core.timelineentry",
+  "pk": 27,
+  "fields": {
+    "year": "2021",
+    "title": "Super Specialty Hospital",
+    "image": "timeline/2021.jpg",
+    "order": 2
+  }
+},
+{
+  "model": "core.aboutpage",
+  "pk": 1,
+  "fields": {
+    "intro": "Innovation plays a critical role in shaping the industrial competitiveness of any nation. India, being a developing nation, has its own set of unique situations and challenges that impede the innovation potential of MSMEs operating in it. Many of these challenges are related to public policy, funding constraints, access to suitable equipment, shortage of skilled R&D workforce and weak linkages between institutions and industry. DSIR has therefore initiated a program aimed at the creation of Common Research & Technology Development Hubs (CRTDHs) to encourage research and technology development by MSMEs and develop synergy between academia and industry, facilitating hands-on training, skill development and R&D infrastructure.\n\nDSIR-CRTDH is now a strong family of 18 CRTDHs located across the country, working in sectors such as electronics/renewable energy, affordable health, environmental interventions, low-cost machining and new materials/chemical processes — all engaged in R&D activity with real societal impact, helping MSMEs remain competitive while DSIR expands the network across every state and Union Territory.",
+    "mission_vision": "Almost half of the world's population is forced to live without access to basic healthcare, health education and public health measures — a cycle that pushes millions below the poverty line every year through health-related expenses. Breaking that cycle means intermingling advances in healthcare technology, including digital healthcare, with value-added human resource development — the central principle behind CRTDH's vision at IIT Kharagpur.\n\nThe CRTDH for Affordable Health at IIT Kharagpur was established in 2019 to support MSMEs, startups and entrepreneurs working in the healthcare domain, offering R&D support, state-of-the-art facilities, a manufacturing plant and licensing support. In spite of the constraints of the COVID-19 pandemic, CRTDH developed several point-of-care technologies, trained community health workers, ran medical and validation camps in remote settings, and set up a Pathology and Imaging Lab in collaboration with an NGO — continuing to make healthcare accessible to the last-mile population.",
+    "focus_intro": "Affordable healthcare for a billion people\nDiligence in Basic Sciences and Mathematical Modelling",
+    "ecosystem_heading": "An Advanced Institute of Medical Science and Research",
+    "ecosystem_image": "about/eco-system.jpg",
+    "pi_desk_image": "about/from-pi-desk.jpg",
+    "pi_desk_document": "",
+    "dsir_about": "The Department of Scientific and Industrial Research (DSIR) is part of the Ministry of Science and Technology, established through a Presidential Notification dated January 4, 1985, under the 164th Amendment of the Government of India (Allocation of Business) Rules, 1961. DSIR carries out activities relating to indigenous technology promotion, development, utilisation and transfer.\n\nIts primary endeavour is to promote R&D by industry, support small and medium industrial units in developing globally competitive technologies, catalyse faster commercialisation of lab-scale R&D, and strengthen industrial consultancy and technology management capabilities — linking scientific laboratories with industrial establishments through the National Research Development Corporation (NRDC) and facilitating R&D investment through Central Electronics Limited (CEL). dsir.gov.in",
+    "iitkgp_about": "The Indian Institute of Technology Kharagpur (IIT Kharagpur) is a public institute of technology and research university established by the Government of India in Kharagpur, West Bengal. Established in 1951, it is the first of the IITs and is recognised as an Institute of National Importance."
+  }
+},
+{
+  "model": "core.homepage",
+  "pk": 1,
+  "fields": {
+    "objective_text": "Access to health is one of the fundamental rights enshrined in the constitution over the world. However, almost 50% of the world's 7.5 billion people is forced to live at underserved locations without access to basic healthcare and health education and public health measures, due to a multitude of reasons. This results in accumulation of diseases among the most vulnerable segment, delayed presentation and intervention, and consequent need of specialty treatment at high secondary and tertiary cost and health-related poverty shocks.",
+    "enterprises_text": "One key area of focus of the CRTDH is supporting the growth and development of precision manufacturing of innovative medical devices through emerging micro-small-medium scale Industrial enterprises so that India can reduce their massive burden of imported healthcare technologies and spread the technology availability in the last-mile. The CRTDH has already established a template pilot plant to promote indigenously developed healthcare technologies for rural healthcare — solving a major problem for the common people, fostering manufacturing growth, creating rural jobs, and introducing advanced technologies into the ambit of public health.",
+    "enterprises_image_1": "home/enterprises-engagement01.jpg",
+    "enterprises_image_2": "home/enterprises-engagement02.jpg",
+    "msme_map_image": "home/msmemap.png",
+    "msme_caption": "MSME cluster supported by CRTDH, IIT KGP",
+    "women_text_1": "The CRTDH & its implementation partner, FIH, has pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centers do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process.",
+    "women_image_1": "home/women-empowerment01.jpg",
+    "women_image_2": "home/women-empowerment02.jpg",
+    "women_text_2": "Empowered by a 'primary-care software', this has led to all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc.",
+    "location_address": "Second Floor, Diamond Jubilee Building, IIT Kharagpur",
+    "location_description": "Available pilot plant and laboratories at CRTDH facility for research, MSME training and prototype development",
+    "facility_card_1_title": "CRTDH Conference Room & Office",
+    "facility_card_1_image": "home/facility/facility-01.jpg",
+    "facility_card_1_link": "",
+    "facility_card_2_title": "Pilot Plant and Manufacturing Units",
+    "facility_card_2_image": "home/facility/facility-02.jpg",
+    "facility_card_2_link": "/facilities#manufacturing-plants",
+    "facility_card_3_title": "CRTDH Sterile Room",
+    "facility_card_3_image": "home/facility/facility-03.jpg",
+    "facility_card_3_link": "",
+    "chintan_shivir_youtube_id": "PumM2298Zaw",
+    "viksit_bharat_youtube_id": "62PfmqDvzG4",
+    "office_image": "home/office.png",
+    "membership_heading": "Annual Membership for MSME / Startup",
+    "membership_pdf": "home/Membership-CDH.pdf"
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 18,
+  "fields": {
+    "image": "hero_slides/banner06.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 0
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 19,
+  "fields": {
+    "image": "hero_slides/banner11.JPG",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 1
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 20,
+  "fields": {
+    "image": "hero_slides/banner12.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 2
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 21,
+  "fields": {
+    "image": "hero_slides/banner13.jpeg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 3
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 22,
+  "fields": {
+    "image": "hero_slides/banner14.jpeg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 4
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 23,
+  "fields": {
+    "image": "hero_slides/banner15.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 5
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 24,
+  "fields": {
+    "image": "hero_slides/banner16.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 6
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 25,
+  "fields": {
+    "image": "hero_slides/banner17.jpeg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 7
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 26,
+  "fields": {
+    "image": "hero_slides/banner08.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 8
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 27,
+  "fields": {
+    "image": "hero_slides/banner07.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 9
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 28,
+  "fields": {
+    "image": "hero_slides/banner01.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 10
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 29,
+  "fields": {
+    "image": "hero_slides/banner02.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 11
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 30,
+  "fields": {
+    "image": "hero_slides/banner03.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 12
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 31,
+  "fields": {
+    "image": "hero_slides/banner04.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 13
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 32,
+  "fields": {
+    "image": "hero_slides/banner05.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 14
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 33,
+  "fields": {
+    "image": "hero_slides/banner09.jpg",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 15
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 34,
+  "fields": {
+    "image": "hero_slides/banner10.JPG",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 16
+  }
+},
+{
+  "model": "carousel.heroslide",
+  "pk": 35,
+  "fields": {
+    "image": "hero_slides/ChatGPT_Image_Sep_4_2026_at_11_23_17_PM.png",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
+    "heading": "Common Research &",
+    "highlight_heading": "Technology Development",
+    "heading_end": "Hub",
+    "description": "Building affordable healthcare technology for a billion people, at IIT Kharagpur.",
+    "primary_button_label": "Explore Innovations",
+    "primary_button_link": "/innovations",
+    "secondary_button_label": "About CRTDH",
+    "secondary_button_link": "/about",
+    "is_published": true,
+    "order": 2
+  }
+},
+{
+  "model": "carousel.projectslide",
+  "pk": 5,
+  "fields": {
+    "image": "project_slides/project-image01.jpg",
+    "title": "Mobie App",
+    "order": 0
+  }
+},
+{
+  "model": "carousel.projectslide",
+  "pk": 6,
+  "fields": {
+    "image": "project_slides/project-image02.jpg",
+    "title": "Paper Strip",
+    "order": 1
+  }
+},
+{
+  "model": "carousel.projectslide",
+  "pk": 7,
+  "fields": {
+    "image": "project_slides/project-image03.jpg",
+    "title": "Detection Box",
+    "order": 2
+  }
+},
+{
+  "model": "carousel.projectslide",
+  "pk": 8,
+  "fields": {
+    "image": "project_slides/project-image04.jpg",
+    "title": "Smartphone based analysis",
+    "order": 3
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 7,
+  "fields": {
+    "name": "Principal Investigator",
+    "order": 0
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 8,
+  "fields": {
+    "name": "Co-Principal Investigator",
+    "order": 1
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 9,
+  "fields": {
+    "name": "Other Members",
+    "order": 2
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 10,
+  "fields": {
+    "name": "Project Manager",
+    "order": 3
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 11,
+  "fields": {
+    "name": "Project Staff",
+    "order": 4
+  }
+},
+{
+  "model": "team.teamcategory",
+  "pk": 12,
+  "fields": {
+    "name": "Medical Staff",
+    "order": 5
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 10,
+  "fields": {
+    "category": 7,
+    "name": "Prof. Suman Chakraborty",
+    "photo": "team_members/team01.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 11,
+  "fields": {
+    "category": 8,
+    "name": "Prof. Gautam Saha",
+    "photo": "team_members/team02.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 12,
+  "fields": {
+    "category": 8,
+    "name": "Prof. Jayanta Mukhopadhyay",
+    "photo": "team_members/team03.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 13,
+  "fields": {
+    "category": 8,
+    "name": "Prof. Satadal Saha",
+    "photo": "team_members/team05.jpg",
+    "order": 2
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 14,
+  "fields": {
+    "category": 9,
+    "name": "Dr. Aditya Bandyopadhyay",
+    "photo": "team_members/aditya.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 15,
+  "fields": {
+    "category": 9,
+    "name": "Dr. Arindam Mondal",
+    "photo": "team_members/arindam.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 16,
+  "fields": {
+    "category": 10,
+    "name": "Sohom Banerjee",
+    "photo": "team_members/sohom.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 17,
+  "fields": {
+    "category": 11,
+    "name": "Shawan Kundu",
+    "photo": "team_members/shawan.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "team.teammember",
+  "pk": 18,
+  "fields": {
+    "category": 12,
+    "name": "Shyamal Manna",
+    "photo": "team_members/shyamal.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 22,
+  "fields": {
+    "name": "Two Sterile rooms BSL level 2",
+    "image": "equipment/Two_Sterile_rooms_BSL_level_2.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 23,
+  "fields": {
+    "name": "Pilot Plant for Paper based Devices",
+    "image": "",
+    "order": 1
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 24,
+  "fields": {
+    "name": "Electronic Dispenser",
+    "image": "equipment/Electronic_Dispenser.jpg",
+    "order": 2
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 25,
+  "fields": {
+    "name": "Vacuum Packaging Machine",
+    "image": "",
+    "order": 3
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 26,
+  "fields": {
+    "name": "Two Cryogenic Refrigerators (-80 & -20 degree)",
+    "image": "equipment/Two_Cryogenic_Refrigerators.jpg",
+    "order": 4
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 27,
+  "fields": {
+    "name": "Wave Soldering Machine",
+    "image": "equipment/Wave_Soldering_Machine.jpg",
+    "order": 5
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 28,
+  "fields": {
+    "name": "Heat Chamber/ Autoclave",
+    "image": "equipment/Heat_Chamber.jpg",
+    "order": 6
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 29,
+  "fields": {
+    "name": "Programmable syringe pump",
+    "image": "equipment/programmable_syringe_pump_harvard.jpg",
+    "order": 7
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 30,
+  "fields": {
+    "name": "High frequency (up to GHz) amplifier",
+    "image": "equipment/High_frequency_up_to_GHz_amplifier.png",
+    "order": 8
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 31,
+  "fields": {
+    "name": "Digital ECG and APIs",
+    "image": "",
+    "order": 9
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 32,
+  "fields": {
+    "name": "Server and computer accessories",
+    "image": "equipment/Server_and_computer_accessories.jpg",
+    "order": 10
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 33,
+  "fields": {
+    "name": "Laser Cutter",
+    "image": "equipment/Laser_Cutte.jpg",
+    "order": 11
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 34,
+  "fields": {
+    "name": "Thermal Imaging System with IR Fusion Technology",
+    "image": "equipment/Thermal_Imaging_System_with_IR_Fusion_Technology.jpg",
+    "order": 12
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 35,
+  "fields": {
+    "name": "Arbitrary Waveform Generator, DC Power Supply | Multimeter, Spectrum Analyzer",
+    "image": "equipment/Waveform_Generato.jpeg",
+    "order": 13
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 36,
+  "fields": {
+    "name": "LFA manufacturing unit",
+    "image": "equipment/LFA_manufacturing_unit.jpg",
+    "order": 14
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 37,
+  "fields": {
+    "name": "Covirap manufacturing unit",
+    "image": "equipment/03.jpg",
+    "order": 15
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 38,
+  "fields": {
+    "name": "Kit preparation plant",
+    "image": "",
+    "order": 16
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 39,
+  "fields": {
+    "name": "Paper based device pilot plant",
+    "image": "equipment/01.jpg",
+    "order": 17
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 40,
+  "fields": {
+    "name": "Prototyping for PCB",
+    "image": "equipment/Prototyping_for_PCB.jpg",
+    "order": 18
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 41,
+  "fields": {
+    "name": "3d Printing Facilities",
+    "image": "",
+    "order": 19
+  }
+},
+{
+  "model": "facilities.equipment",
+  "pk": 42,
+  "fields": {
+    "name": "Pathology Lab at Midnapur",
+    "image": "hero_slides/banner09.jpg",
+    "order": 20
+  }
+},
+{
+  "model": "services.service",
+  "pk": 7,
+  "fields": {
+    "title": "R & D support",
+    "image": "services/rd.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "services.service",
+  "pk": 8,
+  "fields": {
+    "title": "Prototyping and testing facilities",
+    "image": "services/testing.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "services.service",
+  "pk": 9,
+  "fields": {
+    "title": "Regulatory guidance",
+    "image": "services/guidance.jpg",
+    "order": 2
+  }
+},
+{
+  "model": "services.service",
+  "pk": 10,
+  "fields": {
+    "title": "Training & capacity-building",
+    "image": "services/tranning1.jpg",
+    "order": 3
+  }
+},
+{
+  "model": "services.service",
+  "pk": 11,
+  "fields": {
+    "title": "Market access opportunities",
+    "image": "services/market_access.jpg",
+    "order": 4
+  }
+},
+{
+  "model": "services.service",
+  "pk": 12,
+  "fields": {
+    "title": "Support for scalability and sustainability",
+    "image": "services/scalability.jpg",
+    "order": 5
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 14,
+  "fields": {
+    "title": "Diagnostics with 1-Drop of Body Fluid at the Point of Care",
+    "body": "<p>Diagnostics with 1-Drop of Body Fluid at the Point of Care.</p><h3>Advantages</h3><ul><li>Portable and thus spot diagnosis is possible</li><li>Functional with limited resources</li><li>Easy handling</li><li>Mass fabrication is possible</li><li>Inexpensive</li><li>Involvement of minimal infrastructures</li><li>Rapid and easy monitoring</li><li>Automated</li></ul>",
+    "video_url": null,
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 15,
+  "fields": {
+    "title": "Manufacturing Printed Paper Strips For Disease Detection",
+    "body": "<h3>A. Single Sided</h3><h3>B. Double sided</h3><p>Printed Paper Channels for Blood Pathology</p>",
+    "video_url": null,
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 16,
+  "fields": {
+    "title": "Testing Blood on a Portable Spinning Disc",
+    "body": "<p>Testing Blood on a Portable Spinning Disc.</p>",
+    "video_url": null,
+    "order": 2
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 17,
+  "fields": {
+    "title": "Blood Glucose Detection on a Printed Paper Strip",
+    "body": "<p>Blood Glucose Detection on a Printed Paper Strip, from the mobile app that guides the user through the test, through the paper strip and detection box, to the smartphone-based analysis of the result. See the project carousel below for the individual components (Mobie App, Paper Strip, Detection Box, Smartphone based analysis).</p>",
+    "video_url": null,
+    "order": 3
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 18,
+  "fields": {
+    "title": "Hemoglobin Detection: Screening of Anemia",
+    "body": "<p>Hemoglobin Detection: Screening of Anemia, using a printed microfluidic chip read by a smartphone camera and app.</p><ol><li>Printed microfluidic chip</li><li>Adding whole blood + diluting reagent to the reaction pad</li><li>Bluish green colour developed in reaction pad</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>Picture of the reaction pad captured with smartphone camera.</li><li>In built app in smart phone performs robust image processing and displaying haemoglobin concentration</li></ol>",
+    "video_url": null,
+    "order": 4
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 19,
+  "fields": {
+    "title": "COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19",
+    "body": "<p>COVIRAP: A Nucleic-Acid Based Rapid Diagnostic Test for COVID-19.</p>",
+    "video_url": "https://www.youtube.com/watch?v=ZkZXzuaIeoQ",
+    "order": 5
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 20,
+  "fields": {
+    "title": "Low-Cost Portable Imaging Device for Early Screening of Oral Cancer",
+    "body": "<p>Lifestyle factors in the underserved community.</p><p>Current methods of diagnostics require sophisticated lab-based procedures.</p><p>A low cost, portable, handheld imaging device to screen oral cancer and pre-cancer based on measured change in blood flow rate of the tissue from thermal imaging and analytics.</p><p>Successful phase-I clinical trial with more than 60 patients indicated more than 96.66% accuracy in detecting oral cancer and pre-cancer.</p><p>The early prototype developed is ready to be deployed in the field by minor sophistication and automation.</p><p>Method can be extended to other forms of cancer.</p>",
+    "video_url": null,
+    "order": 6
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 21,
+  "fields": {
+    "title": "Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings-Uday",
+    "body": "<p>Clinical Algorithm based App for Delivering Primary Care at Resource Poor Settings &mdash; Uday.</p>",
+    "video_url": null,
+    "order": 7
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 22,
+  "fields": {
+    "title": "Covicube",
+    "body": "<p>&ldquo;COVICUBE&rdquo; &ndash; which can simultaneously measure respiration rate, Oxygen saturation, breathing rate, Temperature has been prototyped and validated in rural settings. This will provide a much-needed low-cost integrated solution for screening the rural population through the same women rural health workers.</p>",
+    "video_url": null,
+    "order": 8
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 23,
+  "fields": {
+    "title": "Lipidest",
+    "body": "<p>Lipidest.</p>",
+    "video_url": null,
+    "order": 9
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 24,
+  "fields": {
+    "title": "Reagent-free Anemia screening using paper and smartphone",
+    "body": "<ol><li>Apply glycerin on the paper pad of the cartridge with paint brush. Make sure that the glycerin is completely absorbed within the paper and no surplus volume of glycerin remains on the paper surface.</li><li>Properly align the paper cartridge and the smartphone on the designated slot of the image acquisition platform.</li><li>Open the camera of the smartphone and adjust the magnification to 2.5X.</li><li>Perform finger pricking and deposit one drop of finger pricked blood on the wet paper cartridge just by touching the blood drop on the paper surface.</li><li>Capture the image of the blood pattern after 3-4 secs of dispensing blood.</li><li>Open smartphone app &lsquo;Hemo-app&rsquo;.</li><li>Click on &lsquo;Start a new test&rsquo;.</li><li>Click on &lsquo;Upload image from Gallery&rsquo;.</li><li>Choose the recently captured blood pattern image.</li><li>Wait for the result display on the smartphone app.</li><li>Dispense the used paper cartridge into biosafety-waste bin.</li></ol>",
+    "video_url": null,
+    "order": 10
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 25,
+  "fields": {
+    "title": "Hematocrit and Hemoglobin Measurement using EIS",
+    "body": "<ol><li>Start with calibrating the impedance analyzer.</li><li>Connect the device electrodes with the impedance analyzer.</li><li>Dispense a drop of blood on the strip.</li><li>Instantly record the impedance magnitude at desired optimal frequency.</li><li>Feed the obtained impedance magnitude in the smartphone app.</li><li>Get the Hematocrit and Hemoglobin value result in the smartphone app.</li></ol>",
+    "video_url": null,
+    "order": 11
+  }
+},
+{
+  "model": "innovations.innovation",
+  "pk": 26,
+  "fields": {
+    "title": "ChestXAI",
+    "body": "<p>This is a deep learning-enabled android app to predict the vulnerable COVID-19 patients based on digital frontal chest X-ray images. This app is designed to individuate COVID-19 cases from no-findings and non-COVID Pneumonia. Using this application, you can get the automated classification of frontal chest X-rays revealing fine-grained variability in appearance that are not distinguishable by Pulmonologist. Here, deep convolutional neural networks (CNN) were used to accomplish highly variable tasks in many types of fine-grained objects in the images. For the development of the CNN model, the classification of chest X-rays was carried out using a single CNN with transfer learning, formed end-to-end from direct images, using only pixels and disease tags as entries. The used CNN model was trained on a dataset accessed from public repository consisting of a total of 1697 frontal X-ray images (549 samples of COVID-19, 576 samples of no findings, and 572 samples of non-COVID pneumonia) with high classification accuracy.</p>",
+    "video_url": null,
+    "order": 12
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 29,
+  "fields": {
+    "innovation": 14,
+    "image": "innovation_images/diagnostics.jpg",
+    "caption": "Diagnostics",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 30,
+  "fields": {
+    "innovation": 15,
+    "image": "innovation_images/printed-paper-strips.jpg",
+    "caption": "Printed Paper Channels for Blood Pathology",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 31,
+  "fields": {
+    "innovation": 15,
+    "image": "innovation_images/lateral-flow-paper-strip.jpg",
+    "caption": "Lateral flow paper strip",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 32,
+  "fields": {
+    "innovation": 15,
+    "image": "innovation_images/img-charging.jpg",
+    "caption": "Charging",
+    "order": 2
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 33,
+  "fields": {
+    "innovation": 16,
+    "image": "innovation_images/c-mems.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 34,
+  "fields": {
+    "innovation": 16,
+    "image": "innovation_images/spinning-disc-02.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 35,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/hemoglobin-img.jpg",
+    "caption": "Hemoglobin detection",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 36,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/01.jpg",
+    "caption": "Printed microfluidic chip",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 37,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/02.jpg",
+    "caption": "Adding whole blood + diluting reagent to the reaction pad",
+    "order": 2
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 38,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/03.jpg",
+    "caption": "Bluish green colour developed in reaction pad",
+    "order": 3
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 39,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/04.jpg",
+    "caption": "Picture of the reaction pad captured with smartphone camera.",
+    "order": 4
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 40,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/05.jpg",
+    "caption": "Picture of the reaction pad captured with smartphone camera.",
+    "order": 5
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 41,
+  "fields": {
+    "innovation": 18,
+    "image": "innovation_images/06.jpg",
+    "caption": "In built app in smart phone performs robust image processing and displaying haemoglobin concentration",
+    "order": 6
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 42,
+  "fields": {
+    "innovation": 19,
+    "image": "innovation_images/nucleic-acid-img.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 43,
+  "fields": {
+    "innovation": 19,
+    "image": "innovation_images/nucleic-acid-big-img.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 44,
+  "fields": {
+    "innovation": 20,
+    "image": "innovation_images/oral-cancer.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 45,
+  "fields": {
+    "innovation": 21,
+    "image": "innovation_images/clinical-algorithm.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 46,
+  "fields": {
+    "innovation": 21,
+    "image": "innovation_images/01_0q5iJK6.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 47,
+  "fields": {
+    "innovation": 21,
+    "image": "innovation_images/02_0DWFtPK.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 48,
+  "fields": {
+    "innovation": 21,
+    "image": "innovation_images/03_jzM17cR.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 49,
+  "fields": {
+    "innovation": 22,
+    "image": "innovation_images/covicube-img.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 50,
+  "fields": {
+    "innovation": 23,
+    "image": "innovation_images/Lipidest.png",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 51,
+  "fields": {
+    "innovation": 23,
+    "image": "innovation_images/Lipidest1.png",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 52,
+  "fields": {
+    "innovation": 24,
+    "image": "innovation_images/Reagent-free_Anemia.png",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 53,
+  "fields": {
+    "innovation": 25,
+    "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen7.png",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 54,
+  "fields": {
+    "innovation": 25,
+    "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen8.png",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 55,
+  "fields": {
+    "innovation": 25,
+    "image": "innovation_images/Hematocrit_and_Hemoglobin_Measuremen9.png",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "innovations.innovationimage",
+  "pk": 56,
+  "fields": {
+    "innovation": 26,
+    "image": "innovation_images/ChestXAI5.png",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "products.product",
+  "pk": 6,
+  "fields": {
+    "name": "Gluco QR",
+    "order": 0
+  }
+},
+{
+  "model": "products.product",
+  "pk": 7,
+  "fields": {
+    "name": "Sense-Hb",
+    "order": 1
+  }
+},
+{
+  "model": "products.product",
+  "pk": 8,
+  "fields": {
+    "name": "Oral Cancer",
+    "order": 2
+  }
+},
+{
+  "model": "products.product",
+  "pk": 9,
+  "fields": {
+    "name": "Hemomeasure",
+    "order": 3
+  }
+},
+{
+  "model": "products.product",
+  "pk": 10,
+  "fields": {
+    "name": "COVIRAP",
+    "order": 4
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 11,
+  "fields": {
+    "product": 6,
+    "image": "product_images/gluco1.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 12,
+  "fields": {
+    "product": 6,
+    "image": "product_images/gluco2.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 13,
+  "fields": {
+    "product": 7,
+    "image": "product_images/sensehb1.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 14,
+  "fields": {
+    "product": 7,
+    "image": "product_images/sensehb2.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 15,
+  "fields": {
+    "product": 8,
+    "image": "product_images/oralcancer1.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 16,
+  "fields": {
+    "product": 8,
+    "image": "product_images/oralcancer2.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 17,
+  "fields": {
+    "product": 9,
+    "image": "product_images/hemomeasure1.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 18,
+  "fields": {
+    "product": 9,
+    "image": "product_images/hemomeasure2.jpeg",
+    "order": 1
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 19,
+  "fields": {
+    "product": 10,
+    "image": "product_images/covirap1.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "products.productimage",
+  "pk": 20,
+  "fields": {
+    "product": 10,
+    "image": "product_images/covirap3.jpg",
+    "order": 1
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 9,
+  "fields": {
+    "product": 6,
+    "name": "HealthLedger Diagnostics Pvt. Ltd.",
+    "logo": "product_partners/HealthLedger.png"
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 10,
+  "fields": {
+    "product": 7,
+    "name": "IMEDTECH LLP",
+    "logo": "product_partners/imedtech.jpg"
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 11,
+  "fields": {
+    "product": 8,
+    "name": "IMEDTECH LLP",
+    "logo": "product_partners/imedtech.jpg"
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 12,
+  "fields": {
+    "product": 9,
+    "name": "Huwel Lifesciences Private Limited",
+    "logo": "enterprises/huwel.jpeg"
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 13,
+  "fields": {
+    "product": 10,
+    "name": "InnoDx Solutions Private Limited",
+    "logo": ""
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 14,
+  "fields": {
+    "product": 10,
+    "name": "Aspen Biomedical Private Limited",
+    "logo": ""
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 15,
+  "fields": {
+    "product": 10,
+    "name": "Surbhi Satcom Private Limited",
+    "logo": ""
+  }
+},
+{
+  "model": "products.productpartner",
+  "pk": 16,
+  "fields": {
+    "product": 10,
+    "name": "ICMR-National Institute of Cholera & Enteric Diseases",
+    "logo": ""
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 29,
+  "fields": {
+    "name": "IMEDTECH LLP",
+    "subtitle": "(IIT KGP Spin-off)",
+    "logo": "enterprises/imedtech.jpg",
+    "order": 0
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 30,
+  "fields": {
+    "name": "M/s IB Engineers Pvt Ltd.",
+    "subtitle": "Foundation for Innovations in Health",
+    "logo": "",
+    "order": 1
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 31,
+  "fields": {
+    "name": "M/s Revolut Healthtech Pvt. Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/REVOLUT_HEALTHTECH_PRIVATE_LIMITED_eXHAxJf.png",
+    "order": 2
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 32,
+  "fields": {
+    "name": "M/s JSV Innovations Pvt Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/jsv-innovation-logo.jpg",
+    "order": 3
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 33,
+  "fields": {
+    "name": "Aspen Biomedical Private Ltd.",
+    "subtitle": "(Rapid Diagnostic Group of Companies)",
+    "logo": "",
+    "order": 4
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 34,
+  "fields": {
+    "name": "Bramerton Holdings LLC and VeenaNxt Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/Bramerton_Holdings_LLC.webp",
+    "order": 5
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 35,
+  "fields": {
+    "name": "Softmed Technologies LLP.",
+    "subtitle": "",
+    "logo": "enterprises/softmed_Logo1_kxmk6t6.png",
+    "order": 6
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 36,
+  "fields": {
+    "name": "Trivitron Healthcare Private Limited",
+    "subtitle": "",
+    "logo": "enterprises/Trivitron_Healthcare_Private_Limited.png",
+    "order": 7
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 37,
+  "fields": {
+    "name": "Educare International Foundation",
+    "subtitle": "",
+    "logo": "enterprises/educare_logo.png",
+    "order": 8
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 38,
+  "fields": {
+    "name": "Focus R&D Pvt Limited",
+    "subtitle": "",
+    "logo": "enterprises/Focus_RD_Pvt_Limited.png",
+    "order": 9
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 39,
+  "fields": {
+    "name": "Foundation for Innovations in health",
+    "subtitle": "",
+    "logo": "enterprises/Foundation_for_Innovations_in_health.png",
+    "order": 10
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 40,
+  "fields": {
+    "name": "Robot Jam Pvt Limited",
+    "subtitle": "",
+    "logo": "enterprises/robot-jam-india-private-limited_rl1dxAi.png",
+    "order": 11
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 41,
+  "fields": {
+    "name": "Supreme Infotech",
+    "subtitle": "",
+    "logo": "",
+    "order": 12
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 42,
+  "fields": {
+    "name": "Neo Equipment",
+    "subtitle": "",
+    "logo": "",
+    "order": 13
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 43,
+  "fields": {
+    "name": "Inno-Dx solutions",
+    "subtitle": "",
+    "logo": "enterprises/inno-dx-logo_F5m1O54.png",
+    "order": 14
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 44,
+  "fields": {
+    "name": "Bioart Azure Research & Development Pvt Ltd",
+    "subtitle": "",
+    "logo": "",
+    "order": 15
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 45,
+  "fields": {
+    "name": "Sharobi technologies Pvt Ltd",
+    "subtitle": "",
+    "logo": "enterprises/sharobi_logo_JXYlChb.png",
+    "order": 16
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 46,
+  "fields": {
+    "name": "Bramerton Holdings LLC",
+    "subtitle": "",
+    "logo": "enterprises/Bramerton_Holdings_LLC.webp",
+    "order": 17
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 47,
+  "fields": {
+    "name": "Invitreo Healthtech Ventures Private Limited",
+    "subtitle": "",
+    "logo": "enterprises/Invitreo_Healthtech_Ventures_Pvt._Ltd..png",
+    "order": 18
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 48,
+  "fields": {
+    "name": "Sopaana Brand-Living Foundation",
+    "subtitle": "",
+    "logo": "",
+    "order": 19
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 49,
+  "fields": {
+    "name": "SPATIAL KARMA RESOURCES PVT. LTD.",
+    "subtitle": "",
+    "logo": "",
+    "order": 20
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 50,
+  "fields": {
+    "name": "Kurious Kosmonauts Technology Services Private Limited",
+    "subtitle": "",
+    "logo": "",
+    "order": 21
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 51,
+  "fields": {
+    "name": "Huwel Lifesciences Private Limited",
+    "subtitle": "",
+    "logo": "enterprises/huwel.jpeg",
+    "order": 22
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 52,
+  "fields": {
+    "name": "Mouthwise Diagnostics Private Limited",
+    "subtitle": "",
+    "logo": "",
+    "order": 23
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 53,
+  "fields": {
+    "name": "HealthLedger Diagnostics Pvt. Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/HealthLedger.png",
+    "order": 24
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 54,
+  "fields": {
+    "name": "Jio Platforms Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/Jio-Logo.png",
+    "order": 25
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 55,
+  "fields": {
+    "name": "Accuster Pvt. Ltd.",
+    "subtitle": "",
+    "logo": "enterprises/cropped-Accuster-Logo-trans-1.png",
+    "order": 26
+  }
+},
+{
+  "model": "enterprises.enterprise",
+  "pk": 56,
+  "fields": {
+    "name": "Smart QR",
+    "subtitle": "",
+    "logo": "enterprises/smartqrlogo.png",
+    "order": 27
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 9,
+  "fields": {
+    "title": "Pathology and Eye Clinic",
+    "slug": "pathologyandeyeclinic",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 10,
+  "fields": {
+    "title": "Rural Healthcare Foundation",
+    "slug": "ruralhealthcarefoundation",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 11,
+  "fields": {
+    "title": "Anemia detection camp at Kuchlachati Primary School",
+    "slug": "anemiacampkuchlachati",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 12,
+  "fields": {
+    "title": "Arjun Malhotra",
+    "slug": "arjunmalhotra",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 13,
+  "fields": {
+    "title": "Conclave",
+    "slug": "conclave",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 14,
+  "fields": {
+    "title": "Chintan Shivir",
+    "slug": "chintanshivir",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 15,
+  "fields": {
+    "title": "Jio",
+    "slug": "jio",
+    "order": 6
+  }
+},
+{
+  "model": "media_gallery.mediaevent",
+  "pk": 16,
+  "fields": {
+    "title": "Other Ongoing Activities",
+    "slug": "other-ongoing-activities",
+    "order": 7
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 103,
+  "fields": {
+    "event": 9,
+    "image": "image_grid_items/11.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 104,
+  "fields": {
+    "event": 9,
+    "image": "image_grid_items/12.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 105,
+  "fields": {
+    "event": 9,
+    "image": "media_event_images/3.jpeg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 106,
+  "fields": {
+    "event": 9,
+    "image": "media_event_images/4.jpeg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 107,
+  "fields": {
+    "event": 9,
+    "image": "media_event_images/5.jpeg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 108,
+  "fields": {
+    "event": 9,
+    "image": "media_event_images/6.jpeg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 109,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/1_eTGicwR.jpeg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 110,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/2_8NlCVVJ.jpeg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 111,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/3_CjL57xf.jpeg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 112,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/4_4G8LMg8.jpeg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 113,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/5_6AJGgA8.jpeg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 114,
+  "fields": {
+    "event": 10,
+    "image": "media_event_images/6_JKNL12N.jpeg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 115,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/1.JPG",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 116,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/2.JPG",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 117,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/3.JPG",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 118,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/4.JPG",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 119,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/5.JPG",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 120,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/6_ssUcXYk.JPG",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 121,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/7.JPG",
+    "caption": "",
+    "order": 6
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 122,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/8.JPG",
+    "caption": "",
+    "order": 7
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 123,
+  "fields": {
+    "event": 11,
+    "image": "image_grid_items/08.jpg",
+    "caption": "",
+    "order": 8
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 124,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/10_6uHhOEy.JPG",
+    "caption": "",
+    "order": 9
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 125,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/11.JPG",
+    "caption": "",
+    "order": 10
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 126,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/12_MBuvB9s.JPG",
+    "caption": "",
+    "order": 11
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 127,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/13_6hzLD1X.JPG",
+    "caption": "",
+    "order": 12
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 128,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/14_WPDRiuw.JPG",
+    "caption": "",
+    "order": 13
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 129,
+  "fields": {
+    "event": 11,
+    "image": "media_event_images/15_9S4Qq7x.JPG",
+    "caption": "",
+    "order": 14
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 130,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/1_XE94381.jpeg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 131,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/2_XMbM5gz.jpeg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 132,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/3_5YNnD2q.jpeg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 133,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/4_CTq9x5Y.jpeg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 134,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/5_nQ77gtp.jpeg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 135,
+  "fields": {
+    "event": 12,
+    "image": "media_event_images/6_fFYUGSH.jpeg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 136,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/1_7o5x57p.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 137,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/2_j5dwZM4.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 138,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/3_vrdgmIJ.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 139,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/4_BsXM8xl.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 140,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/5_fxJMeqv.jpg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 141,
+  "fields": {
+    "event": 13,
+    "image": "media_event_images/6.jpg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 142,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/15.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 143,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/1_HkLnoAw.JPG",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 144,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/2_2sdxp06.JPG",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 145,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/3_odpnwFe.JPG",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 146,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/4_fwDz3we.JPG",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 147,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/5_bIz2tSM.JPG",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 148,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/6_4wKPv7v.JPG",
+    "caption": "",
+    "order": 6
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 149,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/7_r1ovS9M.JPG",
+    "caption": "",
+    "order": 7
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 150,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/8_Fb1ozm8.JPG",
+    "caption": "",
+    "order": 8
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 151,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/9_9cGxbYK.JPG",
+    "caption": "",
+    "order": 9
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 152,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/10_X5gocwd.JPG",
+    "caption": "",
+    "order": 10
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 153,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/11_aDHaotn.JPG",
+    "caption": "",
+    "order": 11
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 154,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/12_9VjTr0n.JPG",
+    "caption": "",
+    "order": 12
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 155,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/13_8gQhq6F.JPG",
+    "caption": "",
+    "order": 13
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 156,
+  "fields": {
+    "event": 14,
+    "image": "media_event_images/14_yy75wIP.JPG",
+    "caption": "",
+    "order": 14
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 157,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/01.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 158,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/02.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 159,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/03.jpg",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 160,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/04.jpg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 161,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/05.jpg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 162,
+  "fields": {
+    "event": 15,
+    "image": "media_event_images/06.jpg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 163,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/01_deGoopG.jpg",
+    "caption": "",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 164,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/02_iqD0PWL.jpg",
+    "caption": "",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 165,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/51.png",
+    "caption": "",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 166,
+  "fields": {
+    "event": 16,
+    "image": "image_grid_items/54.jpeg",
+    "caption": "",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 167,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/54.jpg",
+    "caption": "",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 168,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/33.jpg",
+    "caption": "",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 169,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/32.jpg",
+    "caption": "",
+    "order": 6
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 170,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/31.jpg",
+    "caption": "",
+    "order": 7
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 171,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/30.jpg",
+    "caption": "",
+    "order": 8
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 172,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/29.jpg",
+    "caption": "",
+    "order": 9
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 173,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/28.jpg",
+    "caption": "",
+    "order": 10
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 174,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/27.jpg",
+    "caption": "",
+    "order": 11
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 175,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/26.jpg",
+    "caption": "",
+    "order": 12
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 176,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/24.jpg",
+    "caption": "",
+    "order": 13
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 177,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/23.jpg",
+    "caption": "",
+    "order": 14
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 178,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/22.jpg",
+    "caption": "",
+    "order": 15
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 179,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/21.jpg",
+    "caption": "",
+    "order": 16
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 180,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/20.jpg",
+    "caption": "",
+    "order": 17
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 181,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/19.jpg",
+    "caption": "",
+    "order": 18
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 182,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/18.jpg",
+    "caption": "",
+    "order": 19
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 183,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/17.jpg",
+    "caption": "",
+    "order": 20
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 184,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/16.jpg",
+    "caption": "",
+    "order": 21
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 185,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/15_7UmALy1.jpg",
+    "caption": "",
+    "order": 22
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 186,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/14.jpg",
+    "caption": "",
+    "order": 23
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 187,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/13.jpg",
+    "caption": "",
+    "order": 24
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 188,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/12.jpg",
+    "caption": "",
+    "order": 25
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 189,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/11_sUjKM0l.jpg",
+    "caption": "",
+    "order": 26
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 190,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/10.jpg",
+    "caption": "",
+    "order": 27
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 191,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/09.jpg",
+    "caption": "",
+    "order": 28
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 192,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/08.jpg",
+    "caption": "",
+    "order": 29
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 193,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/07.jpg",
+    "caption": "",
+    "order": 30
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 194,
+  "fields": {
+    "event": 16,
+    "image": "gallery_images/06.jpg",
+    "caption": "",
+    "order": 31
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 195,
+  "fields": {
+    "event": 16,
+    "image": "gallery_images/05.jpg",
+    "caption": "",
+    "order": 32
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 196,
+  "fields": {
+    "event": 16,
+    "image": "gallery_images/04.jpg",
+    "caption": "",
+    "order": 33
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 197,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/53.jpeg",
+    "caption": "",
+    "order": 34
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 198,
+  "fields": {
+    "event": 16,
+    "image": "gallery_images/02.jpg",
+    "caption": "",
+    "order": 35
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 199,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/01_QapMpHz.jpg",
+    "caption": "",
+    "order": 36
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 200,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/45.jpg",
+    "caption": "",
+    "order": 37
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 201,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/46.jpg",
+    "caption": "",
+    "order": 38
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 202,
+  "fields": {
+    "event": 16,
+    "image": "image_grid_items/47.jpg",
+    "caption": "",
+    "order": 39
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 203,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/48.jpg",
+    "caption": "",
+    "order": 40
+  }
+},
+{
+  "model": "media_gallery.mediaeventimage",
+  "pk": 204,
+  "fields": {
+    "event": 16,
+    "image": "media_event_images/50.jpg",
+    "caption": "",
+    "order": 41
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 9,
+  "fields": {
+    "title": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
+    "url": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 10,
+  "fields": {
+    "title": "https://indianexpress.com/article/explained/covirap-iit-kharagpur-covid-test-explained-6830805/",
+    "url": "https://indianexpress.com/article/explained/covirap-iit-kharagpur-covid-test-explained-6830805/",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 11,
+  "fields": {
+    "title": "https://www.telegraphindia.com/states/west-bengal/research-hub-at-iit-kharagpur-hospital/cid/1683564",
+    "url": "https://www.telegraphindia.com/states/west-bengal/research-hub-at-iit-kharagpur-hospital/cid/1683564",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 12,
+  "fields": {
+    "title": "https://www.dnaindia.com/business/report-iit-kgp-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-2715269",
+    "url": "https://www.dnaindia.com/business/report-iit-kgp-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-2715269",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 13,
+  "fields": {
+    "title": "https://www.ndtv.com/education/iit-kharagpur-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-1987360",
+    "url": "https://www.ndtv.com/education/iit-kharagpur-to-set-up-hub-to-tap-msmes-for-affordable-healthcare-1987360",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 14,
+  "fields": {
+    "title": "https://yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msmes-in-healthcare",
+    "url": "https://yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msmes-in-healthcare",
+    "order": 5
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 15,
+  "fields": {
+    "title": "http://www.uniindia.com/iit-to-set-up-msme-hub/east/news/1486337.html",
+    "url": "http://www.uniindia.com/iit-to-set-up-msme-hub/east/news/1486337.html",
+    "order": 6
+  }
+},
+{
+  "model": "media_gallery.mediacoveragelink",
+  "pk": 16,
+  "fields": {
+    "title": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
+    "url": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
+    "order": 7
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 7,
+  "fields": {
+    "image": "gallery_images/55.jpeg",
+    "caption": "CRTDH Supported Pathology Lab",
+    "order": 0
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 8,
+  "fields": {
+    "image": "gallery_images/02.jpg",
+    "caption": "Medical camp maintaining Covid Protocol",
+    "order": 1
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 9,
+  "fields": {
+    "image": "gallery_images/03.jpg",
+    "caption": "CHW on a bicycle unit",
+    "order": 2
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 10,
+  "fields": {
+    "image": "gallery_images/04.jpg",
+    "caption": "E-Consultation at Balpai e-Clinic",
+    "order": 3
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 11,
+  "fields": {
+    "image": "gallery_images/05.jpg",
+    "caption": "Consultation at the doorstep",
+    "order": 4
+  }
+},
+{
+  "model": "media_gallery.galleryimage",
+  "pk": 12,
+  "fields": {
+    "image": "gallery_images/06.jpg",
+    "caption": "Handwashing training",
+    "order": 5
+  }
+}
 ]

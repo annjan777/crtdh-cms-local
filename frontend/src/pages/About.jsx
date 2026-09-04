@@ -18,11 +18,22 @@ export default function About() {
     [],
     [],
   )
-  const { data: timeline, loading: timelineLoading, error: timelineError } = useApi(
+  const { data: rawTimeline, loading: timelineLoading, error: timelineError } = useApi(
     () => fetchList('/timeline-entries/'),
     [],
     [],
   )
+
+  const timeline = useMemo(() => {
+    if (!rawTimeline) return []
+    const seen = new Set()
+    return rawTimeline.filter(entry => {
+      const key = `${entry.year}-${entry.title.trim()}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }, [rawTimeline])
 
   const focusTaglines = (about?.focus_intro || '').split('\n').filter(Boolean)
   const groupedObjectives = useGroupedObjectives(objectiveRows)
@@ -37,10 +48,8 @@ export default function About() {
 
       {!aboutLoading && about?.intro && (
         <section className="section">
-          <div className="container container--narrow">
-            <Reveal className="section-head text-center" style={{ margin: '0 auto var(--space-6)' }}>
-              <span className="eyebrow">About CRTDH</span>
-            </Reveal>
+          <div className="container">
+
             <Reveal delay={0.08}>
               <ProseBlock text={about.intro} />
             </Reveal>
@@ -50,8 +59,8 @@ export default function About() {
 
       {!aboutLoading && about?.mission_vision && (
         <section className="section section--alt">
-          <div className="container container--narrow">
-            <Reveal className="section-head text-center" style={{ margin: '0 auto var(--space-6)' }}>
+          <div className="container">
+            <Reveal className="section-head text-center">
               <span className="eyebrow">Mission &amp; Vision</span>
             </Reveal>
             <Reveal delay={0.08}>
@@ -63,7 +72,7 @@ export default function About() {
 
       <section className="section">
         <div className="container">
-          <Reveal className="section-head text-center" style={{ margin: '0 auto var(--space-6)' }}>
+          <Reveal className="section-head text-center">
             <span className="eyebrow">Focus areas</span>
             <h2 className="section-title">Where we work</h2>
             {focusTaglines.map((line) => (
@@ -98,7 +107,7 @@ export default function About() {
 
       <section className="section section--alt">
         <div className="container">
-          <Reveal className="section-head">
+          <Reveal className="section-head text-center">
             <span className="eyebrow">Objectives</span>
             <h2 className="section-title">How CRTDH supports MSMEs</h2>
           </Reveal>
@@ -136,7 +145,7 @@ export default function About() {
 
       <section className="section">
         <div className="container">
-          <Reveal className="section-head text-center" style={{ margin: '0 auto var(--space-7)' }}>
+          <Reveal className="section-head text-center">
             <span className="eyebrow">Journey</span>
             <h2 className="section-title">Healthcare ecosystem at IIT Kharagpur</h2>
           </Reveal>
@@ -172,8 +181,8 @@ export default function About() {
 
       {!aboutLoading && about?.pi_desk_image && (
         <section className="section section--alt">
-          <div className="container container--narrow">
-            <Reveal className="section-head text-center" style={{ margin: '0 auto var(--space-6)' }}>
+          <div className="container">
+            <Reveal className="section-head text-center">
               <span className="eyebrow">From the PI's desk</span>
               <h2 className="section-title">A note from our Principal Investigator</h2>
             </Reveal>

@@ -3,6 +3,7 @@ import axios from 'axios';
 // API base URL — override via .env / .env.local with VITE_API_BASE_URL.
 // Falls back to the Django dev server default from API_CONTRACT.md.
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+export const PUBLIC_SITE_URL = import.meta.env.VITE_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 const ACCESS_KEY = 'crtdh_admin_access';
 const REFRESH_KEY = 'crtdh_admin_refresh';
@@ -88,5 +89,72 @@ apiClient.interceptors.response.use(
     }
   },
 );
+
+export async function fetchList(endpoint, params) {
+  const { data } = await apiClient.get(endpoint, { params });
+  return Array.isArray(data) ? data : data.results || [];
+}
+
+export async function fetchOne(endpoint, id = '') {
+  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
+  const { data } = await apiClient.get(url);
+  return data;
+}
+
+function isExistingFileUrl(value) {
+  if (typeof value !== 'string') return false;
+  return value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/media/') || value.startsWith('blob:');
+}
+
+function buildPayload(values) {
+  if (!values || typeof values !== 'object') return values;
+  const hasFile = Object.values(values).some((v) => v instanceof File);
+  if (!hasFile) {
+    const out = {};
+    Object.entries(values).forEach(([key, value]) => {
+      if (key.endsWith('_preview')) return;
+      if (isExistingFileUrl(value)) return;
+      out[key] = value;
+    });
+    return out;
+  }
+  const formData = new FormData();
+  Object.entries(values).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key.endsWith('_preview')) return;
+    if (value instanceof File) {
+      formData.append(key, value);
+    } else if (!isExistingFileUrl(value)) {
+      formData.append(key, value);
+    }
+  });
+  return formData;
+}
+
+export async function createOne(endpoint, values) {
+  const payload = buildPayload(values);
+  const { data } = await apiClient.post(endpoint, payload);
+  return data;
+}
+
+export async function updateOne(endpoint, id, values) {
+  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
+  const payload = buildPayload(values);
+  const { data } = await apiClient.patch(url, payload);
+  return data;
+}
+
+export async function deleteOne(endpoint, id) {
+  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
+  const { data } = await apiClient.delete(url);
+  return data;
+}
+
+export async function uploadFile(file) {
+  if (file instanceof File) {
+    return { url: URL.createObjectURL(file), file };
+  }
+  return { url: file };
+}
 
 export default apiClient;

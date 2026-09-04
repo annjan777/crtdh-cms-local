@@ -281,7 +281,7 @@ export const RESOURCE_SCHEMAS = [
     group: 'Image Grids',
     icon: 'layout-grid',
     endpoint: '/image-grid-blocks/',
-    orderable: false,
+    orderable: true,
     fields: [
       {
         name: 'page',

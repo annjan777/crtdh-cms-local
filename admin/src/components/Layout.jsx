@@ -1,136 +1,205 @@
-import { useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, LogOut, Mail, Search, Settings, ChevronDown, Home, Info } from 'lucide-react';
+import {
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Search,
+  Settings,
+  ChevronDown,
+  Home,
+  Info,
+  Users,
+  Image as ImageIcon,
+  Lightbulb,
+  Wrench,
+  Briefcase,
+  Building2,
+  Video,
+  Megaphone,
+  ExternalLink,
+  Shield,
+  FolderOpen,
+  Package,
+  Link2,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { groupedSchemas } from '../resources/schemas';
-import { getIcon } from '../resources/icons';
+import { PUBLIC_SITE_URL } from '../api/client';
+import AdminSearchModal from './AdminSearchModal';
 
 export default function Layout() {
   const { user, logout } = useAuth();
-  const groups = groupedSchemas();
-  const [query, setQuery] = useState('');
-  const [collapsed, setCollapsed] = useState({});
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const q = query.trim().toLowerCase();
-  const filteredGroups = useMemo(() => {
-    if (!q) return groups;
-    return groups
-      .map((g) => ({ ...g, items: g.items.filter((item) => item.label.toLowerCase().includes(q)) }))
-      .filter((g) => g.items.length > 0);
-  }, [groups, q]);
-
-  const initials = (user?.username || '?').slice(0, 2).toUpperCase();
+  // Cmd+K or Ctrl+K shortcut key listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <span className="sidebar-mark" aria-hidden="true">
-              C
-            </span>
+            <span className="sidebar-mark">CR</span>
             <div>
-              <span className="sidebar-logo">CRTDH</span>
-              <span className="sidebar-subtitle">Content Admin</span>
+              <span className="sidebar-logo">CRTDH CMS</span>
+              <span className="sidebar-subtitle">Website Management</span>
             </div>
           </div>
         </div>
 
-        <div className="sidebar-search">
-          <Search size={15} aria-hidden="true" />
-          <input
-            type="search"
-            placeholder="Jump to a section…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search sections"
-          />
+        {/* Global Search Bar */}
+        <div className="sidebar-search" onClick={() => setSearchOpen(true)}>
+          <Search size={14} />
+          <span className="search-placeholder">Search website...</span>
+          <kbd className="search-kbd">⌘K</kbd>
         </div>
 
         <nav className="sidebar-nav">
           <NavLink to="/" end className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-            <LayoutDashboard size={17} className="nav-icon" aria-hidden="true" />
+            <LayoutDashboard size={17} className="nav-icon" />
             Dashboard
           </NavLink>
+
+          {/* WEBSITE PAGES GROUP */}
+          <div className="sidebar-group-heading">WEBSITE PAGES</div>
+
           <NavLink to="/home-page" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-            <Home size={17} className="nav-icon" aria-hidden="true" />
+            <Home size={17} className="nav-icon" />
             Home Page
           </NavLink>
+
           <NavLink to="/about-page" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-            <Info size={17} className="nav-icon" aria-hidden="true" />
+            <Info size={17} className="nav-icon" />
             About Page
           </NavLink>
-          <NavLink to="/site-settings" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-            <Settings size={17} className="nav-icon" aria-hidden="true" />
-            Site Settings
+
+          <NavLink to="/team-manager" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Users size={17} className="nav-icon" />
+            Team Members
           </NavLink>
+
+          <NavLink to="/resources/innovations" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Lightbulb size={17} className="nav-icon" />
+            Innovations
+          </NavLink>
+
+          <NavLink to="/resources/products" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Package size={17} className="nav-icon" />
+            Products Page
+          </NavLink>
+
+          <NavLink to="/resources/equipment" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Wrench size={17} className="nav-icon" />
+            Facilities & Equipment
+          </NavLink>
+
+          <NavLink to="/resources/services" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Briefcase size={17} className="nav-icon" />
+            Services
+          </NavLink>
+
+          <NavLink to="/resources/enterprises" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Building2 size={17} className="nav-icon" />
+            Enterprises
+          </NavLink>
+
+          <NavLink to="/media-gallery" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <ImageIcon size={17} className="nav-icon" />
+            Media & Gallery
+          </NavLink>
+
+          {/* CONTENT MANAGERS GROUP */}
+          <div className="sidebar-group-heading mt-4">CONTENT MANAGERS</div>
+
+          <NavLink to="/hero-manager" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <ImageIcon size={17} className="nav-icon" />
+            Hero Carousel
+          </NavLink>
+
+          <NavLink to="/resources/news-items" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Megaphone size={17} className="nav-icon" />
+            News & Ticker
+          </NavLink>
+
+          <NavLink to="/resources/video-blocks" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Video size={17} className="nav-icon" />
+            Videos
+          </NavLink>
+
+          <NavLink to="/media-library" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <FolderOpen size={17} className="nav-icon" />
+            Central Media Library
+          </NavLink>
+
+          {/* SETTINGS & SYSTEM GROUP */}
+          <div className="sidebar-group-heading mt-4">SETTINGS & SYSTEM</div>
+
+          <NavLink to="/site-settings" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Settings size={17} className="nav-icon" />
+            Site Information
+          </NavLink>
+
+          <NavLink to="/resources/nav-items" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+            <Link2 size={17} className="nav-icon" />
+            Navbar Menu Links
+          </NavLink>
+
           <NavLink to="/contact-messages" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-            <Mail size={17} className="nav-icon" aria-hidden="true" />
+            <Mail size={17} className="nav-icon" />
             Contact Messages
           </NavLink>
-
-          <div className="sidebar-divider" role="separator" />
-
-          {filteredGroups.map(({ group, icon, items }) => {
-            const GroupIcon = getIcon(icon);
-            const isCollapsed = !!collapsed[group] && !q;
-            return (
-              <div className="sidebar-group" key={group}>
-                <button
-                  type="button"
-                  className="sidebar-group-label"
-                  onClick={() => setCollapsed((prev) => ({ ...prev, [group]: !prev[group] }))}
-                  aria-expanded={!isCollapsed}
-                >
-                  <GroupIcon size={13} aria-hidden="true" />
-                  <span>{group}</span>
-                  <ChevronDown size={13} className={`sidebar-group-chevron${isCollapsed ? ' is-collapsed' : ''}`} aria-hidden="true" />
-                </button>
-                {!isCollapsed && (
-                  <div className="sidebar-group-items">
-                    {items.map((schema) => {
-                      const ItemIcon = getIcon(schema.icon);
-                      return (
-                        <NavLink
-                          key={schema.key}
-                          to={`/resources/${schema.key}`}
-                          className={({ isActive }) => `sidebar-link sidebar-link-sub${isActive ? ' active' : ''}`}
-                        >
-                          <ItemIcon size={16} className="nav-icon" aria-hidden="true" />
-                          {schema.label}
-                        </NavLink>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {q && filteredGroups.length === 0 && <p className="sidebar-empty">No sections match “{query}”.</p>}
         </nav>
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
-            <span className="sidebar-avatar" aria-hidden="true">
-              {initials}
-            </span>
-            <div className="sidebar-user-info">
-              <span className="sidebar-user-name">{user?.username}</span>
-              <span className="sidebar-user-role">Administrator</span>
+            <span className="user-avatar">{user?.username?.[0]?.toUpperCase() || 'A'}</span>
+            <div className="user-details">
+              <span className="user-name">{user?.username || 'Administrator'}</span>
+              <span className="user-role">Superuser</span>
             </div>
           </div>
-          <button type="button" className="sidebar-logout" onClick={logout} title="Log out">
-            <LogOut size={16} aria-hidden="true" />
+          <button onClick={logout} className="logout-btn" title="Sign out">
+            <LogOut size={16} />
           </button>
         </div>
       </aside>
 
-      <div className="main-column">
-        <main className="content-area">
+      <main className="main-content">
+        <header className="top-header">
+          <div className="header-left">
+            <button className="search-trigger-btn" onClick={() => setSearchOpen(true)}>
+              <Search size={15} />
+              <span>Search across website content (Cmd+K)...</span>
+              <kbd>⌘K</kbd>
+            </button>
+          </div>
+          <div className="header-right">
+            <a
+              href={PUBLIC_SITE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn--outline-light btn--sm"
+            >
+              <ExternalLink size={14} /> View Public Website
+            </a>
+          </div>
+        </header>
+
+        <div className="page-workspace">
           <Outlet />
-        </main>
-      </div>
+        </div>
+      </main>
+
+      <AdminSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
