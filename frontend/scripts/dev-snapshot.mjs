@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Turn the team stub snapshot (absolute localhost:8000 URLs) into a contract-shaped
-// dev snapshot: site-relative /media/... URLs and a `media` map with real image sizes.
+// dev snapshot: site-relative /_media/... URLs and a `media` map with real image sizes.
 // Usage: node scripts/dev-snapshot.mjs [stub] [out]   (MEDIA_ROOT = backend/media)
 import fs from 'node:fs'
 import path from 'node:path'
@@ -10,18 +10,18 @@ const stub = process.argv[2] || '/home/claude/team/stub-snapshot.json'
 const out = process.argv[3] || 'snapshot.json'
 const mediaRoot = process.env.MEDIA_ROOT || '/home/claude/crtdh-cms-local/backend/media'
 
-const raw = fs.readFileSync(stub, 'utf8').replace(/https?:\/\/localhost:\d+\/media\//g, '/media/')
+const raw = fs.readFileSync(stub, 'utf8').replace(/https?:\/\/localhost:\d+\/media\//g, '/_media/')
 const snap = JSON.parse(raw)
 snap.schema_version = snap.schema_version || 1
 snap.snapshot_id = snap.snapshot_id || 'dev-stub'
 snap.published_at = snap.published_at || '2026-11-19T00:00:00Z'
 
 const media = {}
-for (const m of raw.matchAll(/"(\/media\/[^"]+)"/g)) {
+for (const m of raw.matchAll(/"(\/_media\/[^"]+)"/g)) {
   const url = m[1]
   if (media[url] || !/\.(jpe?g|png|gif|webp)$/i.test(url)) continue
-  const size = imageSize(path.join(mediaRoot, url.replace(/^\/media\//, '')))
-  if (size) media[url] = { source: url.replace(/^\/media\//, ''), ...size, variants: {} }
+  const size = imageSize(path.join(mediaRoot, url.replace(/^\/_media\//, '')))
+  if (size) media[url] = { source: url.replace(/^\/_media\//, ''), ...size, variants: {} }
 }
 snap.media = media
 
@@ -31,7 +31,7 @@ for (const [name, rows] of Object.entries(snap.collections)) {
   for (const row of rows) {
     for (const key of ['image', 'photo']) {
       const url = row[key]
-      if (typeof url === 'string' && url.startsWith('/media/') && /\.(jpe?g|png|gif|webp)$/i.test(url) && !media[url]) {
+      if (typeof url === 'string' && url.startsWith('/_media/') && /\.(jpe?g|png|gif|webp)$/i.test(url) && !media[url]) {
         console.warn(`warning: ${name} id ${row.id}: ${key} ${url} is missing on disk; row hidden`)
         if ('is_published' in row) row.is_published = false
         else row[key] = null

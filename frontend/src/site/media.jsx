@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-// The snapshot's `media` map: { "/media/<hash>.<ext>": { width, height, variants: { avif, webp }, lqip? } }
+// The snapshot's `media` map: { "/_media/<hash>.<ext>": { width, height, variants: { avif, webp }, lqip? } }
 const MediaContext = createContext({})
 
 export function MediaProvider({ media, children }) {
@@ -12,7 +12,7 @@ export function useMedia(src) {
   return (src && map && map[src]) || null
 }
 
-// Variants may be listed as URL strings ("/media/abc-800.avif") or as { url|src, width }.
+// Variants may be listed as URL strings ("/_media/abc-960.avif") or as { url|src, width }.
 function toSrcset(list) {
   if (!Array.isArray(list) || list.length === 0) return null
   const parts = list

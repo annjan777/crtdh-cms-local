@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Static preview of build/client that behaves like the CIC host: directory index.html,
-// /media/* from MEDIA_ROOT, unknown paths → 404.html with status 404.
+// /_media/* from MEDIA_ROOT, unknown paths → 404.html with status 404.
 // Usage: PORT=3100 MEDIA_ROOT=../backend/media node scripts/serve.mjs
 import fs from 'node:fs'
 import http from 'node:http'
@@ -18,8 +18,8 @@ const types = {
 
 function resolve(urlPath) {
   const clean = decodeURIComponent(urlPath.split('?')[0])
-  if (clean.startsWith('/media/')) {
-    const f = path.join(mediaRoot, clean.slice('/media/'.length))
+  if (clean.startsWith('/_media/')) {
+    const f = path.join(mediaRoot, clean.slice('/_media/'.length))
     return f.startsWith(mediaRoot) ? f : null
   }
   let f = path.join(root, clean)
@@ -40,4 +40,4 @@ http
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' })
     fs.createReadStream(path.join(root, '404.html')).pipe(res)
   })
-  .listen(port, () => console.log(`serving ${root} (+ /media from ${mediaRoot}) on http://localhost:${port}`))
+  .listen(port, () => console.log(`serving ${root} (+ /_media from ${mediaRoot}) on http://localhost:${port}`))

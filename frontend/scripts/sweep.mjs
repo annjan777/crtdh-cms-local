@@ -2,7 +2,7 @@
 // Placeholder and broken-content sweep over the built site (PLAN WS2.11). Non-zero exit on any finding.
 // Checks every built HTML page for: Lorem / TODO / sample / placeholder text, unfilled [placeholders],
 // empty headings, images without alt, images that do not exist, internal links (and #anchors) to
-// pages or ids that do not exist. MEDIA_ROOT: where /media/* files live for the check (optional).
+// pages or ids that do not exist. MEDIA_ROOT: where /_media/* files live for the check (optional).
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -46,9 +46,9 @@ function visibleText(html) {
 
 function fileExists(urlPath) {
   const clean = decodeURIComponent(urlPath.split(/[?#]/)[0])
-  if (clean.startsWith('/media/')) {
+  if (clean.startsWith('/_media/')) {
     if (!mediaRoot) return true // media ships separately; checked only when MEDIA_ROOT is given
-    return fs.existsSync(path.join(mediaRoot, clean.slice(7)))
+    return fs.existsSync(path.join(mediaRoot, clean.slice(8)))
   }
   return fs.existsSync(path.join(out, clean))
 }

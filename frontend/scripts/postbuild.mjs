@@ -91,7 +91,7 @@ DirectorySlash On
   </FilesMatch>
 </IfModule>
 <IfModule mod_headers.c>
-  SetEnvIf Request_URI "^/(assets|media)/" LONG_CACHE
+  SetEnvIf Request_URI "^/(assets|_media)/" LONG_CACHE
   Header set Cache-Control "public, max-age=31536000, immutable" env=LONG_CACHE
 </IfModule>
 
