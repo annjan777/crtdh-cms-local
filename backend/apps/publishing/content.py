@@ -9,9 +9,9 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from . import audit, registry
 from apps.common.versioning import StaleWrite
 
+from . import audit, registry
 from .errors import CMSError, with_extra
 
 
@@ -123,7 +123,7 @@ def _require_complete(resource, obj):
         name = fd["name"]
         try:
             mf = model._meta.get_field(name)
-        except Exception:  # noqa: BLE001 - registry-only field
+        except Exception:  # noqa: BLE001, S112 - registry-only field
             continue
         required = fd.get("required", not (mf.blank or mf.null or mf.has_default()))
         value = getattr(obj, mf.attname, None)
