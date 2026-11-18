@@ -111,7 +111,7 @@ def fetch_image_bytes(
         raise _blocked("Links with a user name or password in them are not fetched.")
     host = (parts.hostname or "").lower()
     try:
-        port = parts.port or 443
+        port = parts.port if parts.port is not None else 443
     except ValueError:
         raise _blocked("That URL has an invalid port.") from None
     if not host or port != 443:
