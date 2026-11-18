@@ -130,3 +130,13 @@ def test_django_admin_writable_when_setting_off(client, superuser, settings):
     settings.DJANGO_ADMIN_READONLY = False
     client.force_login(superuser)
     assert client.get("/admin/carousel/heroslide/add/").status_code == 200
+
+
+def test_public_contact_post_still_works(api):
+    resp = api.post("/api/v1/contact/", {"name": "Visitor", "email": "v@example.test", "message": "Hello"}, format="json")
+    assert resp.status_code == 201
+
+
+def test_public_reads_need_auth_now(api, content):
+    for url in ("/api/v1/hero-slides/", "/api/v1/site-settings/", "/api/v1/cms/pages/"):
+        assert api.get(url).status_code == 401

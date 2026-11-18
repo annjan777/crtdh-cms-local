@@ -129,6 +129,18 @@ def test_only_new_media_after_a_live_publish(content, publish_env, publisher, me
     assert len(manifest["media"]) == 2 * per_image and len(manifest["media_included"]) == per_image
 
 
+def test_baseline_media_is_still_shipped(content, publish_env, publisher, media_root, baseline):
+    from apps.facilities.models import Equipment
+    image_file(media_root / "equipment" / "a.jpg", 600, 400)
+    Equipment.objects.filter(pk=Equipment.objects.first().pk).update(image="equipment/a.jpg")
+    from django.core.management import call_command
+    call_command("create_baseline_snapshot", "--force", stdout=open("/dev/null", "w"))  # baseline now has the photo
+    p = built(publisher)
+    with tarfile.open(p.tarball_path) as tar:
+        manifest = json.loads(tar.extractfile("manifest.json").read())
+    assert manifest["media_included"] == manifest["media"] and manifest["media"]
+
+
 def test_same_snapshot_builds_byte_identical_tarball(content, publish_env, publisher):
     p = built(publisher)
     first = open(p.tarball_path, "rb").read()

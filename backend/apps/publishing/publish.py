@@ -156,7 +156,10 @@ def build(p):
     run_frontend_build(snapshot_path, out_dir, build_dir / "build.log")
 
     _set(p, step="pack")
-    prev_files = set(_media_files(prev.data)) if prev else set()
+    # Only media that an earlier publish actually uploaded can be skipped (a baseline snapshot was never uploaded).
+    uploaded = (Snapshot.objects.filter(publishes__status=Publish.LIVE).exclude(pk=snap.pk)
+                .order_by("-published_at", "-id").first())
+    prev_files = set(_media_files(uploaded.data)) if uploaded else set()
     tar_path = publish_root() / "tarballs" / f"crtdh-site-{data['snapshot_id']}.tar.gz"
     sha = pack_tarball(tar_path, site_dir=out_dir, media_dir=media_store(), media_all=files,
                        media_new=[f for f in files if f not in prev_files], snapshot_id=data["snapshot_id"],
