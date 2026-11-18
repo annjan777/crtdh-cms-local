@@ -114,9 +114,11 @@ def test_upload_reencodes_polyglot(client, editor, content, media_root):
     resp = client.post(f"/api/v1/cms/upload/{link['token']}/",
                        {"file": SimpleUploadedFile("p.jpg", polyglot_jpeg_html(), content_type="image/jpeg")},
                        HTTP_ACCEPT="application/json")
-    assert resp.status_code == 201
-    stored = MediaAsset.objects.get(pk=resp.json()["media_id"]).file.read()
-    assert b"<script" not in stored
+    # apps.common.images (backend-security) rejects polyglots outright rather than re-encoding them.
+    assert_contract_error(resp, "CMS_VALIDATION")
+    assert not MediaAsset.objects.exists()
+    from apps.publishing.uploads import link_status
+    assert link_status(link["token"])["used"] is False
 
 
 def test_upload_link_expired_or_unknown(client, editor, content, settings):

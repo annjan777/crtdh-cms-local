@@ -56,7 +56,15 @@ def process_upload(file, min_width=0):
         from apps.common.images import process_upload as real  # backend-security
     except ImportError:
         return _fallback_process_upload(file, min_width)
-    result = real(file, min_width)
+    result = real(file, min_width or None, kind="image")
+    if hasattr(result, "path") and hasattr(result, "sha256"):  # apps.common.images.ProcessedImage
+        # The re-encoded temp file is ours: read it into storage-ready content and remove it.
+        try:
+            with open(result.path, "rb") as fh:
+                body = fh.read()
+        finally:
+            Path(result.path).unlink(missing_ok=True)
+        return ContentFile(body, name=f"{result.sha256[:16]}.{result.ext}"), result.width, result.height
     if isinstance(result, tuple):
         return result
     if isinstance(result, dict):
