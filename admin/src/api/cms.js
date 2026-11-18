@@ -1,5 +1,5 @@
-// One function per contract §3 endpoint the admin uses. Paths marked
-// "assumed" are not in the contract yet and were sent to the lead.
+// One function per contract §3 endpoint the admin uses. Extras are from
+// team/CONTRACT-ADDENDUM-1.md (A1-A9).
 
 import { api } from './client.js';
 
@@ -11,9 +11,9 @@ export const auth = {
   login: (username, password) => api.post('/auth/login/', { username, password }),
   mfa: (code) => api.post('/auth/mfa/', { code }),
   logout: () => api.post('/auth/logout/', {}),
-  // assumed: MFA enrolment for a first sign-in
-  mfaSetup: () => api.get('/auth/mfa/setup/'),
-  mfaConfirm: (code) => api.post('/auth/mfa/setup/', { code }),
+  // Addendum A6: enrolment for a first sign-in
+  mfaSetup: () => api.post('/auth/mfa/enrol/', {}),
+  mfaConfirm: (code) => api.post('/auth/mfa/enrol/confirm/', { code }),
 };
 
 export const cms = {
@@ -46,7 +46,7 @@ export const content = {
   list: (resource) => api.get(`/${resource}/`),
 };
 
-// assumed: user management (admin role)
+// Addendum A7: user management (admin role)
 export const users = {
   list: () => api.get('/users/'),
   create: (values) => api.post('/users/', values),

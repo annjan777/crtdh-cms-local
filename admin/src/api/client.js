@@ -46,7 +46,7 @@ export function ensureCsrf(force = false) {
 }
 
 const SAFE = new Set(['GET', 'HEAD', 'OPTIONS']);
-const AUTH_PATHS = ['/auth/login/', '/auth/mfa/', '/auth/me/', '/auth/csrf/', '/auth/mfa/setup/'];
+const AUTH_PATHS = ['/auth/login/', '/auth/mfa/', '/auth/me/', '/auth/csrf/', '/auth/mfa/enrol/'];
 
 async function rawRequest(method, path, { body, form } = {}) {
   const send = await getTransport();

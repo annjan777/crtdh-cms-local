@@ -540,10 +540,10 @@ async function route(method, path, body) {
     setCsrfCookie();
     return json(200, me(db.users.find((u) => u.id === s.userId)));
   }
-  if (path === '/auth/mfa/setup/') {
+  if (path === '/auth/mfa/enrol/' || path === '/auth/mfa/enrol/confirm/') {
     if (!s || s.stage !== 'setup') return fail(401, 'CMS_UNAUTHENTICATED', 'Your sign-in timed out.', 'Sign in again.');
     const u = db.users.find((x) => x.id === s.userId);
-    if (method === 'GET') return json(200, { otpauth_uri: `otpauth://totp/CRTDH%20CMS:${u.username}?secret=JBSWY3DPEHPK3PXP&issuer=CRTDH%20CMS`, secret: 'JBSWY3DPEHPK3PXP' });
+    if (path === '/auth/mfa/enrol/') return json(200, { qr_svg: null, otpauth_uri: `otpauth://totp/CRTDH%20CMS:${u.username}?secret=JBSWY3DPEHPK3PXP&issuer=CRTDH%20CMS`, secret: 'JBSWY3DPEHPK3PXP' });
     const code = String(body.data?.code || '').replace(/\s/g, '');
     if (code !== TEST_CODE) return fail(400, 'CMS_VALIDATION', 'That code didn’t match.', 'Check the app shows “CRTDH CMS”, then enter its newest code.', { field: 'code' });
     u.mfa_enrolled = true;
@@ -616,7 +616,7 @@ async function route(method, path, body) {
     const shrink = shrinkCheck();
     if (shrink && !body.data?.confirm_shrink) {
       const label = shrink.resource.replace(/-/g, ' ');
-      return fail(422, 'CMS_BUILD_GUARD', `The ${label} list would shrink from ${shrink.before} to ${shrink.after} items.`, 'Check this is intended, then confirm to publish anyway.', shrink);
+      return fail(422, 'CMS_BUILD_GUARD', `The ${label} list would shrink from ${shrink.before} to ${shrink.after} items.`, 'Check this is intended, then confirm to publish anyway.', { details: [shrink] });
     }
     const id = db.nextPublish++;
     db.publishes[id] = { id, created: Date.now(), by: user.name, count: computeChanges().count, fail: db.flags.failNext };

@@ -213,7 +213,8 @@ function Enrol() {
       .mfaSetup()
       .then(async (s) => {
         setSetup(s);
-        setQr(await QRCode.toDataURL(s.otpauth_uri, { margin: 1, width: 176, color: { dark: '#16202a', light: '#ffffff' } }));
+        // Server-drawn QR when given (A6), else drawn here from the otpauth URI.
+        setQr(s.qr_svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s.qr_svg)}` : await QRCode.toDataURL(s.otpauth_uri, { margin: 1, width: 176, color: { dark: '#16202a', light: '#ffffff' } }));
       })
       .catch((err) => (err.code === 'CMS_UNAUTHENTICATED' ? setStatus('signed-out') : setError(`${err.message} ${err.fix}`)));
   }, [setStatus]);
