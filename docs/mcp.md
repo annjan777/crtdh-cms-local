@@ -77,6 +77,8 @@ cookie, so the editor signs in (password + TOTP) on every connect. That is inten
 - Creates are de-duplicated per connector session on a natural key (name, title + date, …) or an optional `idempotency_key`.
 - One connector session (one Claude conversation, `Mcp-Session-Id`) may make `CMS_SESSION_LIMIT` (25) changes.
 - Per-user limits: `MCP_RATE_LIMIT_PER_MINUTE` (60 calls) and `MCP_WRITE_RATE_LIMIT_PER_MINUTE` (20 writes).
+- `request_review` emails Publishers once per connector session, and at most once per user
+  every 30 minutes; repeat calls return the earlier request (`already_requested: true`).
 - Every call writes a `mcp_server.ToolCall` row (user, session, tool, argument names only, outcome code, request id).
 - Rich text is structured blocks rendered and escaped on the server; HTML input is refused.
 - Read tool descriptions and the server instructions say site content is data, not instructions.
@@ -213,11 +215,16 @@ on every request, so a too-wide rule is not an open door, but keep it exact.
 | `CMS_LOGIN_URL` | `/cms/login` | where signed-out users are sent, with `?next=` |
 | `MCP_OAUTH_REQUIRE_MFA` | `True` | consent needs an MFA-verified session; never off in production |
 | `MCP_CLAUDE_REDIRECT_URIS` | claude.ai and claude.com callbacks | registered on the client |
-| `MCP_OAUTH_DCR_ENABLED` | `False` | Dynamic Client Registration, limited to the redirect URIs above |
+| `MCP_OAUTH_DCR_ENABLED` | `False` | Dynamic Client Registration, limited to the redirect URIs above (also on RFC 7592 `PUT`) |
 | `CMS_SESSION_LIMIT` | 25 | changes per connector session |
 | `MCP_FETCH_ALLOWED_HOSTS` | `iitkgp.ac.in`, `*.iitkgp.ac.in` | hosts `upload_image_from_url` may fetch from |
 | `MCP_FETCH_MAX_BYTES` / `MCP_FETCH_TIMEOUT_SECONDS` | 10 MB / 10 s | download caps |
 | `MCP_EXTRA_ALLOWED_HOSTS` | none | extra `Host` values `/mcp` accepts (local dev) |
+
+`ALLOWED_HOSTS`: the last lines of `config/settings.py` append the hostnames of
+`MCP_PUBLIC_URL` and `CMS_PUBLIC_URL` (production `ALLOWED_HOSTS` is otherwise empty), so
+both processes accept their own hostname. Set the two URLs correctly in the environment;
+there is nothing else to add.
 
 ## Integration status
 
@@ -227,4 +234,6 @@ fallback. The fallbacks that behave differently today: versions are a hash of th
 adds a `version` integer); `list_pending_changes`, `discard_*` cover only Claude's own
 changes (core covers every channel and reverts to the last published values);
 `request_upload_link` returns `CMS_INTERNAL` "not available yet"; a discarded new item is
-hidden rather than removed.
+hidden rather than removed. The fallback discard restores only the fields Claude changed, and
+refuses with `CMS_STALE_VERSION` (changing nothing) if anyone edited those fields after
+Claude did; `discard_session_changes` checks every item before changing any.

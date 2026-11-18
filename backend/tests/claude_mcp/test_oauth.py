@@ -370,3 +370,59 @@ def test_create_claude_client_prints_secret_once():
     call_command("create_claude_client", "--rotate", stdout=out2)
     assert out2.getvalue().split("Client secret:")[1].split()[0] != secret
     assert Application.objects.filter(name="Claude").count() == 1
+
+
+# ---------------------------------------------------------------- review fixes (19 Nov)
+def test_dcr_client_cannot_put_its_redirect_uris_elsewhere(settings):
+    """Regression: DOT's RFC 7592 PUT skipped the registration permission check."""
+    import json
+
+    from oauth2_provider.settings import oauth2_settings
+
+    settings.MCP_OAUTH_DCR_ENABLED = True
+    settings.OAUTH2_PROVIDER = {**settings.OAUTH2_PROVIDER, "DCR_ENABLED": True}
+    oauth2_settings.reload()
+    try:
+        reg = Client().post("/oauth/register/", json.dumps({
+            "redirect_uris": [CALLBACK], "token_endpoint_auth_method": "none",
+            "grant_types": ["authorization_code", "refresh_token"], "client_name": "Claude"}),
+            content_type="application/json").json()
+        url = urlsplit(reg["registration_client_uri"]).path
+        auth = {"HTTP_AUTHORIZATION": f"Bearer {reg['registration_access_token']}"}
+        bad = Client().put(url, json.dumps({**reg, "redirect_uris": ["https://evil.example.com/cb"]}),
+                           content_type="application/json", **auth)
+        assert bad.status_code == 400 and bad.json()["error"] == "invalid_redirect_uri"
+        assert Application.objects.get(client_id=reg["client_id"]).redirect_uris == CALLBACK
+        assert Client().get(url, **auth).status_code == 200
+    finally:
+        settings.OAUTH2_PROVIDER = {**settings.OAUTH2_PROVIDER, "DCR_ENABLED": False}
+        oauth2_settings.reload()
+
+
+def test_consent_shows_client_name_and_redirect_host(editor, claude_app):
+    _, challenge = pkce()
+    html = signed_in(editor).get("/oauth/authorize/", authorize_params(claude_app, challenge)).content.decode()
+    assert "Requested by <strong>Claude</strong>" in html and "<strong>claude.ai</strong>" in html
+
+
+def test_revoke_user_id_is_normalised(editor, claude_app):
+    issue_token(editor, claude_app)
+    api = APIClient()
+    api.force_authenticate(editor)
+    assert api.post("/api/v1/cms/claude-access/revoke/", {"user_id": "abc"}, format="json").status_code == 400
+    resp = api.post("/api/v1/cms/claude-access/revoke/", {"user_id": str(editor.pk)}, format="json")
+    assert resp.status_code == 200 and resp.json()["user_id"] == editor.pk
+
+
+def test_mcp_and_cms_hosts_are_allowed_hosts():
+    import os
+    import subprocess
+    import sys
+
+    env = {**os.environ, "MCP_PUBLIC_URL": "https://mcp.example.org", "CMS_PUBLIC_URL": "https://cms.example.org:8443",
+           "ALLOWED_HOSTS": "internal.example.org", "DJANGO_SETTINGS_MODULE": "config.settings_test"}
+    out = subprocess.run([sys.executable, "-c", "import django; django.setup(); from django.conf import settings; "
+                          "print(','.join(settings.ALLOWED_HOSTS))"], env=env, capture_output=True, text=True,
+                         cwd=os.path.dirname(os.path.dirname(os.path.dirname(__file__))), check=True)
+    hosts = out.stdout.strip().split(",")
+    assert "mcp.example.org" in hosts and "cms.example.org" in hosts

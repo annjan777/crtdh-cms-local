@@ -359,3 +359,105 @@ async def test_request_upload_link_uses_core_when_present(asgi_app, editor, toke
         data = ok(await call(client, "request_upload_link", {}))
     assert data == {"upload_url": "https://cms.example.org/upload/one-time-abc", "expires_at": "2026-11-20T10:00:00Z"}
     assert seen["user"] == editor.pk and seen["ctx"]["channel"] == "mcp" and seen["ctx"]["connector_session"]
+
+
+# ---------------------------------------------------------------- review fixes (19 Nov)
+async def _claude_changes_designation(client):
+    m = await find_one(client, "Sharma")
+    return ok(await call(client, "update_team_member", {
+        "id": m["id"], "fields": {"designation": "Professor and Head"}, "expected_version": m["version"]}))
+
+
+@sync_to_async
+def human_edit(**fields):
+    from apps.team.models import TeamMember
+    TeamMember.objects.filter(name="Prof. Anil Sharma").update(**fields)
+
+
+@sync_to_async
+def sharma():
+    from apps.team.models import TeamMember
+    return TeamMember.objects.get(name="Prof. Anil Sharma")
+
+
+async def test_discard_restores_only_claudes_fields(asgi_app, token):
+    """Regression: discard used to restore the whole row from Claude's first write."""
+    await seed()
+    async with mcp_client(asgi_app, token) as client:
+        res = await _claude_changes_designation(client)
+        await human_edit(description="Added by Priya in the CMS")
+        ok(await call(client, "discard_change", {"id": res["id"]}))
+    row = await sharma()
+    assert row.designation == "Associate Professor" and row.description == "Added by Priya in the CMS"
+
+
+async def test_discard_refuses_when_someone_changed_claudes_field(asgi_app, token):
+    await seed()
+    async with mcp_client(asgi_app, token) as client:
+        res = await _claude_changes_designation(client)
+        await human_edit(designation="Dean (set in CMS)")
+        body = err(await call(client, "discard_change", {"id": res["id"]}), "CMS_STALE_VERSION")
+        assert body["side_effects"] == "none"
+        # the whole-session discard refuses too, and changes nothing else
+        ok(await call(client, "add_news_item", {"fields": {"text": "added by Claude"}}))
+        err(await call(client, "discard_session_changes", {}), "CMS_STALE_VERSION")
+    assert (await sharma()).designation == "Dean (set in CMS)"
+    from apps.core.models import NewsItem
+    assert await sync_to_async(NewsItem.objects.filter(text="added by Claude", ).count)() == 1
+
+
+async def test_discard_reorder_refuses_after_human_reorder(asgi_app, token):
+    data = await seed()
+    async with mcp_client(asgi_app, token) as client:
+        hero = next(s for s in ok(await call(client, "get_page", {"page": "home"}))["sections"] if s["id"] == "home.hero")
+        ids = [i["id"] for i in hero["items"]]
+        ok(await call(client, "reorder", {"section": "home.hero", "ids": list(reversed(ids))}))
+
+        @sync_to_async
+        def shuffle():
+            from apps.carousel.models import HeroSlide
+            HeroSlide.objects.filter(pk=data["slides"][0].pk).update(order=99)
+        await shuffle()
+        err(await call(client, "discard_change", {"id": "home.hero"}), "CMS_STALE_VERSION")
+
+
+async def test_request_review_emails_once_per_session(asgi_app, token):
+    """Regression: every call emailed all Publishers."""
+    await sync_to_async(make_user)("pub", role="publisher", email="pub@example.org")
+    mail.outbox.clear()
+    async with mcp_client(asgi_app, token) as client:
+        first = ok(await call(client, "request_review", {"note": "one"}))
+        second = ok(await call(client, "request_review", {"note": "two"}))
+        third = ok(await call(client, "request_review", {}))
+    assert first["notified"] == 1 and first["already_requested"] is False
+    assert second["already_requested"] is True and second["notified"] == 0 and third["already_requested"] is True
+    assert len(mail.outbox) == 1
+    # a new conversation within 30 minutes doesn't email again either
+    from mcp_server.app import build_app
+    async with mcp_client(build_app(), token) as client:
+        assert ok(await call(client, "request_review", {}))["already_requested"] is True
+    assert len(mail.outbox) == 1
+
+
+async def test_section_filter_keys_are_not_editable(asgi_app, token):
+    """Regression: `page` on ImageGridBlock could move a block to another page."""
+    @sync_to_async
+    def block():
+        from apps.common.models import ImageGridBlock
+        return ImageGridBlock.objects.create(page="social-impact", section_title="Camps").pk
+    pk = await block()
+    async with mcp_client(asgi_app, token) as client:
+        section = next(s for s in ok(await call(client, "get_page", {"page": "social-impact"}))["sections"]
+                       if s["id"] == "social-impact.grids")
+        assert "page" not in {f["name"] for f in section["fields"]}
+        item = section["items"][0]
+        assert err(await call(client, "update_section", {"id": item["id"], "fields": {"page": "home"},
+                                                         "expected_version": item["version"]}), "CMS_VALIDATION")["field"] == "page"
+        err(await call(client, "add_item", {"section": "social-impact.grids",
+                                            "fields": {"section_title": "x", "page": "home"}}), "CMS_VALIDATION")
+        res = ok(await call(client, "add_item", {"section": "social-impact.grids", "fields": {"section_title": "Covid camps"}}))
+
+    from apps.common.models import ImageGridBlock
+    assert await sync_to_async(lambda: ImageGridBlock.objects.get(pk=pk).page)() == "social-impact"
+    new_pk = int(res["id"].rsplit(":", 1)[1])
+    assert await sync_to_async(lambda: ImageGridBlock.objects.get(pk=new_pk).page)() == "social-impact"
