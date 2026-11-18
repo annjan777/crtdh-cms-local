@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 from django.db import models
 
 SAMPLE_SNAPSHOT_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sample_snapshot.json"
+FULL_SNAPSHOT_PATH = SAMPLE_SNAPSHOT_PATH.with_name("full_snapshot.json")  # copy of team/stub-snapshot.json
 SINGLETON_MODELS = {"site-settings": "core.SiteSettings", "about-page": "core.AboutPage", "home-page": "core.HomePage"}
 
 
