@@ -300,3 +300,20 @@ def test_secrets_never_logged(make_pub, cms, server):
     local = open(pub.cfg.local_state_file).read()
     assert SECRET not in local and pw not in local
     assert SECRET not in json.dumps(cms.statuses)
+
+
+def test_identical_requests_never_share_a_signature(make_cfg, cms, monkeypatch):
+    import publish_agent.cmsclient as cc
+    cfg = make_cfg()
+    client = CMSClient(cfg.cms_url, SECRET)
+    seen = []
+    real = cc.sign_request
+
+    def spy(*a, **k):
+        h = real(*a, **k)
+        seen.append(h["X-Agent-Signature"])
+        return h
+    monkeypatch.setattr(cc, "sign_request", spy)
+    client.next_job()
+    client.next_job()
+    assert len(set(seen)) == 2

@@ -64,6 +64,7 @@ class CMSClient:
         self.timeout = timeout
         register_secret(secret)
         self._origin = urllib.parse.urlsplit(self.base_url)[:2]
+        self._last_signed = None
 
     # ---- low level ---------------------------------------------------------
     def _url(self, path_or_url: str) -> str:
@@ -75,7 +76,15 @@ class CMSClient:
     def _request(self, method: str, path_or_url: str, body: bytes = b"", content_type: str | None = None):
         url = self._url(path_or_url)
         path = urllib.parse.urlsplit(url).path
-        headers = sign_request(self.secret, method, path, body)
+        # The CMS accepts each (timestamp, signature) pair once, so never send an identical request twice in a second.
+        ts = int(time.time())
+        key = (ts, method, path, hashlib.sha256(body).hexdigest())
+        if key == self._last_signed:
+            time.sleep(1.05)
+            ts = int(time.time())
+            key = (ts,) + key[1:]
+        self._last_signed = key
+        headers = sign_request(self.secret, method, path, body, ts)
         headers["User-Agent"] = f"crtdh-publish-agent/{__version__}"
         if content_type:
             headers["Content-Type"] = content_type
