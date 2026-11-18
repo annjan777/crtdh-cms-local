@@ -167,6 +167,7 @@ CORS_ALLOWED_ORIGINS = env.list(
 
 # Claude MCP server + OAuth authorization server (WS4) — see config/mcp_settings.py
 from .mcp_settings import *  # noqa: E402,F401,F403
-from .mcp_settings import MCP_INSTALLED_APPS  # noqa: E402
+from .mcp_settings import MCP_ALLOWED_HOSTS, MCP_INSTALLED_APPS  # noqa: E402
 
 INSTALLED_APPS += MCP_INSTALLED_APPS
+ALLOWED_HOSTS = [*ALLOWED_HOSTS, *(h for h in MCP_ALLOWED_HOSTS if h not in ALLOWED_HOSTS)]

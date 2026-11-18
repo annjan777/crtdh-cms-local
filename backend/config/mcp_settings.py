@@ -4,6 +4,8 @@ Imported at the end of config/settings.py. Everything here can be overridden wit
 environment variables of the same name. See docs/mcp.md.
 """
 
+from urllib.parse import urlsplit as _urlsplit
+
 import environ as _environ
 
 _env = _environ.Env()
@@ -22,6 +24,9 @@ MCP_INSTALLED_APPS = [
 #   in Anthropic's IP range and so cannot reach the MCP hostname.
 MCP_PUBLIC_URL = _env("MCP_PUBLIC_URL", default="http://localhost:8400").rstrip("/")
 CMS_PUBLIC_URL = _env("CMS_PUBLIC_URL", default="http://localhost:8000").rstrip("/")
+# Both hostnames must be in ALLOWED_HOSTS (production ALLOWED_HOSTS is empty by default);
+# config/settings.py appends these.
+MCP_ALLOWED_HOSTS = sorted({h for h in (_urlsplit(MCP_PUBLIC_URL).hostname, _urlsplit(CMS_PUBLIC_URL).hostname) if h})
 MCP_OAUTH_AUTHORIZE_URL = _env("MCP_OAUTH_AUTHORIZE_URL", default=f"{CMS_PUBLIC_URL}/oauth/authorize/")
 
 # Sign-in page of the CMS (backend-security). The authorize view sends signed-out users
