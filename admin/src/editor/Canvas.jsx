@@ -2,7 +2,9 @@
 // 1280 px desktop width scaled to fit, or a 390 px phone width.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-const WIDTH = { desktop: 1280, phone: 390 };
+// Desktop renders at a real desktop width between 1024 and 1280 px, scaled to
+// fit, so text stays readable on a 1280 px screen.
+const widthFor = (device, avail) => (device === 'phone' ? 390 : Math.max(1024, Math.min(1280, Math.round(avail))));
 
 export default function Canvas({ pageId, data, sections, selected, onSelect, device = 'desktop', interactive = true, title, fill = false }) {
   const frame = useRef(null);
@@ -14,7 +16,7 @@ export default function Canvas({ pageId, data, sections, selected, onSelect, dev
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
 
-  const width = WIDTH[device];
+  const width = widthFor(device, avail);
   const scale = device === 'desktop' ? Math.min(1, avail / width) : 1;
 
   useLayoutEffect(() => {

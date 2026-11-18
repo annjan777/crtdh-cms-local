@@ -34,7 +34,7 @@ function Row({ id, label, sublabel, thumb, hidden, selected, onSelect, reorderab
         </button>
       ) : null}
       <button type="button" className="item-select" aria-current={selected ? 'true' : undefined} onClick={onSelect}>
-        {thumb !== undefined ? <span className="thumb">{thumb ? <img src={thumb} alt="" loading="lazy" /> : null}</span> : null}
+        {thumb !== undefined ? <span className="thumb">{thumb ? <img src={thumb} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} /> : null}</span> : null}
         <span className="item-text">
           <span className="item-label">{label}</span>
           {sublabel ? <span className="item-sub">{sublabel}</span> : null}

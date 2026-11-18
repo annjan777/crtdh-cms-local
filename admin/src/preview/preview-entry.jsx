@@ -9,6 +9,7 @@ import SitePreview from './SitePreview.jsx';
 import { CmsPreviewContext } from './cms-context.js';
 
 const EDITOR_CSS = `
+html,body{margin:0}
 [data-cms-section]{position:relative;cursor:pointer;scroll-margin-top:24px}
 html.cms-interactive [data-cms-section]:hover,html.cms-interactive [data-cms-section]:focus-visible{outline:2px solid #2bb3b3;outline-offset:-2px}
 html.cms-interactive [data-cms-section]:focus-visible{outline:3px solid #137272}

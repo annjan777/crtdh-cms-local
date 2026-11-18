@@ -146,7 +146,7 @@ function Cards({ section, data }) {
                 {src ? <img src={src} alt="" loading="lazy" /> : section.fields.some((f) => f.type === 'image') ? <div className="s-ph" /> : null}
                 <h3>{titleOf(section, r) || strip(r.text)}</h3>
                 {sub && r[sub.name] ? <p className="s-meta">{r[sub.name]}</p> : null}
-                {r.designation ? <p className="s-meta">{r.designation}</p> : null}
+                {r.designation && sub?.name !== 'designation' ? <p className="s-meta">{r.designation}</p> : null}
                 {textField && r[textField.name] && !people ? <p className="s-clip">{strip(r[textField.name])}</p> : null}
               </article>
             );
