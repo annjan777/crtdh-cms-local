@@ -63,6 +63,59 @@ def _plain(data):
     return dict(data or {})
 
 
+def _truthy(value):
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes", "on")
+    return bool(value)
+
+
+def _next_order(model, data):
+    """New rows go to the end of their list (of their parent's list for child rows)."""
+    from django.db.models import Max
+
+    qs = model.objects.all()
+    for f in model._meta.concrete_fields:
+        if f.is_relation and f.name in data and data[f.name] not in (None, ""):
+            qs = qs.filter(**{f.attname: data[f.name]})
+        elif f.name == "page" and data.get("page"):
+            qs = qs.filter(page=data["page"])
+    top = qs.aggregate(m=Max("order"))["m"]
+    return 0 if top is None else top + 1
+
+
+def _default_parents(model, validated):
+    """A hidden draft without a required group (e.g. a team member's category) joins the first one; the editor
+    changes it in the form. No group exists at all -> CMS_VALIDATION."""
+    out = {}
+    for f in model._meta.concrete_fields:
+        if f.is_relation and not f.null and not f.has_default() and f.name not in validated:
+            rel = f.related_model
+            order = ["order", "id"] if any(x.name == "order" for x in rel._meta.concrete_fields) else ["id"]
+            first = rel.objects.order_by(*order).first()
+            if first is None:
+                raise CMSError("CMS_VALIDATION", f"Add a {rel._meta.verbose_name} first.", field=f.name)
+            out[f.name] = first
+    return out
+
+
+def _require_complete(resource, obj):
+    """A visible collection row must have every required field of its section (e.g. a hero slide's photo)."""
+    _page, view = registry.section_for(resource, obj)
+    model = registry.RESOURCES[resource].model_class
+    for fd in view["fields"]:
+        name = fd["name"]
+        try:
+            mf = model._meta.get_field(name)
+        except Exception:  # noqa: BLE001 - registry-only field
+            continue
+        required = fd.get("required", not (mf.blank or mf.null or mf.has_default()))
+        value = getattr(obj, mf.attname, None)
+        if required and (value is None or (hasattr(value, "name") and not value.name) or value == ""):
+            label = fd.get("label") or name.replace("_", " ")
+            raise CMSError("CMS_VALIDATION", f"Fill in “{label}” before showing this item on the site.", field=name,
+                           fix=f"Add the {label.lower()}, or keep the item hidden until it is ready.")
+
+
 def create_item(resource, data, *, ctx, serializer_class=None, context=None, section_id=None):
     """Create a row. Addendum A3: rows start hidden (is_published=false) unless the caller sets is_published.
 
@@ -85,12 +138,22 @@ def create_item(resource, data, *, ctx, serializer_class=None, context=None, sec
         for key, value in (view.get("filter") or {}).items():
             if "__" not in key:
                 data[key] = value
-    if registry.RESOURCES[resource].has_visibility and "is_published" not in data:
+    res = registry.RESOURCES[resource]
+    if res.has_visibility and "is_published" not in data:
         data["is_published"] = False
+    hidden = res.has_visibility and not _truthy(data.get("is_published"))
+    model = res.model_class
     with transaction.atomic():
-        ser = serializer_class(data=data, context=context or {})
+        if "order" not in data and any(f.name == "order" for f in model._meta.concrete_fields):
+            data["order"] = _next_order(model, data)
+        # A hidden draft may start empty (the admin's "Add" creates the row first, then the editor fills it in);
+        # required fields are enforced when the row is shown (see _require_complete).
+        ser = serializer_class(data=data, partial=hidden, context=context or {})
         ser.is_valid(raise_exception=True)
-        obj = ser.save()
+        extra = _default_parents(model, ser.validated_data) if hidden else {}
+        obj = ser.save(**extra)
+        if not hidden:
+            _require_complete(resource, obj)
         audit.record(ctx, "create", resource, obj.pk, None, audit.row_values(obj),
                      registry.item_id(resource, obj.pk, obj))
     return obj
@@ -110,6 +173,8 @@ def update_item(resource, pk, data, *, ctx, expected_version, partial=True, seri
         ser = serializer_class(obj, data=data, partial=partial, context=context or {})
         ser.is_valid(raise_exception=True)
         obj = ser.save()
+        if registry.RESOURCES[resource].has_visibility and obj.is_published:
+            _require_complete(resource, obj)  # raises -> the transaction rolls back, nothing is saved
         after = audit.row_values(obj)
         changed = [k for k in after if k != "version" and before.get(k) != after.get(k)]
         field = changed[0] if changed else None

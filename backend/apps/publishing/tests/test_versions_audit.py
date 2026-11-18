@@ -150,3 +150,25 @@ def test_attach_media_checks_min_width(content, editor, media_root):
     assert exc.value.code == "CMS_IMAGE_TOO_SMALL"
     obj = cms.attach_media("hero-slides", 18, "image", big.pk, ctx=ctx, expected_version=1)
     assert obj.image.name == big.file.name and obj.version == 2
+
+
+def test_reorder_one_child_list(api_as, content):
+    """The admin reorders one parent's photos at a time (addendum A9 body {order:[ids]})."""
+    from apps.innovations.models import Innovation, InnovationImage
+    parent, other = Innovation.objects.order_by("id")[:2]
+    for n in range(3 - parent.images.count()):
+        InnovationImage.objects.create(innovation=parent, image=f"innovation_images/p{n}.jpg", order=n)
+    if not other.images.exists():
+        InnovationImage.objects.create(innovation=other, image="innovation_images/o.jpg")
+    ids = list(parent.images.order_by("order", "id").values_list("id", flat=True))
+    client = api_as("editor")
+    resp = client.post("/api/v1/innovation-images/reorder/", {"order": list(reversed(ids))}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert list(parent.images.order_by("order", "id").values_list("id", flat=True)) == list(reversed(ids))
+    others = InnovationImage.objects.exclude(innovation=parent).values_list("id", flat=True)
+    if others:
+        mixed = [ids[0], others[0]]
+        assert_contract_error(client.post("/api/v1/innovation-images/reorder/", {"order": mixed}, format="json"),
+                              "CMS_VALIDATION", field="order")
+    assert_contract_error(client.post("/api/v1/innovation-images/reorder/", {"order": ids[:1]}, format="json"),
+                          "CMS_VALIDATION", field="order")

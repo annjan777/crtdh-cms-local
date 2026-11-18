@@ -166,3 +166,23 @@ def test_api_create_starts_hidden_unless_set(api_as, content):
     assert hidden.status_code == 201 and hidden.json()["is_published"] is False
     shown = client.post("/api/v1/news-items/", {"text": "Shown line", "order": 9, "is_published": True}, format="json")
     assert shown.status_code == 201 and shown.json()["is_published"] is True
+
+
+def test_admin_add_creates_empty_hidden_draft_then_requires_fields_to_show(api_as, content):
+    """The admin's "Add" posts only the parent/page and is_published=false; showing it needs the required fields."""
+    from apps.innovations.models import Innovation, InnovationImage
+    client = api_as("editor")
+    parent = Innovation.objects.order_by("id").first()
+    last = InnovationImage.objects.filter(innovation=parent).order_by("-order").first()
+    resp = client.post("/api/v1/innovation-images/", {"innovation": parent.pk, "is_published": False}, format="json")
+    assert resp.status_code == 201, resp.content
+    row = resp.json()
+    assert row["is_published"] is False and row["order"] == (last.order + 1 if last else 0)
+    show = client.patch(f"/api/v1/innovation-images/{row['id']}/", {"is_published": True, "expected_version": 1},
+                        format="json")
+    assert_contract_error(show, "CMS_VALIDATION", field="image")
+    assert InnovationImage.objects.get(pk=row["id"]).is_published is False
+    hero = client.post("/api/v1/hero-slides/", {"is_published": False}, format="json")
+    assert hero.status_code == 201
+    grid = client.post("/api/v1/image-grid-blocks/", {"page": "covid-19", "is_published": False}, format="json")
+    assert grid.status_code == 201 and grid.json()["page"] == "covid-19"
