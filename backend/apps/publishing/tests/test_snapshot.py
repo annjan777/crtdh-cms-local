@@ -188,3 +188,47 @@ def test_first_snapshot_reproduces_todays_content(settings):
     for name, want in stub["singletons"].items():
         for key, value in want.items():
             assert norm(snap["singletons"][name][key], snap["media"]) == norm(value, {}), (name, key)
+
+
+# ---- path traversal (review finding CRITICAL) ---------------------------------------------------------------------
+@pytest.mark.regression_critical
+def test_free_text_media_like_links_are_never_resolved(content, media_root, settings):
+    from apps.core.models import NavItem, NewsItem
+    secret = media_root.parent / ".env"
+    secret.write_text("SECRET_KEY=not-for-the-public")
+    (media_root / "nav").mkdir(parents=True, exist_ok=True)
+    image_file(media_root / "nav" / "real.jpg", 600, 400)
+    prefix = settings.MEDIA_URL
+    evil = [f"{prefix}../.env", f"{prefix}..%2F.env", f"{prefix}%2e%2e/.env", f"{prefix}nav/real.jpg"]
+    nav = NavItem.objects.first()
+    NavItem.objects.filter(pk=nav.pk).update(url=evil[0], is_published=True)
+    news = list(NewsItem.objects.all()[:3])
+    for item, url in zip(news, evil[1:], strict=True):
+        NewsItem.objects.filter(pk=item.pk).update(link_url=url, is_published=True)
+    snap = build_snapshot(now=NOW)
+    assert all("env" not in e["source"] and e["source"] != "nav/real.jpg" for e in snap["media"].values())
+    rows = {r["id"]: r for r in snap["collections"]["nav-items"]}
+    assert rows[nav.pk]["url"] == evil[0]  # free text stays free text
+    links = {r["id"]: r["link_url"] for r in snap["collections"]["news-items"]}
+    assert [links[i.pk] for i in news] == evil[1:]
+
+
+@pytest.mark.regression_critical
+@pytest.mark.parametrize("source", ["../.env", "a/../../.env", "/etc/passwd", "%2e%2e/.env", "a\\..\\x", ""])
+def test_safe_media_path_rejects_escapes(source, media_root):
+    from apps.publishing.snapshot import safe_media_path
+    assert safe_media_path(source) is None
+
+
+@pytest.mark.regression_critical
+def test_materialize_media_refuses_sources_outside_media_root(tmp_path, media_root):
+    from apps.publishing.errors import CMSError
+    from apps.publishing.publish import materialize_media
+    (media_root.parent / "db.sqlite3").write_bytes(b"data")
+    data = {"media": {"/_media/0123456789abcdef.sqlite3": {"source": "../db.sqlite3", "width": None, "height": None,
+                                                            "variants": {"avif": [], "webp": []}}}}
+    store = tmp_path / "store"
+    store.mkdir()
+    with pytest.raises(CMSError):
+        materialize_media(data, store)
+    assert not list(store.iterdir())

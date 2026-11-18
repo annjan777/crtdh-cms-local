@@ -11,7 +11,7 @@ from django.db import models, transaction
 from . import audit, registry
 from .errors import CMSError
 from .models import AuditEntry, Snapshot
-from .snapshot import _MediaRewriter, collect, queryset_for
+from .snapshot import _MediaRewriter, collect, queryset_for, safe_media_path
 
 LABEL_FIELDS = ("title", "name", "heading", "label", "text", "caption", "task", "year")
 IGNORED = {"id", "version"}
@@ -215,7 +215,10 @@ def _apply_row(obj, row, media_map, only=None):
             current = getattr(obj, name)
             if not value and current and not current.storage.exists(current.name):
                 continue  # missing on disk: published as "no file" already; keep the reference
-            setattr(obj, name, (media_map.get(value, {}) or {}).get("source", "") if value else "")
+            source = (media_map.get(value, {}) or {}).get("source", "") if value else ""
+            if source and safe_media_path(source) is None:
+                raise CMSError("CMS_VALIDATION", "A snapshot media entry points outside the media folder.", field=name)
+            setattr(obj, name, source)
         else:
             setattr(obj, name, field.to_python(value) if value is not None else None)
     if hasattr(obj, "is_published") and (only is None or "is_published" in only):

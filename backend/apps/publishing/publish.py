@@ -12,6 +12,7 @@ import io
 import json
 import logging
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -32,6 +33,7 @@ from .snapshot import (
     avif_supported,
     build_snapshot,
     canonical_json,
+    safe_media_path,
 )
 
 log = logging.getLogger(__name__)
@@ -197,10 +199,13 @@ def materialize_media(data, store):
     """Copy originals into the content-addressed store and render missing variants. Returns all file names."""
     from PIL import Image
 
-    media_root = Path(settings.MEDIA_ROOT)
     for key, entry in (data.get("media") or {}).items():
-        src = media_root / entry["source"]
+        src = safe_media_path(entry.get("source"))
+        if src is None:
+            raise CMSError("CMS_BUILD_GUARD", "A media entry points outside the media folder; publish again.")
         name = key.rsplit("/", 1)[1]
+        if not re.fullmatch(r"[0-9a-f]{16}\.[a-z0-9]+", name):
+            raise CMSError("CMS_BUILD_GUARD", "A media entry has an unexpected name; publish again.")
         dst = store / name
         if not dst.exists():
             if not src.is_file():
