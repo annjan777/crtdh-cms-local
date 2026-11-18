@@ -192,3 +192,15 @@ Surfaces by mode: **Home is persuasive** (one composition per section, no two ne
 | 19 Nov 2026 | Direction "split stage" | Photography is 500 px wide today; a half-width print is honest at that size, a full-bleed one is not |
 | 19 Nov 2026 | Three families allowed | Owner-approved; roles kept strict so it reads as one system |
 | 19 Nov 2026 | No eyebrows, even though the brief listed "section heading with eyebrow" | Eyebrows are the most common generated-page tell; wayfinding is done by the nav's current state and the H1 |
+
+## Inspector record (design-taste-frontend `inspect.mjs`, Home, 19 Nov 2026)
+
+Fixed: eyebrow above H1 on phones, footer statement over 36 px, grey intro text, tablet H1 at five lines.
+Open, with reason:
+- **Headline over two lines:** the H1 is the 44-character centre name; needs owner copy (content-gaps.md).
+- **Broken image:** YouTube posters from i.ytimg.com; frontend to serve thumbnails from /media.
+- **No dominant first-screen element / no footage:** the hero photographs are 500 px wide; a larger print would only show the blur. Revisit when the 2400 px shot list lands.
+Defended (owner decisions or functional):
+- Three typefaces; warm off-white ground; minimal motion (one hero moment, no section reveals) — all approved at the gate.
+- Hairlines on the header edge and on row lists (news, documents), and the dropdown's shadow (it floats).
+- "Edge text" and "side-scroll" at 768/390 are the closed mobile menu's panel, which is not rendered to the visitor.

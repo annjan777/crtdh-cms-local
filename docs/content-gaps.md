@@ -13,6 +13,7 @@ Found while planning every page against `team/stub-snapshot.json` (19 Nov 2026).
 - **About, PI desk:** the image is a promotional poster with clipart, not a photograph.
 
 ## Text
+- **Hero headline:** the H1 is the centre's full name (44 characters), which wraps to three lines at every width; a headline should fit two lines (about 32 characters). Suggested: H1 "Affordable healthcare technology" style line written by the owner, with the full name moved to the supporting sentence or kept in the header/footer. Owner's wording; the design does not invent it.
 - **Proof figures (Home, WS2.2):** devices in use, people screened, clinics running, MSMEs trained — each with a source and year. None exist in the CMS.
 - **PI's message (About):** `pi_desk_document` is null and there is no message text.
 - **Team:** `designation` is empty for all 9 members; `description` empty for all.
