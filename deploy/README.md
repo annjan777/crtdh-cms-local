@@ -12,6 +12,24 @@ Nothing publishes a host port. All traffic arrives through one Cloudflare Tunnel
 | `mcp.<domain>` | mcp: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | WAF: source IP in `160.79.104.0/21` only + OAuth |
 | `contact.<domain>` | gateway: only `POST /api/v1/contact/` | Turnstile, 5/min/IP in the app, WAF rate limit |
 
+### Network
+
+- `internal` (172.30.80.0/24, no internet) holds every container. The gateway (172.30.80.10) and
+  cloudflared (172.30.80.11) have fixed addresses; the app processes (`cms`, `mcp`) accept requests only
+  from those two (`REQUIRE_TRUSTED_PROXY`, `TRUSTED_PROXY_IPS`) and honour `CF-Connecting-IP` /
+  `X-Forwarded-Proto` only from them. Not publishing ports does not stop a process on the server from
+  reaching a container's bridge address directly; this check is what does. uvicorn runs with
+  `--no-proxy-headers` so the peer stays cloudflared's address.
+- `egress` (172.30.81.0/24, outbound only) is joined only by what must reach the internet: cloudflared
+  (Cloudflare edge), `cms` (Turnstile siteverify, SMTP), `mcp` (`upload_image_from_url`, SSRF-guarded),
+  `worker` (SMTP). `db`, `migrate`, `housekeeping` and `gateway` have no internet. If the lab requires
+  it, restrict `egress` further on the host firewall to 443 and the SMTP port.
+- If 172.30.80.0/24 or 172.30.81.0/24 clash with a lab network, change the subnets, the two
+  `ipv4_address` values and `TRUSTED_PROXY_IPS` together.
+- The gateway runs with a read-only root, all capabilities dropped except those nginx's master needs
+  to bind :80 and switch to the `nginx` user, and serves Django's collected static files at `/static/`
+  (the `migrate` job runs `collectstatic` into the `static_data` volume).
+
 ## 1. Configure
 
 ```bash

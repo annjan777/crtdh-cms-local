@@ -26,7 +26,8 @@ def secret_key_problem(key):
 
 def production_problems(*, debug, env_name, secret_key, allowed_hosts, cors_allow_all,
                         cors_origins, csrf_trusted_origins, database_engine, allow_sqlite,
-                        django_admin_enabled):
+                        django_admin_enabled, trust_cf_connecting_ip=False, trusted_proxy_ips=(),
+                        require_trusted_proxy=False):
     problems = []
     if debug and env_name == "production":
         problems.append("DEBUG is true while CRTDH_ENV=production")
@@ -49,6 +50,18 @@ def production_problems(*, debug, env_name, secret_key, allowed_hosts, cors_allo
             problems.append(f"origin {origin!r} is not https")
     if "sqlite" in database_engine and not allow_sqlite:
         problems.append("DATABASE_URL is sqlite (set ALLOW_SQLITE=1 only for tests)")
+    import ipaddress
+
+    for spec in trusted_proxy_ips:
+        try:
+            net = ipaddress.ip_network(spec.strip(), strict=False)
+        except ValueError:
+            problems.append(f"TRUSTED_PROXY_IPS entry {spec!r} is not an IP or CIDR")
+            continue
+        if net.prefixlen < (24 if net.version == 4 else 64):
+            problems.append(f"TRUSTED_PROXY_IPS entry {spec!r} is wider than one compose network")
+    if (trust_cf_connecting_ip or require_trusted_proxy) and not trusted_proxy_ips:
+        problems.append("TRUST_CF_CONNECTING_IP/REQUIRE_TRUSTED_PROXY need TRUSTED_PROXY_IPS (gateway + cloudflared)")
     if django_admin_enabled:
         problems.append("DJANGO_ADMIN_ENABLED is set; the Django admin bypasses MFA and must stay off in production")
     return problems

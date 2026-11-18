@@ -65,6 +65,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "apps.common.middleware.TrustedProxyMiddleware",
     "apps.common.middleware.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "apps.common.middleware.SecurityHeadersMiddleware",
@@ -156,9 +157,10 @@ CSRF_FAILURE_VIEW = "apps.common.errors.csrf_failure"
 
 # Transport and headers
 
-# Behind the Cloudflare tunnel, TLS ends at Cloudflare; cloudflared forwards
-# X-Forwarded-Proto. gunicorn is never published on a host port, so the header
-# cannot be forged by a client reaching it directly.
+# Behind the Cloudflare tunnel, TLS ends at Cloudflare; the gateway/cloudflared send
+# X-Forwarded-Proto. Not publishing a host port does NOT stop a process on the server
+# from reaching the container directly, so TrustedProxyMiddleware strips forwarding
+# headers from any peer outside TRUSTED_PROXY_IPS (and refuses it with REQUIRE_TRUSTED_PROXY).
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=IS_PRODUCTION)
 SECURE_HSTS_SECONDS = 31536000 if IS_PRODUCTION else 0
@@ -179,8 +181,13 @@ PERMISSIONS_POLICY = (
     "microphone=(), payment=(), usb=(), interest-cohort=()"
 )
 
-# Client IP: trust Cloudflare's CF-Connecting-IP only when the app is reachable
-# solely through the tunnel (deploy/docker-compose.yml). Never in dev.
+# Proxies: the TCP peers allowed to set forwarding headers (gateway nginx and cloudflared at fixed
+# addresses on the compose network, deploy/docker-compose.yml). IPs or CIDRs.
+TRUSTED_PROXY_IPS = env.list("TRUSTED_PROXY_IPS", default=[])
+# Refuse every request whose peer is not a trusted proxy (production compose sets this).
+REQUIRE_TRUSTED_PROXY = env.bool("REQUIRE_TRUSTED_PROXY", default=False)
+# Client IP: use Cloudflare's CF-Connecting-IP (lockout, throttles, logs) only when this is on and
+# the request came from a trusted proxy; otherwise the peer address. Never in dev.
 TRUST_CF_CONNECTING_IP = env.bool("TRUST_CF_CONNECTING_IP", default=False)
 
 
@@ -279,6 +286,9 @@ _problems = production_problems(
     database_engine=DATABASES["default"]["ENGINE"],
     allow_sqlite=ALLOW_SQLITE,
     django_admin_enabled=DJANGO_ADMIN_ENABLED,
+    trust_cf_connecting_ip=TRUST_CF_CONNECTING_IP,
+    trusted_proxy_ips=TRUSTED_PROXY_IPS,
+    require_trusted_proxy=REQUIRE_TRUSTED_PROXY,
 )
 if _problems:
     raise ImproperlyConfigured("Refusing to start with unsafe production settings: " + "; ".join(_problems))

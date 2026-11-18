@@ -42,6 +42,17 @@ server {
         proxy_set_header X-Forwarded-Proto https;
     }
 
+    # Django's collected static files (OAuth consent page CSS, etc.): written by the migrate job's
+    # collectstatic into the static_data volume, mounted read-only here.
+    location /static/ {
+        alias /srv/static/;
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=3600" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Content-Security-Policy "default-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; frame-ancestors 'none'" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+
     # The Django admin is never exposed.
     location /admin/ { return 404; }
 
