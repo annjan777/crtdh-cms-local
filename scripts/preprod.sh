@@ -124,7 +124,10 @@ up() {
   $PY manage.py createcachetable  # prod uses the DB cache (throttles, lockout); missing in the first rehearsal
   $PY manage.py collectstatic --noinput -v0 >/dev/null 2>&1 || true
   cp -r "$REPO/backend/seed_media/." "$MEDIA_ROOT/" 2>/dev/null || true
-  $PY manage.py shell -c "from tests.support.content import *; load_snapshot_into_db(FULL_SNAPSHOT_PATH)"
+  if [ ! -f "$ST/seeded" ]; then  # `up` after `down` keeps the database: seed once
+    $PY manage.py shell -c "from tests.support.content import *; load_snapshot_into_db(FULL_SNAPSHOT_PATH)"
+    touch "$ST/seeded"
+  fi
   $PY manage.py seed_test_users --rehearsal | tail -1 > "$ST/users.json"; chmod 600 "$ST/users.json"
   $PY manage.py create_baseline_snapshot >/dev/null 2>&1 || log "no baseline snapshot command result (ok on first run)"
 

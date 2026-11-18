@@ -1,0 +1,106 @@
+# Project rules for semgrep (offline; run by scripts/security/semgrep.sh next to the registry packs).
+# Each rule names the CRTDH boundary it protects. Reviewed exceptions: `# nosemgrep: <rule-id>` + reason.
+rules:
+  - id: crtdh-no-mark-safe
+    languages: [python]
+    severity: ERROR
+    message: mark_safe / format_html with unescaped input can store XSS in the CMS. Escape, or justify with nosemgrep.
+    pattern-either:
+      - pattern: django.utils.safestring.mark_safe(...)
+      - pattern: mark_safe(...)
+    paths: {exclude: ["**/tests/**", "**/migrations/**"]}
+
+  - id: crtdh-no-dangerously-set-inner-html
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: dangerouslySetInnerHTML renders CMS/agent-written text as HTML (stored XSS on the public site / admin).
+    pattern: <$EL dangerouslySetInnerHTML={...} />
+    paths: {exclude: ["**/node_modules/**", "**/build/**", "**/dist/**"]}
+
+  - id: crtdh-csrf-exempt-only-agent-contact
+    languages: [python]
+    severity: ERROR
+    message: csrf_exempt is allowed only on HMAC-authenticated agent endpoints and the public contact relay.
+    pattern-either:
+      - pattern: |
+          @csrf_exempt
+          def $F(...): ...
+      - pattern: csrf_exempt(...)
+    paths:
+      exclude: ["**/tests/**", "**/apps/publishing/agent*.py", "**/apps/publishing/views.py", "**/apps/contact/**"]
+
+  - id: crtdh-allowany-outside-public
+    languages: [python]
+    severity: WARNING
+    message: AllowAny on a CMS endpoint. Every content endpoint needs auth (RBAC matrix); only auth/csrf, contact and agent (HMAC) are public.
+    pattern-either:
+      - pattern: permission_classes = [..., AllowAny, ...]
+      - pattern: "@permission_classes([..., AllowAny, ...])"
+    paths: {exclude: ["**/tests/**", "**/apps/accounts/**", "**/apps/contact/**"]}
+
+  - id: crtdh-no-shell-true
+    languages: [python]
+    severity: ERROR
+    message: subprocess with shell=True (command injection). Pass an argument list.
+    pattern: subprocess.$F(..., shell=True, ...)
+
+  - id: crtdh-requests-without-timeout
+    languages: [python]
+    severity: WARNING
+    message: outbound HTTP without a timeout can hang a worker (publish worker, MCP fetch, Turnstile).
+    pattern-either:
+      - pattern: requests.$M(...)
+      - pattern: httpx.$M(...)
+    pattern-not: $X.$M(..., timeout=$T, ...)
+    paths: {exclude: ["**/tests/**"]}
+
+  - id: crtdh-mcp-fetch-only-in-fetch-module
+    languages: [python]
+    severity: ERROR
+    message: MCP server must fetch remote URLs only through mcp_server/fetch.py (SSRF guard, no redirects, size/time caps).
+    pattern-either:
+      - pattern: urllib.request.urlopen(...)
+      - pattern: requests.$M(...)
+      - pattern: httpx.$M(...)
+      - pattern: httpx.Client(...)
+      - pattern: httpx.AsyncClient(...)
+    paths:
+      include: ["**/mcp_server/**"]
+      exclude: ["**/mcp_server/fetch.py", "**/mcp_server/evals/**", "**/tests/**"]
+
+  - id: crtdh-no-raw-sql
+    languages: [python]
+    severity: WARNING
+    message: raw SQL / .extra() bypasses the ORM's parameterisation. Use the ORM or params=.
+    pattern-either:
+      - pattern: $M.objects.raw(...)
+      - pattern: $QS.extra(...)
+      - pattern: $CURSOR.execute(f"...", ...)
+      - pattern: $CURSOR.execute("..." % ..., ...)
+    paths: {exclude: ["**/tests/**", "**/migrations/**"]}
+
+  - id: crtdh-no-tls-verify-off
+    languages: [python]
+    severity: ERROR
+    message: TLS verification disabled.
+    pattern-either:
+      - pattern: requests.$M(..., verify=False, ...)
+      - pattern: httpx.$M(..., verify=False, ...)
+      - pattern: ssl._create_unverified_context(...)
+      - pattern: $CTX.check_hostname = False
+
+  - id: crtdh-paramiko-autoadd
+    languages: [python]
+    severity: ERROR
+    message: the publish agent must pin the CIC host key (known_hosts); never auto-accept unknown host keys.
+    pattern-either:
+      - pattern: $C.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+      - pattern: $C.set_missing_host_key_policy(paramiko.WarningPolicy())
+    paths: {exclude: ["**/tests/**"]}
+
+  - id: crtdh-debug-true
+    languages: [python]
+    severity: ERROR
+    message: DEBUG hard-coded True in settings (production must fail closed).
+    pattern: DEBUG = True
+    paths: {include: ["**/config/settings*.py"], exclude: ["**/config/settings_test.py"]}
