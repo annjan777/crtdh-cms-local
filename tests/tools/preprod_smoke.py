@@ -24,11 +24,20 @@ def check(name, ok, detail=""):
         FAILS.append(name)
 
 
+def _trust(state):
+    import ssl
+    ca = state / "tls" / "cert.pem"
+    if ca.exists():
+        os.environ["E2E_CA_FILE"] = str(ca)
+        urllib.request.install_opener(urllib.request.build_opener(
+            urllib.request.HTTPSHandler(context=ssl.create_default_context(cafile=str(ca)))))
+
+
 class S:  # minimal Stack stand-in for api_session
     def __init__(self, state):
         env = dict(l.split("=", 1) for l in (state / "env").read_text().splitlines() if "=" in l and not l.startswith("#"))
-        self.api = "http://localhost:8600"
-        self.admin = "http://localhost:3600"
+        self.api = "https://localhost:8600"
+        self.admin = "https://localhost:3600"
         self.password = env["CRTDH_TEST_PASSWORD"]
         self.users = json.loads((state / "users.json").read_text())
 
@@ -36,11 +45,12 @@ class S:  # minimal Stack stand-in for api_session
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--state", default=".preprod")
-    ap.add_argument("--site", default="http://localhost:3601")
-    ap.add_argument("--mcp", default="http://localhost:8601/mcp")
+    ap.add_argument("--site", default="https://localhost:3601")
+    ap.add_argument("--mcp", default="https://localhost:8601/mcp")
     ap.add_argument("--timeout", type=int, default=900)
     a = ap.parse_args()
     state = Path(a.state)
+    _trust(state)
     st = S(state)
 
     # 1. production posture
@@ -68,6 +78,10 @@ def main():
     check("publisher signs in (password + TOTP)", s == 200 and "publisher" in (me or {}).get("roles", []), f"{s} {me}")
     s, slides = call("GET", "/api/v1/hero-slides/")
     rows = slides.get("results", slides) if isinstance(slides, dict) else slides
+    if s != 200 or not isinstance(rows, list):
+        check("list hero slides", False, f"{s} {str(slides)[:200]}")
+        print("\nSMOKE FAILED: " + ", ".join(FAILS))
+        return 1
     slide = next(r for r in rows if r.get("is_published"))
     marker = f"Preprod smoke {int(time.time())}"
     s, body = call("PATCH", f"/api/v1/hero-slides/{slide['id']}/", {"heading": marker, "expected_version": slide["version"]})

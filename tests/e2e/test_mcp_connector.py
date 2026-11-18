@@ -3,8 +3,8 @@
 
 Simulates the claude.ai connector: the OAuth authorize step runs in a real browser (CMS sign-in + TOTP +
 consent), the token exchange and MCP JSON-RPC calls are plain HTTP, like Anthropic's cloud would make.
-MCP server: E2E_MCP_URL (default http://localhost:8600/mcp; the MCP ASGI app may be mounted on its own
-port in preprod — set E2E_MCP_URL=http://localhost:8601/mcp there). OAuth client: E2E_OAUTH_CLIENT_ID/SECRET.
+MCP server: E2E_MCP_URL (default https://localhost:8600/mcp; the MCP ASGI app may be mounted on its own
+port in preprod — set E2E_MCP_URL=https://localhost:8601/mcp there). OAuth client: E2E_OAUTH_CLIENT_ID/SECRET.
 """
 import base64
 import hashlib
@@ -94,7 +94,7 @@ def oauth_token(browser, stack, mcp_url, username="erin_editor"):
     q = urllib.parse.urlencode({"response_type": "code", "client_id": client_id, "redirect_uri": REDIRECT,
                                 "code_challenge": challenge, "code_challenge_method": "S256", "state": state,
                                 "resource": mcp_url, "scope": meta.get("scopes_supported", ["drafts"])[0]})
-    ctx = browser.new_context()
+    ctx = browser.new_context(ignore_https_errors=True)
     page = ctx.new_page()
     captured = {}
     page.route(re.compile(r"^https://claude\.ai/.*"), lambda route: (captured.update(url=route.request.url), route.abort()))
@@ -105,8 +105,8 @@ def oauth_token(browser, stack, mcp_url, username="erin_editor"):
     page.get_by_role("button", name=re.compile("sign in|log in", re.I)).click()
     secret = stack.users.get(username, {}).get("totp_secret")
     assert secret, "TOTP must be required inside the authorize step (seed_test_users needs mfa.enroll_totp_for_test)"
-    import pyotp
-    page.get_by_label(re.compile("code", re.I)).fill(pyotp.TOTP(secret).now())
+    from helpers import totp_now
+    page.get_by_label(re.compile("code", re.I)).fill(totp_now(secret))
     page.get_by_role("button", name=re.compile("verify|continue", re.I)).click()
     consent = page.get_by_text(re.compile(r"Allow Claude to edit drafts as", re.I))
     consent.wait_for()
@@ -172,7 +172,7 @@ def test_upload_link_then_add_hero_slide(mcp, browser, tmp_path):
     link = mcp.tool("request_upload_link")["structuredContent"]
     img = tmp_path / "hero2400.jpg"
     img.write_bytes(make_image_bytes(2400, 1350))
-    ctx = browser.new_context()
+    ctx = browser.new_context(ignore_https_errors=True)
     p = ctx.new_page()
     p.goto(link["url"])
     p.locator("input[type=file]").set_input_files(str(img))

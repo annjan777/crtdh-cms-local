@@ -21,6 +21,26 @@ USERS = [
 ]
 
 
+def _enroll_via_public_api(mfa):
+    """Enrol TOTP with backend-security's own start/confirm functions. Confirms with the *previous* 30 s
+    step so the current step stays unused for the first sign-in (the server refuses step reuse)."""
+    if not (hasattr(mfa, "start_enrolment") and hasattr(mfa, "confirm_enrolment")):
+        return None
+
+    def enroll(user):
+        import time
+
+        import pyotp
+        if hasattr(mfa, "reset"):
+            mfa.reset(user)
+        secret = mfa.start_enrolment(user)["secret"]
+        if mfa.confirm_enrolment(user, pyotp.TOTP(secret).at(time.time() - 30)) is None:
+            raise CommandError(f"could not confirm TOTP for {user.username}")
+        return secret
+
+    return enroll
+
+
 class Command(BaseCommand):
     help = "Create test users editor/publisher/admin (dev/test only; needs CRTDH_ALLOW_TEST_SEED=1)."
 
@@ -43,8 +63,8 @@ class Command(BaseCommand):
         if not opts["no_mfa"]:
             try:
                 from apps.accounts import mfa  # provided by backend-security
-                enroll = getattr(mfa, "enroll_totp_for_test", None)
-            except Exception:
+                enroll = getattr(mfa, "enroll_totp_for_test", None) or _enroll_via_public_api(mfa)
+            except ImportError:
                 enroll = None
         out = {}
         User = get_user_model()

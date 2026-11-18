@@ -16,9 +16,10 @@
 #   publish agent (python -m publish_agent run) pointed at that SFTP host and the CMS
 #   static hosts: admin (CMS origin, proxies /api) :3600; public site = the SFTP web root :3601
 #
-# Deviations from production (only these): http://localhost instead of HTTPS (SECURE_SSL_REDIRECT=False;
-# cookies stay Secure/__Host-, Chromium accepts them on localhost), test users seeded with --rehearsal,
-# fake SFTP host instead of academicweb, no Cloudflare Access/Tunnel in front.
+# Everything is served over HTTPS with a throwaway self-signed cert (.preprod/tls; production settings refuse
+# http origins). Clients trust it via SSL_CERT_FILE/REQUESTS_CA_BUNDLE; browsers use ignore_https_errors.
+# Deviations from production (only these): self-signed cert, test users seeded with --rehearsal,
+# fake SFTP host instead of academicweb, no Cloudflare Access/Tunnel in front, all on one machine.
 set -euo pipefail
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 ST=${PREPROD_STATE:-$REPO/.preprod}
@@ -46,7 +47,7 @@ start_bg() { # name, logfile, cmd...
 
 wait_url() { # url [timeout]
   local end=$((SECONDS + ${2:-60}))
-  until curl -s -o /dev/null "$1"; do [ $SECONDS -lt $end ] || die "$1 not up"; sleep 1; done
+  until curl -s --cacert "$ST/tls/cert.pem" -o /dev/null "$1"; do [ $SECONDS -lt $end ] || die "$1 not up"; sleep 1; done
 }
 
 start_db() {
@@ -55,14 +56,14 @@ start_db() {
     if [ ! -d "$ST/pg/data" ]; then
       runuser -u postgres -- "$PGBIN/initdb" -D "$ST/pg/data" -U crtdh --auth=trust -E UTF8 >/dev/null
     fi
-    if runuser -u postgres -- "$PGBIN/pg_ctl" -D "$ST/pg/data" -o "-c listen_addresses='' -k $ST/pg" -l "$ST/logs/postgres.log" -w start >/dev/null; then
+    if runuser -u postgres -- "$PGBIN/pg_ctl" -D "$ST/pg/data" -o "-c listen_addresses='' -k $ST/pg" -l "$ST/pg/postgres.log" -w start >/dev/null; then
       psql -h "$ST/pg" -U crtdh -d postgres -tc "select 1 from pg_database where datname='crtdh'" | grep -q 1 \
         || psql -h "$ST/pg" -U crtdh -d postgres -qc "create database crtdh"
       echo "postgres $("$PGBIN/postgres" --version | awk '{print $3}') (unix socket $ST/pg)" > "$ST/DB_MODE"
       echo "DATABASE_URL=postgres://crtdh@/crtdh?host=$ST/pg" >> "$ST/env"
       return
     fi
-    log "Postgres failed to start (see logs/postgres.log); falling back to SQLite"
+    log "Postgres failed to start (see pg/postgres.log); falling back to SQLite"
   fi
   echo "SQLITE (ALLOW_SQLITE=1) — NOT production-equivalent: no row locks, different transaction semantics" > "$ST/DB_MODE"
   printf 'DATABASE_URL=sqlite:///%s\nALLOW_SQLITE=1\n' "$ST/db.sqlite3" >> "$ST/env"
@@ -77,15 +78,16 @@ DEBUG=False
 SECRET_KEY=$(openssl rand -base64 60 | tr -d '\n=+/')
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOW_ALL_ORIGINS=False
-CORS_ALLOWED_ORIGINS=http://localhost:$ADMIN_PORT,http://localhost:$SITE_PORT
-CSRF_TRUSTED_ORIGINS=http://localhost:$ADMIN_PORT
-SECURE_SSL_REDIRECT=False
+CORS_ALLOWED_ORIGINS=https://localhost:$ADMIN_PORT,https://localhost:$SITE_PORT
+CSRF_TRUSTED_ORIGINS=https://localhost:$ADMIN_PORT
+SSL_CERT_FILE=$ST/tls/cert.pem
+REQUESTS_CA_BUNDLE=$ST/tls/cert.pem
 CRTDH_SKIP_DOTENV=1
 MEDIA_ROOT=$ST/media
 PUBLISH_ROOT=$ST/publish
-CMS_PUBLIC_URL=http://localhost:$ADMIN_PORT
-PUBLIC_SITE_URL=http://localhost:$SITE_PORT
-MCP_PUBLIC_URL=http://localhost:$MCP_PORT
+CMS_PUBLIC_URL=https://localhost:$ADMIN_PORT
+PUBLIC_SITE_URL=https://localhost:$SITE_PORT
+MCP_PUBLIC_URL=https://localhost:$MCP_PORT
 EMAIL_URL=filemail://$ST/mail
 EMAIL_FILE_PATH=$ST/mail
 AGENT_HMAC_SECRET=$(openssl rand -hex 32)
@@ -99,7 +101,9 @@ ENV
 up() {
   need_integrated_tree
   [ -f "$ST/pids/gunicorn.pid" ] && kill -0 "$(cat "$ST/pids/gunicorn.pid")" 2>/dev/null && die "already running (scripts/preprod.sh down)"
-  mkdir -p "$ST"/{logs,pids,media,publish,mail,sftp,agent}
+  mkdir -p "$ST"/{logs,pids,media,publish,mail,sftp,agent,tls}
+  $PY "$REPO/tests/tools/devcert.py" "$ST/tls" >/dev/null
+  TLS="--cert $ST/tls/cert.pem --key $ST/tls/key.pem"
   write_env
   start_db
   set -a; . "$ST/env"; set +a
@@ -108,6 +112,7 @@ up() {
   log "django check --deploy"
   $PY manage.py check --deploy --fail-level WARNING > "$ST/logs/check-deploy.txt" 2>&1 || log "check --deploy reported issues (logs/check-deploy.txt)"
   $PY manage.py migrate --noinput -v0
+  $PY manage.py createcachetable  # prod uses the DB cache (throttles, lockout); missing in the first rehearsal
   $PY manage.py collectstatic --noinput -v0 >/dev/null 2>&1 || true
   cp -r "$REPO/backend/seed_media/." "$MEDIA_ROOT/" 2>/dev/null || true
   $PY manage.py shell -c "from tests.support.content import *; load_snapshot_into_db(FULL_SNAPSHOT_PATH)"
@@ -117,21 +122,22 @@ up() {
   [ -d "$REPO/frontend/node_modules" ] || (cd "$REPO/frontend" && npm ci --no-audit --no-fund >/dev/null)
   if [ ! -f "$REPO/admin/dist/index.html" ]; then
     log "building admin"
-    (cd "$REPO/admin" && { [ -d node_modules ] || npm ci --no-audit --no-fund >/dev/null; } && VITE_API_BASE_URL=/api/v1 npm run build >/dev/null)
+    (cd "$REPO/admin" && { [ -d node_modules ] || npm ci --no-audit --no-fund >/dev/null; } && VITE_API_BASE_URL=/api/v1 npm run build > "$ST/logs/admin-build.log" 2>&1) \
+      || log "WARNING: admin build failed (logs/admin-build.log); CMS UI not served, API-level smoke still runs"
   fi
 
-  start_bg gunicorn "$ST/logs/gunicorn.log" $PY -m gunicorn config.wsgi:application -b 127.0.0.1:$CMS_PORT -w 3 --timeout 120 --access-logfile -
-  start_bg mcp "$ST/logs/mcp.log" $PY -m uvicorn mcp_server.asgi:app --host 127.0.0.1 --port $MCP_PORT
+  start_bg gunicorn "$ST/logs/gunicorn.log" $PY -m gunicorn config.wsgi:application -b 127.0.0.1:$CMS_PORT -w 3 --timeout 120 --certfile "$ST/tls/cert.pem" --keyfile "$ST/tls/key.pem" --access-logfile -
+  start_bg mcp "$ST/logs/mcp.log" $PY -m uvicorn mcp_server.asgi:app --host 127.0.0.1 --port $MCP_PORT --ssl-certfile "$ST/tls/cert.pem" --ssl-keyfile "$ST/tls/key.pem"
   start_bg worker "$ST/logs/worker.log" $PY manage.py run_publish_worker
   cd "$REPO"
   start_bg sftp "$ST/logs/sftp.log" $PY tests/tools/sftp_host.py --root "$ST/sftp" --port $SFTP_PORT \
       --client-key "$ST/agent/agent_key" --known-hosts "$ST/agent/known_hosts"
-  wait_url "http://127.0.0.1:$CMS_PORT/api/v1/auth/csrf/" 60
+  wait_url "https://localhost:$CMS_PORT/api/v1/auth/csrf/" 60
   for _ in $(seq 20); do [ -s "$ST/agent/known_hosts" ] && break; sleep 0.5; done
   WEBROOT="$ST/sftp/home/u/public_html"
   cat > "$ST/agent/config.ini" <<INI
 [cms]
-url = http://127.0.0.1:$CMS_PORT
+url = https://localhost:$CMS_PORT
 secret_env = CRTDH_AGENT_SECRET
 poll_seconds = 3
 [sftp]
@@ -144,7 +150,7 @@ known_hosts = $ST/agent/known_hosts
 web_root = ~/public_html
 strategy = auto
 keep_releases = 2
-verify_url = http://localhost:$SITE_PORT/
+verify_url = https://localhost:$SITE_PORT/
 verify_marker = crtdh-build
 [agent]
 state_dir = $ST/agent/state
@@ -152,12 +158,12 @@ INI
   export CRTDH_AGENT_SECRET=$AGENT_HMAC_SECRET
   $PY -m publish_agent -c "$ST/agent/config.ini" check --no-http > "$ST/logs/agent-check.log" 2>&1 || log "agent check reported issues (logs/agent-check.log)"
   start_bg agent "$ST/logs/agent.log" $PY -m publish_agent -c "$ST/agent/config.ini" run
-  start_bg admin "$ST/logs/admin-static.log" $PY tests/tools/static_server.py --dir "$REPO/admin/dist" --port $ADMIN_PORT --mode spa --proxy http://127.0.0.1:$CMS_PORT
+  [ -f "$REPO/admin/dist/index.html" ] && start_bg admin "$ST/logs/admin-static.log" $PY tests/tools/static_server.py --dir "$REPO/admin/dist" --port $ADMIN_PORT --mode spa --proxy https://localhost:$CMS_PORT $TLS
   # The public site is whatever the agent made live in the SFTP web root (follows its symlink/htaccess switch).
-  start_bg site "$ST/logs/site-static.log" $PY tests/tools/static_server.py --dir "$WEBROOT" --port $SITE_PORT --mode static
-  wait_url "http://127.0.0.1:$MCP_PORT/" 30 || true
+  start_bg site "$ST/logs/site-static.log" $PY tests/tools/static_server.py --dir "$WEBROOT" --port $SITE_PORT --mode static $TLS
+  wait_url "https://localhost:$MCP_PORT/" 30 || true
   log "up. DB: $(cat "$ST/DB_MODE")"
-  log "CMS http://localhost:$ADMIN_PORT  public http://localhost:$SITE_PORT  MCP http://localhost:$MCP_PORT/mcp"
+  log "CMS https://localhost:$ADMIN_PORT  public https://localhost:$SITE_PORT  MCP https://localhost:$MCP_PORT/mcp (self-signed: .preprod/tls/cert.pem)"
   log "test users in .preprod/users.json; password in .preprod/env (CRTDH_TEST_PASSWORD) — local values only"
 }
 

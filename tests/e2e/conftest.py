@@ -56,12 +56,23 @@ def browser_type_launch_args(browser_type_launch_args):
 
 
 @pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """The stack serves HTTPS with a throwaway self-signed cert (stack.py)."""
+    return {**browser_context_args, "ignore_https_errors": True}
+
+
+@pytest.fixture(scope="session")
 def stack(request, tmp_path_factory):
     o = request.config.getoption
     s = Stack(backend_port=o("--backend-port"), admin_port=o("--admin-port"), site_port=o("--site-port"),
               workdir=tmp_path_factory.mktemp("stack"), site_dir=Path(o("--site-dir")), admin_dir=Path(o("--admin-dir")))
-    if o("--external"):
+    if o("--external"):  # e.g. preprod.sh: trust its cert via E2E_CA_FILE=.preprod/tls/cert.pem
         s.password = os.environ.get("CRTDH_TEST_PASSWORD", "")
+        if os.environ.get("E2E_CA_FILE"):
+            import ssl
+            import urllib.request
+            ctx = ssl.create_default_context(cafile=os.environ["E2E_CA_FILE"])
+            urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx)))
         yield s
         return
     s.start_backend()
@@ -97,4 +108,4 @@ def login(page, cms, stack):
 
 @pytest.fixture
 def second_page(context):
-    return context.browser.new_context().new_page()
+    return context.browser.new_context(ignore_https_errors=True).new_page()

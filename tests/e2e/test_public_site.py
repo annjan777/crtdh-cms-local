@@ -54,7 +54,7 @@ def test_no_cms_api_calls(page, site, route):
 
 @pytest.mark.parametrize("route", ROUTES)
 def test_content_visible_without_js(browser, site, route):
-    ctx = browser.new_context(java_script_enabled=False)
+    ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=True)
     p = ctx.new_page()
     p.goto(site + route)
     assert p.locator("h1").first.is_visible()

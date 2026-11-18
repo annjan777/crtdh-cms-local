@@ -5,6 +5,7 @@
 
 static: /x -> x/index.html | x.html | x ; unknown -> 404.html with HTTP 404 (like Apache on CIC).
 spa:    unknown non-file paths -> index.html (admin router).
+--cert/--key: serve HTTPS (production settings refuse http origins).
 --proxy: /api/, /admin/, /media/, /mcp, /.well-known/, /oauth/, /upload/ are forwarded so the admin
          is same-origin with the CMS API (as in production behind one hostname).
 """
@@ -26,7 +27,13 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-_opener = urllib.request.build_opener(_NoRedirect)
+def _proxy_opener():
+    """No redirects; trusts the dev cert in E2E_CA_FILE (self-signed HTTPS backend) when set."""
+    ca = os.environ.get("E2E_CA_FILE")
+    if not ca:
+        return urllib.request.build_opener(_NoRedirect)
+    import ssl
+    return urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=ssl.create_default_context(cafile=ca)))
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -46,7 +53,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 req.add_header(k, v)
         req.add_header("X-Forwarded-Host", self.headers.get("Host", ""))
         try:
-            resp = _opener.open(req, timeout=60)
+            resp = _proxy_opener().open(req, timeout=60)
         except urllib.error.HTTPError as e:
             resp = e
         data = resp.read()
@@ -102,9 +109,15 @@ class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
 
 
-def serve(directory, port, mode="static", proxy=None, host="127.0.0.1"):
+def serve(directory, port, mode="static", proxy=None, host="127.0.0.1", cert=None, key=None):
     handler = type("H", (Handler,), {"mode": mode, "proxy": proxy.rstrip("/") if proxy else None})
-    return Server((host, port), partial(handler, directory=str(directory)))
+    srv = Server((host, port), partial(handler, directory=str(directory)))
+    if cert:
+        import ssl
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(cert, key)
+        srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+    return srv
 
 
 if __name__ == "__main__":
@@ -114,5 +127,7 @@ if __name__ == "__main__":
     ap.add_argument("--mode", choices=["static", "spa"], default="static")
     ap.add_argument("--proxy")
     ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--cert")
+    ap.add_argument("--key")
     a = ap.parse_args()
-    serve(a.dir, a.port, a.mode, a.proxy, a.host).serve_forever()
+    serve(a.dir, a.port, a.mode, a.proxy, a.host, a.cert, a.key).serve_forever()

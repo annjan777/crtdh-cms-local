@@ -6,3 +6,5 @@ backend/htmlcov/
 backend/coverage.xml
 backend/.coverage
 .preprod/
+__pycache__/
+*.pyc

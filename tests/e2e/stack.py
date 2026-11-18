@@ -1,12 +1,14 @@
 """Start/stop the local stack for E2E: backend (prod-like settings), admin (CMS origin), public site.
 
 All on the QA lane ports by default (contract §6): backend 8600, admin 3600, public site 3601.
-Uses http://localhost (not 127.0.0.1) so Secure/SameSite cookies behave as in production
-(Chromium treats localhost as a secure context).
+Everything is served over HTTPS on localhost with a throwaway self-signed cert (tests/tools/devcert.py),
+because production settings refuse http origins. urllib trusts it via a global opener + E2E_CA_FILE;
+Playwright contexts use ignore_https_errors (conftest.browser_context_args).
 """
 import json
 import os
 import secrets
+import ssl
 import signal
 import subprocess
 import sys
@@ -20,6 +22,7 @@ REPO = Path(__file__).resolve().parents[2]
 BACKEND = REPO / "backend"
 PY = os.environ.get("E2E_PYTHON", "/home/claude/venv/bin/python" if Path("/home/claude/venv/bin/python").exists() else sys.executable)
 sys.path.insert(0, str(REPO / "tests"))
+from tools.devcert import make as make_cert  # noqa: E402
 from tools.static_server import serve  # noqa: E402
 
 
@@ -57,15 +60,15 @@ class Stack:
 
     @property
     def api(self):
-        return f"http://localhost:{self.backend_port}"
+        return f"https://localhost:{self.backend_port}"
 
     @property
     def admin(self):
-        return f"http://localhost:{self.admin_port}"
+        return f"https://localhost:{self.admin_port}"
 
     @property
     def site(self):
-        return f"http://localhost:{self.site_port}"
+        return f"https://localhost:{self.site_port}"
 
     def env(self):
         e = dict(os.environ)
@@ -88,13 +91,19 @@ class Stack:
             "PUBLIC_SITE_URL": self.site,
             "CMS_PUBLIC_URL": self.admin,
             "TURNSTILE_SECRET": "1x0000000000000000000000000000000AA",  # Cloudflare's always-pass test key
-            "SECURE_SSL_REDIRECT": "False",  # rehearsal over http://localhost; the only deviation from prod
             "CRTDH_SKIP_DOTENV": "1",
             "CRTDH_ALLOW_TEST_SEED": "1",
             "CRTDH_TEST_PASSWORD": self.password,
             "PYTHONPATH": str(BACKEND),
         })
         return e
+
+    def trust_cert(self):
+        """Self-signed cert for this run; make every urllib call in the test process trust it."""
+        self.cert, self.key = make_cert(self.workdir / "tls")
+        os.environ["E2E_CA_FILE"] = str(self.cert)
+        ctx = ssl.create_default_context(cafile=str(self.cert))
+        urllib.request.install_opener(urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx)))
 
     def manage(self, *args, check=True):
         r = subprocess.run([PY, "manage.py", *args], cwd=BACKEND, env=self.env(), capture_output=True, text=True)
@@ -104,6 +113,7 @@ class Stack:
 
     def start_backend(self):
         self.workdir.mkdir(parents=True, exist_ok=True)
+        self.trust_cert()
         self.manage("migrate", "--noinput", "-v0")
         seed = os.environ.get("E2E_SEED", "sample")  # sample | full | none | /path/to/snapshot.json
         if seed != "none":
@@ -114,7 +124,8 @@ class Stack:
         log = open(self.workdir / "backend.log", "w")
         p = subprocess.Popen(
             [PY, "-m", "gunicorn", "config.wsgi:application", "-b", f"127.0.0.1:{self.backend_port}",
-             "-w", "2", "--threads", "4", "--timeout", "60"],
+             "-w", "2", "--threads", "4", "--timeout", "60",
+             "--certfile", str(self.cert), "--keyfile", str(self.key)],
             cwd=BACKEND, env=self.env(), stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         self._procs.append(p)
         wait_http(f"{self.api}/api/v1/auth/me/")
@@ -125,7 +136,7 @@ class Stack:
             (self.admin_dir, self.admin_port, "spa", self.api),
         ]:
             if directory and Path(directory).is_dir():
-                srv = serve(directory, port, mode, proxy)
+                srv = serve(directory, port, mode, proxy, cert=str(self.cert), key=str(self.key))
                 threading.Thread(target=srv.serve_forever, daemon=True).start()
                 self._servers.append(srv)
 
