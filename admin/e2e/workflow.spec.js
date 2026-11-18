@@ -205,3 +205,27 @@ test('users page is for admins only', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Only Admins can manage users' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Users' })).toHaveCount(0);
 });
+
+test('messages: publishers read contact messages as text and delete one with a named confirmation', async ({ page }) => {
+  await signIn(page, 'priya', '/messages');
+  const list = page.getByRole('list', { name: 'Messages' });
+  await expect(list.getByRole('button')).toHaveCount(3);
+  await list.getByRole('button', { name: /Test <script>/ }).click();
+  const detail = page.getByRole('region', { name: 'Message' });
+  await expect(detail).toContainText('<img src=x onerror=alert(1)> shown as text, never run');
+  expect(await detail.locator('img').count()).toBe(0);
+  await detail.getByRole('button', { name: 'Delete message' }).click();
+  const dlg = page.getByRole('dialog', { name: 'Delete the message from Test <script>?' });
+  await expect(dlg.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await dlg.getByRole('button', { name: 'Delete message' }).click();
+  await expect(page.getByText('The message from Test <script> was deleted.')).toBeVisible();
+  await expect(list.getByRole('button')).toHaveCount(2);
+  await list.getByRole('button', { name: /Dr. S. Mehta/ }).click();
+  await expect(detail).toContainText('We’d like to bring'.replace('’', "'"));
+});
+
+test('messages are hidden from editors', async ({ page }) => {
+  await signIn(page, 'ravi', '/messages');
+  await expect(page.getByRole('heading', { name: 'Only Publishers and Admins can read messages' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Website' }).getByRole('link', { name: 'Messages' })).toHaveCount(0);
+});

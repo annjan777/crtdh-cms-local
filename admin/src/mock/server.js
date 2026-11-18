@@ -16,6 +16,11 @@ export const TEST_CODE = '246810';
 const RECOVERY = ['4kq7-mx2p', '9tz3-wd8h', 'r6vn-2cfa', 'p8ye-k3us', 'h2bw-7jqn', 'm5xs-9edr', 'c3ua-6gkt', 'w7fd-4npz'];
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
+const SEED_MESSAGES = [
+  { id: 41, name: 'Anita Roy', email: 'anita.roy@example.test', phone: '+91 98300 00000', message: 'Hello, we run a small diagnostics start-up in Durgapur and would like to know about membership &amp; access to the PCR facility. Could someone call me?', created_at: '2026-11-18T09:12:00Z' },
+  { id: 40, name: 'Dr. S. Mehta', email: 'smehta@example.test', phone: '', message: 'Is the eye camp on 2 December open to walk-ins? We&#x27;d like to bring 20 people from our village.', created_at: '2026-11-16T15:40:00Z' },
+  { id: 39, name: 'Test &lt;script&gt;', email: 'probe@example.test', phone: '', message: '&lt;img src=x onerror=alert(1)&gt; shown as text, never run', created_at: '2026-11-12T11:05:00Z' },
+];
 const nowIso = () => new Date().toISOString();
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -678,6 +683,19 @@ async function route(method, path, body) {
     const itemId = new URLSearchParams(path.split('?')[1]).get('item_id');
     const ref = itemId.slice(itemId.lastIndexOf('.') + 1);
     return json(200, { entries: db.audit.filter((a) => a.item_id === itemId || a.item_id.endsWith(`.${ref}`) || a.item_id === ref).reverse() });
+  }
+
+  // ---- contact messages (publisher/admin; stored HTML-escaped)
+  if (path.startsWith('/contact-messages/')) {
+    if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only Publishers and Admins can read messages.', 'Ask a Publisher.');
+    db.messages ||= clone(SEED_MESSAGES);
+    if (path === '/contact-messages/' && method === 'GET') return json(200, { count: db.messages.length, next: null, previous: null, results: db.messages });
+    m = path.match(/^\/contact-messages\/(\d+)\/$/);
+    if (m && method === 'DELETE') {
+      db.messages = db.messages.filter((x) => String(x.id) !== m[1]);
+      save();
+      return new Response(null, { status: 204 });
+    }
   }
 
   // ---- users (addendum A12, matches backend-security accounts/users.py)

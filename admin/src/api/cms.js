@@ -59,3 +59,9 @@ export const users = {
   deactivate: (id) => api.post(`/auth/users/${id}/deactivate/`, {}),
   resetMfa: (id) => api.post(`/auth/users/${id}/reset-mfa/`, {}),
 };
+
+// Contact form messages (publisher/admin). Paginated like other lists.
+export const messages = {
+  list: () => api.get('/contact-messages/').then((r) => (Array.isArray(r) ? r : r.results || [])),
+  remove: (id) => api.del(`/contact-messages/${id}/`),
+};

@@ -54,7 +54,7 @@ function UserMenu() {
 
 export function PageNav({ sections, selectedSection, onSelectSection, onNavigate }) {
   const { pages } = useChanges();
-  const { isAdmin } = useAuth();
+  const { isAdmin, canPublish } = useAuth();
   const match = useMatch('/pages/:pageId');
   const openId = match?.params.pageId;
   const list = pages || [];
@@ -110,6 +110,13 @@ export function PageNav({ sections, selectedSection, onSelectSection, onNavigate
             Publish history
           </NavLink>
         </li>
+        {canPublish ? (
+          <li>
+            <NavLink to="/messages" className="nav-link" onClick={onNavigate}>
+              Messages
+            </NavLink>
+          </li>
+        ) : null}
         {isAdmin ? (
           <li>
             <NavLink to="/users" className="nav-link" onClick={onNavigate}>

@@ -7,6 +7,7 @@ import ReviewPage from './review/ReviewPage.jsx';
 import HistoryPage from './history/HistoryPage.jsx';
 import UsersPage from './users/UsersPage.jsx';
 import ShotListPage from './help/ShotListPage.jsx';
+import MessagesPage from './messages/MessagesPage.jsx';
 
 function Gate() {
   const { status } = useAuth();
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: '/review', element: <ReviewPage /> },
       { path: '/history', element: <HistoryPage /> },
       { path: '/users', element: <UsersPage /> },
+      { path: '/messages', element: <MessagesPage /> },
       { path: '/shot-list', element: <ShotListPage /> },
       { path: '*', element: <Navigate to="/pages/home" replace /> },
     ],

@@ -61,6 +61,10 @@ const SCREENS = {
     await go('/users')(page, 'sita');
     await page.getByRole('button', { name: 'Add user' }).click();
   },
+  'messages': async (page) => {
+    await go('/messages')(page);
+    await page.getByRole('list', { name: 'Messages' }).getByRole('button').first().click();
+  },
   'shot-list': go('/shot-list'),
 };
 
