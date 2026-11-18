@@ -93,6 +93,8 @@ def _model_fields(resource: str, model) -> list[dict]:
         ftype = next((t for cls, t in _FIELD_TYPES if isinstance(f, cls)), None)
         if ftype is None:
             continue
+        if ftype == "text" and (f.name == "url" or f.name.endswith(("_link", "_url"))):
+            ftype = "url"  # link fields stored as CharField still get link validation
         spec: dict[str, Any] = {"name": f.name, "type": ftype, "label": str(f.verbose_name).capitalize()}
         if f.choices:
             spec["type"] = "select"
