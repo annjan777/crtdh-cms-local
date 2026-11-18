@@ -48,9 +48,9 @@ Markers: `needs_integration` (skipped unless `--integration` or `RUN_INTEGRATION
 
 ## Tests waiting on integration (`needs_integration`)
 
-Backend (`cd backend && pytest --integration`), 739 cases:
+Backend (`cd backend && pytest --integration`), 743 cases collected on the QA tree (the RBAC count follows the merged router):
 
-- `tests/security/test_rbac_matrix.py` — `test_rbac` (686 role × route cases), `test_every_router_resource_is_in_matrix`, `test_only_public_write_is_contact`, `test_deactivated_user_session_stops_working`
+- `tests/security/test_rbac_matrix.py` — `test_rbac` (688 role × route cases), `test_every_router_resource_is_in_matrix`, `test_only_public_write_is_contact`, `test_deactivated_user_session_stops_working`
 - `tests/regression/test_first_snapshot.py` (CRITICAL) — `test_schema_and_header`, `test_every_collection_present`, `test_rows_and_values_match` ×25, `test_singletons_match`, `test_media_paths_are_content_hashed`
 - `tests/contract/test_snapshot_rules.py` — schema validation, ordering, stable ids, hidden item absent, same snapshot twice, guard (missing collection, 40 % shrink), every route has a registry page
 - `tests/security/test_contact_relay.py` — valid message, Turnstile failure 400, 6th/min 429, HTML stored escaped, contact is the only anonymous write
