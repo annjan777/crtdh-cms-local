@@ -1,6 +1,7 @@
 """Upload safety: sniff, bound, re-encode (WS5.3).
 
 process_upload(file, min_width=None, kind="image") -> ProcessedImage
+    `file`: bytes, a file-like object (read/seek) or a filesystem path.
     kind="image": JPEG/PNG/WebP (AVIF too if Pillow has it) by magic bytes only.
         Rejects SVG, HTML, polyglots, decompression bombs and oversize files,
         applies EXIF orientation, then re-encodes from pixels (drops EXIF, ICC,
@@ -69,6 +70,8 @@ def _reject(message, fix="Upload a JPEG, PNG or WebP photo.", field=None):
 
 
 def _read(file, limit):
+    if isinstance(file, (bytes, bytearray)):
+        file = io.BytesIO(file)
     if hasattr(file, "seek"):
         file.seek(0)
     data = file.read(limit + 1) if hasattr(file, "read") else open(file, "rb").read(limit + 1)

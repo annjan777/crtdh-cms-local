@@ -214,3 +214,18 @@ def test_password_validators_require_12_chars(settings):
     with pytest.raises(ValidationError):
         validate_password("Short1!abc")
     validate_password("correct-horse-battery-9")
+
+
+def test_is_verified_helper(editor, rf):
+    from django.contrib.sessions.backends.db import SessionStore
+    req = rf.get("/")
+    req.user, req.session = editor, SessionStore()
+    assert not mfa.is_verified(req)
+    mfa.mark_session_verified(req.session, editor)
+    assert mfa.is_verified(req)
+
+
+def test_process_upload_accepts_bytes():
+    from apps.common.images import process_upload
+    from tests.support.images import make_image_bytes
+    assert process_upload(make_image_bytes(100, 80)).width == 100

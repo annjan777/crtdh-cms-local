@@ -112,3 +112,10 @@ def mark_session_verified(session, user):
     (and by the QA test harness after force_login). CMSSessionAuthentication
     rejects any session without this flag, so no other login path bypasses MFA."""
     session[SESSION_FLAG] = user.pk
+
+
+def is_verified(request):
+    """True if this Django request has an active user whose session completed password + MFA."""
+    user = getattr(request, "user", None)
+    return bool(user and user.is_authenticated and user.is_active
+                and request.session.get(SESSION_FLAG) == user.pk)
