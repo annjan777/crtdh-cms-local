@@ -1,162 +1,111 @@
-import axios from 'axios';
+// HTTP client for the CMS API (contract §3). Session cookie + CSRF only:
+// no tokens are ever read from or written to localStorage.
+//
+// With VITE_USE_MOCK=1 the same calls go to an in-browser fake of the API
+// (src/mock/server.js) so the admin can be built and tested before the
+// backend lanes land. The fake is never bundled when the flag is off.
 
-// API base URL — override via .env / .env.local with VITE_API_BASE_URL.
-// Falls back to the Django dev server default from API_CONTRACT.md.
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-export const PUBLIC_SITE_URL =
-  import.meta.env.VITE_PUBLIC_SITE_URL ||
-  (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}` : 'http://localhost:3000');
+import { mapError, networkError } from './errors.js';
 
-const ACCESS_KEY = 'crtdh_admin_access';
-const REFRESH_KEY = 'crtdh_admin_refresh';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === '1';
 
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_KEY);
-}
-
-export function getRefreshToken() {
-  return localStorage.getItem(REFRESH_KEY);
-}
-
-export function setTokens({ access, refresh }) {
-  if (access) localStorage.setItem(ACCESS_KEY, access);
-  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
-}
-
-export function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
-}
-
-// Main client used for all resource calls — carries the access token and
-// silently refreshes it on a 401.
-const apiClient = axios.create({ baseURL: API_BASE_URL });
-
-// Bare instance (no interceptors) used only for the refresh call itself,
-// so a failed refresh can never recursively trigger another refresh.
-const refreshClient = axios.create({ baseURL: API_BASE_URL });
-
-apiClient.interceptors.request.use((config) => {
-  const token = getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+let transport = null;
+async function getTransport() {
+  if (transport) return transport;
+  if (USE_MOCK) {
+    const { mockFetch } = await import('../mock/server.js');
+    transport = mockFetch;
+  } else {
+    transport = (url, init) => fetch(url, init);
   }
-  return config;
-});
-
-let refreshPromise = null;
-
-function goToLogin() {
-  clearTokens();
-  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-    window.location.assign('/login');
-  }
+  return transport;
 }
 
-async function refreshAccessToken() {
-  const refresh = getRefreshToken();
-  if (!refresh) {
-    throw new Error('No refresh token available');
-  }
-  const { data } = await refreshClient.post('/auth/token/refresh/', { refresh });
-  setTokens({ access: data.access });
-  return data.access;
+// For unit tests.
+export function setTransport(fn) {
+  transport = fn;
+  csrfReady = null;
 }
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const { config, response } = error;
-
-    const isAuthEndpoint = config?.url?.includes('/auth/token');
-    if (!response || response.status !== 401 || !config || config._retry || isAuthEndpoint) {
-      return Promise.reject(error);
-    }
-
-    config._retry = true;
-    try {
-      // Coalesce concurrent 401s into a single refresh call.
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken().finally(() => {
-          refreshPromise = null;
-        });
-      }
-      const newAccess = await refreshPromise;
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${newAccess}`;
-      return apiClient(config);
-    } catch (refreshError) {
-      goToLogin();
-      return Promise.reject(refreshError);
-    }
-  },
-);
-
-export async function fetchList(endpoint, params) {
-  const { data } = await apiClient.get(endpoint, { params });
-  return Array.isArray(data) ? data : data.results || [];
+export function readCookie(name) {
+  if (typeof document === 'undefined') return null;
+  const hit = document.cookie.split('; ').find((c) => c.startsWith(`${name}=`));
+  return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
 
-export async function fetchOne(endpoint, id = '') {
-  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
-  const { data } = await apiClient.get(url);
-  return data;
-}
-
-function isExistingFileUrl(value) {
-  if (typeof value !== 'string') return false;
-  return value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/media/') || value.startsWith('blob:');
-}
-
-function buildPayload(values) {
-  if (!values || typeof values !== 'object') return values;
-  const hasFile = Object.values(values).some((v) => v instanceof File);
-  if (!hasFile) {
-    const out = {};
-    Object.entries(values).forEach(([key, value]) => {
-      if (key.endsWith('_preview')) return;
-      if (isExistingFileUrl(value)) return;
-      out[key] = value;
+let csrfReady = null;
+export function ensureCsrf(force = false) {
+  if (force || !csrfReady || !readCookie('csrftoken')) {
+    csrfReady = rawRequest('GET', '/auth/csrf/').catch((e) => {
+      csrfReady = null;
+      throw e;
     });
-    return out;
   }
-  const formData = new FormData();
-  Object.entries(values).forEach(([key, value]) => {
-    if (value === undefined || value === null) return;
-    if (key.endsWith('_preview')) return;
-    if (value instanceof File) {
-      formData.append(key, value);
-    } else if (!isExistingFileUrl(value)) {
-      formData.append(key, value);
+  return csrfReady;
+}
+
+const SAFE = new Set(['GET', 'HEAD', 'OPTIONS']);
+const AUTH_PATHS = ['/auth/login/', '/auth/mfa/', '/auth/me/', '/auth/csrf/', '/auth/mfa/setup/'];
+
+async function rawRequest(method, path, { body, form } = {}) {
+  const send = await getTransport();
+  const headers = { Accept: 'application/json' };
+  let payload;
+  if (form) {
+    payload = form;
+  } else if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    payload = JSON.stringify(body);
+  }
+  if (!SAFE.has(method)) {
+    const token = readCookie('csrftoken');
+    if (token) headers['X-CSRFToken'] = token;
+  }
+  let res;
+  try {
+    res = await send(`${API_BASE}${path}`, { method, headers, body: payload, credentials: 'include' });
+  } catch {
+    throw networkError();
+  }
+  if (res.status === 204) return null;
+  let data = null;
+  const text = await res.text();
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
     }
-  });
-  return formData;
-}
-
-export async function createOne(endpoint, values) {
-  const payload = buildPayload(values);
-  const { data } = await apiClient.post(endpoint, payload);
-  return data;
-}
-
-export async function updateOne(endpoint, id, values) {
-  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
-  const payload = buildPayload(values);
-  const { data } = await apiClient.patch(url, payload);
-  return data;
-}
-
-export async function deleteOne(endpoint, id) {
-  const url = id ? `${endpoint.replace(/\/$/, '')}/${id}/` : endpoint;
-  const { data } = await apiClient.delete(url);
-  return data;
-}
-
-export async function uploadFile(file) {
-  if (file instanceof File) {
-    return { url: URL.createObjectURL(file), file };
   }
-  return { url: file };
+  if (!res.ok) {
+    const err = mapError(res.status, data);
+    if (err.code === 'CMS_UNAUTHENTICATED' && !AUTH_PATHS.some((p) => path.startsWith(p)) && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('crtdh:session-expired'));
+    }
+    throw err;
+  }
+  return data;
 }
 
-export default apiClient;
+export async function request(method, path, opts = {}) {
+  if (!SAFE.has(method)) await ensureCsrf();
+  try {
+    return await rawRequest(method, path, opts);
+  } catch (err) {
+    // A rotated CSRF token (after sign-in) shows up as a 403 without a CMS code: refresh once.
+    if (err.status === 403 && err.details?.detail?.toLowerCase?.().includes('csrf')) {
+      await ensureCsrf(true);
+      return rawRequest(method, path, opts);
+    }
+    throw err;
+  }
+}
+
+export const api = {
+  get: (p) => request('GET', p),
+  post: (p, body) => request('POST', p, { body }),
+  patch: (p, body) => request('PATCH', p, { body }),
+  patchForm: (p, form) => request('PATCH', p, { form }),
+  del: (p) => request('DELETE', p),
+};
