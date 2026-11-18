@@ -49,8 +49,7 @@ MP4_BRANDS = {b"isom", b"iso2", b"iso4", b"iso5", b"iso6", b"mp41", b"mp42", b"a
 PDF_FORBIDDEN = re.compile(rb"/(JavaScript|JS|Launch|EmbeddedFile|RichMedia|XFA|AA|SubmitForm|ImportData|GoToE)\b")
 PDF_NAME = re.compile(rb"/(?:[^\s/<>\[\]()%{}#]|#[0-9A-Fa-f]{2})+")
 PDF_HEX = re.compile(rb"#([0-9A-Fa-f]{2})")
-PDF_STREAM = re.compile(rb"stream\r?\n")
-PDF_INFLATE_BUDGET = 64 * 1024 * 1024  # total decompressed bytes inspected per document
+PDF_INFLATE_BUDGET = 128 * 1024 * 1024  # max size of the fully decoded rewrite that is inspected
 
 Image.MAX_IMAGE_PIXELS = settings.IMAGE_MAX_PIXELS
 
@@ -160,31 +159,78 @@ def _pdf_normalise(chunk):
     return PDF_NAME.sub(lambda m: PDF_HEX.sub(lambda h: bytes([int(h.group(1), 16)]), m.group(0)), chunk)
 
 
+PDF_ACTIVE_NAMES = {"/" + n for n in ("JavaScript", "JS", "Launch", "EmbeddedFile", "EmbeddedFiles", "RichMedia",
+                                       "XFA", "AA", "SubmitForm", "ImportData", "GoToE", "Rendition", "Sound", "Movie")}
+PDF_ALLOWED_FILTERS = {"/FlateDecode", "/DCTDecode", "/JPXDecode", "/CCITTFaxDecode", "/JBIG2Decode"}
+
+
+class _BoundedSink(io.RawIOBase):
+    """Write target that gives up past `limit` bytes (decompression-bomb guard for the rewrite)."""
+
+    def __init__(self, limit):
+        self.limit, self.buf = limit, bytearray()
+
+    def writable(self):
+        return True
+
+    def write(self, b):
+        if len(self.buf) + len(b) > self.limit:
+            raise OverflowError("PDF expands past the inspection budget")
+        self.buf += b
+        return len(b)
+
+
+def _pdf_walk(obj, depth=0):
+    """True if a PDF object (dictionary/array, not following references) names active content."""
+    import pikepdf
+
+    if depth > 64:
+        return True
+    if isinstance(obj, pikepdf.Name):
+        return str(obj) in PDF_ACTIVE_NAMES
+    if isinstance(obj, (pikepdf.Dictionary, pikepdf.Stream)):
+        for key in obj.keys():
+            if key in PDF_ACTIVE_NAMES:
+                return True
+            val = obj.get(key)
+            if key in ("/Filter", "/F") and isinstance(obj, pikepdf.Stream):
+                names = [val] if isinstance(val, pikepdf.Name) else list(val) if isinstance(val, pikepdf.Array) else []
+                if any(str(n) not in PDF_ALLOWED_FILTERS for n in names):
+                    return True  # ASCIIHex/ASCII85/LZW/RunLength/Crypt: no legitimate need, hides content
+            if not getattr(val, "is_indirect", False) and _pdf_walk(val, depth + 1):
+                return True
+        return False
+    if isinstance(obj, pikepdf.Array):
+        return any(not getattr(v, "is_indirect", False) and _pdf_walk(v, depth + 1) for v in obj)
+    return False
+
+
 def _pdf_is_active(data):
-    """True if the PDF has (or may hide) scripts, actions or embedded files. Looks at the raw bytes
-    and inside every Flate-compressed stream (object streams can hold the catalog and actions);
-    encrypted PDFs and documents that inflate past the budget cannot be inspected and count as active."""
+    """True if the PDF has (or may hide) scripts, actions or embedded files.
+
+    Three layers: (1) the raw bytes, with #xx name escapes decoded; (2) qpdf (pikepdf) parses the
+    document, including objects packed in object streams under any filter chain, and every object is
+    walked for active-content names and non-image stream filters; (3) qpdf rewrites the whole file with
+    object streams expanded and every stream fully decoded (bounded size) and that text is scanned.
+    Encrypted, unparseable or oversized-when-decoded PDFs cannot be inspected and count as active."""
+    import pikepdf
+
     if PDF_FORBIDDEN.search(_pdf_normalise(data)) or POLYGLOT_MARKERS.search(data):
         return True
-    if re.search(rb"/Encrypt\b", _pdf_normalise(data)):
+    try:
+        with pikepdf.open(io.BytesIO(data)) as pdf:
+            if pdf.is_encrypted:
+                return True
+            for obj in pdf.objects:
+                if _pdf_walk(obj):
+                    return True
+            sink = _BoundedSink(PDF_INFLATE_BUDGET)
+            pdf.save(sink, compress_streams=False, stream_decode_level=pikepdf.StreamDecodeLevel.all,
+                     object_stream_mode=pikepdf.ObjectStreamMode.disable, qdf=False)
+    except (pikepdf.PasswordError, pikepdf.PdfError, OverflowError, ValueError, RecursionError):
         return True
-    import zlib
-
-    budget = PDF_INFLATE_BUDGET
-    for m in PDF_STREAM.finditer(data):
-        end = data.find(b"endstream", m.end())
-        raw = data[m.end(): end if end != -1 else len(data)]
-        d = zlib.decompressobj()
-        try:
-            out = d.decompress(raw, budget + 1)
-        except zlib.error:
-            continue  # not Flate (images, fonts with other filters): nothing to inspect
-        if len(out) > budget or d.unconsumed_tail:
-            return True
-        budget -= len(out)
-        if PDF_FORBIDDEN.search(_pdf_normalise(out)) or POLYGLOT_MARKERS.search(out):
-            return True
-    return False
+    out = bytes(sink.buf)
+    return bool(PDF_FORBIDDEN.search(_pdf_normalise(out)) or POLYGLOT_MARKERS.search(out))
 
 
 def _process_document(data):
