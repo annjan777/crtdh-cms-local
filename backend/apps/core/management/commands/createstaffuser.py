@@ -11,11 +11,8 @@ Usage:
     python manage.py createstaffuser --username alice --email alice@example.com
     (then follow the interactive password prompt, same as createsuperuser)
 
-For a non-interactive / scripted staff user (is_staff=True, is_superuser=False):
-    python manage.py shell -c "
-    from django.contrib.auth.models import User
-    User.objects.create_user('alice', 'alice@example.com', 'change-me', is_staff=True)
-    "
+Never script a password on the command line. For role-limited CMS users use the
+user-admin API (POST /api/v1/auth/users/) or, in local dev only, `create_dev_users`.
 """
 
 from django.contrib.auth.management.commands.createsuperuser import (

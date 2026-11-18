@@ -1,0 +1,38 @@
+# Copy to deploy/cloudflared/config.yml and replace <TUNNEL_ID> and <domain>. That file and
+# credentials.json (from `cloudflared tunnel create crtdh-cms`) are gitignored.
+#
+# Also required in the Cloudflare dashboard:
+#  - cms.<domain>: a Cloudflare Access application (SSO for the lab's accounts). The CMS's own
+#    sign-in + TOTP still runs behind it.
+#  - mcp.<domain>: NOT behind Access (Claude connects from Anthropic's cloud). Add a WAF custom rule
+#    on this hostname: block when `not ip.src in {160.79.104.0/21}` (Anthropic's published egress range;
+#    re-check it when it changes). OAuth is still required on every call.
+#  - contact.<domain>: WAF rate-limiting rule (e.g. 10 requests/min/IP) on top of the app's 5/min.
+#  - SSL/TLS mode "Full", "Always Use HTTPS" on, minimum TLS 1.2.
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/credentials.json
+no-autoupdate: true
+
+ingress:
+  # CMS (admin SPA, API, OAuth authorize page): gated by Cloudflare Access.
+  - hostname: cms.<domain>
+    service: http://gateway:80
+
+  # MCP: only the MCP endpoint, OAuth metadata, token and revoke paths reach the MCP app.
+  # /oauth/authorize/ is deliberately NOT here: it is served on cms.<domain> (Access + CMS session + MFA).
+  # Restrict this hostname to Anthropic's egress range 160.79.104.0/21 with the WAF rule above.
+  # (/oauth/register/ only if MCP_OAUTH_DCR_ENABLED; add it to the regex then.)
+  - hostname: mcp.<domain>
+    path: ^/(mcp|\.well-known/oauth-protected-resource(/mcp)?|\.well-known/oauth-authorization-server|oauth/token/|oauth/revoke_token/)$
+    service: http://mcp:8400
+  - hostname: mcp.<domain>
+    service: http_status:404
+
+  # Public contact relay: the gateway further allows only POST.
+  - hostname: contact.<domain>
+    path: ^/api/v1/contact/$
+    service: http://gateway:80
+  - hostname: contact.<domain>
+    service: http_status:404
+
+  - service: http_status:404

@@ -1,0 +1,124 @@
+schema_version: 1
+project:
+  id: crtdh-contact-form
+  name: CRTDH website contact form
+  purpose: "Public contact form of the CRTDH (IIT Kharagpur) website; messages read by centre staff in the private CMS."
+  assessment_date: 2026-11-19
+  repo_ref: "v3/backend-security"
+  config_ref: null
+  assessed_by: [backend-security-agent]
+  scope_of_assessment: "Only POST /api/v1/contact/, the ContactMessage model, the staff read/delete API and the notification email. CMS users, logs and the public static site were not assessed."
+  disclaimer: "Engineering assessment, not legal advice. Legal conclusions require qualified review."
+
+evidence:
+  - {id: E-001, type: code, ref: "backend/apps/contact/models.py:4-10", summary: "ContactMessage stores name, email, phone, message, created_at", trust: verified, collected_by: backend-security-agent, date: 2026-11-19}
+  - {id: E-002, type: code, ref: "backend/apps/contact/views.py", summary: "Public create view: throttle, Turnstile, honeypot; staff view limited to publisher role; notification email without personal data", trust: verified, collected_by: backend-security-agent, date: 2026-11-19}
+  - {id: E-003, type: code, ref: "backend/apps/contact/management/commands/purge_contact_messages.py", summary: "Deletes messages older than CONTACT_RETENTION_DAYS (365)", trust: verified, collected_by: backend-security-agent, date: 2026-11-19}
+  - {id: E-004, type: doc, ref: "docs/privacy-notice.md", summary: "Notice copy, retention rule, open questions", trust: verified, collected_by: backend-security-agent, date: 2026-11-19}
+  - {id: E-005, type: test-run, ref: "backend/apps/contact/tests/test_contact.py", summary: "Contact throttle, Turnstile, honeypot, escaping, retention purge, role access tests", trust: verified, collected_by: backend-security-agent, date: 2026-11-19}
+
+inventory:
+  components:
+    - {id: C-01, type: frontend, tech: "static site form", location: "CIC static host", evidence: [E-004]}
+    - {id: C-02, type: backend, tech: "Django/DRF", location: "lab server, India", evidence: [E-002]}
+    - {id: C-03, type: db, tech: "Postgres", location: "lab server, India", evidence: [E-001]}
+    - {id: C-04, type: vendor, tech: "Cloudflare Turnstile and tunnel", location: "unknown", evidence: [E-002]}
+  data_subjects:
+    - {id: DS-01, name: "Website visitors sending an enquiry", may_include_minors: unknown, evidence: [E-001]}
+  data_categories:
+    - {id: DC-01, name: "Contact details", examples: [name, email, phone], subjects: [DS-01], fact_status: confirmed, evidence: [E-001]}
+    - {id: DC-02, name: "Message text", examples: [message], subjects: [DS-01], fact_status: confirmed, evidence: [E-001]}
+  processing_activities:
+    - id: PA-01
+      name: "Receive and answer contact enquiries"
+      purpose: "Read and reply to the sender's enquiry"
+      data_categories: [DC-01, DC-02]
+      subjects: [DS-01]
+      components: [C-01, C-02, C-03, C-04]
+      recipients: [V-01, V-02]
+      processing_location: "India (lab server); Cloudflare edge for transport and Turnstile"
+      lawful_ground_candidate: "s.7(a)"
+      retention: "Deleted after 365 days by purge_contact_messages; earlier on request by a publisher"
+      fact_status: confirmed
+      evidence: [E-001, E-002, E-003]
+  flows:
+    - {id: FL-01, from: C-01, to: C-02, data_categories: [DC-01, DC-02], cross_border: unknown, processor: V-01, evidence: [E-002]}
+  vendors:
+    - {id: V-01, name: Cloudflare, role: processor, region: unknown, contract_status: unknown, evidence: [E-002]}
+    - {id: V-02, name: "Outbound email provider (notification without personal data)", role: processor, region: unknown, contract_status: unknown, evidence: [E-002]}
+  flow_diagram: |
+    flowchart LR
+      Visitor[Visitor browser] -->|POST via Cloudflare tunnel| API[CMS contact endpoint]
+      API -->|Turnstile token| CF[Cloudflare siteverify]
+      API --> DB[(ContactMessage)]
+      API -->|alert with id only| Mail[Email provider]
+      Staff[Publisher/Admin in CMS] --> DB
+
+assumptions:
+  - {id: A-01, text: "The enquiry is the only use made of the data; no mailing list or CRM import exists.", affects: [PA-01], to_confirm_with: centre_head}
+unknowns:
+  - {id: U-01, text: "Whether minors use the form.", affects: [DS-01], owner: centre_head}
+  - {id: U-02, text: "Processor contracts with Cloudflare and the email provider.", affects: [V-01, V-02], owner: centre_head}
+
+applicability:
+  overall:
+    status: applicable
+    confidence: medium
+    reasoning: "PA-01 processes digital personal data of individuals in India by an Indian institution that decides purpose and means; no exclusion or exemption evidenced. Substantive duties are not in force until 2027-05-13."
+    provisions: ["Act s.3(a)", "Act s.7(a)"]
+    legal_review_required: true
+  activities:
+    - activity: PA-01
+      status: applicable
+      gates: {personal_data: yes, digital: yes, territorial: yes, exclusion: none, role: fiduciary, exemption: none}
+      lawful_ground: "s.7(a)"
+      provisions: ["Act s.3(a)", "Act s.7(a)"]
+      facts: [E-001, E-002]
+      assumptions: [A-01]
+      reasoning: "The sender voluntarily provides the data for the stated purpose of getting a reply. State status of IIT Kharagpur could change s.8(7) via s.17(4)."
+      confidence: medium
+      legal_questions: [Q-01, Q-02]
+
+requirements:
+  - {req_id: DPDP-LAW-02, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-02], evidence: [E-002, E-004], required_action: "none: purpose limited to replying; objection handled by deletion on request", legal_review: true, rationale: "s.7(a) relied on"}
+  - {req_id: DPDP-NOT-01, status: not-currently-applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-01], evidence: [E-004], required_action: "none: no consent requested; an informational notice is shown as best practice", legal_review: true, rationale: "Trigger (consent ground) not met if Q-01 confirms s.7(a)"}
+  - {req_id: DPDP-SEC-02, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-02], evidence: [E-002, E-005], required_action: "none: existing control verified (publisher role + MFA session)", legal_review: false, rationale: "personal data processed"}
+  - {req_id: DPDP-SEC-05, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-03], evidence: [E-003], required_action: "none: 365-day retention meets the one-year minimum", legal_review: true, rationale: "personal data processed"}
+  - {req_id: DPDP-RET-01, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-03], evidence: [E-003, E-005], required_action: "none: purge job after 365 days and delete on request", legal_review: true, rationale: "purpose served once the enquiry is answered"}
+  - {req_id: DPDP-GRV-01, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-01], evidence: [E-004], required_action: "Publish the named privacy contact on the Contact page (placeholder in notice)", legal_review: false, rationale: "personal data processed"}
+  - {req_id: DPDP-SEC-06, status: applicable, in_force: "no", commencement: "2027-05-13", activities: [PA-01], components: [C-04], evidence: [E-002], required_action: "Confirm processor terms with Cloudflare and the email provider", legal_review: true, rationale: "processors used"}
+
+legal_questions:
+  - {id: Q-01, question: "Is s.7(a) the correct ground for the contact form rather than consent?", why: "Decides whether DPDP-NOT-01 applies", provisions: ["Act s.7(a)", "Act s.5(1)"], related: [PA-01, DPDP-NOT-01, DPDP-LAW-02], blocking: false, owner: legal_reviewer, status: open, answer: null, answer_source: null}
+  - {id: Q-02, question: "Is IIT Kharagpur State under Article 12 (s.17(4)), and may messages be erased on request within one year given Rules r.8(3)?", why: "Decides erasure behaviour", provisions: ["Act s.17(4)", "Rules r.8(3)"], related: [PA-01, DPDP-RET-01, DPDP-SEC-05], blocking: false, owner: legal_reviewer, status: open, answer: null, answer_source: null}
+  - {id: Q-04, question: "Are processor contracts with security clauses in place with Cloudflare and the email provider?", why: "Processor security terms", provisions: ["Act s.8(2)", "Rules r.6(1)(f)"], related: [DPDP-SEC-06, V-01, V-02], blocking: false, owner: legal_reviewer, status: open, answer: null, answer_source: null}
+  - {id: Q-03, question: "Which Eighth Schedule languages should the notice be offered in?", why: "Language option for notices", provisions: ["Act s.5(3)"], related: [DPDP-NOT-01], blocking: false, owner: legal_reviewer, status: open, answer: null, answer_source: null}
+
+findings:
+  - {id: F-01, req_id: DPDP-RET-01, category: legal-gap, mandatory: true, title: "No retention limit on contact messages", description: "Messages were kept forever.", applicability_status: applicable, severity: medium, priority: P1, technical_impact: "Unbounded store of personal data", evidence: [E-001, E-005], status: verified}
+  - {id: F-02, req_id: DPDP-SEC-02, category: security-vulnerability, mandatory: false, title: "Unthrottled public write without bot check", description: "POST /contact/ had no rate limit, captcha or length limits.", applicability_status: applicable, severity: high, priority: P0, technical_impact: "Spam and storage abuse; stored markup", evidence: [E-002, E-005], status: implemented}
+  - {id: F-03, req_id: DPDP-GRV-01, category: legal-gap, mandatory: true, title: "No published privacy contact", description: "Notice has a placeholder for the contact person.", applicability_status: applicable, severity: low, priority: P2, technical_impact: "Visitors cannot raise privacy questions", evidence: [E-004], status: planned}
+
+plan:
+  - {id: P-01, findings: [F-01, F-02], components: [C-02, C-03], files: ["backend/apps/contact/"], change: "Retention purge command, throttle, Turnstile, honeypot, escaping, role-limited reads", dependencies: [], migrations: [], risks: "Turnstile outage blocks the form; the frontend shows a mailto fallback", tests: ["backend/apps/contact/tests/test_contact.py"], acceptance_criteria: ["6th message per minute per IP gets 429", "messages older than 365 days are deleted"], approvals_required: [], approval_status: not-required, approved_by: null}
+  - {id: P-02, findings: [F-03], components: [C-01], files: ["docs/privacy-notice.md"], change: "Frontend renders the notice with the named contact", dependencies: [P-01], migrations: [], risks: "none", tests: ["frontend check that the notice renders"], acceptance_criteria: ["Contact page shows the notice and contact"], approvals_required: [legal, management], approval_status: pending, approved_by: null}
+
+implementation:
+  - {plan_id: P-01, files_changed: ["backend/apps/contact/views.py", "backend/apps/contact/serializers.py", "backend/apps/contact/turnstile.py", "backend/apps/contact/management/commands/purge_contact_messages.py"], commit: "a8dcb32", migrations: [], notes: ""}
+
+verification:
+  - {id: T-01, plan_id: P-01, req_ids: [DPDP-RET-01, DPDP-SEC-02], test_ref: "backend/apps/contact/tests/test_contact.py", command: "cd backend && python -m pytest -q apps/contact", executed: true, result: pass, output_ref: ".dpdp/runs/contact-tests-2026-11-19.txt", executed_by: backend-security-agent, independent: false, date: 2026-11-19}
+
+approvals_pending:
+  - {item: F-02, needs: security, reason: "Independent verification (QA lane) of the contact abuse controls"}
+  - {item: P-02, needs: legal, reason: "Final notice wording and Q-01..Q-03"}
+outstanding_risks:
+  - {id: R-01, text: "Processor terms with Cloudflare and email provider unconfirmed", related: [V-01, V-02]}
+next_steps:
+  - "Legal reviewer answers Q-01 to Q-03 before 13 May 2027"
+  - "Centre names the privacy contact"
+reassessment_triggers:
+  - "New use of contact data (newsletter, CRM)"
+  - "New vendor or region"
+  - "Board or government notifications (s.17 exemptions)"
+  - "Commencement of substantive duties on 2027-05-13"

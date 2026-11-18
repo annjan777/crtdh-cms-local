@@ -1,106 +1,142 @@
+# CRTDH CMS zone - production stack (lab server). See deploy/README.md.
+#
+# Nothing here publishes a host port. The only way in is the Cloudflare tunnel:
+#   cms.<domain>      -> gateway (admin SPA + /api/ + /oauth/authorize/), behind Cloudflare Access
+#   contact.<domain>  -> gateway, which allows only POST /api/v1/contact/
+#   mcp.<domain>      -> mcp (only /mcp, OAuth metadata and token paths; WAF: Anthropic range only)
+# Every secret comes from deploy/.env (never committed; copy .env.example).
+# No seeding and no default users: create the first admin as in README step 4.
+
 name: crtdh-cms
+
+x-backend: &backend
+  build:
+    context: ../backend
+  image: crtdh-backend:prod
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    DEBUG: "False"
+    CRTDH_ENV: production
+    TRUST_CF_CONNECTING_IP: "True"
+    MEDIA_ROOT: /data/media
+  volumes:
+    - media_data:/data/media
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  networks: [internal, egress]
 
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in deploy/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    security_opt:
+      - no-new-privileges:true
+    networks: [internal]
 
-  backend:
-    build:
-      context: ../backend
-    restart: unless-stopped
-    # Run migrations + collectstatic on every start, then hand off to gunicorn.
-    # Safe to re-run: migrate is idempotent, collectstatic --noinput overwrites.
-    command: >
-      sh -c "python manage.py migrate --noinput &&
-             python manage.py bootstrap_local &&
-             python manage.py collectstatic --noinput &&
-             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
-    environment:
-      SECRET_KEY: ${DJANGO_SECRET_KEY:-local-secret-key-123}
-      DEBUG: ${DJANGO_DEBUG:-True}
-      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
-      CORS_ALLOW_ALL_ORIGINS: "True"
-      DATABASE_URL: ${DATABASE_URL}
-    volumes:
-      - media_data:/app/media
-      - static_data:/app/staticfiles
+  # One-shot: schema + cache table, then exits. Content is never reseeded.
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: sh -c "python manage.py migrate --noinput && python manage.py createcachetable"
     depends_on:
       db:
         condition: service_healthy
-    expose:
-      - "8000"
 
-  frontend:
-    build:
-      context: ../frontend
-      args:
-        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL}
-    restart: unless-stopped
-    expose:
-      - "80"
+  cms:
+    <<: *backend
+    command: >
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
+      --limit-request-line 8190 --access-logfile - --worker-tmp-dir /tmp
     depends_on:
-      - backend
+      migrate:
+        condition: service_completed_successfully
 
-  admin:
+  # MCP server (mcp lane): ASGI, so long-lived MCP sessions never hold gunicorn workers.
+  mcp:
+    <<: *backend
+    command: >
+      uvicorn mcp_server.asgi:app --host 0.0.0.0 --port 8400 --proxy-headers
+      --forwarded-allow-ips "*" --no-server-header
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Builds publish tarballs for the campus publish agent (publishing lane).
+  worker:
+    <<: *backend
+    command: python manage.py run_publish_worker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Daily housekeeping: contact-message retention (docs/privacy-notice.md) and expired sessions.
+  housekeeping:
+    <<: *backend
+    command: >
+      sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions && python manage.py clear_auth_throttles; sleep 86400; done"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Admin SPA + reverse proxy for cms.<domain> and contact.<domain>.
+  gateway:
     build:
       context: ../admin
       args:
-        VITE_API_BASE_URL: ${ADMIN_API_BASE_URL}
+        VITE_API_BASE_URL: /api/v1
+        VITE_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:?set PUBLIC_SITE_URL in deploy/.env}
     restart: unless-stopped
-    expose:
-      - "80"
-    depends_on:
-      - backend
-
-  nginx:
-    image: nginx:1.27-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "3001:3001"
-      - "443:443"
     environment:
-      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN}
-      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      CMS_HOST: ${CMS_HOST:?set CMS_HOST in deploy/.env}
+      CONTACT_HOST: ${CONTACT_HOST:?set CONTACT_HOST in deploy/.env}
+      NGINX_ENVSUBST_FILTER: "^(CMS_HOST|CONTACT_HOST)$"
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
-      - static_data:/static:ro
-      - media_data:/media:ro
-      - certbot_www:/var/www/certbot:ro
-      - certbot_conf:/etc/letsencrypt:ro
+      - ./nginx/empty.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - backend
-      - frontend
-      - admin
-    # nginx:alpine's entrypoint auto-renders any *.template in
-    # /etc/nginx/templates (envsubst'ing the two domain vars above) into
-    # /etc/nginx/conf.d/ before starting — see nginx/templates/crtdh.conf.template.
+      - cms
+    security_opt:
+      - no-new-privileges:true
+    networks: [internal]
 
-  certbot:
-    image: certbot/certbot:latest
+  cloudflared:
+    image: ${CLOUDFLARED_IMAGE:?pin cloudflare/cloudflared:<version>@sha256:<digest> in deploy/.env}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
     volumes:
-      - certbot_www:/var/www/certbot
-      - certbot_conf:/etc/letsencrypt
-    # Idle by default; `docker compose run --rm certbot ...` is used to
-    # request/renew certs (see deploy/README.md for the bootstrap steps).
-    entrypoint: >
-      sh -c "while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h; done"
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
+    depends_on:
+      - gateway
+      - mcp
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    networks: [internal, egress]
+
+networks:
+  # No route to the internet: the database is only on this network.
+  internal:
+    internal: true
+  # Outbound only (Turnstile, SMTP, Cloudflare edge). Nothing is published on the host.
+  egress: {}
 
 volumes:
   pgdata:
   media_data:
-  static_data:
-  certbot_www:
-  certbot_conf:

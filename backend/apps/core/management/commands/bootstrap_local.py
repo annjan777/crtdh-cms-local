@@ -21,18 +21,38 @@ dependencies (no scraped mirror, no network call):
   of being silently skipped.
 """
 
+import json
+import os
 import shutil
 from pathlib import Path
 
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+
+# Never load accounts or credentials from a fixture (a dumpdata once shipped a
+# superuser with a known password). Users come from create_dev_users (dev) or
+# createsuperuser (production), never from seed data.
+FORBIDDEN_MODEL_PREFIXES = ("auth.", "accounts.", "sessions.", "admin.", "contact.")
 
 
 class Command(BaseCommand):
     help = "Load the bundled local seed fixture and seed media (safe to run on every startup)."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--i-know-this-overwrites-content",
+            action="store_true",
+            dest="force",
+            help="Allow running with DEBUG=False (overwrites CMS content with the seed).",
+        )
+
     def handle(self, *args, **options):
+        if not settings.DEBUG and not options["force"] and os.environ.get("CRTDH_ALLOW_SEED") != "1":
+            raise CommandError(
+                "bootstrap_local is a dev-only seed and overwrites content. Refusing with DEBUG=False. "
+                "Pass --i-know-this-overwrites-content (or CRTDH_ALLOW_SEED=1) for a one-off import."
+            )
         self._seed_media()
         self._load_fixture()
 
@@ -68,6 +88,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("No local_seed.json bundled in this image — skipping data seed."))
             return
 
+        bad = sorted({o["model"] for o in json.loads(fixture.read_text()) if o["model"].startswith(FORBIDDEN_MODEL_PREFIXES)})
+        if bad:
+            raise CommandError(f"local_seed.json contains forbidden models {bad}; remove them (no users in fixtures).")
         self.stdout.write("Loading local_seed.json ...")
         call_command("loaddata", str(fixture))
         self.stdout.write(self.style.SUCCESS("Data seeded."))

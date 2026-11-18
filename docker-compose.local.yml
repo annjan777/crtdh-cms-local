@@ -20,19 +20,26 @@ services:
     build:
       context: ./backend
     restart: unless-stopped
+    # Dev only. No users are created automatically: run
+    #   docker compose -f docker-compose.local.yml exec backend python manage.py create_dev_users
+    # which prints random passwords once (it refuses to run with DEBUG off).
     command: >
       sh -c "python manage.py migrate --noinput &&
+             python manage.py createcachetable &&
              python manage.py bootstrap_local &&
-             python manage.py collectstatic --noinput &&
-             python manage.py createsuperuser --noinput --username admin --email admin@example.com || true &&
              gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
-      SECRET_KEY: local-insecure-secret-key
+      # Local-only key (DEBUG=True never runs the production checks). Never reuse anywhere else.
+      SECRET_KEY: local-dev-only-not-secret
       DEBUG: "True"
+      CRTDH_ENV: development
       ALLOWED_HOSTS: "localhost,127.0.0.1"
+      # The admin dev server (3001) calls the API on 8000 with the session cookie.
       CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001,http://localhost:5173,http://127.0.0.1:5173"
+      CORS_URLS_REGEX: "^/api/.*$"
+      CORS_ALLOW_CREDENTIALS: "True"
+      CSRF_TRUSTED_ORIGINS: "http://localhost:3001,http://127.0.0.1:3001,http://localhost:5173"
       DATABASE_URL: "postgres://crtdh:localpassword@db:5432/crtdh"
-      DJANGO_SUPERUSER_PASSWORD: "adminpassword"
     volumes:
       - media_data_local:/app/media
       - static_data_local:/app/staticfiles
