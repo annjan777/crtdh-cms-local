@@ -43,6 +43,13 @@ class ConsentAuthorizationView(AuthorizationView):
             return redirect_to_login(request.get_full_path(), settings.CMS_LOGIN_URL, "next")
         if not user_may_connect(request.user):
             return render(request, "oauth/not_allowed.html", status=403)
+        params = request.POST if request.method == "POST" else request.GET
+        if params.get("code_challenge_method") != "S256" or not params.get("code_challenge"):
+            # PKCE with S256 only (OAuth 2.1). Shown here rather than redirected: the
+            # request isn't trustworthy enough to send anything to its redirect_uri.
+            return render(request, "oauth/consent.html", {
+                "error": {"error": "invalid_request",
+                          "description": "This connection request is missing PKCE (S256)."}}, status=400)
         if "approval_prompt" in request.GET:
             # Consent is shown on every connect; a client can't ask to skip it.
             request.GET = request.GET.copy()
