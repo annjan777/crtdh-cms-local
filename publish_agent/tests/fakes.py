@@ -215,7 +215,7 @@ class FakeSFTPServer:
 
     host_key = None
 
-    def __init__(self, root: str, client_key, password: str = "local-test-pw"):
+    def __init__(self, root: str, client_key, password: str = "local-test-pw", port: int = 0):
         if FakeSFTPServer.host_key is None:
             FakeSFTPServer.host_key = paramiko.RSAKey.generate(2048)
         self.root = root
@@ -225,7 +225,7 @@ class FakeSFTPServer:
         os.makedirs(os.path.join(root, HOME.lstrip("/")), exist_ok=True)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind(("127.0.0.1", 0))
+        self.sock.bind(("127.0.0.1", port))
         self.sock.listen(20)
         self.port = self.sock.getsockname()[1]
         self.transports: list[paramiko.Transport] = []
@@ -301,7 +301,7 @@ def media_name(data: bytes, ext: str = "jpg") -> str:
 
 # ------------------------------------------------------------------------------ fake CMS
 class FakeCMS:
-    def __init__(self, secret: str):
+    def __init__(self, secret: str, port: int = 0):
         self.secret = secret
         self.jobs: list[dict] = []      # queue; head is offered until it gets live/failed
         self.builds: dict[str, bytes] = {}
@@ -359,7 +359,7 @@ class FakeCMS:
                     self.send_response(204); self.end_headers(); return
                 self.send_response(404); self.end_headers()
 
-        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+        self.httpd = ThreadingHTTPServer(("127.0.0.1", port), H)
         self.port = self.httpd.server_address[1]
         self.url = f"http://127.0.0.1:{self.port}"
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
