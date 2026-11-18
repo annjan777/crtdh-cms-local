@@ -117,7 +117,7 @@ function htmlFiles(dir) {
   const res = []
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name)
-    if (e.isDirectory() && e.name !== 'assets' && e.name !== 'media') res.push(...htmlFiles(p))
+    if (e.isDirectory() && e.name !== 'assets') res.push(...htmlFiles(p))
     else if (e.name.endsWith('.html')) res.push(p)
   }
   return res

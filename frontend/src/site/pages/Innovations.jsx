@@ -34,14 +34,18 @@ export default function Innovations({ data }) {
               <h2 id="spotlight">Project spotlight</h2>
             </div>
           </div>
-          <ul className="band band--figures">
-            {slides.map((s, i) => (
-              <li className={`band__panel band__panel--${i + 1}`} key={s.id}>
-                <Img src={s.image} alt={s.title || ''} ratio={null} sizes="(min-width: 768px) 30vw, 50vw" />
-                {s.title && <span className="band__label">{s.title}</span>}
-              </li>
-            ))}
-          </ul>
+          <div className="wrap">
+            <ul className="spotlight">
+              {slides.map((s) => (
+                <li key={s.id}>
+                  <figure>
+                    <Img src={s.image} alt={s.title || ''} ratio="1x1" figure sizes="(min-width: 768px) 22vw, 45vw" />
+                    {s.title && <figcaption>{s.title}</figcaption>}
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       )}
 

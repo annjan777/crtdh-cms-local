@@ -6,7 +6,7 @@ import { PageBanner } from '../components/Blocks.jsx'
 export default function Contact({ data, settings: settingsProp }) {
   // Site settings come from the layout data; the admin preview may pass them directly.
   const settings = settingsProp || data.singletons?.['site-settings'] || data.layout?.singletons?.['site-settings'] || {}
-  const notice = data.extra?.privacyNotice
+  const privacy = data.extra?.privacy
   const phones = [settings.phone_primary, settings.phone_secondary].filter(Boolean)
   const emails = [settings.email_primary, settings.email_secondary].filter(Boolean)
   return (
@@ -17,7 +17,7 @@ export default function Contact({ data, settings: settingsProp }) {
       />
       <section className="section">
         <div className="wrap contact__grid">
-          <ContactForm email={settings.email_primary} privacy={<PrivacyNotice markdown={notice} />} />
+          <ContactForm email={settings.email_primary} notice={<ShortNotice privacy={privacy} />} />
           <aside className="contact__details" aria-labelledby="contact-office">
             <h2 id="contact-office">The office</h2>
             <dl className="facts">
@@ -56,31 +56,31 @@ export default function Contact({ data, settings: settingsProp }) {
           </aside>
         </div>
       </section>
+      <FullNotice privacy={privacy} />
     </PageShell>
   )
 }
 
-/** Renders docs/privacy-notice.md (paragraphs and links only). Until it exists: what the form does. */
-function PrivacyNotice({ markdown }) {
-  if (!markdown) {
-    return (
-      <div className="privacy small soft">
-        <p>
-          What you send here goes to the CRTDH office at IIT Kharagpur and is used only to reply to you.
-        </p>
-      </div>
-    )
-  }
-  const paras = markdown
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter((p) => p && !p.startsWith('#'))
+/** Short notice, shown directly above Send (docs/privacy-notice.md). */
+function ShortNotice({ privacy }) {
+  const text = privacy?.short || 'What you send here goes to the CRTDH office at IIT Kharagpur and is used only to reply to you.'
+  return <p className="privacy small soft" id="contact-notice">{inlineLinks(text)}</p>
+}
+
+/** Full notice: "How we use your message" at /contact#privacy. Hidden until the document exists. */
+function FullNotice({ privacy }) {
+  if (!privacy?.paragraphs?.length) return null
   return (
-    <div className="privacy small soft">
-      {paras.map((p, i) => (
-        <p key={i}>{inlineLinks(p.replace(/\n/g, ' '))}</p>
-      ))}
-    </div>
+    <section className="section section--surface" id="privacy" aria-labelledby="privacy-title">
+      <div className="wrap">
+        <h2 id="privacy-title">{privacy.title}</h2>
+        <div className="prose mt-6">
+          {privacy.paragraphs.map((p, i) => (
+            <p key={i}>{inlineLinks(p)}</p>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 

@@ -64,7 +64,7 @@ function loadTurnstile() {
  * rate limited (429); relay unreachable → a prepared email (mailto) instead.
  * The submit button is never disabled; it reports what is missing.
  */
-export default function ContactForm({ email, privacy }) {
+export default function ContactForm({ email, notice }) {
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle') // idle | sending | sent | turnstile | limited | offline | failed
@@ -196,7 +196,7 @@ export default function ContactForm({ email, privacy }) {
     onBlur,
     onFocus,
     'aria-invalid': errors[name] ? 'true' : undefined,
-    'aria-describedby': [errors[name] ? `contact-${name}-error` : '', `contact-${name}-hint`].filter(Boolean).join(' ') || undefined,
+    'aria-describedby': [errors[name] ? `contact-${name}-error` : '', name === 'message' ? 'contact-message-hint' : ''].filter(Boolean).join(' ') || undefined,
   })
   const Err = ({ name }) =>
     errors[name] ? (
@@ -242,6 +242,7 @@ export default function ContactForm({ email, privacy }) {
       </div>
       {SITE_KEY && <div ref={tsBox} className="turnstile" />}
 
+      {notice}
       <div className="form__send">
         <button className="btn btn--primary" type="submit" aria-busy={status === 'sending' ? 'true' : undefined}>
           {status === 'sending' ? 'Sending…' : 'Send message'}
@@ -283,7 +284,6 @@ export default function ContactForm({ email, privacy }) {
         )}
       </div>
 
-      {privacy}
     </form>
   )
 }

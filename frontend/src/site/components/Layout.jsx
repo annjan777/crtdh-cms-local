@@ -241,7 +241,8 @@ function Footer({ settings, groups, contact, publishedAt }) {
             {settings.logo_right && <img src={settings.logo_right} alt="Department of Scientific and Industrial Research, Government of India" height="56" loading="lazy" />}
           </div>
           <p className="small">
-            A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.
+            A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.{' '}
+            <SiteLink to="/contact#privacy">How we use contact messages</SiteLink>.
             {publishedAt && <> Last updated {formatDate(publishedAt)}.</>}
           </p>
         </div>

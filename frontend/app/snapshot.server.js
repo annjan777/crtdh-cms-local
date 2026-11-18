@@ -56,7 +56,7 @@ export function loadPage(id) {
   const needs = PAGE_NEEDS[id]
   if (!needs) throw new SnapshotGuardError(`unknown page id "${id}"`)
   const data = selectData(getSnapshot(), needs)
-  if (id === 'contact') data.extra = { privacyNotice: readPrivacyNotice() }
+  if (id === 'contact') data.extra = { privacy: parsePrivacyNotice(readPrivacyNotice()) }
   return data
 }
 
@@ -76,4 +76,38 @@ function readPrivacyNotice() {
     if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8')
   }
   return null
+}
+
+// docs/privacy-notice.md holds a "## Short notice" and a "## Full notice", each as a blockquote.
+// Sentences that still carry an owner placeholder ("[contact email]") are left out of the
+// public page (they are listed in docs/content-gaps.md) instead of being published half-filled.
+export function parsePrivacyNotice(md) {
+  if (!md) return null
+  const section = (title) => {
+    const m = md.match(new RegExp(`^## ${title}[^\\n]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'))
+    if (!m) return []
+    return m[1]
+      .split('\n')
+      .filter((l) => l.startsWith('>'))
+      .map((l) => l.replace(/^>\s?/, ''))
+      .join('\n')
+      .split(/\n{2,}/)
+      .map((p) => p.replace(/\n/g, ' ').trim())
+      .filter(Boolean)
+  }
+  const placeholder = /\[[^\]]+\](?!\()/
+  const clean = (p) =>
+    p
+      .split(/(?<=[.!?])\s+(?=[A-Z*[])/)
+      .filter((sentence) => !placeholder.test(sentence))
+      .join(' ')
+      .trim()
+  const short = section('Short notice').map(clean).filter(Boolean)
+  const full = section('Full notice')
+  const title = (full.find((p) => p.startsWith('### ')) || '### How we use your message').replace(/^###\s*/, '')
+  const paras = full
+    .filter((p) => !p.startsWith('### '))
+    .map(clean)
+    .filter((p) => p && !/^\*[^*]*\*$/.test(p) && p.replace(/\*\*[^*]+\*\*/g, '').trim())
+  return { short: short.join(' '), title, paragraphs: paras }
 }

@@ -141,7 +141,7 @@
 .notice--ok { box-shadow: inset 0 0 0 2px var(--success); }
 .notice--error { box-shadow: inset 0 0 0 2px var(--danger); }
 .notice:focus-visible { outline-offset: 4px; }
-.privacy { margin-top: var(--s-8); max-width: 60ch; }
+.privacy { margin-top: var(--s-6); max-width: 60ch; }
 .privacy p + p { margin-top: var(--s-2); }
 
 /* Closing band: one heading, one sentence, one action */

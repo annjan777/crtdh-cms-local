@@ -94,6 +94,9 @@ summary.nav__link::-webkit-details-marker { display: none; }
   .banner__print { width: 72%; margin-left: auto; }
 }
 
+/* The first plain section after a banner sits closer to it. */
+.banner + .section:not(.section--surface, .section--navy) { padding-top: var(--s-8); }
+
 /* In-page index (listing pages): a wrapped list of plain links */
 .jump { margin-top: var(--s-8); }
 .jump ul { list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-6); }

@@ -21,7 +21,7 @@ export default function Team({ data }) {
             {groups.map((g) => (
               <section key={g.id} className="team__group" aria-labelledby={`team-cat-${g.id}`}>
                 <h2 id={`team-cat-${g.id}`} className="team__cat">{g.name}</h2>
-                <ul className={`people people--${g.members.length === 1 ? 'one' : 'many'}`}>
+                <ul className="people">
                   {g.members.map((m) => (
                     <li key={m.id} className="person">
                       {m.photo ? (
