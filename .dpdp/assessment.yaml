@@ -95,8 +95,8 @@ legal_questions:
   - {id: Q-03, question: "Which Eighth Schedule languages should the notice be offered in?", why: "Language option for notices", provisions: ["Act s.5(3)"], related: [DPDP-NOT-01], blocking: false, owner: legal_reviewer, status: open, answer: null, answer_source: null}
 
 findings:
-  - {id: F-01, req_id: DPDP-RET-01, category: legal-gap, mandatory: true, title: "No retention limit on contact messages", description: "Messages were kept forever.", applicability_status: applicable, severity: medium, priority: P1, technical_impact: "Unbounded store of personal data", evidence: [E-001], status: implemented}
-  - {id: F-02, req_id: DPDP-SEC-02, category: security-vulnerability, mandatory: false, title: "Unthrottled public write without bot check", description: "POST /contact/ had no rate limit, captcha or length limits.", applicability_status: applicable, severity: high, priority: P0, technical_impact: "Spam and storage abuse; stored markup", evidence: [E-002], status: implemented}
+  - {id: F-01, req_id: DPDP-RET-01, category: legal-gap, mandatory: true, title: "No retention limit on contact messages", description: "Messages were kept forever.", applicability_status: applicable, severity: medium, priority: P1, technical_impact: "Unbounded store of personal data", evidence: [E-001, E-005], status: verified}
+  - {id: F-02, req_id: DPDP-SEC-02, category: security-vulnerability, mandatory: false, title: "Unthrottled public write without bot check", description: "POST /contact/ had no rate limit, captcha or length limits.", applicability_status: applicable, severity: high, priority: P0, technical_impact: "Spam and storage abuse; stored markup", evidence: [E-002, E-005], status: implemented}
   - {id: F-03, req_id: DPDP-GRV-01, category: legal-gap, mandatory: true, title: "No published privacy contact", description: "Notice has a placeholder for the contact person.", applicability_status: applicable, severity: low, priority: P2, technical_impact: "Visitors cannot raise privacy questions", evidence: [E-004], status: planned}
 
 plan:
@@ -104,11 +104,13 @@ plan:
   - {id: P-02, findings: [F-03], components: [C-01], files: ["docs/privacy-notice.md"], change: "Frontend renders the notice with the named contact", dependencies: [P-01], migrations: [], risks: "none", tests: ["frontend check that the notice renders"], acceptance_criteria: ["Contact page shows the notice and contact"], approvals_required: [legal, management], approval_status: pending, approved_by: null}
 
 implementation:
-  - {plan_id: P-01, files_changed: ["backend/apps/contact/views.py", "backend/apps/contact/serializers.py", "backend/apps/contact/turnstile.py", "backend/apps/contact/management/commands/purge_contact_messages.py"], commit: null, migrations: [], notes: "commit recorded in the lane report"}
+  - {plan_id: P-01, files_changed: ["backend/apps/contact/views.py", "backend/apps/contact/serializers.py", "backend/apps/contact/turnstile.py", "backend/apps/contact/management/commands/purge_contact_messages.py"], commit: "a8dcb32", migrations: [], notes: ""}
 
-verification: []
+verification:
+  - {id: T-01, plan_id: P-01, req_ids: [DPDP-RET-01, DPDP-SEC-02], test_ref: "backend/apps/contact/tests/test_contact.py", command: "cd backend && python -m pytest -q apps/contact", executed: true, result: pass, output_ref: ".dpdp/runs/contact-tests-2026-11-19.txt", executed_by: backend-security-agent, independent: false, date: 2026-11-19}
 
 approvals_pending:
+  - {item: F-02, needs: security, reason: "Independent verification (QA lane) of the contact abuse controls"}
   - {item: P-02, needs: legal, reason: "Final notice wording and Q-01..Q-03"}
 outstanding_risks:
   - {id: R-01, text: "Processor terms with Cloudflare and email provider unconfirmed", related: [V-01, V-02]}
