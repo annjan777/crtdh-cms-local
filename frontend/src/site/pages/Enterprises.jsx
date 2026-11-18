@@ -25,7 +25,7 @@ export default function Enterprises({ data }) {
             </div>
             {home.msme_map_image && (
               <figure className="split__side">
-                <Img src={home.msme_map_image} alt={home.msme_caption || 'Map of the MSME cluster'} ratio={null} contain sizes="(min-width: 768px) 32vw, 100vw" />
+                <Img src={home.msme_map_image} alt={home.msme_map_image_alt || home.msme_caption || 'Map of the MSME cluster'} ratio={null} contain sizes="(min-width: 768px) 32vw, 100vw" />
                 {home.msme_caption && <figcaption>{home.msme_caption}</figcaption>}
               </figure>
             )}

@@ -29,7 +29,7 @@ export default function Services({ data }) {
             <ul className="services__list">
               {services.map((s) => (
                 <li key={s.id} className="services__item">
-                  {s.image && <Img src={s.image} alt="" ratio="3x2" sizes="(min-width: 768px) 30vw, 100vw" />}
+                  {s.image && <Img src={s.image} alt={s.image_alt || ''} ratio="3x2" sizes="(min-width: 768px) 30vw, 100vw" />}
                   <h3>{(s.title || '').replace('R & D', 'R&D')}</h3>
                 </li>
               ))}

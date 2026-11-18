@@ -238,8 +238,8 @@ function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
         </div>
         <div className="site-footer__base">
           <div className="site-footer__logos">
-            {settings.logo_left && <img src={settings.logo_left} alt="Indian Institute of Technology Kharagpur" height="56" loading="lazy" />}
-            {settings.logo_right && <img src={settings.logo_right} alt="Department of Scientific and Industrial Research, Government of India" height="56" loading="lazy" />}
+            {settings.logo_left && <img src={settings.logo_left} alt={settings.logo_left_alt || 'Indian Institute of Technology Kharagpur'} height="56" loading="lazy" />}
+            {settings.logo_right && <img src={settings.logo_right} alt={settings.logo_right_alt || 'Department of Scientific and Industrial Research, Government of India'} height="56" loading="lazy" />}
           </div>
           <p className="small">
             A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.{' '}

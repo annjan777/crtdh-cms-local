@@ -92,12 +92,12 @@ function Proof({ enterprises = [], products = [] }) {
   )
 }
 
-/** Our work: one featured innovation beside the heading, then a row of four at one size and ratio. */
+/** Our work: heading cell, one wide print and one upright, then a row of four (layout in pages.css). */
 function Work({ innovations = [] }) {
   const withImages = innovations.filter((i) => (i.images || [])[0]?.image)
-  const shown = withImages.slice(0, 5)
+  const shown = withImages.slice(0, 6)
   if (!shown.length) return null
-  const shapes = ['wide', 'single', 'single', 'single', 'single']
+  const shapes = ['wide', 'single', 'single', 'single', 'single', 'single']
   return (
     <section className="section section--surface work" aria-labelledby="work-title">
       <div className="wrap">
@@ -115,7 +115,7 @@ function Work({ innovations = [] }) {
                 <SiteLink to={`/innovations#innovation-${inv.id}`} className="work__link">
                   <Img
                     src={img.image}
-                    alt={img.caption || ''}
+                    alt={img.image_alt || img.caption || ''}
                     figure
                     ratio="3x2"
                     sizes={shape === 'wide' ? '(min-width: 768px) 48vw, 100vw' : '(min-width: 768px) 24vw, 50vw'}
@@ -150,12 +150,12 @@ function Manufacturing({ home }) {
         </div>
         {home.enterprises_image_1 && (
           <figure className="manufacture__a">
-            <Img src={home.enterprises_image_1} alt="" ratio="4x5" sizes="(min-width: 768px) 25vw, 60vw" />
+            <Img src={home.enterprises_image_1} alt={home.enterprises_image_1_alt || ''} ratio="4x5" sizes="(min-width: 768px) 25vw, 60vw" />
           </figure>
         )}
         {home.enterprises_image_2 && (
           <figure className="manufacture__b">
-            <Img src={home.enterprises_image_2} alt="" ratio="1x1" sizes="(min-width: 768px) 18vw, 40vw" />
+            <Img src={home.enterprises_image_2} alt={home.enterprises_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 18vw, 40vw" />
           </figure>
         )}
       </div>
@@ -166,7 +166,7 @@ function Manufacturing({ home }) {
             {panels.map((p, i) => {
               const inner = (
                 <>
-                  <Img src={p.image} alt="" ratio="1x1" figure sizes="88px" />
+                  <Img src={p.image} alt={p.image_alt || ''} ratio="1x1" figure sizes="88px" />
                   <span>{p.title}</span>
                 </>
               )
@@ -191,7 +191,7 @@ function Community({ home }) {
       <div className="wrap grid12">
         {home.women_image_1 && (
           <figure className="community__a">
-            <Img src={home.women_image_1} alt="" ratio="3x2" sizes="(min-width: 768px) 42vw, 100vw" />
+            <Img src={home.women_image_1} alt={home.women_image_1_alt || ''} ratio="3x2" sizes="(min-width: 768px) 42vw, 100vw" />
           </figure>
         )}
         <div className="community__text">
@@ -203,7 +203,7 @@ function Community({ home }) {
         </div>
         {home.women_image_2 && (
           <figure className="community__b">
-            <Img src={home.women_image_2} alt="" ratio="1x1" sizes="(min-width: 768px) 20vw, 50vw" />
+            <Img src={home.women_image_2} alt={home.women_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 20vw, 50vw" />
           </figure>
         )}
       </div>
@@ -226,7 +226,7 @@ function News({ items = [], documents = [], events = [], home }) {
         <div className="grid12 news__body">
           {photo && (
             <figure className="news__photo">
-              <Img src={photo.image} alt={photo.caption || ''} ratio="4x5" sizes="(min-width: 768px) 28vw, 60vw" />
+              <Img src={photo.image} alt={photo.image_alt || photo.caption || ''} ratio="4x5" sizes="(min-width: 768px) 28vw, 60vw" />
             </figure>
           )}
           <div className="news__list">
@@ -293,7 +293,7 @@ function Visit({ home, settings }) {
         </div>
         {home.office_image && (
           <figure className="visit__photo">
-            <Img src={home.office_image} alt="" ratio="1x1" sizes="200px" />
+            <Img src={home.office_image} alt={home.office_image_alt || ''} ratio="1x1" sizes="200px" />
           </figure>
         )}
         <div className="visit__links">

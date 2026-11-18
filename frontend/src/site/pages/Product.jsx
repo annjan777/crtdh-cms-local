@@ -18,7 +18,7 @@ export default function Product({ data }) {
               <article key={p.id} className="product" id={`product-${p.id}`}>
                 <div className="product__media">
                   {(p.images || []).filter((im) => im.image).slice(0, 3).map((im, i) => (
-                    <Img key={im.id} src={im.image} alt={i === 0 ? p.name : ''} ratio="1x1" contain sizes="(min-width: 768px) 22vw, 50vw" />
+                    <Img key={im.id} src={im.image} alt={im.image_alt || (i === 0 ? p.name : '')} ratio="1x1" contain sizes="(min-width: 768px) 22vw, 50vw" />
                   ))}
                 </div>
                 <div className="product__text">

@@ -14,7 +14,7 @@ export default function SocialImpact({ data }) {
   const videos = dedupeVideos((c['video-blocks'] || []).filter((v) => v.page === 'social-impact'))
   return (
     <PageShell data={data} className="impact">
-      <PageBanner title="Social impact" intro={INTRO} image={home.women_image_1} />
+      <PageBanner title="Social impact" intro={INTRO} image={home.women_image_1} imageAlt={home.women_image_1_alt || ''} />
       <section className="section" aria-labelledby="impact-story">
         <div className="wrap split">
           <div className="split__main">
@@ -27,7 +27,7 @@ export default function SocialImpact({ data }) {
           </div>
           {home.women_image_2 && (
             <figure className="split__side">
-              <Img src={home.women_image_2} alt="" ratio="4x5" sizes="(min-width: 768px) 30vw, 100vw" />
+              <Img src={home.women_image_2} alt={home.women_image_2_alt || ''} ratio="4x5" sizes="(min-width: 768px) 30vw, 100vw" />
             </figure>
           )}
         </div>
