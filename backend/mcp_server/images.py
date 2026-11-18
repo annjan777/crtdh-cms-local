@@ -1,7 +1,10 @@
 """Image checks and re-encoding for photos that arrive through MCP.
 
-TODO(integration, backend-security): call `apps.common.images.process_upload` instead of
-`_local_process` (asked for its signature in inbox/backend-security.md). Both must:
+TODO(integration, backend-security): call
+`apps.common.images.process_upload(io.BytesIO(data), min_width=None, kind="image")` instead of
+`_local_process`. It returns ProcessedImage(path=<temp file>, width, height, sha256, mime) —
+read the bytes from `path`, ext from `.ext` — and raises CMSError(CMS_VALIDATION) on bad
+input (map its `.body` to errors.CmsError). Both must:
 check type by content (not extension), allow only JPEG/PNG/WebP, refuse SVG/HTML, cap
 pixels, and re-encode (dropping EXIF and any appended payload).
 """

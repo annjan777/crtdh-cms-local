@@ -2,7 +2,10 @@
 
 Every other MCP module calls these functions. Until backend-core merges, they work on the
 existing models directly; each `TODO(integration, backend-core)` names the core function to
-call instead (exact names requested in inbox/backend-core.md). Item ids follow contracts §2:
+call instead (names confirmed by backend-core, inbox/mcp.md 19 Nov 21:24Z). Core writes take
+`ctx = apps.publishing.audit.WriteContext(user=actor.user, channel="mcp",
+connector_session=actor.session_key)` and raise `apps.publishing.errors.CMSError`, whose
+`.body` is the §4 dict (map it to errors.CmsError; `errors.as_error_body(exc)` for anything else). Item ids follow contracts §2:
 `<section id>.<resource>:<pk>`, e.g. `home.hero.hero-slides:7`.
 
 All functions are synchronous (Django ORM); the tool layer runs them in a worker thread.
@@ -45,8 +48,9 @@ class Actor:
 
 
 # --------------------------------------------------------------------------- registry
-# TODO(integration, backend-core): RESOURCE_MODELS and registry_pages() come from
-# apps.publishing.registry (contracts §2); keep only the lookups below.
+# TODO(integration, backend-core): use apps.publishing.registry — REGISTRY / export_registry()
+# for pages+fields (types incl. "file", "options_from", min_width/warn_width, filter/defaults,
+# top-level "globals"), get_page(), section_index(), RESOURCES, item_id(), parse_item_id().
 def _resource_models() -> dict[str, type[models.Model]]:
     from apps.carousel.models import HeroSlide, ProjectSlide
     from apps.common.models import ImageGridBlock, ImageGridItem, VideoBlock
@@ -181,7 +185,7 @@ def _raw(obj) -> dict:
 
 
 def version_of(obj) -> int:
-    # TODO(integration, backend-core): use the row's `version` field (contracts §3).
+    # TODO(integration, backend-core): return obj.version (every row has `version`).
     blob = json.dumps(_raw(obj), sort_keys=True, default=str).encode()
     return int(hashlib.sha256(blob).hexdigest()[:8], 16)
 
@@ -231,8 +235,8 @@ def _visible(obj) -> bool:
 
 
 def preview_url(page_id: str, item_id: str | None = None) -> str:
-    # TODO(integration, admin/backend-core): confirm the admin route; this opens the page
-    # editor (behind Cloudflare Access + CMS sign-in), never a bearer link.
+    # TODO(integration, backend-core): apps.publishing.registry.preview_url(item_id) (same format).
+    # Opens the page editor behind Cloudflare Access + CMS sign-in, never a bearer link.
     url = f"{settings.CMS_PUBLIC_URL}/pages/{quote(page_id)}"
     return f"{url}?{urlencode({'item': item_id})}" if item_id else url
 
@@ -531,8 +535,8 @@ def get_page(actor: Actor, page_id: str) -> dict:
 
 
 def list_pending_changes(actor: Actor) -> dict:
-    # TODO(integration, backend-core): return apps.publishing diff (contracts /cms/changes/),
-    # which covers changes from every channel. This fallback lists Claude's own changes.
+    # TODO(integration, backend-core): apps.publishing.changes.pending_changes(session_id=...)
+    # (same shape as GET /cms/changes/, every channel). This fallback lists Claude's own changes.
     writes = (ConnectorWrite.objects.filter(session__user=actor.user, discarded=False)
               .select_related("session").order_by("id"))
     pages: dict[str, list] = {}
@@ -548,7 +552,8 @@ def list_pending_changes(actor: Actor) -> dict:
 
 
 def search_media(actor: Actor, query: str, limit: int = 20) -> list[dict]:
-    # TODO(integration, backend-core): search the core media library instead.
+    # TODO(integration, backend-core): search apps.publishing.models.MediaAsset (media ids stay
+    # "media:<MediaAsset id>").
     q = (query or "").strip()
     qs = StagedImage.objects.filter(owner=actor.user).order_by("-id")
     if q:
@@ -575,8 +580,9 @@ def _stale(item_id: str, sent, current: int) -> CmsError:
 
 @transaction.atomic
 def update_item(actor: Actor, item_id: str, fields: dict, expected_version: int) -> dict:
-    # TODO(integration, backend-core): apps.publishing save-with-version (409 → CMS_STALE_VERSION)
-    # plus the audit helper with channel="mcp", session_id=actor.session_key.
+    # TODO(integration, backend-core): apps.publishing.content.update_by_item_id(item_id, data,
+    # ctx=ctx, expected_version=...) (writes the audit entry itself); image fields via
+    # content.attach_media(resource, pk, field, media_id, ctx=, expected_version=).
     page, section, model, obj = _parse_item_id(item_id)
     obj = model.objects.select_for_update().get(pk=obj.pk)
     current = version_of(obj)
@@ -593,7 +599,8 @@ def update_item(actor: Actor, item_id: str, fields: dict, expected_version: int)
 
 @transaction.atomic
 def create_item(actor: Actor, section_id: str, fields: dict) -> dict:
-    # TODO(integration, backend-core): apps.publishing create + audit (channel="mcp").
+    # TODO(integration, backend-core): apps.publishing.content.create_item(resource, data, ctx=ctx)
+    # (apply the section's registry "defaults"). Dedupe stays in guardrails.py.
     page, section = _section(section_id)
     if section["kind"] != "collection":
         raise CmsError("CMS_VALIDATION", f"{section['label']} is a single block; use update_section to change it.",
@@ -635,7 +642,7 @@ def hide_item(actor: Actor, item_id: str, expected_version: int) -> dict:
 
 @transaction.atomic
 def reorder(actor: Actor, section_id: str, item_ids: list[str]) -> dict:
-    # TODO(integration, backend-core): core reorder (same rule as ReorderMixin: exact id set).
+    # TODO(integration, backend-core): apps.publishing.content.reorder(resource, ids, ctx=ctx).
     page, section = _section(section_id)
     model = _resource_models()[section["resource"]]
     if section["kind"] != "collection" or not any(f.name == "order" for f in model._meta.fields):
@@ -687,8 +694,9 @@ def _restore(model, pk, raw: dict | None, kind: str):
 
 @transaction.atomic
 def discard_change(actor: Actor, item_id: str) -> dict:
-    # TODO(integration, backend-core): apps.publishing discard(item_id) — reverts to the last
-    # PUBLISHED values whoever changed it. Fallback: undo this user's Claude changes on it.
+    # TODO(integration, backend-core): apps.publishing.changes.discard_item(item_id, ctx=ctx) —
+    # reverts to the last PUBLISHED values whoever changed it. Fallback: undo this user's
+    # Claude changes on it.
     writes = list(ConnectorWrite.objects.select_for_update()
                   .filter(session__user=actor.user, item_id=item_id, discarded=False).order_by("id"))
     if not writes:
@@ -700,7 +708,7 @@ def discard_change(actor: Actor, item_id: str) -> dict:
 
 @transaction.atomic
 def discard_session(actor: Actor) -> dict:
-    # TODO(integration, backend-core): apps.publishing discard by session_id.
+    # TODO(integration, backend-core): apps.publishing.changes.discard_session(actor.session_key, ctx=ctx).
     writes = list(ConnectorWrite.objects.select_for_update()
                   .filter(session__key=actor.session_key, session__user=actor.user, discarded=False).order_by("id"))
     by_item: dict[str, list] = {}
@@ -725,14 +733,18 @@ def _undo(writes: list[ConnectorWrite]):
 
 
 def request_upload_link(actor: Actor) -> dict:
-    # TODO(integration, backend-core): contracts POST /cms/upload-links/ → {url, token, expires_at}.
+    # TODO(integration, backend-core): apps.publishing.uploads.create_upload_link(user, ctx=ctx)
+    # → {url, token, expires_at}; uploads.link_status(token) gives the MediaAsset id afterwards.
     try:
         from apps.publishing.uploads import create_upload_link  # type: ignore
     except ImportError:
         raise CmsError("CMS_INTERNAL", "Photo upload links aren't available on this server yet.",
                        fix="Ask the user for a public https link to the photo and use upload_image_from_url, or "
                            "ask them to upload it in the CMS.", retryable=False) from None
-    link = create_upload_link(actor.user, channel="mcp", session_id=actor.session_key)  # pragma: no cover
+    from apps.publishing.audit import WriteContext  # type: ignore  # pragma: no cover
+
+    ctx = WriteContext(user=actor.user, channel="mcp", connector_session=actor.session_key)  # pragma: no cover
+    link = create_upload_link(actor.user, ctx=ctx)  # pragma: no cover
     return {"upload_url": link["url"], "expires_at": link["expires_at"]}  # pragma: no cover
 
 
@@ -753,8 +765,7 @@ def fetch_image_from_url(actor: Actor, url: str, *, resolver=None, connector=Non
 
 
 def request_review(actor: Actor, note: str) -> dict:
-    # TODO(integration, backend-core): POST /cms/review-requests/ function (also marks
-    # "Waiting for review" on the draft bar).
+    # TODO(integration, backend-core): apps.publishing.review.request_review(user, note, ctx=ctx).
     note = _CONTROL.sub("", str(note or "")).strip()[:1000]
     User = get_user_model()
     publishers = User.objects.filter(is_active=True).filter(
