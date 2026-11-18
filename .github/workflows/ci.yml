@@ -1,0 +1,244 @@
+# CRTDH CI (owner: QA lane). What each job proves is listed in docs/testing.md.
+# Every job is a merge gate. Nothing here talks to the institute server, claude.ai or real staff.
+name: ci
+
+on:
+  push:
+    branches: [main, v3/integration]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.13"
+  NODE_VERSION: "22"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  backend:
+    name: backend (ruff, pytest + coverage on SQLite and Postgres 16, import contracts, MCP schema)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: crtdh
+          POSTGRES_PASSWORD: crtdh-ci-only
+          POSTGRES_DB: crtdh
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U crtdh" --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements*.txt
+            publish_agent/requirements*.txt
+      - name: Install (runtime deps hash-pinned, as in the Dockerfile)
+        run: |
+          pip install --require-hashes -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+          pip install -r publish_agent/requirements-dev.txt
+      - name: ruff (correctness gate, ruff.toml)
+        run: ruff check .
+      - name: pytest (SQLite) with coverage
+        working-directory: backend
+        run: >-
+          pytest --integration --create-db
+          --cov=apps --cov=mcp_server --cov-report=xml:../test-results/coverage.xml
+          --cov-report=term-missing:skip-covered --junitxml=../test-results/backend-sqlite.xml
+      - name: pytest (PostgreSQL 16, the production engine)
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgres://crtdh:crtdh-ci-only@localhost:5432/crtdh
+        run: pytest --integration --create-db -q --junitxml=../test-results/backend-postgres.xml
+      - name: publish agent tests
+        run: python -m pytest publish_agent/tests -p no:asyncio -q --junitxml=test-results/publish-agent.xml
+      - name: import-linter (MCP writes only through apps.publishing)
+        working-directory: backend
+        run: lint-imports
+      - name: views write only through apps.publishing
+        run: python tests/tools/write_paths.py
+      - name: MCP tool schema snapshot (diff = review what Claude sees)
+        run: python tests/tools/mcp_schema.py --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-results
+          path: test-results/
+          if-no-files-found: ignore
+
+  security:
+    name: security (pip-audit, bandit, semgrep, gitleaks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # gitleaks scans the whole history
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install tools
+        run: pip install pip-audit bandit semgrep
+      - name: pip-audit (known CVEs in pinned deps)
+        run: |
+          pip-audit --strict --require-hashes --disable-pip -r backend/requirements.txt
+          pip-audit --strict -r publish_agent/requirements.txt
+      - name: bandit (medium+ severity and confidence)
+        run: >-
+          bandit -r backend/apps backend/mcp_server backend/config publish_agent
+          -x '*/tests/*,*/migrations/*,*/evals/*' -ll -ii
+      - name: semgrep (project rules + registry packs)
+        run: scripts/security/semgrep.sh
+      - name: gitleaks (secrets in history)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-results
+          path: test-results/
+          if-no-files-found: ignore
+
+  frontend:
+    name: public site (unit, build, JS budget, placeholder sweep, headers, npm audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-fund
+      - name: unit tests (vitest)
+        run: npm test
+      - name: snapshot from the seed (contract shape, /_media/ paths)
+        env:
+          MEDIA_ROOT: ../backend/seed_media
+        run: node scripts/dev-snapshot.mjs ../backend/tests/fixtures/full_snapshot.json snapshot.json
+      - name: build (prerender every route)
+        run: npm run build
+      - name: JS size budget
+        run: npm run size
+      - name: placeholder / broken-content sweep
+        env:
+          MEDIA_ROOT: ../backend/seed_media
+        run: npm run sweep
+      - name: security headers the .htaccess will send
+        run: python3 ../tests/tools/check_headers.py --htaccess build/client/.htaccess
+      - name: npm audit (high+)
+        run: npm audit --audit-level=high
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-site
+          path: frontend/build/client/
+
+  admin:
+    name: CMS admin (build, npm audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci --no-fund
+      - name: build
+        env:
+          VITE_API_BASE_URL: /api/v1
+        run: npm run build
+      - name: npm audit (high+)
+        run: npm audit --audit-level=high
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-dist
+          path: admin/dist/
+
+  e2e:
+    name: preprod rehearsal + Playwright E2E (production settings, fake CIC SFTP, publish agent)
+    needs: [backend, frontend, admin]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: crtdh
+          POSTGRES_PASSWORD: crtdh-ci-only
+          POSTGRES_DB: crtdh
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U crtdh" --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      PY: python
+      PREPROD_DATABASE_URL: postgres://crtdh:crtdh-ci-only@localhost:5432/crtdh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements*.txt
+            publish_agent/requirements*.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            admin/package-lock.json
+      - name: Install
+        run: |
+          pip install --require-hashes -r backend/requirements.txt
+          pip install -r backend/requirements-dev.txt
+          pip install -r publish_agent/requirements-dev.txt
+          python -m playwright install --with-deps chromium
+          (cd frontend && npm ci --no-fund)
+          (cd admin && npm ci --no-fund)
+      - name: preprod up
+        run: scripts/preprod.sh up
+      - name: preprod smoke (edit -> publish -> live on fake CIC host)
+        run: scripts/preprod.sh smoke
+      - name: CMS headers and cookies
+        run: |
+          set -a; . .preprod/env; set +a
+          python tests/tools/check_headers.py --cms https://localhost:8600 --admin https://localhost:3600 \
+            --ca .preprod/tls/cert.pem --user priya --json test-results/headers.json
+      - name: Playwright E2E (all specs, including needs_integration)
+        run: scripts/preprod.sh e2e --junitxml=test-results/e2e.xml
+      - name: preprod down
+        if: always()
+        run: scripts/preprod.sh down
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            .preprod/logs/
+            .preprod/DB_MODE
+          if-no-files-found: ignore

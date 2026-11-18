@@ -1,0 +1,15 @@
+# gitleaks config (CI security job). Default rules plus reviewed allowlist entries only.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Published test values, not secrets"
+regexes = [
+  # Cloudflare Turnstile's documented always-pass test secret (tests and E2E only)
+  '''1x0000000000000000000000000000000AA''',
+]
+paths = [
+  # throwaway values in the CI-only Postgres service and test settings
+  '''^\.github/workflows/ci\.yml$''',
+  '''^backend/config/settings_test\.py$''',
+]

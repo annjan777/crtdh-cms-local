@@ -1,0 +1,12 @@
+# ZAP baseline rule config: <rule id>\t<IGNORE|INFO|WARN|FAIL>\t<reason>. Tab-separated.
+10020	FAIL	Anti-clickjacking header missing (we send X-Frame-Options/frame-ancestors everywhere)
+10021	FAIL	X-Content-Type-Options missing
+10035	FAIL	Strict-Transport-Security missing
+10038	FAIL	Content-Security-Policy missing
+10055	WARN	CSP weaknesses: review each directive (public site may need style-src 'unsafe-inline')
+10010	FAIL	Cookie without HttpOnly (session/csrf cookies must be HttpOnly)
+10011	FAIL	Cookie without Secure
+10054	FAIL	Cookie without SameSite
+10096	IGNORE	Timestamp disclosure: build timestamps in the static bundle are intentional
+10109	IGNORE	Modern web application: informational
+90004	WARN	Cross-Origin-Resource-Policy / COEP / COOP: review, not required

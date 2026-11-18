@@ -1,0 +1,12 @@
+# Test / QA tooling (QA lane). Install: pip install -r requirements.txt -r requirements-dev.txt
+pytest>=9,<10
+pytest-django>=4.9
+pytest-cov>=6
+pytest-timeout>=2.3
+factory_boy>=3.3
+freezegun>=1.5
+pytest-playwright>=0.6
+ruff>=0.8
+bandit>=1.8
+pip-audit>=2.7
+import-linter>=2.1

@@ -1,1 +1,10 @@
 frontend/public/videos/
+
+# QA lane
+test-results/
+backend/htmlcov/
+backend/coverage.xml
+backend/.coverage
+.preprod/
+__pycache__/
+*.pyc
