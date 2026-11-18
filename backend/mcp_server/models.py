@@ -12,6 +12,8 @@ class ConnectorSession(models.Model):
     key = models.CharField(max_length=64, unique=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     change_count = models.PositiveIntegerField(default=0)
+    review_requested_at = models.DateTimeField(null=True, blank=True)  # request_review: once per session
+    review_notified = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     last_seen = models.DateTimeField(auto_now=True)
 

@@ -88,3 +88,26 @@ def record_write(session: ConnectorSession, result: dict, key: str | None = None
         before=result.get("before"), after=result.get("after"), dedupe_key=key,
     )
     ConnectorSession.objects.filter(pk=session.pk).update(change_count=F("change_count") + 1)
+
+
+REVIEW_COOLDOWN_MINUTES = 30
+
+
+def previous_review(session: ConnectorSession):
+    """The review request that makes a new one unnecessary: this session's, or any of the
+    same user's in the last 30 minutes. Publishers get one email, not one per retry."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    if session.review_requested_at:
+        return session
+    since = timezone.now() - timedelta(minutes=REVIEW_COOLDOWN_MINUTES)
+    return (ConnectorSession.objects.filter(user_id=session.user_id, review_requested_at__gte=since)
+            .order_by("-review_requested_at").first())
+
+
+def record_review(session: ConnectorSession, notified: int):
+    from django.utils import timezone
+
+    ConnectorSession.objects.filter(pk=session.pk).update(review_requested_at=timezone.now(), review_notified=notified)

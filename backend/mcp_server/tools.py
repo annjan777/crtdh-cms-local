@@ -323,7 +323,19 @@ def build_server() -> MCPServer:
         note: Arg({"type": "string", "maxLength": 1000}, "Short note for the Publisher about what changed.") = "",
     ) -> CallToolResult:
         def do(a):
-            data = cms.request_review(a, note)
+            with transaction.atomic():
+                session = guardrails.session_for(a.user, a.session_key)
+                session = type(session).objects.select_for_update().get(pk=session.pk)
+                earlier = guardrails.previous_review(session)
+                if earlier is not None:
+                    data = {"notified": 0, "status": "waiting_for_review", "already_requested": True,
+                            "requested_at": earlier.review_requested_at.isoformat()}
+                    return _ok_result(data, "A review was already requested at "
+                                      f"{earlier.review_requested_at:%H:%M} UTC; Publishers were not emailed again. "
+                                      "Nothing is live until one publishes.")
+                data = cms.request_review(a, note)
+                guardrails.record_review(session, data["notified"])
+            data["already_requested"] = False
             return _ok_result(data, f"Review requested; {data['notified']} Publisher(s) emailed. Nothing is live until one publishes.")
         return await _run(ctx, "request_review", {"note": 1}, do)
 
