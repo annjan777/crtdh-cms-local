@@ -129,7 +129,6 @@ def _process_image(data, min_width):
             "CMS_IMAGE_TOO_SMALL",
             f"This photo is {width} px wide; this section needs at least {min_width} px.",
             fix="Upload the original photo (2400 px or wider is best). See the shot list in the CMS help.",
-            extra={"width": width, "min_width": min_width},
         )
     if max(img.size) > MAX_EDGE:
         img.thumbnail((MAX_EDGE, MAX_EDGE), Image.LANCZOS)

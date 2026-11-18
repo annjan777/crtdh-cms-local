@@ -58,7 +58,7 @@ def _check_lock(request, username):
         raise CMSError(
             "CMS_RATE_LIMITED", f"Too many failed attempts. Try again in {wait} seconds.",
             fix="Wait, then sign in again. An admin can reset your MFA if you lost your device.",
-            retryable=True, extra={"retry_after": wait}, headers={"Retry-After": str(wait)},
+            retryable=True, headers={"Retry-After": str(wait)},
         )
 
 
@@ -126,7 +126,7 @@ class MFAView(_AuthView):
         _check_lock(request, user.get_username())
         if not mfa.is_enrolled(user):
             raise CMSError("CMS_MFA_REQUIRED", "Set up your authenticator app first.",
-                           fix="Call POST /api/v1/auth/mfa/enrol/.", extra={"mfa_enrolled": False})
+                           fix="Call POST /api/v1/auth/mfa/enrol/.")
         if not mfa.verify_code(user, code):
             _fail(request, user.get_username(), "Wrong or already-used code.")
         return Response(_complete_login(request, user))

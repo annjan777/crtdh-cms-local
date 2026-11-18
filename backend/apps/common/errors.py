@@ -78,7 +78,7 @@ def exception_handler(exc, context):
         field, msg = _first_field(exc.detail)
         return Response(
             _body(request, "CMS_VALIDATION", msg, "Correct the highlighted field and try again.",
-                  field=field, errors=exc.detail),
+                  field=field),
             status=400,
         )
     if isinstance(exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)):
@@ -97,7 +97,7 @@ def exception_handler(exc, context):
     if isinstance(exc, exceptions.Throttled):
         wait = int(exc.wait or 60)
         return Response(_body(request, "CMS_RATE_LIMITED", f"Too many requests. Try again in {wait} seconds.",
-                              "Wait and retry.", retryable=True, retry_after=wait),
+                              "Wait and retry.", retryable=True),
                         status=429, headers={"Retry-After": str(wait)})
     if isinstance(exc, exceptions.APIException):
         # MethodNotAllowed, ParseError, UnsupportedMediaType, NotAcceptable ...
