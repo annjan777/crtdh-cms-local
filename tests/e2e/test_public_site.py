@@ -134,7 +134,7 @@ def test_placeholder_and_broken_content_sweep(page, site, route):
     assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
     assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
     hrefs = page.evaluate("() => [...document.querySelectorAll('a[href^=\"/\"]')].map(a => a.getAttribute('href'))")
-    internal = {h.split("#")[0].split("?")[0].rstrip("/") or "/" for h in hrefs if not h.startswith("/media/")}
+    internal = {h.split("#")[0].split("?")[0].rstrip("/") or "/" for h in hrefs if not h.startswith("/_media/")}  # A13: files at /_media/, /media is the gallery page
     missing = [h for h in internal if h not in ROUTES and not h.endswith((".pdf", ".xml"))]
     assert not missing, f"links to pages that don't exist: {missing}"
 

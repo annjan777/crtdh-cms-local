@@ -44,7 +44,8 @@ CMS_ROUTES = [
     ("POST", "/api/v1/cms/changes/discard/", "editor"),
     ("POST", "/api/v1/cms/review-requests/", "editor"),
     ("POST", "/api/v1/cms/publish/", "publisher"),
-    ("GET", "/api/v1/cms/publish/1/", "editor"),
+    ("GET", "/api/v1/cms/publish/00000000-0000-4000-8000-000000000001/", "editor"),  # <uuid:publish_id>
+    ("POST", "/api/v1/cms/publish/00000000-0000-4000-8000-000000000001/cancel/", "publisher"),
     ("GET", "/api/v1/cms/snapshots/", "editor"),
     ("POST", "/api/v1/cms/snapshots/1/restore/", "publisher"),
     ("GET", "/api/v1/cms/audit/", "editor"),
