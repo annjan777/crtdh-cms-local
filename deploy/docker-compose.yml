@@ -89,7 +89,7 @@ services:
   housekeeping:
     <<: *backend
     command: >
-      sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions; sleep 86400; done"
+      sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions && python manage.py clear_auth_throttles; sleep 86400; done"
     depends_on:
       migrate:
         condition: service_completed_successfully

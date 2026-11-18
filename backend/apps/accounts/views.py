@@ -171,6 +171,7 @@ class RecoveryCodesView(APIView):
 
 
 class LogoutView(APIView):
+    allowed_before_password_change = True
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -182,6 +183,7 @@ class LogoutView(APIView):
 
 
 class MeView(APIView):
+    allowed_before_password_change = True
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -189,6 +191,7 @@ class MeView(APIView):
 
 
 class RevokeAllSessionsView(APIView):
+    allowed_before_password_change = True
     """POST /api/v1/auth/sessions/revoke-all/ - signs this user out everywhere, including here."""
 
     permission_classes = [IsAuthenticated]
@@ -201,6 +204,7 @@ class RevokeAllSessionsView(APIView):
 
 
 class PasswordChangeView(APIView):
+    allowed_before_password_change = True
     """POST /api/v1/auth/password/ {current_password, new_password} - keeps this session, ends the others."""
 
     permission_classes = [IsAuthenticated]

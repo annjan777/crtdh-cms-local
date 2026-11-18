@@ -128,3 +128,21 @@ class UserResetMFAView(_AdminView):
         sessions.revoke_all(user)
         logger.info("mfa reset username=%s by=%s", user.username, request.user.username)
         return Response(user_payload(user))
+
+
+class UserResetPasswordView(_AdminView):
+    """For a forgotten password: new one-time temporary password (shown once), signs the user out.
+    The user must change it before doing anything else."""
+
+    def post(self, request, pk):
+        user = self.get_target(pk)
+        if user.pk == request.user.pk:
+            raise CMSError("CMS_VALIDATION", "Use the change-password screen for your own account.",
+                           fix="Go to your account settings.")
+        temp = secrets.token_urlsafe(18)
+        user.set_password(temp)
+        user.save(update_fields=["password"])
+        UserSecurity.objects.update_or_create(user=user, defaults={"must_change_password": True})
+        sessions.revoke_all(user)
+        logger.info("password reset username=%s by=%s", user.username, request.user.username)
+        return Response(dict(user_payload(user), temporary_password=temp))

@@ -16,5 +16,6 @@ urlpatterns = [
     path("users/", users.UsersView.as_view(), name="auth-users"),
     path("users/<int:pk>/deactivate/", users.UserDeactivateView.as_view(), name="auth-user-deactivate"),
     path("users/<int:pk>/role/", users.UserRoleView.as_view(), name="auth-user-role"),
+    path("users/<int:pk>/reset-password/", users.UserResetPasswordView.as_view(), name="auth-user-reset-password"),
     path("users/<int:pk>/reset-mfa/", users.UserResetMFAView.as_view(), name="auth-user-reset-mfa"),
 ]
