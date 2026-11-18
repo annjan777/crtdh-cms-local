@@ -163,3 +163,10 @@ CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://localhost:3001"],
 )
+
+
+# Claude MCP server + OAuth authorization server (WS4) — see config/mcp_settings.py
+from .mcp_settings import *  # noqa: E402,F401,F403
+from .mcp_settings import MCP_INSTALLED_APPS  # noqa: E402
+
+INSTALLED_APPS += MCP_INSTALLED_APPS
