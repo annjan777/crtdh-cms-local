@@ -9,7 +9,9 @@ from apps.publishing.models import Publish
 pytestmark = [pytest.mark.django_db, pytest.mark.security]
 
 LEVEL = {None: -1, "none": 0, "editor": 1, "publisher": 2, "admin": 3}
-OWNED_ELSEWHERE = {"token-obtain-pair", "token-refresh", "auth-me"}  # backend-security's auth endpoints
+# backend-security's sign-in/self-service endpoints (anonymous or own-account by design; apps/accounts/tests).
+OWNED_ELSEWHERE = {"auth-csrf", "auth-login", "auth-logout", "auth-me", "auth-mfa", "auth-mfa-enrol",
+                   "auth-mfa-enrol-confirm", "auth-mfa-recovery-codes", "auth-password", "auth-revoke-all"}
 
 
 def api_routes():
@@ -40,6 +42,12 @@ def check(resp, need, role, what):
         expected, ok = "allowed", resp.status_code not in (401, 403) and resp.status_code < 500
     assert ok, f"{what} as {role}: got {resp.status_code}, expected {expected}: {resp.content[:200]!r}"
     return resp
+
+
+@pytest.fixture(autouse=True)
+def _fresh_throttles():
+    from django.core.cache import cache  # contact is IP-throttled (5/min) and the cache is shared across tests
+    cache.clear()
 
 
 @pytest.mark.parametrize("role", list(LEVEL))
@@ -104,6 +112,19 @@ def test_every_route_enforces_roles(role, api_as, baseline, publish_env, publish
     covered.add("cms-upload")  # token-authenticated: a bad token is 404 for everyone
     assert client.get(reverse("cms-upload", kwargs={"token": "bad"})).status_code == 404
 
+    # private media (apps.common.media_views): editors and up; a missing file is 404
+    go("get", "media-file", 1, path="nope.jpg")
+
+    # user administration (backend-security): admin only
+    from django.contrib.auth import get_user_model
+    target = get_user_model().objects.create_user("rbac.target", "t@example.test", "x-Not-a-real-pw-123")
+    go("get", "auth-users", 3)
+    go("post", "auth-users", 3, {})
+    go("post", "auth-user-role", 3, {}, pk=target.pk)
+    go("post", "auth-user-reset-password", 3, {}, pk=target.pk)
+    go("post", "auth-user-reset-mfa", 3, {}, pk=target.pk)
+    go("post", "auth-user-deactivate", 3, {}, pk=target.pk)
+
     # publish agent: HMAC only, never a CMS session
     go("get", "agent-next", None)
     go("get", "agent-build", None, publish_id=running.id)
@@ -113,6 +134,15 @@ def test_every_route_enforces_roles(role, api_as, baseline, publish_env, publish
     assert not missing, f"routes without an RBAC expectation: {sorted(missing)}"
 
 
+def test_django_admin_not_mounted_in_production(client, superuser, settings):
+    """backend-security: /admin/ is only routed when DEBUG and DJANGO_ADMIN_ENABLED."""
+    assert settings.DEBUG is False
+    client.force_login(superuser)
+    assert client.get("/admin/").status_code == 404
+
+
+# Where it is mounted (local development), it is still read-only by default (DJANGO_ADMIN_READONLY).
+@pytest.mark.urls("apps.publishing.tests.admin_urls")
 def test_django_admin_is_read_only_by_default_in_production(client, superuser, settings, content):
     assert settings.DEBUG is False and settings.DJANGO_ADMIN_READONLY is True
     client.force_login(superuser)
@@ -126,6 +156,7 @@ def test_django_admin_is_read_only_by_default_in_production(client, superuser, s
     assert HeroSlide.objects.filter(pk=18).exists()
 
 
+@pytest.mark.urls("apps.publishing.tests.admin_urls")
 def test_django_admin_writable_when_setting_off(client, superuser, settings):
     settings.DJANGO_ADMIN_READONLY = False
     client.force_login(superuser)
@@ -133,7 +164,10 @@ def test_django_admin_writable_when_setting_off(client, superuser, settings):
 
 
 def test_public_contact_post_still_works(api):
-    resp = api.post("/api/v1/contact/", {"name": "Visitor", "email": "v@example.test", "message": "Hello"}, format="json")
+    from unittest import mock
+    with mock.patch("apps.contact.turnstile.verify", return_value=True):
+        resp = api.post("/api/v1/contact/", {"name": "Visitor", "email": "v@example.test", "message": "Hello, may we visit the lab?",
+                                             "turnstile_token": "tok"}, format="json")
     assert resp.status_code == 201
 
 
