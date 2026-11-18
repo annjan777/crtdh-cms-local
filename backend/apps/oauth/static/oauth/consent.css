@@ -1,0 +1,13 @@
+/* Consent and error pages of the Claude connector (served from the CMS origin). */
+body { margin: 0; background: #f7f5f0; color: #1d2a33; font: 17px/1.6 "Open Sans", system-ui, sans-serif; }
+main { max-width: 34rem; margin: 12vh auto 0; padding: 0 1.5rem; }
+.mark { font: 600 14px/1 Montserrat, system-ui, sans-serif; letter-spacing: .08em; color: #0f4c75; text-transform: uppercase; }
+h1 { font-size: 28px; line-height: 1.25; margin: .75rem 0 1rem; }
+p { margin: 0 0 1rem; }
+ul { padding-left: 1.2rem; margin: 0 0 1.5rem; }
+.actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
+button { min-height: 44px; padding: 0 1.25rem; font: 600 16px/1 Montserrat, system-ui, sans-serif; border-radius: 4px; cursor: pointer; }
+.primary { background: #0f4c75; color: #fff; border: 1px solid #0f4c75; }
+.secondary { background: transparent; color: #0f4c75; border: 1px solid #9fb3c2; }
+button:focus-visible { outline: 3px solid #1a8a8a; outline-offset: 2px; }
+.small { font-size: 14px; color: #4b5b66; }

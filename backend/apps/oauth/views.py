@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.roles import ADMIN, IsEditor, has_role, user_roles
 
-from .mfa import session_has_mfa
+from .mfa import must_change_password, session_has_mfa
 from .revoke import active_connections, revoke_all_for_user
 from .validators import user_may_connect
 
@@ -41,7 +41,15 @@ class ConsentAuthorizationView(AuthorizationView):
     template_name = "oauth/consent.html"
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated or not session_has_mfa(request):
+        response = self._dispatch(request, *args, **kwargs)
+        response["Content-Security-Policy"] = consent_csp(request)
+        return response
+
+    def _dispatch(self, request, *args, **kwargs):
+        if (not request.user.is_authenticated or not session_has_mfa(request)
+                or must_change_password(request.user)):
+            # Signed out, MFA not done, or a temporary password still to change: /cms/login
+            # sorts that out and sends the user back here.
             return redirect_to_login(request.get_full_path(), settings.CMS_LOGIN_URL, "next")
         if not user_may_connect(request.user):
             return render(request, "oauth/not_allowed.html", status=403)
@@ -65,6 +73,36 @@ class ConsentAuthorizationView(AuthorizationView):
         # Show where the approval goes, so a look-alike client is noticeable.
         context["redirect_host"] = urlsplit(context.get("redirect_uri") or "").hostname or ""
         return context
+
+
+DEFAULT_CSP = ("default-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; "
+               "font-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+
+
+def _origin(uri: str) -> str | None:
+    parts = urlsplit(uri)
+    if parts.scheme != "https" or not parts.hostname:
+        return None
+    return f"https://{parts.netloc}"
+
+
+def consent_csp(request) -> str:
+    """The CMS policy, but form-action also allows the registered redirect origins of the
+    client being authorised (Chrome applies form-action to the 302 that follows the consent
+    POST, so 'self' alone blocks the return to claude.ai). Never widened globally."""
+    from oauth2_provider.models import get_application_model
+
+    client_id = (request.POST.get("client_id") if request.method == "POST" else None) or request.GET.get("client_id")
+    uris = []
+    if client_id:
+        app = get_application_model().objects.filter(client_id=str(client_id)[:100]).first()
+        if app is not None:
+            uris = app.redirect_uris.split()
+    origins = sorted({o for o in map(_origin, uris) if o})
+    base = getattr(settings, "CONTENT_SECURITY_POLICY", None) or DEFAULT_CSP
+    directives = [d.strip() for d in base.split(";") if d.strip() and not d.strip().startswith("form-action")]
+    directives.append(" ".join(["form-action 'self'", *origins]))
+    return "; ".join(directives)
 
 
 def _json(data):

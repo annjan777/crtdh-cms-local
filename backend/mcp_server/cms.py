@@ -606,7 +606,9 @@ def update_item(actor: Actor, item_id: str, fields: dict, expected_version: int)
 @transaction.atomic
 def create_item(actor: Actor, section_id: str, fields: dict) -> dict:
     # TODO(integration, backend-core): apps.publishing.content.create_item(resource, data, ctx=ctx)
-    # (apply the section's registry "defaults"). Dedupe stays in guardrails.py.
+    # (apply the section's registry "defaults"). Dedupe stays in guardrails.py. Addendum A3:
+    # core creates rows hidden unless the caller sets is_published, and MCP has no "show"
+    # tool, so pass is_published=True explicitly (the user asked for it on the site).
     page, section = _section(section_id)
     if section["kind"] != "collection":
         raise CmsError("CMS_VALIDATION", f"{section['label']} is a single block; use update_section to change it.",
