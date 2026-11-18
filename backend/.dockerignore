@@ -6,3 +6,8 @@ db.sqlite3
 media/
 staticfiles/
 .git/
+tests/
+conftest.py
+pytest.ini
+.coveragerc
+requirements-dev.txt

@@ -1,0 +1,75 @@
+# Rendered by the nginx image's envsubst (only CMS_HOST and CONTACT_HOST). Reached only via cloudflared.
+# TLS ends at Cloudflare; the tunnel is the only client, so X-Forwarded-Proto is fixed to https and
+# CF-Connecting-IP (set by Cloudflare, overwriting any client value) passes through untouched.
+
+server_tokens off;
+
+# Any other Host: close the connection.
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444;
+}
+
+# cms.<domain>: admin SPA + CMS API + OAuth authorize page (Cloudflare Access in front).
+server {
+    listen 80;
+    server_name ${CMS_HOST};
+    root /usr/share/nginx/html;
+    client_max_body_size 25m;
+
+    # Django responses carry their own CSP/HSTS headers; these apply to the SPA files.
+    set $csp "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://www.google.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'";
+
+    location /api/ {
+        proxy_pass http://cms:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_read_timeout 60s;
+    }
+
+    location /oauth/ {
+        proxy_pass http://cms:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+
+    # The Django admin is never exposed.
+    location /admin/ { return 404; }
+
+    location /assets/ {
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+
+    location / {
+        try_files $uri /index.html;
+        add_header Cache-Control "no-cache" always;
+        add_header Content-Security-Policy $csp always;
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+        add_header Cross-Origin-Opener-Policy "same-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+}
+
+# contact.<domain>: one endpoint, POST (and its CORS preflight) only; no cookies forwarded.
+server {
+    listen 80;
+    server_name ${CONTACT_HOST};
+    client_max_body_size 16k;
+
+    location = /api/v1/contact/ {
+        limit_except POST OPTIONS { deny all; }
+        proxy_pass http://cms:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Cookie "";
+    }
+
+    location / { return 404; }
+}

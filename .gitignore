@@ -1,1 +1,9 @@
 frontend/public/videos/
+
+# Real deploy secrets: never commit
+deploy/.env
+deploy/cloudflared/config.yml
+deploy/cloudflared/credentials.json
+backend/.env
+.dpdp/scan.json
+.dpdp/runs/

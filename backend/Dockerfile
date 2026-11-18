@@ -10,9 +10,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Hash-pinned (pip-compile --generate-hashes); any unpinned or altered package fails the build.
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 COPY . .
+RUN rm -f .env && useradd --system --no-create-home --uid 10001 app \
+    && mkdir -p /data/media && chown app:app /data/media
+USER app
 
 EXPOSE 8000
 

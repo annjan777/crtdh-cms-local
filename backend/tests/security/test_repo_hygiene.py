@@ -37,7 +37,8 @@ def test_env_file_is_example_only_and_ignored():
     for line in example.splitlines():
         if "=" in line and not line.lstrip().startswith("#"):
             key, _, value = line.partition("=")
-            assert value == "" or value.startswith("<") or "example" in value or value in ("False", "True", "1", "0"), line
+            if any(w in key for w in ("PASSWORD", "SECRET", "KEY", "DATABASE_URL", "EMAIL_URL", "TOKEN")):
+                assert value.startswith("<") and value.endswith(">"), f"{key} must be a <placeholder>"
 
 
 def test_local_compose_has_no_fixed_admin_password():
