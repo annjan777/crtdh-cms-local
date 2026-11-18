@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from apps.accounts.signals import user_deactivated
 from tests.support.errors import assert_contract_error
 
+from tests.support.factories import TEST_PASSWORD
+
 from .conftest import Browser, enrol, sign_in
 
 pytestmark = [pytest.mark.django_db, pytest.mark.security]
@@ -76,6 +78,26 @@ def test_reset_mfa_signs_user_out_and_requires_enrolment(api_as, editor):
     r = api_as("admin").post(f"/api/v1/auth/users/{editor.pk}/reset-mfa/", format="json")
     assert r.json()["mfa_enrolled"] is False
     assert b.get("/api/v1/auth/me/").status_code == 401
+
+
+def test_reset_mfa_replaces_password_so_old_password_cannot_enrol(api_as, editor):
+    """Review finding: with the old password kept, whoever knows it enrols the new TOTP."""
+    enrol(editor)
+    r = api_as("admin").post(f"/api/v1/auth/users/{editor.pk}/reset-mfa/", format="json")
+    temp = r.json()["temporary_password"]
+    assert r.json()["must_change_password"] is True
+    attacker = Browser(ip="203.0.113.5")
+    r = attacker.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
+    assert r.status_code == 401
+    assert attacker.post("/api/v1/auth/mfa/enrol/").status_code == 401
+    owner = Browser(ip="198.51.100.20")
+    assert owner.post("/api/v1/auth/login/", {"username": editor.username, "password": temp}).json() == {
+        "mfa_setup_required": True}
+
+
+def test_admin_cannot_reset_own_mfa(api_as, cms_admin):
+    r = api_as(cms_admin).post(f"/api/v1/auth/users/{cms_admin.pk}/reset-mfa/", format="json")
+    assert r.status_code == 400
 
 
 def test_unknown_user_is_404(api_as):
