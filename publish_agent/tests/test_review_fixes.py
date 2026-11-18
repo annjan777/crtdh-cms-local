@@ -336,3 +336,66 @@ def test_verify_job_unit():
     for bad in ("", "zz" * 32, "A" * 64, "\u00e9" * 64):
         with pytest.raises(BuildRejected):
             verify_job(SECRET, Job("p", "s", "/x", sha, bad))
+
+
+# ------------------------------------------------------------------ bandit B310 / B601 hardening
+def test_shell_commands_are_fixed_templates_with_quoted_args():
+    from publish_agent.remote import shell_command
+    assert shell_command("probe") == "echo crtdh-shell-ok"
+    assert shell_command("discover", web_root="/home/u/public_html") == "WEB_ROOT=/home/u/public_html sh -s"
+    evil = "/x; rm -rf ~ #"
+    assert shell_command("discover", web_root=evil) == "WEB_ROOT='/x; rm -rf ~ #' sh -s"
+    with pytest.raises(KeyError):
+        shell_command("rm -rf /")
+
+
+def test_exec_sends_script_on_stdin_not_command_line():
+    from publish_agent.remote import Remote
+    calls = {}
+
+    class Chan:
+        def shutdown_write(self):
+            calls["eof"] = True
+
+        def recv_exit_status(self):
+            return 0
+
+    class Stream(io.BytesIO):
+        channel = Chan()
+
+    class Stdin:
+        channel = Chan()
+
+        def write(self, data):
+            calls["stdin"] = data
+
+    class Client:
+        def exec_command(self, command, timeout=None):
+            calls["command"] = command
+            return Stdin(), Stream(b"ok"), Stream(b"")
+
+    r = Remote.__new__(Remote)
+    r.client = Client()
+    assert r.exec("discover", stdin=b"echo hi\n", web_root="/w w") == (0, "ok")
+    assert calls == {"command": "WEB_ROOT='/w w' sh -s", "stdin": b"echo hi\n", "eof": True}
+
+
+@pytest.mark.parametrize("url", ["file:///etc/passwd", "ftp://site.example/", "gopher://x/"])
+def test_live_check_only_fetches_http(url):
+    from publish_agent.deploy import default_http_get
+    with pytest.raises(ValueError, match="http"):
+        default_http_get(url)
+
+
+@pytest.mark.parametrize("url,ok", [
+    ("", True), ("https://crtdh.iitkgp.in/", True), ("http://crtdh.iitkgp.in/", True),
+    ("file:///var/www/index.html", False), ("crtdh.iitkgp.in", False),
+])
+def test_verify_url_must_be_http(make_cfg, url, ok):
+    cfg = make_cfg()
+    cfg.verify_url = url
+    if ok:
+        validate(cfg)
+    else:
+        with pytest.raises(ConfigError, match="verify_url"):
+            validate(cfg)

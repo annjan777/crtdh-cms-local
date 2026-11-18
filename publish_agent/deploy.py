@@ -10,6 +10,7 @@ import shutil
 import socket
 import stat
 import time
+import urllib.parse
 import urllib.request
 import uuid
 from typing import Callable
@@ -64,8 +65,11 @@ def describe_write_error(exc: BaseException, what: str) -> str:
 
 
 def default_http_get(url: str, timeout: int = 20) -> str:
+    if urllib.parse.urlsplit(url).scheme not in ("http", "https"):  # never file:, ftp: or custom schemes
+        raise ValueError(f"only http(s) URLs can be checked, not {url!r}")
     req = urllib.request.Request(url, headers={"User-Agent": "crtdh-publish-agent", "Cache-Control": "no-cache"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 - configured URL
+    # nosec B310: scheme is restricted to http/https just above; the URL is the owner's verify_url
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
         return resp.read(2_000_000).decode("utf-8", "replace")
 
 

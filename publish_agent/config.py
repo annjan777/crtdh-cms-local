@@ -141,6 +141,10 @@ def validate(cfg: Config) -> None:
     local = parts.hostname in ("localhost", "127.0.0.1", "::1")
     if not (parts.scheme == "https" or (parts.scheme == "http" and local)) or not parts.hostname:
         raise ConfigError("[cms] url must start with https:// (plain http is only allowed for localhost testing)")
+    if cfg.verify_url:
+        vparts = urllib.parse.urlsplit(cfg.verify_url)
+        if vparts.scheme not in ("http", "https") or not vparts.hostname:
+            raise ConfigError("[site] verify_url must be an http:// or https:// address of the public site")
     if not cfg.sftp_host or not cfg.sftp_user:
         raise ConfigError("[sftp] host and user are required")
     if cfg.strategy not in ("auto",) + STRATEGIES:
