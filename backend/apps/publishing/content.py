@@ -3,11 +3,15 @@
 Each function: validates through the resource's existing serializer, enforces optimistic concurrency
 (`expected_version`, contract §3/§4), and writes one audit entry per changed row.
 """
+from contextlib import contextmanager
+
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
 from . import audit, registry
+from apps.common.versioning import StaleWrite
+
 from .errors import CMSError, with_extra
 
 
@@ -47,6 +51,19 @@ def stale_error(resource, obj, sent):
         f"{iid} changed since you read it (you sent v{sent}, current v{obj.version}{who}).",
         current_version=obj.version,
     ), edited_by=edited_by, edited_at=edited_at)
+
+
+@contextmanager
+def stale_as_409(resource=None):
+    """A StaleWrite (another write landed between our read and our UPDATE) becomes 409 CMS_STALE_VERSION."""
+    try:
+        yield
+    except StaleWrite as e:
+        resource = resource_for_model(e.model)
+        obj = e.model.objects.filter(pk=e.pk).first()
+        if obj is None:
+            raise CMSError("CMS_NOT_FOUND", f"{resource} {e.pk} no longer exists.") from None
+        raise stale_error(resource, obj, e.read_version) from None
 
 
 def _lock(model, pk):
@@ -163,7 +180,7 @@ def update_item(resource, pk, data, *, ctx, expected_version, partial=True, seri
     model = get_model(resource)
     serializer_class = serializer_class or registry.RESOURCES[resource].serializer_class
     sent = _parse_version(expected_version)
-    with transaction.atomic():
+    with stale_as_409(resource), transaction.atomic():
         if registry.RESOURCES[resource].kind == "singleton":
             model.load()
         obj = _lock(model, pk)
@@ -274,7 +291,7 @@ def attach_media(resource, pk, field, media_id, *, ctx, expected_version):
     if model_field is None or model_field.get_internal_type() not in ("ImageField", "FileField"):
         raise CMSError("CMS_VALIDATION", f"{resource} has no image field {field!r}.", field=field)
     sent = _parse_version(expected_version)
-    with transaction.atomic():
+    with stale_as_409(resource), transaction.atomic():
         obj = _lock(model, pk)
         if obj.version != sent:
             raise stale_error(resource, obj, sent)
