@@ -12,6 +12,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.accounts.views import MeView
+from apps.publishing.urls import agent_patterns, cms_patterns
 from apps.carousel.views import HeroSlideViewSet, ProjectSlideViewSet
 from apps.common.views import (
     DocumentViewSet,
@@ -102,6 +103,8 @@ api_v1_patterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("auth/me/", MeView.as_view(), name="auth-me"),
+    path("cms/", include(cms_patterns)),
+    path("agent/", include(agent_patterns)),
 ]
 
 urlpatterns = [

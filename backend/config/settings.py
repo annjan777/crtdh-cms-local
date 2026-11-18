@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "apps.media_gallery",
     "apps.contact",
     "apps.accounts",
+    "apps.publishing",
 ]
 
 MIDDLEWARE = [
@@ -139,8 +140,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        "apps.common.permissions.IsAdminOrReadOnly",
+        "apps.publishing.permissions.ContentPermission",
     ),
+    "EXCEPTION_HANDLER": "apps.publishing.errors.exception_handler",
     "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_FILTER_BACKENDS": (
@@ -163,3 +165,27 @@ CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     default=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://localhost:3001"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Publishing (backend-core lane; contract §1, §3, §5)
+# ---------------------------------------------------------------------------
+# Where snapshots, build dirs, content-hashed media and tarballs live (never inside MEDIA_ROOT).
+PUBLISH_ROOT = env("PUBLISH_ROOT", default=str(BASE_DIR / "var" / "publish"))
+# Frontend build: run with SNAPSHOT_PATH and BUILD_OUTPUT_DIR in the environment, cwd = BASE_DIR.
+FRONTEND_BUILD_CMD = env("FRONTEND_BUILD_CMD", default="npm --prefix ../frontend run build")
+FRONTEND_BUILD_OUTPUT = env("FRONTEND_BUILD_OUTPUT", default=str(BASE_DIR.parent / "frontend" / "build" / "client"))
+FRONTEND_BUILD_TIMEOUT = env.int("FRONTEND_BUILD_TIMEOUT", default=900)
+# Shared secret with the publish agent (HMAC-SHA256, contract agreed with publish-agent). Empty = agent endpoints refuse every request.
+AGENT_HMAC_SECRET = env("AGENT_HMAC_SECRET", default="")
+AGENT_MAX_SKEW = env.int("AGENT_MAX_SKEW", default=300)
+# Optional: lets an internal caller (same host) set X-CMS-Channel via X-CMS-Internal. Empty = header ignored.
+CMS_INTERNAL_SECRET = env("CMS_INTERNAL_SECRET", default="")
+UPLOAD_LINK_TTL_MINUTES = env.int("UPLOAD_LINK_TTL_MINUTES", default=30)
+DJANGO_ADMIN_READONLY = env.bool("DJANGO_ADMIN_READONLY", default=not DEBUG)
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="CRTDH CMS <cms@localhost>")
+CMS_PUBLIC_URL = env("CMS_PUBLIC_URL", default="http://localhost:3200")

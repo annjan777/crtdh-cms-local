@@ -1,5 +1,7 @@
 from rest_framework import mixins, status
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny
+
+from apps.accounts.roles import IsPublisher
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
@@ -26,8 +28,8 @@ class ContactMessageViewSet(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    """/api/v1/contact-messages/ — staff only, GET list/retrieve + DELETE. No create/update."""
+    """/api/v1/contact-messages/ — publishers (and admins) only: GET list/retrieve + DELETE. No create/update."""
 
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsPublisher]
