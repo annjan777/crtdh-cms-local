@@ -44,6 +44,9 @@ export default function MediaGalleryManager() {
     setActiveEvent({
       title: '',
       slug: '',
+      description: '',
+      event_date: null,
+      category: '',
       order: events.length + 1,
     });
     setEventImages([]);
@@ -51,7 +54,9 @@ export default function MediaGalleryManager() {
   };
 
   const handleDeleteEvent = async (id) => {
-    if (!window.confirm('Delete this entire gallery event and all its photos?')) return;
+    const event = events.find((e) => e.id === id);
+    const which = event?.title ? `‘${event.title}’` : 'this gallery event';
+    if (!window.confirm(`Delete ${which} and all its photos? This cannot be undone.`)) return;
     try {
       await deleteOne('/media-events/', id);
       addToast('Media event deleted', 'success');
@@ -218,6 +223,45 @@ export default function MediaGalleryManager() {
                       value={activeEvent.slug || ''}
                       onChange={(e) => setActiveEvent({ ...activeEvent, slug: e.target.value })}
                       placeholder="e.g. pathology-eye-clinic"
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group flex-1">
+                    <label htmlFor="event-category">Category</label>
+                    <select
+                      id="event-category"
+                      value={activeEvent.category || ''}
+                      onChange={(e) => setActiveEvent({ ...activeEvent, category: e.target.value })}
+                    >
+                      <option value="">No category</option>
+                      <option value="events">Events</option>
+                      <option value="health-camps">Health Camps</option>
+                      <option value="community-outreach">Community Outreach</option>
+                      <option value="facilities">Facilities</option>
+                      <option value="press">Press Coverage</option>
+                    </select>
+                    <span className="form-hint">Used for the filter tabs on the Media page.</span>
+                  </div>
+                  <div className="form-group flex-1">
+                    <label htmlFor="event-date">Event date</label>
+                    <input
+                      id="event-date"
+                      type="date"
+                      value={activeEvent.event_date || ''}
+                      onChange={(e) => setActiveEvent({ ...activeEvent, event_date: e.target.value || null })}
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group flex-2">
+                    <label htmlFor="event-description">Short description</label>
+                    <textarea
+                      id="event-description"
+                      rows={2}
+                      value={activeEvent.description || ''}
+                      onChange={(e) => setActiveEvent({ ...activeEvent, description: e.target.value })}
+                      placeholder="One or two lines shown under the event title"
                     />
                   </div>
                   <div className="form-group flex-none flex-align-end">

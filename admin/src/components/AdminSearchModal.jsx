@@ -128,7 +128,13 @@ export default function AdminSearchModal({ isOpen, onClose }) {
 
   return (
     <div className="search-modal-backdrop" onClick={onClose}>
-      <div className="search-modal-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="search-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search content"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="search-modal-header">
           <Search size={18} className="search-modal-icon" />
           <input

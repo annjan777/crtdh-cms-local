@@ -14,7 +14,7 @@ class MediaEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MediaEvent
-        fields = ["id", "title", "slug", "order", "images"]
+        fields = ["id", "title", "slug", "description", "event_date", "category", "order", "images"]
 
 
 class MediaCoverageLinkSerializer(serializers.ModelSerializer):

@@ -8,6 +8,7 @@ import { SkeletonTable } from '../components/Skeleton';
 import { deleteResource, listResource, reorderResource } from '../api/resources';
 import { getResourceSchema } from '../resources/schemas';
 import { getIcon } from '../resources/icons';
+import { deleteTitle } from '../resources/itemLabel';
 import { useToast } from '../context/ToastContext';
 
 function stripHtml(html) {
@@ -202,8 +203,8 @@ export default function ResourceListPage() {
 
       <ConfirmDialog
         open={!!pendingDelete}
-        title={`Delete ${singular}`}
-        message="This cannot be undone."
+        title={deleteTitle(pendingDelete, singular.toLowerCase())}
+        message={`This ${singular.toLowerCase()} will be removed from the website. This cannot be undone.`}
         onCancel={() => setPendingDelete(null)}
         onConfirm={handleDelete}
         busy={deleting}

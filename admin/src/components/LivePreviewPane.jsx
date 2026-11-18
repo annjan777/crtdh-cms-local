@@ -14,6 +14,7 @@ export default function LivePreviewPane({ type, data }) {
       secondary_button_link,
       image,
       image_preview,
+      image_position,
     } = data || {};
 
     const bgUrl = typeof image === 'string' ? image : (image_preview || (image instanceof File ? URL.createObjectURL(image) : ''));
@@ -27,7 +28,11 @@ export default function LivePreviewPane({ type, data }) {
         <div
           className="preview-hero-frame"
           style={{
-            backgroundImage: bgUrl ? `linear-gradient(90deg, rgba(15,76,117,0.92) 35%, rgba(15,76,117,0.4) 100%), url(${bgUrl})` : undefined,
+            backgroundImage: bgUrl
+              ? `linear-gradient(90deg, rgba(12,42,64,0.97) 0%, rgba(12,42,64,0.9) 32%, rgba(15,76,117,0.5) 55%, rgba(15,76,117,0) 88%), url(${bgUrl})`
+              : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: image_position || 'center center',
           }}
         >
           <div className="preview-hero-inner">
@@ -77,6 +82,8 @@ export default function LivePreviewPane({ type, data }) {
             <h3 className="preview-team-name">{name || 'Person Name'}</h3>
             <span className="preview-team-cat">{category_name || designation || 'Team Category'}</span>
             {institution && <span className="preview-team-inst">{institution}</span>}
+            {data?.description && <span className="preview-team-inst">{data.description}</span>}
+            {data?.is_published === false && <span className="preview-team-inst">Hidden from the website</span>}
           </div>
         </div>
       </div>

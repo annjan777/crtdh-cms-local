@@ -37,9 +37,7 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-panel">
-        <div className="login-panel-mark" aria-hidden="true">
-          C
-        </div>
+        <img className="login-panel-mark" src="/crtdh-favicon.svg" alt="" width="52" height="52" />
         <h2>CRTDH Content Admin</h2>
         <p>Manage every page of the CRTDH public site — team, innovations, facilities, media and more — from one place.</p>
       </div>

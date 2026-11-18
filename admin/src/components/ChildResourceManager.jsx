@@ -6,6 +6,7 @@ import FormField from './FormField';
 import SortableList from './SortableList';
 import { createResource, deleteResource, reorderResource, updateResource } from '../api/resources';
 import { useToast } from '../context/ToastContext';
+import { deleteTitle } from '../resources/itemLabel';
 
 function emptyValues(fields) {
   const values = {};
@@ -214,7 +215,7 @@ export default function ChildResourceManager({ parentId, parentField, child, ini
 
       <ConfirmDialog
         open={!!pendingDelete}
-        title={`Delete ${child.label.replace(/s$/, '')}`}
+        title={deleteTitle(pendingDelete, child.label.replace(/s$/, '').toLowerCase())}
         message="This cannot be undone."
         onCancel={() => setPendingDelete(null)}
         onConfirm={handleDelete}

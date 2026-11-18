@@ -228,7 +228,7 @@ export default function NavbarMenuLinksManager() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
             <h2 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>Nav Bar Links</span>
-              <span style={{ background: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>
+              <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>
                 {mainNavItems.length}
               </span>
             </h2>
@@ -236,7 +236,7 @@ export default function NavbarMenuLinksManager() {
 
           <div
             style={{
-              background: dragOverBucket === 'main' ? 'rgba(79, 70, 229, 0.04)' : 'var(--surface)',
+              background: dragOverBucket === 'main' ? 'var(--primary-light)' : 'var(--surface)',
               border: dragOverBucket === 'main' ? '2px dashed var(--primary)' : '1px solid var(--border)',
               borderRadius: 'var(--radius-lg)',
               overflow: 'hidden',

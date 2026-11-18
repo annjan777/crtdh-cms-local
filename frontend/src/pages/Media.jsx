@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero from '../components/PageHero'
 import GallerySection from '../components/GallerySection'
 import Lightbox from '../components/Lightbox'
-import { ExternalLink } from 'lucide-react'
+import { ArrowRight, ExternalLink, Images } from 'lucide-react'
 import { DataState } from '../components/StateBlock'
 import Reveal from '../components/Reveal'
 import './Media.css'
+
+const CATEGORY_TABS = [
+  { value: 'events', label: 'Events' },
+  { value: 'health-camps', label: 'Health Camps' },
+  { value: 'community-outreach', label: 'Community Outreach' },
+  { value: 'facilities', label: 'Facilities' },
+  { value: 'press', label: 'Press Coverage' },
+]
 
 export default function Media() {
   const { data: events, loading, error } = useApi(() => fetchList('/media-events/'), [], [])
@@ -22,7 +30,14 @@ export default function Media() {
     [],
     [],
   )
+  const { data: slides } = useApi(() => fetchList('/hero-slides/'), [], [])
+  const bannerSlide = (slides || []).find((s) => s.is_published !== false)
   const location = useLocation()
+  const [filter, setFilter] = useState('all')
+
+  // Filter tabs only for categories that events actually use (set per event in the admin).
+  const usedCategories = CATEGORY_TABS.filter((tab) => (events || []).some((e) => e.category === tab.value))
+  const visibleEvents = filter === 'all' ? events : (events || []).filter((e) => e.category === filter)
 
   // Lightbox state
   const [lightboxState, setLightboxState] = useState({
@@ -69,14 +84,31 @@ export default function Media() {
         eyebrow="Media"
         title="Events, camps &amp; coverage"
         description="Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage."
+        image={bannerSlide?.image}
+        imagePosition={bannerSlide?.image_position}
       />
 
       <section className="section">
         <div className="container">
+          {usedCategories.length > 0 && (
+            <div className="media-filters" role="group" aria-label="Filter galleries">
+              {[{ value: 'all', label: 'All' }, ...usedCategories].map((tab) => (
+                <button
+                  type="button"
+                  key={tab.value}
+                  className={`media-filter${filter === tab.value ? ' is-active' : ''}`}
+                  aria-pressed={filter === tab.value}
+                  onClick={() => setFilter(tab.value)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
           <DataState
             loading={loading}
             error={error}
-            data={events}
+            data={visibleEvents}
             emptyProps={{ title: 'Media galleries coming soon' }}
           >
             {(items) => (
@@ -86,6 +118,8 @@ export default function Media() {
                     <GallerySection 
                       title={event.title} 
                       description={event.description}
+                      date={event.event_date}
+                      category={event.category}
                       images={event.images} 
                       onImageClick={(index) => openLightbox(event.images, index)} 
                     />
@@ -134,6 +168,23 @@ export default function Media() {
           </div>
         </section>
       )}
+
+      <section className="section media-cta-section">
+        <div className="container">
+          <div className="media-cta">
+            <span className="media-cta__icon" aria-hidden="true">
+              <Images size={26} />
+            </span>
+            <div className="media-cta__text">
+              <h2>Looking for something specific?</h2>
+              <p>Get in touch with us for media enquiries or photos from a particular event.</p>
+            </div>
+            <Link to="/contact" className="btn btn--primary">
+              Contact us <ArrowRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {lightboxState.isOpen && (
         <Lightbox 

@@ -50,7 +50,10 @@ export default function HeroCarouselManager() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this Hero Slide?')) return;
+    // Slides often share the same default heading, so name the slide by its position.
+    const position = slides.findIndex((s) => s.id === id) + 1;
+    const which = position > 0 ? `hero slide ${position}` : 'this hero slide';
+    if (!window.confirm(`Delete ${which}? This cannot be undone.`)) return;
     try {
       await deleteOne('/hero-slides/', id);
       addToast('Hero slide deleted successfully', 'success');
@@ -322,6 +325,24 @@ export default function HeroCarouselManager() {
                       onChange={(e) => setActiveSlide({ ...activeSlide, secondary_button_link: e.target.value })}
                     />
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="slide-image-position">Keep this part of the photo in view</label>
+                  <select
+                    id="slide-image-position"
+                    value={activeSlide.image_position || 'center center'}
+                    onChange={(e) => setActiveSlide({ ...activeSlide, image_position: e.target.value })}
+                  >
+                    <option value="center center">Centre</option>
+                    <option value="left center">Left side</option>
+                    <option value="right center">Right side</option>
+                    <option value="center top">Top</option>
+                    <option value="center bottom">Bottom</option>
+                  </select>
+                  <span className="form-hint">
+                    The homepage crops the photo to fit; choose where the main subject is. For a sharp result, upload photos at least 1600 px wide.
+                  </span>
                 </div>
 
                 <div className="form-checkbox-group">

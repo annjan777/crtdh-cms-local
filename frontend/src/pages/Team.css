@@ -91,7 +91,7 @@
 .team-sections {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-5);
 }
 
 .team-section {
@@ -146,19 +146,25 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   gap: var(--space-5);
-  align-items: stretch;
+  align-items: center;
   border: 1px solid var(--border-subtle);
 }
 
 @media (max-width: 600px) {
   .team-featured-card {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .team-featured__photo {
+    width: 100%;
+    max-width: 240px;
   }
 }
 
 .team-featured__photo {
   flex-shrink: 0;
-  width: 220px;
+  width: 180px;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -229,7 +235,7 @@
   background: var(--color-brand-50);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  margin-top: auto;
+  margin-top: var(--space-4);
 }
 
 .team-featured__desc h4 {
@@ -403,5 +409,65 @@
   .team-cta__left {
     flex-direction: column;
     gap: var(--space-3);
+  }
+}
+
+/* Approved design: each group sits in a light panel; the group title has a short green rule. */
+.team-section {
+  background: var(--color-brand-50);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.team-section__sidebar h2::after {
+  content: '';
+  display: block;
+  width: 2.25rem;
+  height: 3px;
+  margin-top: var(--space-3);
+  border-radius: 2px;
+  background: var(--color-accent-500);
+}
+
+.team-card__desc {
+  margin: var(--space-2) 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+  .team-section {
+    padding: var(--space-4);
+  }
+}
+
+/* Photos at a consistent, moderate size (approved design): shorter crop in the 3- and 4-up grids… */
+.team-grid--grid-3 .team-card__photo,
+.team-grid--grid-4 .team-card__photo {
+  aspect-ratio: 5 / 4;
+}
+
+.team-card__photo img {
+  object-position: center 25%;
+}
+
+/* …and horizontal cards (photo left, details right) for two-up groups such as Other Members. */
+.team-grid--grid-2 .team-card {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.team-grid--grid-2 .team-card__photo {
+  flex: none;
+  width: 7.5rem;
+  aspect-ratio: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 400px) {
+  .team-grid--grid-2 .team-card__photo {
+    width: 5.5rem;
   }
 }

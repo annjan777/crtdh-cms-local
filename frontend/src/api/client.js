@@ -32,10 +32,12 @@ function buildUrl(path, params) {
 }
 
 class ApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, data = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    // Parsed JSON body of a failed response (e.g. DRF field errors), when available.
+    this.data = data
   }
 }
 
@@ -57,13 +59,14 @@ async function request(path, { method = 'GET', params, body, signal } = {}) {
 
   if (!response.ok) {
     let detail = ''
+    let data = null
     try {
-      const data = await response.json()
+      data = await response.json()
       detail = data?.detail || JSON.stringify(data)
     } catch {
       // response body wasn't JSON, ignore
     }
-    throw new ApiError(detail || `Request failed with status ${response.status}`, response.status)
+    throw new ApiError(detail || `Request failed with status ${response.status}`, response.status, data)
   }
 
   if (response.status === 204) return null

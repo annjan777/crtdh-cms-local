@@ -7,7 +7,7 @@ import './Carousel.css'
  * indicators. `items` is rendered via the `renderItem` render-prop so this
  * one component serves both the hero-slides and project-slides carousels.
  */
-export default function Carousel({ items, renderItem, autoplayDelay = 5000, className = '', ariaLabel }) {
+export default function Carousel({ items, renderItem, autoplayDelay = 5000, className = '', ariaLabel, onSelect: onSelectProp }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [selectedIndex, setSelectedIndex] = useState(0)
   const autoplayRef = useRef(null)
@@ -18,15 +18,21 @@ export default function Carousel({ items, renderItem, autoplayDelay = 5000, clas
 
   useEffect(() => {
     if (!emblaApi) return
-    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap())
+    const onSelect = () => {
+      const index = emblaApi.selectedScrollSnap()
+      setSelectedIndex(index)
+      onSelectProp?.(index)
+    }
     emblaApi.on('select', onSelect)
     onSelect()
     return () => emblaApi.off('select', onSelect)
-  }, [emblaApi])
+  }, [emblaApi, onSelectProp])
 
   // Autoplay, paused on hover/focus, restarted after manual navigation.
   useEffect(() => {
     if (!emblaApi || items.length <= 1) return undefined
+    // No auto-advancing slides for people who asked their device to reduce motion.
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined
 
     const stop = () => {
       if (autoplayRef.current) {
@@ -90,7 +96,7 @@ export default function Carousel({ items, renderItem, autoplayDelay = 5000, clas
             ›
           </button>
 
-          <div className="carousel__dots">
+          <div className={`carousel__dots${items.length > 8 ? ' carousel__dots--many' : ''}`}>
             {items.map((item, i) => (
               <button
                 key={item.id ?? i}
@@ -101,6 +107,11 @@ export default function Carousel({ items, renderItem, autoplayDelay = 5000, clas
               />
             ))}
           </div>
+          {items.length > 8 && (
+            <span className="carousel__counter" aria-hidden="true">
+              {selectedIndex + 1} / {items.length}
+            </span>
+          )}
         </>
       )}
     </div>

@@ -8,6 +8,16 @@ import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
 import TiltCard from '../components/TiltCard'
 import './Team.css'
 
+// Badge text: the member's own designation if set, otherwise a label for their group.
+function badgeFor(member, categoryName) {
+  if (member.designation) return member.designation
+  const n = (categoryName || '').toLowerCase()
+  if (n.includes('co-principal')) return 'Co-Principal Investigator'
+  if (n.includes('principal')) return 'Principal Investigator'
+  if (n.includes('other')) return 'Research Member'
+  return categoryName
+}
+
 function getCategoryMeta(name) {
   const n = (name || '').toLowerCase()
   if (n.includes('principal investigator') && !n.includes('co-')) {
@@ -58,7 +68,7 @@ export default function Team() {
   const { data: slides } = useApi(() => fetchList('/hero-slides/'), [], [])
 
   const loading = catLoading || memberLoading
-  const heroImage = slides && slides.length > 0 ? slides[0].image : ''
+  const bannerSlide = (slides || []).find((s) => s.is_published !== false)
 
   return (
     <div className="team-page bg-page">
@@ -66,6 +76,8 @@ export default function Team() {
         eyebrow="Team"
         title="PI, Co-PIs and Research Team"
         description="The people behind CRTDH — principal investigators, project staff and medical collaborators."
+        image={bannerSlide?.image}
+        imagePosition={bannerSlide?.image_position}
       />
 
       <section className="section team-main">
@@ -77,7 +89,9 @@ export default function Team() {
               {(cats) => (
                 <div className="team-sections">
                   {cats.map((category, catIndex) => {
-                    const categoryMembers = (members || []).filter((m) => m.category === category.id)
+                    const categoryMembers = (members || []).filter(
+                      (m) => m.category === category.id && m.is_published !== false,
+                    )
                     if (categoryMembers.length === 0) return null
 
                     const meta = getCategoryMeta(category.name)
@@ -95,7 +109,7 @@ export default function Team() {
                           </div>
                           
                           <div className="team-section__content">
-                            {meta.layout === 'featured' ? (
+                            {meta.layout === 'featured' && categoryMembers.length === 1 ? (
                               <div className="team-featured-card card shadow-sm">
                                 <div className="team-featured__photo">
                                   {categoryMembers[0].photo ? (
@@ -107,18 +121,28 @@ export default function Team() {
                                 <div className="team-featured__info">
                                   <div className="team-featured__header">
                                     <h3>{categoryMembers[0].name}</h3>
-                                    <span className="team-badge">{category.name.includes('Principal') ? 'Principal Investigator' : category.name}</span>
+                                    <span className="team-badge">{badgeFor(categoryMembers[0], category.name)}</span>
                                   </div>
-                                  <p className="team-institution">Indian Institute of Technology Kharagpur</p>
+                                  {categoryMembers[0].institution && (
+                                    <p className="team-institution">{categoryMembers[0].institution}</p>
+                                  )}
                                   {categoryMembers[0].email && (
                                     <div className="team-featured__extra">
                                       <Mail size={16} /> <span>{categoryMembers[0].email}</span>
                                     </div>
                                   )}
-                                  <div className="team-featured__desc">
-                                    <h4>Research Leadership</h4>
-                                    <p>Guiding CRTDH's vision for affordable healthcare technologies.</p>
-                                  </div>
+                                  {(categoryMembers[0].description || /principal/i.test(category.name)) && (
+                                    <div className="team-featured__desc">
+                                      {categoryMembers[0].description ? (
+                                        <p>{categoryMembers[0].description}</p>
+                                      ) : (
+                                        <>
+                                          <h4>Research Leadership</h4>
+                                          <p>Guiding CRTDH's vision for affordable healthcare technologies.</p>
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ) : (
@@ -136,12 +160,9 @@ export default function Team() {
                                         </div>
                                         <div className="team-card__info">
                                           <h3 className="team-card__name">{member.name}</h3>
-                                          <span className="team-badge">
-                                            {category.name.includes('Co-Principal') ? 'Co-Principal Investigator' :
-                                              category.name.includes('Staff') ? 'Project Staff' :
-                                                category.name.includes('Other') ? 'Research Member' : category.name}
-                                          </span>
-                                          <p className="team-card__inst">Indian Institute of Technology Kharagpur</p>
+                                          <span className="team-badge">{badgeFor(member, category.name)}</span>
+                                          {member.institution && <p className="team-card__inst">{member.institution}</p>}
+                                          {member.description && <p className="team-card__desc">{member.description}</p>}
                                         </div>
                                       </div>
                                     </TiltCard>

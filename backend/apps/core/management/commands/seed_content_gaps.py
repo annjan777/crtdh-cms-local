@@ -307,7 +307,7 @@ class Command(BaseCommand):
             "such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc."
         )
 
-        home.location_address = "Second Floor, Diamond Jubilee Building, IIT Kharagpur"
+        home.location_address = "Second Floor (204), Bioscience Building, Diamond Jubilee Complex, IIT Kharagpur"
         home.location_description = (
             "Available pilot plant and laboratories at CRTDH facility for research, MSME training and "
             "prototype development"

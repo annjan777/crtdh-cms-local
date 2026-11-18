@@ -35,14 +35,9 @@
 }
 
 .eyebrow--on-dark {
+  color: var(--color-accent-300);
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: var(--color-amber-300);
-  backdrop-filter: blur(6px);
-}
-
-.eyebrow--on-dark::before {
-  background: var(--color-amber-400);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .page-hero__desc {
@@ -50,4 +45,44 @@
   color: var(--text-on-inverse-muted);
   font-size: 1.08rem;
   margin: 0;
+}
+
+/* --- Photographic banner (Team, Media) --- */
+.page-hero--photo {
+  background: var(--color-brand-900);
+  min-height: 16rem;
+  display: flex;
+  align-items: center;
+}
+
+.page-hero__photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(62%, 56rem); /* capped so small source photos aren't blown up */
+  object-fit: cover;
+}
+
+.page-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(12, 42, 64, 0.98) 0%,
+    rgba(12, 42, 64, 0.94) 38%,
+    rgba(15, 76, 117, 0.55) 58%,
+    rgba(15, 76, 117, 0.1) 80%,
+    rgba(15, 76, 117, 0) 100%
+  );
+}
+
+@media (max-width: 760px) {
+  .page-hero__photo {
+    width: 100%;
+  }
+
+  .page-hero__overlay {
+    background: rgba(12, 42, 64, 0.86);
+  }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -6,7 +6,8 @@ import {
   Mail,
   Search,
   Settings,
-  ChevronDown,
+  Menu,
+  X,
   Home,
   Info,
   Users,
@@ -18,7 +19,6 @@ import {
   Video,
   Megaphone,
   ExternalLink,
-  Shield,
   FolderOpen,
   Package,
   Link2,
@@ -30,6 +30,53 @@ import AdminSearchModal from './AdminSearchModal';
 export default function Layout() {
   const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  // Mobile/tablet navigation drawer (< 900px). On wider screens the sidebar is always visible.
+  const [navOpen, setNavOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const sidebarRef = useRef(null);
+
+  const closeNav = useCallback((returnFocus = true) => {
+    setNavOpen(false);
+    if (returnFocus) menuButtonRef.current?.focus();
+  }, []);
+
+  // While the drawer is open: Escape closes it, focus moves into it, and the page behind doesn't scroll.
+  useEffect(() => {
+    if (!navOpen) return undefined;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closeNav();
+        return;
+      }
+      // Keep Tab focus inside the open drawer.
+      if (e.key === 'Tab' && sidebarRef.current) {
+        const items = sidebarRef.current.querySelectorAll('a[href], button:not([disabled])');
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    sidebarRef.current?.querySelector('a, button')?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [navOpen, closeNav]);
+
+  // Following a link inside the drawer closes it (no effect on the desktop sidebar).
+  const handleNavClick = (e) => {
+    if (navOpen && e.target.closest('a')) closeNav(false);
+  };
 
   // Cmd+K or Ctrl+K shortcut key listener
   useEffect(() => {
@@ -44,26 +91,32 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div className={`app-shell${navOpen ? ' nav-open' : ''}`}>
+      <aside
+        className="sidebar"
+        id="admin-sidebar"
+        ref={sidebarRef}
+        aria-label="Admin navigation"
+      >
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <span className="sidebar-mark">CR</span>
+            <img className="sidebar-mark" src="/crtdh-favicon.svg" alt="" width="34" height="34" />
             <div>
               <span className="sidebar-logo">CRTDH CMS</span>
               <span className="sidebar-subtitle">Website Management</span>
             </div>
           </div>
+          <button
+            type="button"
+            className="sidebar-close"
+            onClick={() => closeNav()}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
         </div>
 
-        {/* Global Search Bar */}
-        <div className="sidebar-search" onClick={() => setSearchOpen(true)}>
-          <Search size={14} />
-          <span className="search-placeholder">Search website...</span>
-          <kbd className="search-kbd">⌘K</kbd>
-        </div>
-
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" onClick={handleNavClick}>
           <NavLink to="/" end className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
             <LayoutDashboard size={17} className="nav-icon" />
             Dashboard
@@ -161,25 +214,45 @@ export default function Layout() {
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
-            <span className="user-avatar">{user?.username?.[0]?.toUpperCase() || 'A'}</span>
-            <div className="user-details">
-              <span className="user-name">{user?.username || 'Administrator'}</span>
-              <span className="user-role">Superuser</span>
+            <span className="sidebar-avatar" aria-hidden="true">
+              {user?.username?.[0]?.toUpperCase() || 'A'}
+            </span>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{user?.username || 'Administrator'}</span>
+              <span className="sidebar-user-role">Superuser</span>
             </div>
           </div>
-          <button onClick={logout} className="logout-btn" title="Sign out">
-            <LogOut size={16} />
+          <button type="button" onClick={logout} className="sidebar-logout" title="Sign out" aria-label="Sign out">
+            <LogOut size={16} aria-hidden="true" />
           </button>
         </div>
       </aside>
 
+      {navOpen && <div className="sidebar-backdrop" onClick={() => closeNav()} aria-hidden="true" />}
+
       <main className="main-content">
         <header className="top-header">
           <div className="header-left">
-            <button className="search-trigger-btn" onClick={() => setSearchOpen(true)}>
-              <Search size={15} />
-              <span>Search across website content (Cmd+K)...</span>
-              <kbd>⌘K</kbd>
+            <button
+              type="button"
+              ref={menuButtonRef}
+              className="menu-toggle-btn"
+              onClick={() => (navOpen ? closeNav() : setNavOpen(true))}
+              aria-label={navOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={navOpen}
+              aria-controls="admin-sidebar"
+            >
+              <Menu size={20} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="search-trigger-btn"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search content"
+            >
+              <Search size={15} aria-hidden="true" />
+              <span className="search-trigger-label">Search content…</span>
+              <kbd aria-hidden="true">⌘K</kbd>
             </button>
           </div>
           <div className="header-right">
@@ -188,8 +261,10 @@ export default function Layout() {
               target="_blank"
               rel="noreferrer"
               className="btn btn--outline-light btn--sm"
+              aria-label="View public website (opens in a new tab)"
             >
-              <ExternalLink size={14} /> View Public Website
+              <ExternalLink size={14} aria-hidden="true" />
+              <span className="header-link-label">View Public Website</span>
             </a>
           </div>
         </header>

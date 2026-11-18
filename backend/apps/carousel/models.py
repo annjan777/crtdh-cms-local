@@ -13,6 +13,17 @@ class HeroSlide(models.Model):
     secondary_button_label = models.CharField(max_length=100, blank=True, default="About CRTDH")
     secondary_button_link = models.CharField(max_length=255, blank=True, default="/about")
     is_published = models.BooleanField(default=True)
+    # Which part of the photo stays in view when the hero crops it (CSS object-position).
+    IMAGE_POSITION_CHOICES = [
+        ("center center", "Centre"),
+        ("left center", "Left"),
+        ("right center", "Right"),
+        ("center top", "Top"),
+        ("center bottom", "Bottom"),
+    ]
+    image_position = models.CharField(
+        max_length=20, choices=IMAGE_POSITION_CHOICES, default="center center", blank=True
+    )
     order = models.IntegerField(default=0)
 
     class Meta:

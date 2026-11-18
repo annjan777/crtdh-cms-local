@@ -2,8 +2,20 @@ from django.db import models
 
 
 class MediaEvent(models.Model):
+    CATEGORY_CHOICES = [
+        ("events", "Events"),
+        ("health-camps", "Health Camps"),
+        ("community-outreach", "Community Outreach"),
+        ("facilities", "Facilities"),
+        ("press", "Press Coverage"),
+    ]
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
+    # Optional details shown on the public Media page; all may be left blank.
+    description = models.TextField(blank=True, default="")
+    event_date = models.DateField(null=True, blank=True)
+    category = models.CharField(max_length=32, choices=CATEGORY_CHOICES, blank=True, default="")
     order = models.IntegerField(default=0)
 
     class Meta:

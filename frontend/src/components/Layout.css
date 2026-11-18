@@ -198,7 +198,6 @@
   background: rgba(12, 34, 49, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(18px);
 }
 
 .nav-more__panel a {
@@ -215,7 +214,8 @@
 }
 
 .nav-more__panel a.active {
-  background: rgba(196, 154, 63, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 3px 0 0 var(--color-accent-500);
   color: var(--color-white);
   font-style: normal;
 }
@@ -238,8 +238,8 @@
   display: none;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(0, 0, 0, 0.15);
   background: transparent;
@@ -273,6 +273,15 @@
   }
 }
 
+/* Phones: an opaque header is cheaper to paint while scrolling than a blurred one. */
+@media (max-width: 640px) {
+  .site-header {
+    background: rgba(224, 242, 254, 0.98);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* --- Mobile nav panel --- */
 .mobile-nav {
   overflow: hidden;
@@ -302,7 +311,8 @@
 }
 
 .mobile-nav a.active {
-  background: rgba(196, 154, 63, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 3px 0 0 var(--color-accent-500);
   color: var(--color-white);
 }
 

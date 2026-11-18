@@ -49,7 +49,8 @@ export default function TeamManager() {
       category: defaultCat,
       photo: '',
       designation: '',
-      institution: 'IIT Kharagpur',
+      institution: 'Indian Institute of Technology Kharagpur',
+      is_published: true,
       description: '',
       order: members.length + 1,
     });
@@ -62,7 +63,9 @@ export default function TeamManager() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this team member?')) return;
+    const member = members.find((m) => m.id === id);
+    const who = member?.name ? `‘${member.name}’` : 'this team member';
+    if (!window.confirm(`Delete ${who}? This cannot be undone.`)) return;
     try {
       await deleteOne('/team-members/', id);
       addToast('Team member deleted successfully', 'success');
@@ -375,6 +378,28 @@ export default function TeamManager() {
                     onChange={(e) => setActiveMember({ ...activeMember, institution: e.target.value })}
                     placeholder="e.g. Mechanical Engineering, IIT Kharagpur"
                   />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="member-description">Short description (optional)</label>
+                  <textarea
+                    id="member-description"
+                    rows={3}
+                    value={activeMember.description || ''}
+                    onChange={(e) => setActiveMember({ ...activeMember, description: e.target.value })}
+                    placeholder="One or two lines shown on the Team page"
+                  />
+                </div>
+
+                <div className="form-checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={activeMember.is_published !== false}
+                      onChange={(e) => setActiveMember({ ...activeMember, is_published: e.target.checked })}
+                    />
+                    Show this person on the website
+                  </label>
                 </div>
 
                 <div className="modal-actions">

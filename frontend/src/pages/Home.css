@@ -1,28 +1,11 @@
+/* --- Hero ---
+   The photo fills the right side at its own aspect ratio (object-fit: cover, focal point set per
+   slide in the CMS); a separate navy gradient overlay keeps the text readable on the left. */
 .hero {
   position: relative;
   color: var(--color-white);
   background-color: var(--brand-primary-dark, #0f4c75);
   overflow: hidden;
-}
-
-.hero__grid {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background-image: linear-gradient(rgba(250, 246, 238, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(250, 246, 238, 0.06) 1px, transparent 1px);
-  background-size: 46px 46px;
-  mask-image: radial-gradient(75% 90% at 18% 30%, #000 30%, transparent 88%);
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(90deg, rgba(15, 76, 117, 1) 0%, rgba(15, 76, 117, 0.85) 35%, rgba(15, 76, 117, 0) 100%);
-  pointer-events: none;
 }
 
 .hero .carousel,
@@ -31,27 +14,41 @@
 }
 
 .hero__slide {
-  height: 600px;
-  min-height: 500px;
+  height: clamp(30rem, 62vh, 36rem);
   display: flex;
   justify-content: flex-end;
   background-color: var(--brand-primary-dark, #0f4c75);
 }
 
+/* Capped width: the current hero photos are small (about 500×300), so stretching them
+   edge to edge would blur them. Upload larger photos (1600px+ wide) for a sharper hero. */
 .hero__slide img {
-  width: 100%;
-  max-width: 1200px;
+  width: min(100%, 68rem);
   height: 100%;
   object-fit: cover;
-  object-position: right center;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
-  mask-image: linear-gradient(to right, transparent 0%, black 15%);
-  filter: grayscale(0.1) sepia(0.05) brightness(0.9) contrast(1.05);
+  object-position: center center;
+  /* Fade the photo's left edge into the navy so there's no hard seam where it starts. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(12, 42, 64, 0.97) 0%,
+    rgba(12, 42, 64, 0.92) 30%,
+    rgba(15, 76, 117, 0.55) 52%,
+    rgba(15, 76, 117, 0.12) 72%,
+    rgba(15, 76, 117, 0) 88%
+  );
 }
 
 .hero__fallback {
-  height: 600px;
-  min-height: 500px;
+  height: clamp(30rem, 62vh, 36rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,27 +70,26 @@
 
 .hero__caption-inner {
   pointer-events: auto;
-  max-width: 46rem;
+  max-width: 40rem;
 }
 
 .hero__caption h1 {
   color: var(--color-white);
-  font-size: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
-  max-width: 18ch;
+  font-size: clamp(2.2rem, 1.4rem + 3vw, 3.6rem);
+  line-height: 1.08;
+  max-width: 16ch;
   margin-bottom: var(--space-4);
+  text-wrap: balance;
 }
 
 .hero__caption .gradient-text {
-  background: linear-gradient(120deg, var(--color-accent-300) 0%, var(--color-accent-100) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-accent-300);
 }
 
 .hero__caption p {
-  max-width: 52ch;
-  font-size: 1.15rem;
-  color: var(--text-on-inverse);
+  max-width: 46ch;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .hero__actions {
@@ -103,53 +99,22 @@
   margin-top: var(--space-5);
 }
 
-.hero__scroll-cue {
-  position: absolute;
-  bottom: var(--space-6);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  width: 26px;
-  height: 42px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  display: flex;
-  justify-content: center;
-  padding-top: 8px;
+.hero .carousel__dots {
+  bottom: var(--space-4);
 }
 
-.hero__scroll-cue span {
-  width: 4px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--color-amber-400);
-  animation: scroll-cue 1.8s ease infinite;
-}
+@media (max-width: 760px) {
+  /* Phones: the photo sits behind the text, so the overlay covers it evenly. */
+  .hero__slide img {
+    width: 100%;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
 
-@keyframes scroll-cue {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
+  .hero__overlay {
+    background: linear-gradient(180deg, rgba(12, 42, 64, 0.82) 0%, rgba(12, 42, 64, 0.9) 100%);
   }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .hero__scroll-cue span {
-    animation: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .hero__scroll-cue {
-    display: none;
-  }
 }
 
 /* --- News marquee --- */
@@ -202,6 +167,12 @@
   }
 }
 
+/* Hovering or tabbing into the ticker pauses it so items can be read and clicked. */
+.news-marquee:hover .news-marquee__track,
+.news-marquee:focus-within .news-marquee__track {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .news-marquee__track {
     animation: none;
@@ -210,7 +181,7 @@
 
 /* --- Stats strip --- */
 .stats-strip {
-  padding-block: var(--space-4);
+  padding-block: var(--space-6) var(--space-4);
   position: relative;
   z-index: 10;
 }
@@ -226,8 +197,12 @@
 }
 
 .stat-card {
-  text-align: center;
-  padding: var(--space-6) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  text-align: left;
+  padding: var(--space-5) var(--space-4);
   position: relative;
 }
 
@@ -235,12 +210,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 4rem;
+  flex: none;
+  width: 3.25rem;
+  height: 3.25rem;
   background: var(--color-brand-100);
   color: var(--brand-primary-dark);
   border-radius: 50%;
-  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 520px) {
+  .stat-card {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .stat-card__icon {
+    display: none;
+  }
 }
 
 .stat-card:not(:last-child)::after {
@@ -346,27 +331,17 @@
 }
 
 /* --- Membership --- */
-.membership-tiers {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-4);
-  margin-top: var(--space-5);
+.membership-note {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: var(--space-4) auto var(--space-5);
+  max-width: 52ch;
 }
 
-.membership-tier {
-  padding: 0.9rem 2.2rem;
-  border-radius: var(--radius-md);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--color-ink, #1a1a1a);
-  box-shadow: var(--shadow-sm);
-  text-decoration: none;
-  transition: transform 0.2s ease;
-}
-
-.membership-tier:hover {
-  transform: translateY(-2px);
+.membership-download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 /* --- Objective / Enterprises / Women Empowerment prose --- */
@@ -429,17 +404,27 @@
   height: 100%;
 }
 
-.facility-card:hover {
+.facility-card:has(> a):hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.facility-card a,
-.facility-card > div {
+.facility-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
   color: var(--text-primary);
+}
+
+/* Linked cards wrap their content in an <a>; unlinked cards render it directly in the card. */
+.facility-card > a {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.facility-card__img {
+  flex: none;
 }
 
 .facility-card__img {
@@ -489,6 +474,53 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
+}
+
+/* "Who we are": intro text beside the three highlight cards */
+.home-split-1-3 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
+  gap: var(--space-7);
+  align-items: center;
+}
+
+/* Location & facility (left) beside "See CRTDH in action" (right) */
+.home-split-2-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.home-split-2-1 > .home-split__right {
+  border-left: 1px solid var(--border-subtle);
+  padding-left: var(--space-7);
+}
+
+@media (max-width: 992px) {
+  .home-split-1-3,
+  .home-split-2-1 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-split-2-1 > .home-split__right {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* Captioned photos in the Enterprises and Rural livelihood sections */
+.image-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.image-caption {
+  margin: var(--space-3) 0 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
 }
 
 .home-split.align-center {
@@ -557,4 +589,109 @@
 
 .rounded-lg {
   border-radius: var(--radius-lg, 12px);
+}
+
+/* --- Visit CRTDH: address | map | quote --- */
+.visit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 0.9fr);
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+.visit-address {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  color: var(--text-secondary);
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.visit-address svg {
+  flex: none;
+  margin-top: 0.2rem;
+  color: var(--brand-primary-dark);
+}
+
+.visit-grid__map iframe {
+  height: 100%;
+  min-height: 260px;
+}
+
+.quote-block {
+  display: flex;
+  align-items: center;
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-50);
+  border: 1px solid var(--border-subtle);
+}
+
+.quote-block p {
+  margin: 0;
+  font-family: 'Fraunces Variable', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.3rem, 1rem + 0.8vw, 1.7rem);
+  line-height: 1.35;
+  color: var(--brand-primary-dark);
+  border-bottom: 3px solid var(--color-accent-500);
+  padding-bottom: var(--space-3);
+}
+
+@media (max-width: 992px) {
+  .visit-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .visit-grid__quote {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .visit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --- Location & facility: text beside a row of three facility cards --- */
+.facility-block {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.facility-block .section-title {
+  font-size: clamp(1.3rem, 1rem + 0.8vw, 1.65rem);
+  line-height: 1.25;
+}
+
+.facility-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: 0;
+}
+
+.facility-card__img {
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.facility-card h3 {
+  font-size: 0.92rem;
+  padding: var(--space-3) var(--space-4);
+}
+
+@media (max-width: 1200px) {
+  .facility-block {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .facility-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

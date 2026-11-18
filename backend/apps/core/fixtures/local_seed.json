@@ -874,7 +874,7 @@
     "women_image_1": "home/women-empowerment01.jpg",
     "women_image_2": "home/women-empowerment02.jpg",
     "women_text_2": "Empowered by a 'primary-care software', this has led to all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc.",
-    "location_address": "Second Floor, Diamond Jubilee Building, IIT Kharagpur",
+    "location_address": "Second Floor (204), Bioscience Building, Diamond Jubilee Complex, IIT Kharagpur",
     "location_description": "Available pilot plant and laboratories at CRTDH facility for research, MSME training and prototype development",
     "facility_card_1_title": "CRTDH Conference Room & Office",
     "facility_card_1_image": "home/facility/facility-01.jpg",
@@ -1221,7 +1221,7 @@
   "pk": 5,
   "fields": {
     "image": "project_slides/project-image01.jpg",
-    "title": "Mobie App",
+    "title": "Mobile App",
     "order": 0
   }
 },
@@ -1668,7 +1668,7 @@
   "pk": 17,
   "fields": {
     "title": "Blood Glucose Detection on a Printed Paper Strip",
-    "body": "<p>Blood Glucose Detection on a Printed Paper Strip, from the mobile app that guides the user through the test, through the paper strip and detection box, to the smartphone-based analysis of the result. See the project carousel below for the individual components (Mobie App, Paper Strip, Detection Box, Smartphone based analysis).</p>",
+    "body": "<p>Blood Glucose Detection on a Printed Paper Strip, from the mobile app that guides the user through the test, through the paper strip and detection box, to the smartphone-based analysis of the result. See the project carousel below for the individual components (Mobile App, Paper Strip, Detection Box, Smartphone based analysis).</p>",
     "video_url": null,
     "order": 3
   }

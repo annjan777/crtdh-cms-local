@@ -91,3 +91,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+.field__optional {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.form-feedback {
+  text-align: left;
+}

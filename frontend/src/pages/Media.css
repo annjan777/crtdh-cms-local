@@ -1,7 +1,7 @@
 .media-events {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .media-event {
@@ -32,4 +32,85 @@
 
 .coverage-list__arrow {
   color: var(--brand-primary);
+}
+
+/* --- Filter tabs (shown once events have categories set in the admin) --- */
+.media-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.media-filter {
+  padding: 0.6rem 1.4rem;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--color-gray-100);
+  color: var(--color-ink-800);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.media-filter.is-active {
+  background: var(--color-brand-900);
+  border-color: var(--color-brand-900);
+  color: var(--color-white);
+}
+
+.media-filter:focus-visible {
+  outline: 3px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* --- Closing band --- */
+.media-cta-section {
+  padding-top: 0;
+}
+
+.media-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-50);
+  border: 1px solid var(--border-subtle);
+}
+
+.media-cta__icon {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-brand-100);
+  color: var(--brand-primary-dark);
+}
+
+.media-cta__text {
+  flex: 1;
+}
+
+.media-cta__text h2 {
+  font-size: 1.25rem;
+  margin: 0 0 var(--space-2);
+}
+
+.media-cta__text p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .media-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

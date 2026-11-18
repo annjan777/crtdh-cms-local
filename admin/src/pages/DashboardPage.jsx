@@ -11,7 +11,6 @@ import {
   Plus,
   ArrowRight,
   ExternalLink,
-  ShieldCheck,
 } from 'lucide-react';
 import { fetchList, PUBLIC_SITE_URL } from '../api/client';
 
@@ -54,9 +53,6 @@ export default function DashboardPage() {
     <div className="dashboard-page">
       <div className="dashboard-hero-banner">
         <div>
-          <span className="banner-badge">
-            <ShieldCheck size={14} /> CRTDH CMS · Purpose Built
-          </span>
           <h1 className="banner-title">Welcome to CRTDH Website Management</h1>
           <p className="banner-desc">
             Directly manage content, visual carousels, research team members, media events, and site settings.
