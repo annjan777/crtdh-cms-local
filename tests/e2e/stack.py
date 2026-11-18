@@ -72,7 +72,7 @@ class Stack:
         origins = f"{self.admin},{self.site}"
         e.update({
             "DJANGO_SETTINGS_MODULE": self.settings_module,
-            "DJANGO_ENV": os.environ.get("E2E_DJANGO_ENV", "production"),
+            "CRTDH_ENV": os.environ.get("E2E_CRTDH_ENV", "production"),
             "DEBUG": "False",
             "SECRET_KEY": "e2e-" + secrets.token_urlsafe(48),
             "ALLOWED_HOSTS": "localhost,127.0.0.1",

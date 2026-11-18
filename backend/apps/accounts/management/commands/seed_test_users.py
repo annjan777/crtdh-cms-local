@@ -1,7 +1,7 @@
 """Dev/test only: create one CMS user per role for E2E, preprod rehearsal and simulated UAT.
 
 Refuses to run unless CRTDH_ALLOW_TEST_SEED=1 is set in the environment, and refuses outright
-when DJANGO_ENV=production without --rehearsal. The password comes from CRTDH_TEST_PASSWORD
+when CRTDH_ENV=production without --rehearsal. The password comes from CRTDH_TEST_PASSWORD
 (required, never defaulted, never written to disk by this command). Prints a JSON summary
 (usernames, roles, TOTP secret if MFA enrolment is available) to stdout for the caller.
 """
@@ -26,14 +26,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--rehearsal", action="store_true",
-                            help="allow under DJANGO_ENV=production for the local preprod rehearsal only")
+                            help="allow under CRTDH_ENV=production for the local preprod rehearsal only")
         parser.add_argument("--no-mfa", action="store_true", help="do not enrol TOTP even if available")
 
     def handle(self, *args, **opts):
         if os.environ.get("CRTDH_ALLOW_TEST_SEED") != "1":
             raise CommandError("refusing: set CRTDH_ALLOW_TEST_SEED=1 (dev/test only)")
-        if os.environ.get("DJANGO_ENV") == "production" and not opts["rehearsal"]:
-            raise CommandError("refusing: DJANGO_ENV=production (use --rehearsal only for the local preprod rehearsal)")
+        if os.environ.get("CRTDH_ENV") == "production" and not opts["rehearsal"]:
+            raise CommandError("refusing: CRTDH_ENV=production (use --rehearsal only for the local preprod rehearsal)")
         password = os.environ.get("CRTDH_TEST_PASSWORD")
         if not password or len(password) < 12:
             raise CommandError("CRTDH_TEST_PASSWORD must be set (12+ chars)")

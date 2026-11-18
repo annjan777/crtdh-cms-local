@@ -35,8 +35,8 @@ def test_guard_rejects_missing_collection(snap):
     from apps.publishing import guard
     bad = copy.deepcopy(snap)
     del bad["collections"]["team-members"]
-    with pytest.raises(Exception) as e:
-        guard.check_snapshot(bad, previous=snap)
+    with pytest.raises(guard.BuildGuardError) as e:
+        guard.check(bad, previous=snap)
     assert "team-members" in str(e.value)
 
 
@@ -46,9 +46,9 @@ def test_guard_rejects_40pct_shrink_unless_confirmed(snap):
     prev["collections"]["team-members"] = prev["collections"]["team-members"] * 2
     cur = copy.deepcopy(snap)
     cur["collections"]["team-members"] = prev["collections"]["team-members"][: int(len(prev["collections"]["team-members"]) * 0.6)]
-    with pytest.raises(Exception):
-        guard.check_snapshot(cur, previous=prev)
-    guard.check_snapshot(cur, previous=prev, confirm_shrink=True)
+    with pytest.raises(guard.BuildGuardError):
+        guard.check(cur, previous=prev)
+    guard.check(cur, previous=prev, confirm_shrink=True)
 
 
 def test_item_ids_are_stable_not_positional(sample_content):

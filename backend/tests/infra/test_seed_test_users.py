@@ -15,7 +15,7 @@ def test_refuses_without_flag(db, monkeypatch):
 def test_refuses_in_production_without_rehearsal(db, monkeypatch):
     monkeypatch.setenv("CRTDH_ALLOW_TEST_SEED", "1")
     monkeypatch.setenv("CRTDH_TEST_PASSWORD", "x" * 16)
-    monkeypatch.setenv("DJANGO_ENV", "production")
+    monkeypatch.setenv("CRTDH_ENV", "production")
     with pytest.raises(CommandError, match="production"):
         call_command("seed_test_users")
 
@@ -23,7 +23,7 @@ def test_refuses_in_production_without_rehearsal(db, monkeypatch):
 def test_creates_one_user_per_role(db, monkeypatch, capsys):
     monkeypatch.setenv("CRTDH_ALLOW_TEST_SEED", "1")
     monkeypatch.setenv("CRTDH_TEST_PASSWORD", "x" * 16)
-    monkeypatch.setenv("DJANGO_ENV", "test")
+    monkeypatch.setenv("CRTDH_ENV", "test")
     call_command("seed_test_users", "--no-mfa")
     out = json.loads(capsys.readouterr().out)
     from django.contrib.auth import get_user_model

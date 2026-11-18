@@ -10,11 +10,17 @@ import pytest
 from tests.support.content import FULL_SNAPSHOT_PATH, load_snapshot_into_db
 
 pytestmark = [pytest.mark.needs_integration, pytest.mark.regression_critical]
-MEDIA_KEYS_HINT = ("image", "photo", "logo", "file", "pdf", "document", "video")
 
 
 @pytest.fixture
-def seeded(db):
+def seeded(db, settings, tmp_path):
+    """Real seed images (backend/seed_media) so the snapshot can hash them; copied so tests never write there."""
+    import shutil
+    from pathlib import Path
+    src = Path(__file__).resolve().parents[2] / "seed_media"
+    settings.MEDIA_ROOT = str(tmp_path / "media")
+    if src.is_dir():
+        shutil.copytree(src, settings.MEDIA_ROOT)
     load_snapshot_into_db(FULL_SNAPSHOT_PATH)
     return json.loads(FULL_SNAPSHOT_PATH.read_text())
 
@@ -45,31 +51,37 @@ def test_every_collection_present(seeded, snap):
     assert "contact-messages" not in snap["collections"]
 
 
+def _match(expected, got, media, where):
+    """expected must be reproduced inside got (got may add keys such as version); media compared by source path."""
+    if isinstance(expected, dict):
+        assert isinstance(got, dict), where
+        for k, v in expected.items():
+            if k == "id" and where.count(".") == 0:
+                continue
+            _match(v, got.get(k), media, f"{where}.{k}")
+    elif isinstance(expected, list):
+        assert isinstance(got, list) and len(got) == len(expected), f"{where}: {len(expected)} -> {len(got) if isinstance(got, list) else got!r}"
+        for i, (e, g) in enumerate(zip(expected, got)):
+            _match(e, g, media, f"{where}[{i}]")
+    elif isinstance(expected, str) and "/media/" in expected:
+        assert _source(got, media) == _source(expected, media), f"{where}: {expected!r} -> {got!r}"
+    else:
+        assert got == expected, f"{where}: {expected!r} -> {got!r}"
+
+
 @pytest.mark.parametrize("resource", sorted(json.loads(FULL_SNAPSHOT_PATH.read_text())["collections"]))
 def test_rows_and_values_match(seeded, snap, resource):
-    media = snap.get("media", {})
     expected = [r for r in seeded["collections"][resource] if r.get("is_published", True)]
     expected.sort(key=lambda r: (r.get("order", 0), r["id"]))
     got = snap["collections"][resource]
     assert len(got) == len(expected), f"{resource}: {len(expected)} visible rows today, {len(got)} in snapshot"
     for e, g in zip(expected, got):
-        for key, val in e.items():
-            if key == "id":
-                continue
-            gv = g.get(key)
-            if any(h in key for h in MEDIA_KEYS_HINT) and isinstance(val, str) and val:
-                assert _source(gv, media) == _source(val, media), f"{resource}.{key}"
-            else:
-                assert gv == val, f"{resource}[{e['id']}].{key}: {val!r} -> {gv!r}"
+        _match(e, g, snap.get("media", {}), f"{resource}:{e['id']}")
 
 
 def test_singletons_match(seeded, snap):
-    media = snap.get("media", {})
     for name, row in seeded["singletons"].items():
-        for key, val in row.items():
-            if key == "id":
-                continue
-            assert _source(snap["singletons"][name].get(key), media) == _source(val, media), f"{name}.{key}"
+        _match(row, snap["singletons"][name], snap.get("media", {}), name)
 
 
 def test_media_paths_are_content_hashed(snap):

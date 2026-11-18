@@ -32,8 +32,8 @@ def test_deploy_env_not_tracked():
 
 def _start(env_over):
     env = {k: v for k, v in os.environ.items() if k not in ("DEBUG", "SECRET_KEY", "ALLOWED_HOSTS", "CORS_ALLOW_ALL_ORIGINS")}
-    env.update({"DJANGO_SETTINGS_MODULE": PROD_SETTINGS, "DJANGO_ENV": "production",
-                "SECRET_KEY": "p" * 60, "ALLOWED_HOSTS": "cms.example.test", "CORS_ALLOW_ALL_ORIGINS": "False",
+    env.update({"DJANGO_SETTINGS_MODULE": PROD_SETTINGS, "CRTDH_ENV": "production",
+                "SECRET_KEY": __import__("secrets").token_urlsafe(64), "ALLOWED_HOSTS": "cms.example.test", "CORS_ALLOW_ALL_ORIGINS": "False",
                 "DATABASE_URL": "sqlite:////tmp/never-used.sqlite3", "ALLOW_SQLITE": "1"})
     env.update(env_over)
     return subprocess.run([sys.executable, "-c", "import django; django.setup(); from django.conf import settings; settings.SECRET_KEY"],

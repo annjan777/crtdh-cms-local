@@ -8,7 +8,7 @@ Options / env:
   --site-dir   built public site   (default frontend/build/client; env E2E_SITE_DIR)
   --admin-dir  built admin          (default admin/dist; env E2E_ADMIN_DIR)
   --external   don't start anything; use already-running servers on those ports (preprod.sh, staging)
-  E2E_DJANGO_SETTINGS  production settings module (default config.settings + DJANGO_ENV=production)
+  E2E_DJANGO_SETTINGS  production settings module (default config.settings + CRTDH_ENV=production)
   CHROME_BIN           used when Playwright's bundled Chromium is not installed (sandbox)
 """
 import os
