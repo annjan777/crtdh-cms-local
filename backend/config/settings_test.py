@@ -13,6 +13,10 @@ os.environ.setdefault("ALLOWED_HOSTS", "testserver,localhost,127.0.0.1")
 os.environ.setdefault("CORS_ALLOW_ALL_ORIGINS", "False")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("DJANGO_ENV", "test")
+# backend-security: production checks refuse sqlite unless explicitly allowed; no HTTPS in the test client.
+os.environ.setdefault("ALLOW_SQLITE", "1")
+os.environ.setdefault("CRTDH_SKIP_DOTENV", "1")
+os.environ.setdefault("SECURE_SSL_REDIRECT", "False")
 
 from .settings import *  # noqa: E402,F401,F403
 
