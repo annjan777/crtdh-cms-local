@@ -4,6 +4,7 @@
 <p class="mark">CRTDH CMS</p>
 {% if not error %}
 <h1>Allow Claude to edit drafts as {{ cms_user_name }} ({{ cms_user_role }})?</h1>
+<p class="small">Requested by <strong>{{ application.name }}</strong> · you'll return to <strong>{{ redirect_host }}</strong></p>
 <p>Claude will be able to:</p>
 <ul>
   <li>read the website's pages and your unpublished changes</li>

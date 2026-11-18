@@ -1,5 +1,7 @@
 """OAuth endpoints for the Claude connector and the CMS endpoints that manage it."""
 
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
@@ -60,6 +62,8 @@ class ConsentAuthorizationView(AuthorizationView):
         context = super().get_context_data(**kwargs)
         context["cms_user_name"] = display_name(self.request.user)
         context["cms_user_role"] = role_label(self.request.user)
+        # Show where the approval goes, so a look-alike client is noticeable.
+        context["redirect_host"] = urlsplit(context.get("redirect_uri") or "").hostname or ""
         return context
 
 
@@ -152,20 +156,24 @@ class ClaudeAccessRevokeView(APIView):
 
     def post(self, request):
         target = request.user
-        user_id = request.data.get("user_id") if hasattr(request.data, "get") else None
-        if user_id not in (None, "", request.user.pk):
-            if not has_role(request.user, ADMIN):
-                return _error(
-                    "CMS_FORBIDDEN_ROLE",
-                    "Only an Admin can disconnect Claude for another person.",
-                    "Ask an Admin, or omit user_id to disconnect your own access.",
-                    status.HTTP_403_FORBIDDEN,
-                )
+        raw_id = request.data.get("user_id") if hasattr(request.data, "get") else None
+        if raw_id not in (None, ""):
             try:
-                target = get_user_model().objects.get(pk=int(user_id))
-            except (ValueError, TypeError, get_user_model().DoesNotExist):
-                return _error(
-                    "CMS_NOT_FOUND", "No CMS user with that id.", "Check the user id.", status.HTTP_404_NOT_FOUND
-                )
+                user_id = int(raw_id)
+            except (TypeError, ValueError):
+                return _error("CMS_VALIDATION", "user_id must be a whole number.", "Send the CMS user's id.",
+                              status.HTTP_400_BAD_REQUEST)
+            if user_id != request.user.pk:
+                if not has_role(request.user, ADMIN):
+                    return _error(
+                        "CMS_FORBIDDEN_ROLE",
+                        "Only an Admin can disconnect Claude for another person.",
+                        "Ask an Admin, or omit user_id to disconnect your own access.",
+                        status.HTTP_403_FORBIDDEN,
+                    )
+                target = get_user_model().objects.filter(pk=user_id).first()
+                if target is None:
+                    return _error("CMS_NOT_FOUND", "No CMS user with that id.", "Check the user id.",
+                                  status.HTTP_404_NOT_FOUND)
         revoked = revoke_all_for_user(target, reason=f"revoked from CMS by user {request.user.pk}")
         return Response({"revoked": revoked, "user_id": target.pk})

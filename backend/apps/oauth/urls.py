@@ -10,6 +10,7 @@ from django.urls import include, path
 from oauth2_provider import views as dot_views
 
 from . import views
+from .dcr import ClaudeOnlyDCRManagementView
 
 _oauth = [
     path("authorize/", views.ConsentAuthorizationView.as_view(), name="authorize"),
@@ -19,7 +20,7 @@ _oauth = [
     path("register/", dot_views.DynamicClientRegistrationView.as_view(), name="dcr-register"),
     path(
         "register/<str:client_id>/",
-        dot_views.DynamicClientRegistrationManagementView.as_view(),
+        ClaudeOnlyDCRManagementView.as_view(),
         name="dcr-register-management",
     ),
 ]
