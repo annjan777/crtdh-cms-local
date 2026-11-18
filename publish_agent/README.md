@@ -109,7 +109,7 @@ The PC must be on and on the campus network for publishing to work. While it is 
 2. Download the tarball. Check its SHA-256 and the CMS's signature. Unpack it safely (only files and folders, no `..`).
 3. Upload `site/` into `releases/<snapshot>.partial/`. Each file goes up under a temporary name and is then renamed, so a file is never left half written.
    If the connection drops, the agent reconnects and continues where it stopped (up to 3 tries). Files already there are skipped.
-4. Upload new `media/` files into the shared media folder. Files are named by content hash, so an image already on the server is never uploaded again.
+4. Upload the tarball's new `media/` files into the shared `_media/` folder (served at `/_media/`; `/media/` is the Media & Gallery page). Files are named by content hash, so an image already on the server is never uploaded again.
 5. Rename `<snapshot>.partial` → `<snapshot>`, then **switch** (see below) and save `state.json` on the server.
 6. Load `verify_url` and look for `<meta name="crtdh-build" content="<snapshot>">`. If it's not there after 5 tries, the agent switches back to the previous release and reports "failed".
 7. Report "live". Delete releases older than `keep_releases`, any leftover `.partial` folders, and media files that no kept release uses.
@@ -123,12 +123,12 @@ If the disk quota is full, the upload is marked failed with a message that menti
 
 | Strategy | Server layout | Switch | Downtime |
 |---|---|---|---|
-| `symlink` (preferred) | `public_html` → link to `crtdh-releases/releases/<id>`; media in `crtdh-releases/media` | one atomic rename of a new link | none |
+| `symlink` (preferred) | `public_html` → link to `crtdh-releases/releases/<id>`; media in `crtdh-releases/_media` | one atomic rename of a new link | none |
 | `htaccess` | releases in `public_html/_crtdh/releases/<id>`; `.htaccess` rewrites every request to the live one | one atomic rename of `.htaccess` | none |
 | `swap` | `public_html` *is* the live release; old ones in `crtdh-releases/releases/` | three folder renames | under a second, while the folders are renamed |
 | `copy` (last resort) | files overwritten in `public_html` one by one | per-file renames | visitors may briefly see a mix of old and new pages |
 
-The first publish backs up the existing site to this PC. With `symlink` and `swap`, it then moves the old site to `releases/legacy-<time>`; with `htaccess`, it saves the old `.htaccess` to `_crtdh/legacy.htaccess`. Rolling back to `legacy-…` brings the old site back.
+The first publish backs up the existing site to this PC. With `symlink` and `swap`, it then moves the old site to `releases/legacy-<time>` (if `public_html` is already a link, the folder it points to is left in place and only recorded); with `htaccess`, the agent only ever writes its own `# BEGIN/# END crtdh-publish-agent` block, and any other rules in `.htaccess` are kept. Rolling back to `legacy-…` brings the old site back.
 
 **Changing strategy**: don't flip the setting on a live site. Roll back to `legacy-…`, move the agent's folders
 (`crtdh-releases/` or `public_html/_crtdh/`) aside, set the new `strategy`, then publish again.
@@ -163,12 +163,12 @@ Use this only in an emergency. The next agent publish replaces whatever you uplo
 2. Connect from this PC with WinSCP/FileZilla (SFTP, host `academicweb.iitkgp.ac.in`, port 22, private key
    `keys/crtdh_publish_ed25519`; in WinSCP convert it to .ppk when asked).
 3. Upload the `site/` contents into a **new** folder `crtdh-releases/releases/manual-<date>/`. With `htaccess`, use `public_html/_crtdh/releases/manual-<date>/` instead.
-   Upload any new `media/` files into the shared media folder from the table above.
-   With `symlink`, also create a link `media` → `../../media` inside the new folder. WinSCP can do this from the context menu: *New → Link*.
+   Upload any new files from the tarball's `media/` into the shared `_media/` folder from the table above.
+   With `symlink`, also create a link `_media` → `../../_media` inside the new folder. WinSCP can do this from the context menu: *New → Link*.
 4. Switch:
    - `symlink`: create a link `public_html.new` → `crtdh-releases/releases/manual-<date>`, then rename it over `public_html`. If renaming over isn't allowed, delete the old `public_html` link first; the site is down for a moment.
    - `htaccess`: edit `public_html/.htaccess` and replace the release id in the three places it appears.
-   - `swap` / `copy`: rename `public_html` → `crtdh-releases/releases/<current id>` and the new folder → `public_html`, then move `media` from the old folder into the new one.
+   - `swap` / `copy`: rename `public_html` → `crtdh-releases/releases/<current id>` and the new folder → `public_html`, then move `_media` from the old folder into the new one.
 5. Open https://crtdh.iitkgp.ac.in/ and check the page.
 6. When the agent is back, run `python -m publish_agent status`. It detects the link or `.htaccess` you changed, but it does
    not know a `manual-…` release by name, so publish once from the CMS to return to normal.
