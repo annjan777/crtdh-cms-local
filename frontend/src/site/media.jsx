@@ -33,13 +33,13 @@ function toSrcset(list) {
  * when present, otherwise the original URL. The frame shows the LQIP colour (or
  * the neutral placeholder tone) until the image paints, so nothing shifts.
  */
-export function Img({ src, alt = '', ratio = '3x2', sizes = '100vw', priority = false, contain = false, className = '', style }) {
+export function Img({ src, alt = '', ratio = '3x2', sizes = '100vw', priority = false, contain = false, figure = false, className = '', style }) {
   const info = useMedia(src)
   if (!src) return null
   const avif = toSrcset(info?.variants?.avif)
   const webp = toSrcset(info?.variants?.webp)
   const bg = info?.lqip || info?.color || info?.dominant_color
-  const cls = ['img', ratio ? `r-${ratio}` : '', contain ? 'img--contain' : '', className].filter(Boolean).join(' ')
+  const cls = ['img', ratio ? `r-${ratio}` : '', contain ? 'img--contain' : '', figure ? 'img--figure' : '', className].filter(Boolean).join(' ')
   const img = (
     <img
       src={src}

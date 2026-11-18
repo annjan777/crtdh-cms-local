@@ -61,15 +61,6 @@ function Proof({ enterprises = [], products = [] }) {
             {partners.length > 0 && `, and the partners taking ${products.length} of its products to market`}.
           </p>
           <SiteLink to="/enterprises" className="text-link">All enterprises</SiteLink>
-        </div>
-        <div className="proof__names">
-          {enterprises.length > 0 && (
-            <ul className="names" aria-label="Enterprises engaged">
-              {enterprises.map((e) => (
-                <li key={e.id}>{e.name}</li>
-              ))}
-            </ul>
-          )}
           {partners.length > 0 && (
             <dl className="names names--partners">
               <dt className="soft">Products and their partners</dt>
@@ -82,6 +73,15 @@ function Proof({ enterprises = [], products = [] }) {
                   </dd>
                 ))}
             </dl>
+          )}
+        </div>
+        <div className="proof__names">
+          {enterprises.length > 0 && (
+            <ul className="names" aria-label="Enterprises engaged">
+              {enterprises.map((e) => (
+                <li key={e.id}>{e.name}</li>
+              ))}
+            </ul>
           )}
         </div>
       </div>
@@ -113,6 +113,7 @@ function Work({ innovations = [] }) {
                   <Img
                     src={img.image}
                     alt={img.caption || ''}
+                    figure
                     ratio={shape === 'tall' ? '4x5' : '3x2'}
                     sizes={shape === 'wide' ? '(min-width: 768px) 48vw, 100vw' : '(min-width: 768px) 24vw, 50vw'}
                   />
@@ -156,20 +157,23 @@ function Manufacturing({ home }) {
         )}
       </div>
       {panels.length > 0 && (
-        <div className="band" aria-label="Facilities">
-          {panels.map((p, i) => {
-            const inner = (
-              <>
-                <Img src={p.image} alt="" ratio={null} sizes="(min-width: 768px) 40vw, 100vw" />
-                <span className="band__label">{p.title}</span>
-              </>
-            )
-            return (
-              <div className={`band__panel band__panel--${i + 1}`} key={p.title || i}>
-                {p.link ? <SiteLink to={p.link} className="band__link">{inner}</SiteLink> : inner}
-              </div>
-            )
-          })}
+        <div className="wrap">
+          <h3 className="facility-list__title">Facilities at the centre</h3>
+          <ul className="facility-list">
+            {panels.map((p, i) => {
+              const inner = (
+                <>
+                  <Img src={p.image} alt="" ratio="1x1" figure sizes="88px" />
+                  <span>{p.title}</span>
+                </>
+              )
+              return (
+                <li key={p.title || i}>
+                  {p.link ? <SiteLink to={p.link} className="facility-list__item">{inner}</SiteLink> : <span className="facility-list__item">{inner}</span>}
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
     </section>

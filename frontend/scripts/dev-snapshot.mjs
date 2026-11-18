@@ -24,5 +24,20 @@ for (const m of raw.matchAll(/"(\/media\/[^"]+)"/g)) {
   if (size) media[url] = { source: url.replace(/^\/media\//, ''), ...size, variants: {} }
 }
 snap.media = media
+
+// Rows whose image file does not exist cannot be published (the real snapshot builder
+// hashes each file). Hide them here, as the CMS would have to, and say so.
+for (const [name, rows] of Object.entries(snap.collections)) {
+  for (const row of rows) {
+    for (const key of ['image', 'photo']) {
+      const url = row[key]
+      if (typeof url === 'string' && url.startsWith('/media/') && /\.(jpe?g|png|gif|webp)$/i.test(url) && !media[url]) {
+        console.warn(`warning: ${name} id ${row.id}: ${key} ${url} is missing on disk; row hidden`)
+        if ('is_published' in row) row.is_published = false
+        else row[key] = null
+      }
+    }
+  }
+}
 fs.writeFileSync(out, JSON.stringify(snap, null, 1))
 console.log(`wrote ${out}: ${Object.keys(media).length} media entries`)

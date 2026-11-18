@@ -57,12 +57,11 @@ a:hover { color: var(--teal); }
 /* Frame */
 .wrap { width: 100%; max-width: calc(var(--content-max) + 2 * var(--margin)); margin-inline: auto; padding-inline: var(--margin); }
 .section { padding-block: var(--section-gap); }
-.section + .section { padding-top: 0; }
 .section--surface { background: var(--surface); }
-.section--surface + .section, .section + .section--surface, .section--surface + .section--surface { padding-top: var(--section-gap); }
+/* Two plain sections in a row share one gap; a coloured band always keeps its own padding. */
+.section:not(.section--surface, .section--navy) + .section:not(.section--surface, .section--navy) { padding-top: 0; }
 .section--navy { background: var(--navy-deep); color: var(--on-navy); }
 .section--navy h2, .section--navy h3 { color: var(--on-navy); }
-.section--navy + .section { padding-top: var(--section-gap); }
 
 .grid12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); }
 
@@ -116,6 +115,8 @@ a:hover { color: var(--teal); }
 .img { background: var(--surface-2); overflow: hidden; }
 .img img { width: 100%; height: 100%; object-fit: cover; }
 .img--contain img { object-fit: contain; }
+.img--figure { background: #fff; }
+.img--figure img { object-fit: contain; padding: 8%; }
 .r-16x9 { aspect-ratio: 16 / 9; }
 .r-3x2 { aspect-ratio: 3 / 2; }
 .r-4x5 { aspect-ratio: 4 / 5; }
