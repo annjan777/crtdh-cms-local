@@ -42,11 +42,11 @@ export default function DraftBar() {
             Review &amp; publish
           </Link>
         )
-      ) : count > 0 && !waiting ? (
+      ) : onReview ? null : count > 0 && !waiting ? (
         <button type="button" className="btn btn-primary" onClick={() => setAsking(true)}>
           Request review
         </button>
-      ) : onReview ? null : (
+      ) : (
         <Link className="btn" to="/review">
           See changes
         </Link>

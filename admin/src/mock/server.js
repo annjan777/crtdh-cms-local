@@ -21,8 +21,11 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------------------------------------------------------------- seed --
 
+// Previews read uploaded files through the API (session required), never from
+// /media/ (the public Media & Gallery page) or /_media/ (published, hashed; A13).
+export const MEDIA_PREFIX = '/api/v1/media/';
 function localMedia(url) {
-  return typeof url === 'string' ? url.replace(/^https?:\/\/localhost:8000\/media\//, '/media/') : url;
+  return typeof url === 'string' ? url.replace(/^https?:\/\/localhost:8000\/media\//, MEDIA_PREFIX) : url;
 }
 
 const CHILD_ARRAYS = { innovations: ['images'], products: ['images', 'partners'], 'media-events': ['images'], 'image-grid-blocks': ['items'] };
@@ -211,7 +214,7 @@ function mediaInfo(url) {
   if (!url) return null;
   const known = db.media?.[url];
   if (known) return known;
-  const d = dims[url];
+  const d = dims[url] || dims[String(url).replace(MEDIA_PREFIX, '/media/')];
   return d ? { width: d[0], height: d[1], name: url.split('/').pop() } : null;
 }
 

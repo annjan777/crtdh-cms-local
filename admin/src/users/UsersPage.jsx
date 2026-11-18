@@ -161,7 +161,7 @@ export default function UsersPage() {
           {notice ? <Banner tone="ok">{notice}</Banner> : null}
           {error ? <ErrorPanel error={error} onRetry={load} title="The user list couldn’t be loaded" /> : null}
           <div className="table-frame">
-            <table className="data-table">
+            <table className="data-table stack">
               <caption className="visually-hidden">CMS users</caption>
               <thead>
                 <tr>
@@ -198,7 +198,7 @@ export default function UsersPage() {
                           {self ? ' · you' : ''}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Role">
                         <label className="visually-hidden" htmlFor={`role-${u.id}`}>
                           Role for {u.name}
                         </label>
@@ -217,7 +217,7 @@ export default function UsersPage() {
                           {st.busy ? 'Saving…' : st.ok || (st.err ? `${st.err.message}` : '')}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Two-step sign-in">
                         {u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}
                         {u.mfa_enrolled && u.is_active && !self ? (
                           <button type="button" className="link-btn cell-action" onClick={() => setResetting(u)}>
@@ -225,7 +225,7 @@ export default function UsersPage() {
                           </button>
                         ) : null}
                       </td>
-                      <td>{u.last_login ? fmtDate(u.last_login) : <span className="muted">Never</span>}</td>
+                      <td data-label="Last signed in">{u.last_login ? fmtDate(u.last_login) : <span className="muted">Never</span>}</td>
                       <td className="actions-cell">
                         {self || !u.is_active ? null : (
                           <button type="button" className="btn btn-small btn-danger-text" onClick={() => setConfirm(u)}>

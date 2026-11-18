@@ -13,13 +13,14 @@ const siteDir = path.resolve(here, '../frontend/src/site');
 const siteEntry = ['index.js', 'index.jsx', 'index.ts', 'index.tsx'].map((f) => path.join(siteDir, f)).find((f) => fs.existsSync(f));
 const sitePath = process.env.CRTDH_SITE_SHIM === '1' || !siteEntry ? path.resolve(here, 'src/preview/site-shim/index.jsx') : siteEntry;
 
-// In mock mode, seed images are served from the backend's media folder.
+// In mock mode, seed images are served from the backend's media folder at the
+// API media path previews use (/api/v1/media/<path>, session-only in prod).
 const mediaRoot = path.resolve(here, '../backend/media');
 function serveMedia() {
   return {
     name: 'crtdh-mock-media',
     configureServer(server) {
-      server.middlewares.use('/media', (req, res, next) => {
+      server.middlewares.use('/api/v1/media', (req, res, next) => {
         const file = path.join(mediaRoot, decodeURIComponent(req.url.split('?')[0]));
         if (!file.startsWith(mediaRoot) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return next();
         const ext = path.extname(file).toLowerCase();

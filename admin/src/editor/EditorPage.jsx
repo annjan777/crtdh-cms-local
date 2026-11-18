@@ -198,7 +198,7 @@ function Editor() {
                 <p className="muted canvas-hint">Click any part of the page to edit it.</p>
                 <DeviceToggle device={device} setDevice={setDevice} />
               </div>
-              <div className="canvas-scroll" data-scroll>
+              <div className="canvas-scroll" data-scroll tabIndex={0} role="region" aria-label={`${title || 'Page'} page, scrollable`}>
                 {page && preview ? (
                   <Canvas pageId={pageId} data={preview} sections={canvasSections} selected={selected} onSelect={select} device={device} title={`${title} page. Select a section to edit it.`} />
                 ) : (

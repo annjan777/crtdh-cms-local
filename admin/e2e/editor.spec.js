@@ -78,7 +78,7 @@ test('alt text required: a new photo cannot be saved without a description', asy
   await panel(page).getByRole('button', { name: 'Save photo' }).click();
   await expect(panel(page).getByText('Describe this photo before it can be saved.')).toBeVisible();
   let db = await mock(page, 'state');
-  expect(db.rows['hero-slides']['18'].image).toContain('/media/');
+  expect(db.rows['hero-slides']['18'].image).toContain('/api/v1/media/');
   await panel(page).getByLabel('Photo description').fill('The Bioscience Building at IIT Kharagpur in daylight');
   await panel(page).getByRole('button', { name: 'Save photo' }).click();
   await expect(panel(page).getByText('Saved · not live yet')).toBeVisible();
