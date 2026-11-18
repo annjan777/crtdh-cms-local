@@ -1,3 +1,4 @@
+import { mediaRoot } from '../../scripts/media-root.mjs'
 import { execFileSync } from 'node:child_process'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
@@ -98,7 +99,7 @@ test('home carries Organization JSON-LD', async ({ request }) => {
 })
 
 test('placeholder sweep passes on the build', () => {
-  const out = execFileSync('node', ['scripts/sweep.mjs'], { encoding: 'utf8', env: { ...process.env, MEDIA_ROOT: process.env.MEDIA_ROOT || '/home/claude/crtdh-cms-local/backend/media' } })
+  const out = execFileSync('node', ['scripts/sweep.mjs'], { encoding: 'utf8', env: { ...process.env, MEDIA_ROOT: mediaRoot() } })
   expect(out).toContain('clean')
 })
 

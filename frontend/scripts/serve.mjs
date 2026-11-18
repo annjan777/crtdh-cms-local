@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // Static preview of build/client that behaves like the CIC host: directory index.html,
 // /_media/* from MEDIA_ROOT, unknown paths → 404.html with status 404.
-// Usage: PORT=3100 MEDIA_ROOT=../backend/media node scripts/serve.mjs
+// Usage: PORT=3100 MEDIA_ROOT=../backend/seed_media node scripts/serve.mjs
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
+import { mediaRoot as resolveMediaRoot } from './media-root.mjs'
 
 const root = path.resolve(process.env.BUILD_DIR || 'build/client')
-const mediaRoot = path.resolve(process.env.MEDIA_ROOT || '/home/claude/crtdh-cms-local/backend/media')
+const mediaRoot = resolveMediaRoot()
 const port = Number(process.env.PORT || 3100)
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',

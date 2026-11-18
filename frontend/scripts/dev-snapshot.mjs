@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Turn the team stub snapshot (absolute localhost:8000 URLs) into a contract-shaped
 // dev snapshot: site-relative /_media/... URLs and a `media` map with real image sizes.
-// Usage: node scripts/dev-snapshot.mjs [stub] [out]   (MEDIA_ROOT = backend/media)
+// Usage: node scripts/dev-snapshot.mjs [stub] [out]   (MEDIA_ROOT defaults to backend/seed_media)
 import fs from 'node:fs'
 import path from 'node:path'
+import { mediaRoot as resolveMediaRoot } from './media-root.mjs'
 import { imageSize } from './imagesize.mjs'
 
 const stub = process.argv[2] || '/home/claude/team/stub-snapshot.json'
 const out = process.argv[3] || 'snapshot.json'
-const mediaRoot = process.env.MEDIA_ROOT || '/home/claude/crtdh-cms-local/backend/media'
+const mediaRoot = resolveMediaRoot()
 
 const raw = fs.readFileSync(stub, 'utf8').replace(/https?:\/\/localhost:\d+\/media\//g, '/_media/')
 const snap = JSON.parse(raw)
