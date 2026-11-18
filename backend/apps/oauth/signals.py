@@ -8,18 +8,41 @@ from .revoke import revoke_all_for_user
 
 User = get_user_model()
 
-try:  # backend-security's explicit signal (preferred)
-    from apps.accounts.signals import user_deactivated  # type: ignore
-except ImportError:  # TODO(integration, backend-security): signal lands with their merge
-    user_deactivated = None
+# backend-security's signals (apps/accounts/signals.py), both sent as (sender=User, user=<User>):
+#   user_deactivated       account switched off
+#   user_sessions_revoked  password reset/change, MFA reset, "sign out everywhere", deactivation
+# Either one must also cut Claude's tokens, or a recovered account's connector keeps write access.
+REVOKING_SIGNALS = ("user_deactivated", "user_sessions_revoked")
 
 
-if user_deactivated is not None:  # pragma: no cover - exercised after backend-security merges
+def _revoke_receiver(sender, user=None, signal=None, **kwargs):
+    if user is not None:
+        name = next((n for n in REVOKING_SIGNALS if getattr(_signals_module, n, None) is signal), "account signal")
+        revoke_all_for_user(user, reason=name)
 
-    @receiver(user_deactivated, dispatch_uid="cms_oauth_revoke_on_deactivate_signal")
-    def _on_user_deactivated(sender, user=None, **kwargs):
-        if user is not None:
-            revoke_all_for_user(user, reason="user_deactivated signal")
+
+_signals_module = None
+
+
+def connect_account_signals(module) -> list[str]:
+    """Connect revocation to whichever of REVOKING_SIGNALS `module` provides."""
+    global _signals_module
+    _signals_module = module
+    connected = []
+    for name in REVOKING_SIGNALS:
+        sig = getattr(module, name, None)
+        if sig is not None:
+            sig.connect(_revoke_receiver, dispatch_uid=f"cms_oauth_revoke_on_{name}", weak=False)
+            connected.append(name)
+    return connected
+
+
+try:
+    from apps.accounts import signals as _account_signals  # type: ignore
+except ImportError:  # TODO(integration, backend-security): present after their merge
+    _account_signals = None
+if _account_signals is not None:
+    connect_account_signals(_account_signals)
 
 
 # Fallback that also covers deactivation through the Django admin, a shell or a bulk
