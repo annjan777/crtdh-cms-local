@@ -1,0 +1,48 @@
+# import-linter contracts (CI: `cd backend && lint-imports`). Owner: QA lane.
+# Rule (contracts §7, backend-core 21:24Z): content writes happen only in apps.publishing
+# (apps.publishing.content for drafts; snapshot/publish in apps.publishing.*). The MCP server must reach
+# content models only through apps.publishing, never import them itself. Indirect imports (mcp_server ->
+# apps.publishing -> apps.team.models) are allowed; that is the sanctioned path.
+# Views: content-app views legitimately import their own models for querysets, so "views write only via
+# apps.publishing" is enforced by tests/tools/write_paths.py (AST check), not here.
+[importlinter]
+root_packages =
+    apps
+    mcp_server
+include_external_packages = False
+
+[importlinter:contract:mcp-writes-via-publishing]
+name = MCP server reaches content models only through apps.publishing
+type = forbidden
+source_modules =
+    mcp_server
+forbidden_modules =
+    apps.core.models
+    apps.carousel.models
+    apps.team.models
+    apps.facilities.models
+    apps.services.models
+    apps.innovations.models
+    apps.products.models
+    apps.enterprises.models
+    apps.media_gallery.models
+    apps.common.models
+    apps.core.serializers
+    apps.carousel.serializers
+    apps.team.serializers
+    apps.facilities.serializers
+    apps.services.serializers
+    apps.innovations.serializers
+    apps.products.serializers
+    apps.enterprises.serializers
+    apps.media_gallery.serializers
+    apps.common.serializers
+allow_indirect_imports = True
+
+[importlinter:contract:publishing-independent-of-mcp]
+name = apps.publishing does not depend on the MCP server
+type = forbidden
+source_modules =
+    apps.publishing
+forbidden_modules =
+    mcp_server

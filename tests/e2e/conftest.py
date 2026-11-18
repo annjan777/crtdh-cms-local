@@ -8,6 +8,8 @@ Options / env:
   --site-dir   built public site   (default frontend/build/client; env E2E_SITE_DIR)
   --admin-dir  built admin          (default admin/dist; env E2E_ADMIN_DIR)
   --external   don't start anything; use already-running servers on those ports (preprod.sh, staging)
+               with E2E_CA_FILE=.preprod/tls/cert.pem E2E_USERS_FILE=.preprod/users.json CRTDH_TEST_PASSWORD=...
+               E2E_SITE_URL / E2E_ADMIN_URL / E2E_MCP_URL, and E2E_PUBLISH_STACK=1 for the publish flow
   E2E_DJANGO_SETTINGS  production settings module (default config.settings + CRTDH_ENV=production)
   CHROME_BIN           used when Playwright's bundled Chromium is not installed (sandbox)
 """
@@ -68,6 +70,9 @@ def stack(request, tmp_path_factory):
               workdir=tmp_path_factory.mktemp("stack"), site_dir=Path(o("--site-dir")), admin_dir=Path(o("--admin-dir")))
     if o("--external"):  # e.g. preprod.sh: trust its cert via E2E_CA_FILE=.preprod/tls/cert.pem
         s.password = os.environ.get("CRTDH_TEST_PASSWORD", "")
+        if os.environ.get("E2E_USERS_FILE"):  # .preprod/users.json from seed_test_users --rehearsal
+            import json
+            s.users = json.loads(Path(os.environ["E2E_USERS_FILE"]).read_text())
         if os.environ.get("E2E_CA_FILE"):
             import ssl
             import urllib.request
@@ -84,14 +89,14 @@ def stack(request, tmp_path_factory):
 @pytest.fixture(scope="session")
 def site(stack):
     if not (stack.site_dir / "index.html").is_file() and not os.environ.get("E2E_SITE_URL"):
-        pytest.skip(f"public site not built at {stack.site_dir} (run scripts/e2e-build.sh)")
+        pytest.skip(f"public site not built at {stack.site_dir} (build it, or run against preprod: scripts/preprod.sh e2e)")
     return os.environ.get("E2E_SITE_URL", stack.site)
 
 
 @pytest.fixture(scope="session")
 def cms(stack):
     if not (stack.admin_dir / "index.html").is_file() and not os.environ.get("E2E_ADMIN_URL"):
-        pytest.skip(f"admin not built at {stack.admin_dir} (run scripts/e2e-build.sh)")
+        pytest.skip(f"admin not built at {stack.admin_dir} (build it, or run against preprod: scripts/preprod.sh e2e)")
     return os.environ.get("E2E_ADMIN_URL", stack.admin)
 
 

@@ -3,12 +3,14 @@
 #
 #   scripts/preprod.sh up       start everything (state in .preprod/, gitignored)
 #   scripts/preprod.sh smoke    edit -> publish -> check the "live" folder on the fake CIC host
+#   scripts/preprod.sh e2e [pytest args]   Playwright E2E (--integration --external) against this stack
 #   scripts/preprod.sh status   show what is running
 #   scripts/preprod.sh down     stop everything (keeps .preprod/ for inspection; `down --wipe` deletes it)
 #
 # Pieces (QA lane ports, contract §6):
 #   PostgreSQL 16 (unix socket in .preprod/pg, no TCP port; runs as the `postgres` OS user)
 #     -> falls back to SQLite only if Postgres can't start, with ALLOW_SQLITE=1 and a loud label
+#     -> PREPROD_DATABASE_URL=postgres://... uses an existing server instead (CI service container)
 #   gunicorn  CMS API (config.wsgi)                  127.0.0.1:8600
 #   uvicorn   MCP ASGI (mcp_server.asgi:app)         127.0.0.1:8601   (8601: not assigned to any lane; flagged to lead)
 #   publish worker (manage.py run_publish_worker)
@@ -51,12 +53,19 @@ wait_url() { # url [timeout]
 }
 
 start_db() {
-  if [ "${PREPROD_DB:-postgres}" = postgres ] && [ -x "$PGBIN/initdb" ] && id postgres >/dev/null 2>&1; then
-    mkdir -p "$ST/pg"; chown postgres "$ST/pg"
+  if [ -n "${PREPROD_DATABASE_URL:-}" ]; then  # e.g. a CI postgres:16 service container
+    echo "postgres (external: PREPROD_DATABASE_URL)" > "$ST/DB_MODE"
+    echo "DATABASE_URL=$PREPROD_DATABASE_URL" >> "$ST/env"
+    return
+  fi
+  # Postgres refuses to run as root: as root use the postgres OS user, otherwise run as ourselves.
+  local AS=(); [ "$(id -u)" = 0 ] && AS=(runuser -u postgres --)
+  if [ "${PREPROD_DB:-postgres}" = postgres ] && [ -x "$PGBIN/initdb" ] && { [ ${#AS[@]} -eq 0 ] || id postgres >/dev/null 2>&1; }; then
+    mkdir -p "$ST/pg"; [ ${#AS[@]} -eq 0 ] || chown postgres "$ST/pg"
     if [ ! -d "$ST/pg/data" ]; then
-      runuser -u postgres -- "$PGBIN/initdb" -D "$ST/pg/data" -U crtdh --auth=trust -E UTF8 >/dev/null
+      "${AS[@]}" "$PGBIN/initdb" -D "$ST/pg/data" -U crtdh --auth=trust -E UTF8 >/dev/null
     fi
-    if runuser -u postgres -- "$PGBIN/pg_ctl" -D "$ST/pg/data" -o "-c listen_addresses='' -k $ST/pg" -l "$ST/pg/postgres.log" -w start >/dev/null; then
+    if "${AS[@]}" "$PGBIN/pg_ctl" -D "$ST/pg/data" -o "-c listen_addresses='' -k $ST/pg" -l "$ST/pg/postgres.log" -w start >/dev/null; then
       psql -h "$ST/pg" -U crtdh -d postgres -tc "select 1 from pg_database where datname='crtdh'" | grep -q 1 \
         || psql -h "$ST/pg" -U crtdh -d postgres -qc "create database crtdh"
       echo "postgres $("$PGBIN/postgres" --version | awk '{print $3}') (unix socket $ST/pg)" > "$ST/DB_MODE"
@@ -169,6 +178,14 @@ INI
 
 smoke() { cd "$REPO" && $PY tests/tools/preprod_smoke.py --state "$ST"; }
 
+e2e() { # Playwright E2E (all levels incl. needs_integration) against this running stack
+  cd "$REPO"; set -a; . "$ST/env"; set +a
+  E2E_CA_FILE="$ST/tls/cert.pem" E2E_USERS_FILE="$ST/users.json" E2E_PUBLISH_STACK=1 \
+  E2E_SITE_URL="https://localhost:$SITE_PORT" E2E_ADMIN_URL="https://localhost:$ADMIN_PORT" \
+  E2E_MCP_URL="https://localhost:$MCP_PORT/mcp" \
+    $PY -m pytest tests/e2e --integration --external "$@"
+}
+
 status() {
   [ -f "$ST/DB_MODE" ] && log "DB: $(cat "$ST/DB_MODE")"
   for f in "$ST"/pids/*.pid; do [ -f "$f" ] || continue; n=$(basename "$f" .pid)
@@ -177,13 +194,14 @@ status() {
 
 down() {
   for f in "$ST"/pids/*.pid; do [ -f "$f" ] || continue; kill -TERM -- "-$(cat "$f")" 2>/dev/null || kill "$(cat "$f")" 2>/dev/null || true; rm -f "$f"; done
-  [ -d "$ST/pg/data" ] && runuser -u postgres -- "$PGBIN/pg_ctl" -D "$ST/pg/data" stop -m fast >/dev/null 2>&1 || true
+  local AS=(); [ "$(id -u)" = 0 ] && AS=(runuser -u postgres --)
+  [ -d "$ST/pg/data" ] && "${AS[@]}" "$PGBIN/pg_ctl" -D "$ST/pg/data" stop -m fast >/dev/null 2>&1 || true
   log "stopped"
   [ "${1:-}" = "--wipe" ] && rm -rf "$ST" && log "wiped $ST"
   return 0
 }
 
 case "${1:-}" in
-  up) up ;; smoke) smoke ;; status) status ;; down) shift; down "${1:-}" ;;
-  *) sed -n '2,8p' "$0"; exit 2 ;;
+  up) up ;; smoke) smoke ;; e2e) shift; e2e "$@" ;; status) status ;; down) shift; down "${1:-}" ;;
+  *) sed -n '2,9p' "$0"; exit 2 ;;
 esac

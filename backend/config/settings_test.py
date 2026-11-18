@@ -20,6 +20,10 @@ os.environ.setdefault("CRTDH_SKIP_DOTENV", "1")  # keep a dev backend/.env out o
 from .settings import *  # noqa: E402,F401,F403
 
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
+if os.environ.get("TEST_DATABASE_URL"):  # CI runs the suite on Postgres 16 too (production engine)
+    import environ
+
+    DATABASES = {"default": environ.Env.db_url_config(os.environ["TEST_DATABASE_URL"])}
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
