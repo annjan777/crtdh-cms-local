@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
 
+from apps.publishing.drf import CMSResourceMixin
+
 from .mixins import ReorderMixin
 from .models import Document, ImageGridBlock, ImageGridItem, VideoBlock
 from .pagination import NonCollidingPagePagination
-from apps.publishing.drf import CMSResourceMixin
 from .serializers import (
     DocumentSerializer,
     ImageGridBlockSerializer,

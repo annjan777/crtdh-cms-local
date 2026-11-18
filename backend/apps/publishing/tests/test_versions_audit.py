@@ -133,6 +133,7 @@ def test_in_process_mcp_context(content, editor):
 
 def test_attach_media_checks_min_width(content, editor, media_root):
     from django.core.files.base import ContentFile
+
     from apps.publishing import content as cms
     from apps.publishing.audit import WriteContext
     from apps.publishing.errors import CMSError

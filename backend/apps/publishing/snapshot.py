@@ -8,7 +8,7 @@ import hashlib
 import json
 import logging
 import os
-from datetime import timezone as dt_timezone
+from datetime import UTC
 from functools import lru_cache
 from pathlib import Path
 
@@ -170,7 +170,7 @@ def build_snapshot(published_by=None, now=None):
     rewrite = _MediaRewriter(hashed=True)
     singletons = rewrite(raw["singletons"])
     collections = rewrite(raw["collections"])
-    published_at = now.astimezone(dt_timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    published_at = now.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     snap = {
         "schema_version": SCHEMA_VERSION,
         "snapshot_id": "",

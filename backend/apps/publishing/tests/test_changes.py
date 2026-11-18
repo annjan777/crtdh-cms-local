@@ -7,7 +7,7 @@ from apps.publishing import changes
 from apps.publishing import content as cms
 from apps.publishing.audit import WriteContext
 from apps.publishing.errors import CMSError
-from apps.publishing.models import AuditEntry, Snapshot
+from apps.publishing.models import AuditEntry
 from tests.support.errors import assert_contract_error
 
 pytestmark = pytest.mark.django_db

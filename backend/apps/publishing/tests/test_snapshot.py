@@ -1,7 +1,7 @@
 """Snapshot (contract §1), visibility and the build guard (contract §5)."""
 import copy
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -14,7 +14,7 @@ from apps.publishing.snapshot import build_snapshot, validate
 from .conftest import image_file
 
 pytestmark = pytest.mark.django_db
-NOW = datetime(2026, 11, 19, 9, 30, tzinfo=timezone.utc)
+NOW = datetime(2026, 11, 19, 9, 30, tzinfo=UTC)
 
 
 def test_shape_and_schema(content, publisher):

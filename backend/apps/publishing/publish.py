@@ -16,8 +16,7 @@ import shlex
 import shutil
 import subprocess
 import tarfile
-from datetime import datetime, timedelta
-from datetime import timezone as dt_timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -28,7 +27,12 @@ from django.utils import timezone
 from . import guard
 from .errors import CMSError
 from .models import Publish, Snapshot
-from .snapshot import RASTER_EXTS, _file_info, avif_supported, build_snapshot, canonical_json
+from .snapshot import (
+    _file_info,
+    avif_supported,
+    build_snapshot,
+    canonical_json,
+)
 
 log = logging.getLogger(__name__)
 STALE_BUILD_AFTER = timedelta(minutes=30)
@@ -121,7 +125,7 @@ def run_once():
         return None
     try:
         build(p)
-    except Exception as e:  # noqa: BLE001 - any failure fails the publish, never the worker
+    except Exception as e:
         message = e.body["message"] if isinstance(e, CMSError) else str(e)
         log.exception("publish %s failed at %s", p.id, p.step)
         _set(p, status=Publish.FAILED, message=f"Build failed at {p.step}: {message[:1500]} The live site is unchanged.")
@@ -162,7 +166,7 @@ def build(p):
 
 
 def _epoch(published_at):
-    return int(datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=dt_timezone.utc).timestamp())
+    return int(datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC).timestamp())
 
 
 def _media_files(data):
@@ -209,8 +213,8 @@ def materialize_media(data, store):
                 if vdst.exists():
                     continue
 
-                def render(tmp, width=v["width"], fmt=fmt):
-                    with Image.open(dst) as im:
+                def render(tmp, width=v["width"], fmt=fmt, src_path=dst):
+                    with Image.open(src_path) as im:
                         im = im.convert("RGBA" if im.mode in ("RGBA", "LA", "P") else "RGB")
                         height = max(1, round(im.height * width / im.width))
                         small = im.resize((width, height), Image.LANCZOS)

@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.common.versioning import VersionedModel
 from apps.publishing.pages import PAGE_CHOICES
 

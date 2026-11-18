@@ -10,11 +10,10 @@ fields that pick a parent row, `warn_width` on images, `filter`/`defaults` on pa
 top-level `globals` list for site-wide sections (header, footer, nav) that belong to no single page.
 """
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 from importlib import import_module
 
 from django.apps import apps as django_apps
-from django.db import models
 
 from .pages import PAGES
 
@@ -253,7 +252,7 @@ def all_sections():
         yield "site", s
 
 
-@lru_cache(maxsize=None)
+@cache
 def section_index():
     return {s["id"]: (page_id, s) for page_id, s in all_sections()}
 

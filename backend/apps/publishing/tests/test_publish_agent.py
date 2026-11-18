@@ -11,8 +11,8 @@ from django.utils import timezone
 from apps.carousel.models import HeroSlide
 from apps.publishing import publish
 from apps.publishing.agent import build_signature, sign
-from apps.publishing.snapshot import avif_supported
 from apps.publishing.models import AgentState, Publish, ReviewRequest, Snapshot
+from apps.publishing.snapshot import avif_supported
 from tests.support.errors import assert_contract_error
 
 from .conftest import SECRET, image_file
@@ -170,6 +170,7 @@ def test_worker_reruns_guard(content, publish_env, publisher):
 
 def test_worker_command_once(content, publish_env, publisher):
     from io import StringIO
+
     from django.core.management import call_command
     publish.start_publish(publisher)
     out = StringIO()

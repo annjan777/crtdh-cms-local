@@ -1,10 +1,9 @@
 """CMS endpoints (contract §3 "CMS"). Session/JWT auth; roles from apps.accounts.roles."""
-from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,7 +12,7 @@ from apps.accounts.roles import IsEditor, IsPublisher
 
 from . import changes, publish, registry, review, snapshot, uploads
 from .audit import context_from_request, serialize_entry
-from .errors import STATUS, CMSError, error_body
+from .errors import CMSError, error_body
 from .models import AgentState, AuditEntry, Publish, ReviewRequest, Snapshot
 
 
