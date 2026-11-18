@@ -70,23 +70,28 @@ ROLE_FIXTURES = {"editor": "editor", "publisher": "publisher", "admin": "cms_adm
 
 # ---- API clients -----------------------------------------------------------
 def _csrf_ready(client):
-    """Fetch a CSRF cookie the contract way (GET /api/v1/auth/csrf/); fall back to Django's helper
-    until backend-security lands that endpoint. Sets X-CSRFToken on every request."""
+    """Get a CSRF token the contract way: GET /api/v1/auth/csrf/ returns {"csrfToken": ...} in the body
+    (the cookie is HttpOnly and named __Host-crtdh_csrf when DEBUG is off). Falls back to minting one
+    with Django's helper and settings.CSRF_COOKIE_NAME. Sets X-CSRFToken on every request."""
+    from django.conf import settings
     from django.middleware.csrf import _get_new_csrf_string
     token = None
     resp = client.get("/api/v1/auth/csrf/")
-    if resp.status_code == 200 and "csrftoken" in resp.cookies:
-        token = resp.cookies["csrftoken"].value
+    if resp.status_code == 200:
+        try:
+            token = resp.json().get("csrfToken")
+        except Exception:  # noqa: BLE001
+            token = None
     if not token:
         token = _get_new_csrf_string()
-        client.cookies["csrftoken"] = token
+        client.cookies[settings.CSRF_COOKIE_NAME] = token
     client.credentials(HTTP_X_CSRFTOKEN=token)
     client.csrf_token = token
     return client
 
 
 def _mark_mfa_verified(client, user):
-    """Hook: if backend-security exposes apps.accounts.mfa.mark_session_verified(session, user), use it."""
+    """REQUIRED by backend-security: CMSSessionAuthentication ignores sessions without the MFA flag."""
     try:
         from apps.accounts import mfa  # type: ignore
     except Exception:

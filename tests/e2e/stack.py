@@ -87,7 +87,9 @@ class Stack:
             "PUBLISH_WORK_DIR": str(self.workdir / "publish"),
             "PUBLIC_SITE_URL": self.site,
             "CMS_PUBLIC_URL": self.admin,
-            "TURNSTILE_SECRET_KEY": "1x0000000000000000000000000000000AA",  # Cloudflare's always-pass test key
+            "TURNSTILE_SECRET": "1x0000000000000000000000000000000AA",  # Cloudflare's always-pass test key
+            "SECURE_SSL_REDIRECT": "False",  # rehearsal over http://localhost; the only deviation from prod
+            "CRTDH_SKIP_DOTENV": "1",
             "CRTDH_ALLOW_TEST_SEED": "1",
             "CRTDH_TEST_PASSWORD": self.password,
             "PYTHONPATH": str(BACKEND),

@@ -40,11 +40,19 @@ def api_session(stack, username):
     import urllib.request
     from http.cookiejar import CookieJar
 
-    jar = CookieJar()
+    from http.cookiejar import DefaultCookiePolicy
+
+    class LocalhostSecureOK(DefaultCookiePolicy):
+        """Send Secure/__Host- cookies to http://localhost like Chromium does (rehearsal over http)."""
+        def return_ok_secure(self, cookie, request):
+            return True
+
+    jar = CookieJar(policy=LocalhostSecureOK())
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    token = {"v": ""}
 
     def call(method, path, body=None):
-        csrf = next((c.value for c in jar if c.name == "csrftoken"), "")
+        csrf = token["v"]
         req = urllib.request.Request(stack.api + path, method=method,
                                      data=json.dumps(body).encode() if body is not None else None,
                                      headers={"Content-Type": "application/json", "X-CSRFToken": csrf,
@@ -60,11 +68,16 @@ def api_session(stack, username):
             except ValueError:
                 return e.code, raw.decode(errors="replace")
 
-    call("GET", "/api/v1/auth/csrf/")
+    def refresh_csrf():
+        st, b = call("GET", "/api/v1/auth/csrf/")
+        if st == 200 and isinstance(b, dict):
+            token["v"] = b.get("csrfToken", "")
+
+    refresh_csrf()
     status, body = call("POST", "/api/v1/auth/login/", {"username": username, "password": stack.password})
     secret = stack.users.get(username, {}).get("totp_secret")
     if status == 200 and isinstance(body, dict) and body.get("mfa_required") and secret:
         import pyotp
         call("POST", "/api/v1/auth/mfa/", {"code": pyotp.TOTP(secret).now()})
-    call("GET", "/api/v1/auth/csrf/")
+    refresh_csrf()  # Django rotates the token on login
     return call

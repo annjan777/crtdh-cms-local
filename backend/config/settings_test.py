@@ -13,6 +13,9 @@ os.environ.setdefault("ALLOWED_HOSTS", "testserver,localhost,127.0.0.1")
 os.environ.setdefault("CORS_ALLOW_ALL_ORIGINS", "False")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("DJANGO_ENV", "test")
+os.environ.setdefault("ALLOW_SQLITE", "1")
+os.environ.setdefault("SECURE_SSL_REDIRECT", "False")
+os.environ.setdefault("CRTDH_SKIP_DOTENV", "1")  # keep a dev backend/.env out of tests
 
 from .settings import *  # noqa: E402,F401,F403
 
@@ -22,4 +25,4 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 MEDIA_ROOT = tempfile.mkdtemp(prefix="crtdh-test-media-")
 # Turnstile / external calls must never leave the box in tests.
-TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "1x0000000000000000000000000000000AA")
+TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRET", "1x0000000000000000000000000000000AA")  # Cloudflare always-pass test key; tests mock verify anyway
