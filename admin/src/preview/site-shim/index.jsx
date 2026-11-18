@@ -5,6 +5,7 @@
 // Integration replaces it by pointing the `@site` alias at the real package.
 import './shim.css';
 import { useCmsPreview } from '../cms-context.js';
+import { sanitizeRich } from '../sanitize.js';
 
 export const __shim = true;
 
@@ -171,7 +172,7 @@ function Single({ section, data }) {
             .filter((f) => f !== heading)
             .map((f) => {
               if (f.type === 'image') return null;
-              if (f.type === 'richtext') return <div key={f.name} className="s-rich" dangerouslySetInnerHTML={{ __html: row[f.name] }} />;
+              if (f.type === 'richtext') return <div key={f.name} className="s-rich" dangerouslySetInnerHTML={{ __html: sanitizeRich(row[f.name]) }} />;
               if (f.type === 'url') return <p key={f.name}><a href={row[f.name]}>{f.label}</a></p>;
               if (f.type === 'text') return <p key={f.name} className="s-meta">{f.label}: {row[f.name]}</p>;
               return <p key={f.name}>{row[f.name]}</p>;

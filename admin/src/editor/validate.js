@@ -9,7 +9,7 @@ export function lower(label) {
 
 export function isValidUrl(v) {
   if (!v) return true;
-  return /^\/[^\s]*$/.test(v) || /^https?:\/\/[^\s.]+\.[^\s]+$/.test(v) || /^mailto:[^\s@]+@[^\s@]+$/.test(v);
+  return /^\/(?![/\\])[^\s]*$/.test(v) || /^https?:\/\/[^\s.]+\.[^\s]+$/.test(v) || /^mailto:[^\s@]+@[^\s@]+$/.test(v);
 }
 
 /** Returns an error string or null. */

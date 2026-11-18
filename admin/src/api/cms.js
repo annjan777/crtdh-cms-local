@@ -29,7 +29,9 @@ export const cms = {
   discardSession: (session_id) => api.post('/cms/changes/discard/', { session_id }),
   requestReview: (note) => api.post('/cms/review-requests/', { note }),
   publish: (confirm_shrink = false) => api.post('/cms/publish/', { confirm_shrink }),
-  publishStatus: (id) => api.get(`/cms/publish/${id}/`),
+  publishStatus: (id) => api.get(`/cms/publish/${encodeURIComponent(id)}/`),
+  // Refused (CMS_VALIDATION) once the upload machine has fetched the build.
+  cancelPublish: (id) => api.post(`/cms/publish/${encodeURIComponent(id)}/cancel/`, {}),
   snapshots: () => api.get('/cms/snapshots/'),
   restore: (id) => api.post(`/cms/snapshots/${id}/restore/`, {}),
   audit: (itemId) => api.get(`/cms/audit/?item_id=${encodeURIComponent(itemId)}`),
@@ -57,11 +59,29 @@ export const users = {
   create: (values) => api.post('/auth/users/', values),
   setRole: (id, role) => api.post(`/auth/users/${id}/role/`, { role }),
   deactivate: (id) => api.post(`/auth/users/${id}/deactivate/`, {}),
-  resetMfa: (id) => api.post(`/auth/users/${id}/reset-mfa/`, {}),
+  resetMfa: (id) => api.post(`/auth/users/${id}/reset-mfa/`, {}), // -> user + temporary_password
+  resetPassword: (id) => api.post(`/auth/users/${id}/reset-password/`, {}), // -> user + temporary_password
 };
 
-// Contact form messages (publisher/admin). Paginated like other lists.
+// Contact form messages (publisher/admin). DRF-paginated: follow `next`.
+async function allPages(path) {
+  const out = [];
+  let next = path;
+  for (let guard = 0; next && guard < 50; guard += 1) {
+    const r = await api.get(next);
+    if (Array.isArray(r)) return r;
+    out.push(...(r.results || []));
+    next = r.next ? apiPath(r.next) : null;
+  }
+  return out;
+}
+// `next` is an absolute URL on the API origin; keep only the path under the API base.
+function apiPath(url) {
+  const u = new URL(url, window.location.origin);
+  const i = u.pathname.indexOf('/api/v1/');
+  return i === -1 ? null : u.pathname.slice(i + '/api/v1'.length) + u.search;
+}
 export const messages = {
-  list: () => api.get('/contact-messages/').then((r) => (Array.isArray(r) ? r : r.results || [])),
+  list: () => allPages('/contact-messages/'),
   remove: (id) => api.del(`/contact-messages/${id}/`),
 };

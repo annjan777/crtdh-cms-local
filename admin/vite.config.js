@@ -22,7 +22,7 @@ function serveMedia() {
     configureServer(server) {
       server.middlewares.use('/api/v1/media', (req, res, next) => {
         const file = path.join(mediaRoot, decodeURIComponent(req.url.split('?')[0]));
-        if (!file.startsWith(mediaRoot) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return next();
+        if (!file.startsWith(mediaRoot + path.sep) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return next();
         const ext = path.extname(file).toLowerCase();
         const type = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.pdf': 'application/pdf' }[ext] || 'application/octet-stream';
         res.setHeader('Content-Type', type);
@@ -34,7 +34,7 @@ function serveMedia() {
 }
 
 export default defineConfig({
-  plugins: [react(), serveMedia()],
+  plugins: [react(), ...(process.env.VITE_USE_MOCK === '1' ? [serveMedia()] : [])],
   resolve: { alias: { '@site': sitePath } },
   build: {
     rollupOptions: {

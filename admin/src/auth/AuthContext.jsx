@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { auth } from '../api/cms.js';
 import { ensureCsrf } from '../api/client.js';
 import { nextFromLocation } from './next.js';
+import { clearUserDrafts, setDraftOwner } from '../editor/drafts.js';
 
 // status: loading | signed-out | mfa | setup | change-password | signed-in | expired
 const AuthContext = createContext(null);
@@ -14,6 +15,7 @@ export function AuthProvider({ children }) {
   // OAuth `next` (Django page) gets a full page navigation.
   const arrive = useCallback((u) => {
     setUser(u);
+    setDraftOwner(u?.id);
     if (u?.must_change_password) return setStatus('change-password');
     const next = nextFromLocation();
     if (next) {
@@ -64,20 +66,28 @@ export function AuthProvider({ children }) {
   const signOutEverywhere = useCallback(async () => {
     try {
       await auth.revokeAllSessions();
+    } catch {
+      /* offline or already signed out: still sign out here */
     } finally {
+      clearUserDrafts(user?.id);
+      setDraftOwner(null);
       setUser(null);
       setStatus('signed-out');
     }
-  }, []);
+  }, [user]);
 
   const logout = useCallback(async () => {
     try {
       await auth.logout();
+    } catch {
+      /* offline or already signed out: still sign out here */
     } finally {
+      clearUserDrafts(user?.id);
+      setDraftOwner(null);
       setUser(null);
       setStatus('signed-out');
     }
-  }, []);
+  }, [user]);
 
   const value = useMemo(() => {
     const roles = user?.roles || [];

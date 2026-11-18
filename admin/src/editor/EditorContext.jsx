@@ -5,30 +5,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { cms, content } from '../api/cms.js';
 import { useChanges } from '../shell/ChangesContext.jsx';
 import { validateField } from './validate.js';
+import { clearDraft, readDraft, writeDraft } from './drafts.js';
 
 const EditorContext = createContext(null);
-const DRAFT_PREFIX = 'crtdh-draft:';
 const AUTOSAVE_MS = 1000;
 
 const keyOf = (resource, pk) => `${resource}:${pk}`;
-
-function readDraft(key) {
-  try {
-    return JSON.parse(localStorage.getItem(DRAFT_PREFIX + key) || 'null');
-  } catch {
-    return null;
-  }
-}
-function writeDraft(key, values, baseVersion) {
-  try {
-    localStorage.setItem(DRAFT_PREFIX + key, JSON.stringify({ values, base_version: baseVersion, at: new Date().toISOString() }));
-  } catch {
-    /* storage full: the in-memory copy still exists */
-  }
-}
-function clearDraft(key) {
-  localStorage.removeItem(DRAFT_PREFIX + key);
-}
+const unsavedOf = (r) => Object.fromEntries(Object.entries(r.values).filter(([k, v]) => JSON.stringify(v ?? '') !== JSON.stringify(r.saved[k] ?? '')));
 
 // Every field definition by resource, so autosave can validate.
 function fieldIndex(page) {
@@ -162,7 +145,8 @@ export function EditorProvider({ pageId, children }) {
         if (!Object.keys(invalid).length) clearDraft(key);
         return;
       }
-      inflight.current[key] = { again: false };
+      let done;
+      inflight.current[key] = { again: false, promise: new Promise((res) => (done = res)) };
       patchRecord(key, (x) => ({ ...x, status: 'saving', error: null }));
       try {
         const row = await content.update(r.resource, r.pk, changed, r.version);
@@ -173,6 +157,8 @@ export function EditorProvider({ pageId, children }) {
         });
         const now = recRef.current[key];
         if (now && now.status === 'saved') clearDraft(key);
+        // Typing during the save: the kept draft now builds on the new version.
+        else if (now) writeDraft(key, unsavedOf(now), now.version);
         refreshChanges();
         if ('is_published' in changed || 'order' in changed) loadPreview();
       } catch (err) {
@@ -181,6 +167,7 @@ export function EditorProvider({ pageId, children }) {
       } finally {
         const again = inflight.current[key]?.again;
         delete inflight.current[key];
+        done();
         const now = recRef.current[key];
         if (again || now?.status === 'dirty') schedule(key, again ? 0 : AUTOSAVE_MS);
       }
@@ -247,8 +234,18 @@ export function EditorProvider({ pageId, children }) {
 
   const uploadImage = useCallback(
     async (key, field, file, alt) => {
+      // Never race an autosave of the same record (that would be a false 409):
+      // flush pending typing, wait for any save in flight, then upload with the
+      // version that save produced. Autosaves started meanwhile wait for us.
+      clearTimeout(timers.current[key]);
+      while (inflight.current[key]) await inflight.current[key].promise;
+      if (recRef.current[key]?.status === 'dirty') await saveRef.current(key);
+      while (inflight.current[key]) await inflight.current[key].promise;
       const r = recRef.current[key];
+      if (r.status === 'conflict') return r.error;
       const extra = field.alt_field ? { [field.alt_field]: alt } : {};
+      let done;
+      inflight.current[key] = { again: false, promise: new Promise((res) => (done = res)) };
       patchRecord(key, (x) => ({ ...x, status: 'saving', error: null }));
       try {
         const row = await content.upload(r.resource, r.pk, field.name, file, extra, r.version);
@@ -266,8 +263,14 @@ export function EditorProvider({ pageId, children }) {
       } catch (err) {
         patchRecord(key, (x) => ({ ...x, status: err.code === 'CMS_STALE_VERSION' ? 'conflict' : x.status === 'saving' ? 'idle' : x.status, error: err.code === 'CMS_STALE_VERSION' ? err : null }));
         return err;
+      } finally {
+        const again = inflight.current[key]?.again;
+        delete inflight.current[key];
+        done();
+        if (again) schedule(key, 0);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [patchRecord, load, refreshChanges],
   );
 

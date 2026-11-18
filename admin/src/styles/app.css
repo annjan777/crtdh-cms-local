@@ -1673,6 +1673,9 @@ textarea:focus-visible {
   text-align: right;
   white-space: nowrap;
 }
+.actions-cell .btn + .btn {
+  margin-left: 8px;
+}
 .cell-main {
   display: block;
   font-weight: 500;

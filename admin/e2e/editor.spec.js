@@ -132,11 +132,11 @@ test('offline: text is kept locally and saved when the connection returns', asyn
   await panel(page).getByLabel('Statement').fill('Health access for everyone, everywhere.');
   await expect(page.getByText('You’re offline.')).toBeVisible();
   await expect(panel(page).getByText('Offline · kept on this computer')).toBeVisible();
-  const kept = await page.evaluate(() => localStorage.getItem('crtdh-draft:home-page:1'));
+  const kept = await page.evaluate(() => localStorage.getItem('crtdh-draft:1:home-page:1'));
   expect(kept).toContain('Health access for everyone');
   await mock(page, 'setOffline', false);
   await expect(panel(page).getByText('Saved · not live yet')).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem('crtdh-draft:home-page:1'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('crtdh-draft:1:home-page:1'))).toBeNull();
 });
 
 test('session expiry: sign in again and the unsaved text is restored', async ({ page }) => {

@@ -5,6 +5,9 @@ import { cms } from '../api/cms.js';
 
 const ChangesContext = createContext(null);
 const PUBLISH_KEY = 'crtdh-active-publish';
+export const TERMINAL = new Set(['live', 'failed', 'cancelled']);
+export const CANCELLABLE = new Set(['queued', 'ready_for_upload']);
+const MAX_POLL_ERRORS = 6;
 
 export function ChangesProvider({ children }) {
   const [changes, setChanges] = useState(null);
@@ -36,39 +39,70 @@ export function ChangesProvider({ children }) {
     return () => window.removeEventListener('focus', onFocus);
   }, [fetchNow]);
 
-  // Poll a running publish; survive reloads via sessionStorage.
+  // Poll a running publish; survive reloads via sessionStorage. Publish ids
+  // are UUID strings. Ends on live / failed / cancelled; backs off on errors
+  // and gives up after a run of them (a 404 means the id is gone).
+  const stopPoll = useRef(null);
   const poll = useCallback(
     (id) => {
+      stopPoll.current?.();
+      const pid = String(id);
       let stopped = false;
-      sessionStorage.setItem(PUBLISH_KEY, String(id));
+      let errors = 0;
+      sessionStorage.setItem(PUBLISH_KEY, pid);
       const tick = async () => {
         if (stopped) return;
         try {
-          const st = await cms.publishStatus(id);
-          setPublish({ id, ...st });
-          if (st.status === 'live' || st.status === 'failed') {
+          const st = await cms.publishStatus(pid);
+          errors = 0;
+          setPublish({ id: pid, ...st });
+          if (TERMINAL.has(st.status)) {
             sessionStorage.removeItem(PUBLISH_KEY);
             fetchNow();
             return;
           }
         } catch (err) {
-          setPublish((p) => ({ ...(p || { id }), pollError: err }));
+          errors += 1;
+          setPublish((p) => ({ ...(p || { id: pid }), pollError: err }));
+          if (err.code === 'CMS_NOT_FOUND' || errors >= MAX_POLL_ERRORS) {
+            sessionStorage.removeItem(PUBLISH_KEY);
+            setPublish((p) => ({ ...(p || { id: pid }), lost: true }));
+            return;
+          }
         }
-        setTimeout(tick, 900);
+        setTimeout(tick, errors ? Math.min(900 * 2 ** errors, 30000) : 900);
       };
       tick();
-      return () => {
+      const stop = () => {
         stopped = true;
       };
+      stopPoll.current = stop;
+      return stop;
     },
     [fetchNow],
   );
 
   useEffect(() => {
     const id = sessionStorage.getItem(PUBLISH_KEY);
-    if (id) return poll(Number(id));
+    if (id) return poll(id);
     return undefined;
   }, [poll]);
+
+  const cancelPublish = useCallback(async () => {
+    if (!publish?.id) return null;
+    try {
+      const st = await cms.cancelPublish(publish.id);
+      setPublish({ id: String(publish.id), ...st });
+      if (TERMINAL.has(st.status)) {
+        stopPoll.current?.();
+        sessionStorage.removeItem(PUBLISH_KEY);
+        fetchNow();
+      }
+      return null;
+    } catch (err) {
+      return err;
+    }
+  }, [publish, fetchNow]);
 
   const startPublish = useCallback(
     async (confirmShrink = false) => {
@@ -101,10 +135,11 @@ export function ChangesProvider({ children }) {
       refreshNow: fetchNow,
       publish,
       startPublish,
+      cancelPublish,
       clearPublish: () => setPublish(null),
       setChanges,
     };
-  }, [changes, pages, error, refresh, fetchNow, publish, startPublish]);
+  }, [changes, pages, error, refresh, fetchNow, publish, startPublish, cancelPublish]);
 
   return <ChangesContext.Provider value={value}>{children}</ChangesContext.Provider>;
 }

@@ -121,11 +121,13 @@ export default function UsersPage() {
   }, []);
   useEffect(load, [load]);
 
-  async function update(u, call, msg) {
+  async function update(u, call, msg, reason = null) {
     setRowState((s) => ({ ...s, [u.id]: { busy: true } }));
     try {
-      const res = await call();
+      const { temporary_password, ...res } = await call();
       setList((l) => l.map((x) => (x.id === u.id ? res : x)));
+      // reset-mfa and reset-password replace the password; show the new one once.
+      if (temporary_password) setTemp({ user: res, password: temporary_password, reason });
       setRowState((s) => ({ ...s, [u.id]: { ok: msg } }));
       setTimeout(() => setRowState((s) => ({ ...s, [u.id]: {} })), 2500);
     } catch (err) {
@@ -220,7 +222,7 @@ export default function UsersPage() {
                       <td data-label="Two-step sign-in">
                         {u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}
                         {u.mfa_enrolled && u.is_active && !self ? (
-                          <button type="button" className="link-btn cell-action" onClick={() => setResetting(u)}>
+                          <button type="button" className="link-btn cell-action" onClick={() => setResetting({ user: u, kind: 'mfa' })}>
                             Reset<span className="visually-hidden"> two-step sign-in for {u.name}</span>
                           </button>
                         ) : null}
@@ -228,9 +230,14 @@ export default function UsersPage() {
                       <td data-label="Last signed in">{u.last_login ? fmtDate(u.last_login) : <span className="muted">Never</span>}</td>
                       <td className="actions-cell">
                         {self || !u.is_active ? null : (
-                          <button type="button" className="btn btn-small btn-danger-text" onClick={() => setConfirm(u)}>
-                            Deactivate
-                          </button>
+                          <>
+                            <button type="button" className="btn btn-small" onClick={() => setResetting({ user: u, kind: 'password' })}>
+                              Reset password<span className="visually-hidden"> for {u.name}</span>
+                            </button>
+                            <button type="button" className="btn btn-small btn-danger-text" onClick={() => setConfirm(u)}>
+                              Deactivate
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>
@@ -261,7 +268,12 @@ export default function UsersPage() {
         }
       >
         <p>
-          Give this to {temp?.user.name?.split(' ')[0]} in person or by phone, with the username <strong>{temp?.user.username}</strong>. It’s shown only once. They’ll choose their own password at first sign-in.
+          {temp?.reason === 'mfa'
+            ? `Two-step sign-in was reset and ${temp?.user.name}’s old password no longer works. `
+            : temp?.reason === 'password'
+              ? `${temp?.user.name}’s old password no longer works. `
+              : ''}
+          Give this temporary password to {temp?.user.name?.split(' ')[0]} in person or by phone, with the username <strong>{temp?.user.username}</strong>. It’s shown only once. At their next sign-in they {temp?.reason === 'password' ? '' : 'set up two-step sign-in and '}choose their own password.
         </p>
         <p className="temp-password">
           <code>{temp?.password}</code>
@@ -273,7 +285,7 @@ export default function UsersPage() {
       <Dialog
         open={!!resetting}
         onClose={() => setResetting(null)}
-        title={`Reset two-step sign-in for ${resetting?.name}?`}
+        title={resetting?.kind === 'password' ? `Reset the password for ${resetting?.user.name}?` : `Reset two-step sign-in for ${resetting?.user.name}?`}
         actions={
           <>
             <button type="button" className="btn" data-autofocus="cancel" onClick={() => setResetting(null)}>
@@ -283,17 +295,22 @@ export default function UsersPage() {
               type="button"
               className="btn btn-danger"
               onClick={async () => {
-                const u = resetting;
+                const { user: u, kind } = resetting;
                 setResetting(null);
-                await update(u, () => usersApi.resetMfa(u.id), 'Two-step sign-in reset');
+                if (kind === 'password') await update(u, () => usersApi.resetPassword(u.id), 'Password reset', 'password');
+                else await update(u, () => usersApi.resetMfa(u.id), 'Two-step sign-in reset', 'mfa');
               }}
             >
-              Reset for {resetting?.name?.split(' ')[0]}
+              {resetting?.kind === 'password' ? 'Reset password' : 'Reset two-step sign-in'}
             </button>
           </>
         }
       >
-        <p>Use this when {resetting?.name} has lost their phone. Their authenticator app and recovery codes stop working, and they set up two-step sign-in again next time they sign in.</p>
+        {resetting?.kind === 'password' ? (
+          <p>Use this when {resetting?.user.name} has forgotten their password. Their current password stops working at once and you get a temporary one to pass on. Their two-step sign-in stays as it is.</p>
+        ) : (
+          <p>Use this when {resetting?.user.name} has lost their phone. Their authenticator app, recovery codes and current password stop working at once. You get a temporary password to pass on, and they set up two-step sign-in again at their next sign-in.</p>
+        )}
       </Dialog>
       <Dialog
         open={!!confirm}

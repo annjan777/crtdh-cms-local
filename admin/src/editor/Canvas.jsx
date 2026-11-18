@@ -1,6 +1,8 @@
 // Centre column: the real public page in an iframe (preview.html), at a true
 // 1280 px desktop width scaled to fit, or a 390 px phone width.
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useChanges } from '../shell/ChangesContext.jsx';
+import { richFieldMap, sanitizePreviewData } from '../preview/sanitize.js';
 
 // Desktop renders at a real desktop width between 1024 and 1280 px, scaled to
 // fit, so text stays readable on a 1280 px screen.
@@ -8,6 +10,8 @@ const widthFor = (device, avail) => (device === 'phone' ? 390 : Math.max(1024, M
 
 export default function Canvas({ pageId, data, sections, selected, onSelect, device = 'desktop', interactive = true, title, fill = false }) {
   const frame = useRef(null);
+  const { pages } = useChanges() || {};
+  const richMap = useMemo(() => richFieldMap([...(pages || []), { sections: sections || [] }]), [pages, sections]);
   const wrap = useRef(null);
   const [ready, setReady] = useState(false);
   const [height, setHeight] = useState(900);
@@ -56,8 +60,8 @@ export default function Canvas({ pageId, data, sections, selected, onSelect, dev
     if (!ready || !data) return;
     const scrollToSelected = scrollNext.current;
     scrollNext.current = false;
-    frame.current?.contentWindow?.postMessage({ type: 'render', pageId, data, sections, selected, interactive, scrollToSelected }, window.location.origin);
-  }, [ready, data, pageId, sections, selected, interactive]);
+    frame.current?.contentWindow?.postMessage({ type: 'render', pageId, data: sanitizePreviewData(data, richMap), sections, selected, interactive, scrollToSelected }, window.location.origin);
+  }, [ready, data, richMap, pageId, sections, selected, interactive]);
   useEffect(send, [send]);
 
   return (

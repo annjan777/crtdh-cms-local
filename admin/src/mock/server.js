@@ -494,7 +494,7 @@ function publishView(p) {
       db.published = clone(db.rows);
       db.meta = {};
       db.reviewRequest = null;
-      db.snapshots.unshift({ id: p.id, snapshot_id: `${at}-${rid().slice(0, 6)}`, published_at: at, published_by: p.by, note: `${p.count} change${p.count === 1 ? '' : 's'}`, rows: clone(db.rows) });
+      db.snapshots.unshift({ id: p.version, snapshot_id: `${at}-${rid().slice(0, 6)}`, published_at: at, published_by: p.by, note: `${p.count} change${p.count === 1 ? '' : 's'}`, rows: clone(db.rows) });
       p.final = { id: p.id, status: 'live', step: 'Live', message: '', live_at: at, agent_last_seen: at };
     }
     save();
@@ -638,23 +638,33 @@ async function route(method, path, body) {
   }
   if (path === '/cms/publish/' && method === 'POST') {
     if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Editors can’t publish.', 'Request a review; a Publisher will be emailed.');
-    const running = Object.values(db.publishes).find((p) => !publishView(p).status.match(/live|failed/));
+    const running = Object.values(db.publishes).find((p) => !publishView(p).status.match(/live|failed|cancelled/));
     if (running) return fail(409, 'CMS_PUBLISH_RUNNING', 'A publish is already running.', 'Wait for it to finish.', { publish_id: running.id });
     const shrink = shrinkCheck();
     if (shrink && !body.data?.confirm_shrink) {
       const label = shrink.resource.replace(/-/g, ' ');
       return fail(422, 'CMS_BUILD_GUARD', `The ${label} list would shrink from ${shrink.before} to ${shrink.after} items.`, 'Check this is intended, then confirm to publish anyway.', { details: [shrink] });
     }
-    const id = db.nextPublish++;
-    db.publishes[id] = { id, created: Date.now(), by: user.name, count: computeChanges().count, fail: db.flags.failNext };
+    const id = crypto.randomUUID(); // publish ids are UUIDs (backend-core)
+    db.publishes[id] = { id, version: db.nextPublish++, created: Date.now(), by: user.name, count: computeChanges().count, fail: db.flags.failNext };
     db.flags.failNext = null;
     save();
     return json(202, { publish_id: id, status: 'queued' });
   }
-  m = path.match(/^\/cms\/publish\/(\d+)\/$/);
+  m = path.match(/^\/cms\/publish\/([0-9a-f-]{36})\/(cancel\/)?$/);
   if (m) {
     const p = db.publishes[m[1]];
-    return p ? json(200, publishView(p)) : fail(404, 'CMS_NOT_FOUND', 'That publish doesn’t exist.', 'Reload the page.');
+    if (!p) return fail(404, 'CMS_NOT_FOUND', 'That publish doesn’t exist.', 'Reload the page.');
+    if (m[2] && method === 'POST') {
+      if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Editors can’t cancel a publish.', 'Ask a Publisher.');
+      const st = publishView(p).status;
+      if (!['queued', 'ready_for_upload'].includes(st))
+        return fail(400, 'CMS_VALIDATION', `This publish is ${st === 'uploading' ? 'already being uploaded' : st} and cannot be cancelled.`, 'Wait for it to finish.');
+      p.final = { id: p.id, publish_id: p.id, status: 'cancelled', step: 'Cancelled', message: 'Cancelled; the live site is unchanged.', live_at: null, agent_last_seen: nowIso() };
+      save();
+      return json(200, p.final);
+    }
+    return json(200, publishView(p));
   }
   if (path === '/cms/snapshots/')
     return json(200, { snapshots: db.snapshots.map(({ rows: _r, ...x }) => ({ ...x, is_live: x.id === db.snapshots[0]?.id })) });
@@ -715,7 +725,7 @@ async function route(method, path, body) {
       save();
       return json(201, { ...out(u), temporary_password: 'tmp-Kq7v-Rw2m-Xp9d' });
     }
-    m = path.match(/^\/auth\/users\/(\d+)\/(role|deactivate|reset-mfa)\/$/);
+    m = path.match(/^\/auth\/users\/(\d+)\/(role|deactivate|reset-mfa|reset-password)\/$/);
     const u = m && db.users.find((x) => String(x.id) === m[1]);
     if (!u || method !== 'POST') return fail(404, 'CMS_NOT_FOUND', 'That user no longer exists.', 'Reload the page.');
     const admins = () => db.users.filter((x) => x.is_active && x.roles.includes('admin'));
@@ -728,7 +738,12 @@ async function route(method, path, body) {
       if (u.roles.includes('admin') && v.role !== 'admin' && admins().length <= 1) return fail(400, 'CMS_VALIDATION', 'This is the last admin.', 'Make someone else admin first.');
       u.roles = rolesUpTo(v.role);
     } else {
-      u.mfa_enrolled = false;
+      // reset-mfa and reset-password both issue a temporary password (backend-security).
+      if (u.id === user.id) return fail(400, 'CMS_VALIDATION', 'Use the change-password screen for your own account.', 'Pick another user.');
+      if (m[2] === 'reset-mfa') u.mfa_enrolled = false;
+      u.must_change_password = true;
+      save();
+      return json(200, { ...out(u), temporary_password: 'tmp-Hn4c-Lz8q-Wb3t' });
     }
     save();
     return json(200, out(u));

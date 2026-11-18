@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useMatch } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
-import { useChanges } from './ChangesContext.jsx';
+import { TERMINAL, useChanges } from './ChangesContext.jsx';
 import RequestReviewDialog from '../review/RequestReviewDialog.jsx';
 import { fmtTime } from '../ui/index.jsx';
 
@@ -14,7 +14,7 @@ export default function DraftBar() {
   const pageMatch = useMatch('/pages/:pageId');
   const onReview = useMatch('/review');
   const previewTo = `/pages/${pageMatch?.params.pageId || 'home'}?preview=1`;
-  const running = publish && !['live', 'failed'].includes(publish.status);
+  const running = publish && !publish.lost && !TERMINAL.has(publish.status);
   const waiting = changes?.review_request;
 
   let summary;

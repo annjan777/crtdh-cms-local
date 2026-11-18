@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { cms } from '../api/cms.js';
 import AppShell, { PageNav } from '../shell/AppShell.jsx';
-import { useChanges } from '../shell/ChangesContext.jsx';
+import { CANCELLABLE, TERMINAL, useChanges } from '../shell/ChangesContext.jsx';
 import { Banner, CopyButton, Dialog, ErrorPanel, Spinner, fmtTime, relTime } from '../ui/index.jsx';
 import { plain } from '../editor/validate.js';
 import RequestReviewDialog from './RequestReviewDialog.jsx';
@@ -24,12 +24,12 @@ function show(v) {
   if (v === false) return 'Off';
   const t = plain(v).trim();
   if (!t) return 'empty';
-  if (/^(data:image|\/media\/|https?:\/\/.*\.(jpe?g|png|webp)$)/i.test(String(v))) return 'a photo';
+  if (/^(data:image|\/_media\/|\/api\/v1\/media\/|https?:\/\/.*\.(jpe?g|png|webp|avif)$)/i.test(String(v))) return 'a photo';
   return t.length > 140 ? `${t.slice(0, 137)}…` : t;
 }
 
 function Thumb({ v }) {
-  return typeof v === 'string' && /^(data:image|\/media\/)/.test(v) ? <img className="diff-thumb" src={v} alt="" /> : null;
+  return typeof v === 'string' && /^(data:image\/|\/_media\/|\/api\/v1\/media\/)/.test(v) ? <img className="diff-thumb" src={v} alt="" /> : null;
 }
 
 function ChangeRow({ change, onDiscard }) {
@@ -76,9 +76,23 @@ function ChangeRow({ change, onDiscard }) {
   );
 }
 
-export function PublishStatus({ publish, onRetry }) {
+export function PublishStatus({ publish, onRetry, onCancel }) {
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelErr, setCancelErr] = useState(null);
   if (!publish) return null;
   const { status } = publish;
+  if (status === 'cancelled')
+    return (
+      <Banner tone="info">
+        <strong>Publish cancelled.</strong> The live site is unchanged and your changes are still waiting here.
+      </Banner>
+    );
+  if (publish.lost)
+    return (
+      <Banner tone="warn" actions={<button type="button" className="btn" onClick={() => window.location.reload()}>Reload the page</button>}>
+        <strong>The publish status can’t be read right now.</strong> The publish may still finish. Reload the page in a minute to check; Publish history shows every version that went live.
+      </Banner>
+    );
   if (status === 'live')
     return (
       <Banner tone="ok">
@@ -110,20 +124,42 @@ export function PublishStatus({ publish, onRetry }) {
       ) : (
         <p className="muted">You can keep working; the live site changes only at the last step.</p>
       )}
+      {onCancel && CANCELLABLE.has(status) ? (
+        <div className="row-actions">
+          <button
+            type="button"
+            className="btn"
+            aria-busy={cancelling || undefined}
+            onClick={async () => {
+              setCancelling(true);
+              setCancelErr(await onCancel());
+              setCancelling(false);
+            }}
+          >
+            {cancelling ? <Spinner /> : null}
+            Cancel publish
+          </button>
+        </div>
+      ) : null}
+      {cancelErr ? (
+        <p className="field-error" role="alert">
+          {cancelErr.message} {cancelErr.fix}
+        </p>
+      ) : null}
     </div>
   );
 }
 
 export default function ReviewPage() {
   const { canPublish } = useAuth();
-  const { changes, error, count, pageCount, refreshNow, setChanges, publish, startPublish } = useChanges();
+  const { changes, error, count, pageCount, refreshNow, setChanges, publish, startPublish, cancelPublish } = useChanges();
   const [discarding, setDiscarding] = useState(null); // {change} | {session}
   const [busy, setBusy] = useState(false);
   const [actionErr, setActionErr] = useState(null);
   const [guard, setGuard] = useState(null);
   const [asking, setAsking] = useState(false);
   const [publishErr, setPublishErr] = useState(null);
-  const running = publish && !['live', 'failed'].includes(publish.status);
+  const running = publish && !publish.lost && !TERMINAL.has(publish.status);
 
   const sessions = {};
   for (const p of changes?.pages || []) for (const c of p.changes) if (c.session_id) (sessions[c.session_id] ||= { id: c.session_id, author: c.author, n: 0 }).n += 1;
@@ -172,7 +208,7 @@ export default function ReviewPage() {
             <h2 id="publish-h" className="visually-hidden">
               Publish
             </h2>
-            <PublishStatus publish={publish} onRetry={() => publishNow()} />
+            <PublishStatus publish={publish} onRetry={() => publishNow()} onCancel={canPublish ? cancelPublish : null} />
             {publishErr ? (
               <Banner tone="danger" actions={<CopyButton text={publishErr.supportText?.() || ''} />}>
                 {publishErr.message} {publishErr.fix}
