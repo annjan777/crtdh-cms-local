@@ -8,7 +8,7 @@ from django.db import migrations
 PAGE_IDS = ["home", "about", "team", "innovations", "facilities", "services", "product", "enterprises",
             "social-impact", "covid-19", "media", "contact"]
 ALIASES = {"covid19": "covid-19", "covid": "covid-19", "socialimpact": "social-impact", "products": "product",
-           "enterprise": "enterprises", "facility": "facilities", "service": "services", "index": "home", "/": "home"}
+           "enterprise": "enterprises", "facility": "facilities", "service": "services", "index": "home"}
 
 
 def normalise(value):
