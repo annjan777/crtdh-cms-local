@@ -18,7 +18,7 @@ import paramiko
 
 from . import strategies
 from .bundle import Bundle, open_bundle, safe_id
-from .cmsclient import BuildRejected, CMSClient, CMSError, Job
+from .cmsclient import BuildRejected, CMSClient, CMSError, Job, verify_job
 from .config import STRATEGIES, Config
 from .layout import (MARKER, OUR_MEDIA, STAGING_MARKER, Layout, empty_state, load_state,
                      make_layout, save_state)
@@ -55,7 +55,7 @@ def is_transient(exc: BaseException, remote: Remote | None) -> bool:
 def describe_write_error(exc: BaseException, what: str) -> str:
     code = getattr(exc, "errno", None)
     text = str(exc)
-    if code in (errno.ENOSPC, getattr(errno, "EDQUOT", -1)) or re.search(r"(?i)quota|space|failure", text):
+    if code in (errno.ENOSPC, getattr(errno, "EDQUOT", -1)) or re.search(r"(?i)quota|space|failure|size mismatch", text):
         return (f"the server refused to write {what} ({text or 'write failed'}). The disk quota is probably full: "
                 "run `python -m publish_agent check` to see free space and remove old files.")
     if code == errno.EACCES or "permission" in text.lower():
@@ -202,11 +202,12 @@ class Publisher:
         self.cms.report(job.publish_id, status, step, message)
 
     def deploy(self, job: Job) -> str:
-        sid = safe_id(job.snapshot_id)
-        LOG.info("publish %s: snapshot %s", job.publish_id, sid)
+        LOG.info("publish %s: snapshot %s", job.publish_id, job.snapshot_id)
         self.save_local_state(last_job=job.publish_id, last_job_at=_now())
         step = "download"
         try:
+            verify_job(self.cms.secret, job)
+            sid = safe_id(job.snapshot_id)
             self.report(job, "uploading", "download", "Downloading the build")
             bundle = self.fetch_bundle(job, sid)
             step = "upload"

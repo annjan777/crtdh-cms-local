@@ -107,10 +107,7 @@ class CMSClient:
                       str(data["tarball_url"]), str(data["sha256"]).lower(), str(data.get("signature") or ""))
         except (ValueError, KeyError, TypeError):
             raise CMSError("CMS sent an unreadable /agent/next/ answer") from None
-        if not job.snapshot_id:
-            raise BuildRejected("CMS job has no snapshot_id")
-        verify_job(self.secret, job)
-        return job
+        return job  # the build signature is checked by the caller so a bad one can be reported as failed
 
     def download(self, job: Job, dest: str) -> None:
         """Stream the tarball to dest, checking size and sha256 on the way."""
