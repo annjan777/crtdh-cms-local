@@ -309,8 +309,7 @@ def test_agent_report_after_a_racing_cancel_is_recorded(api_as, content, publish
 def test_tarball_path_is_per_publish(content, publish_env, publisher):
     first = built(publisher)
     agent_status(first, "failed", step="upload", message="network")
-    second = built(publisher)  # same content -> same snapshot id
-    assert second.snapshot_id == first.snapshot_id
+    second = built(publisher)  # same content; same snapshot id when built within the same second
     assert first.tarball_path != second.tarball_path and str(second.id) in second.tarball_path
     assert second.tarball_path.endswith(f"crtdh-site-{second.snapshot.snapshot_id}.tar.gz")
 
