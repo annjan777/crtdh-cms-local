@@ -47,7 +47,15 @@
 .tile:not(:has(.img)) { justify-content: flex-end; min-height: 160px; }
 .tile:not(:has(.img)) .tile__title { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-22); }
 @media (max-width: 1023.98px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 479.98px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+/* Phones: one column, photograph on the left (WS2.9) */
+@media (max-width: 479.98px) {
+  .tiles { grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+  .tile { flex-direction: row; align-items: center; }
+  .tile .img { flex: 0 0 38%; }
+  .tile__title { padding: var(--s-3) var(--s-4); }
+  .tile:not(:has(.img)) { min-height: 0; }
+  .tile:not(:has(.img)) .tile__title { font-size: var(--fs-18); padding-block: var(--s-6); }
+}
 
 /* Gallery: 3:2 grid (WS2.11) and a native dialog viewer */
 .gallery__grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-4); }
@@ -82,7 +90,10 @@
   cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; gap: var(--s-2);
 }
 .video__label { font-family: var(--font-ui); font-size: var(--fs-14); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal); }
-.video__title { font-family: var(--font-display); font-size: clamp(var(--fs-22), 2.6vw, var(--fs-28)); line-height: var(--lh-heading); max-width: 22ch; text-wrap: balance; }
+.video__title {
+  font-family: var(--font-display); font-size: clamp(var(--fs-18), 2.6vw, var(--fs-28)); line-height: var(--lh-heading); max-width: 22ch; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; /* never runs under the Play button */
+}
 .video__play {
   position: absolute; left: var(--s-4); bottom: var(--s-4); display: inline-flex; align-items: center; gap: 8px;
   min-height: 44px; padding: 8px 16px; background: var(--navy-deep); color: #fff; font-family: var(--font-ui); font-weight: 600;
@@ -121,7 +132,7 @@
   .table { min-width: 0; }
   .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .table, .table tbody, .table tr, .table th, .table td { display: block; width: auto; }
-  .table tbody th { border-right: 0; background: var(--surface); padding-top: 18px; }
+  .table tbody th { width: auto; border-right: 0; background: var(--surface); padding-top: 18px; }
   .table td { border-bottom: 0; padding-top: 4px; padding-bottom: 4px; }
   .table td:last-child { padding-bottom: 14px; }
   .table td[data-label]::before { content: attr(data-label); display: block; font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-14); color: var(--ink-soft); }

@@ -23,7 +23,7 @@ with sync_playwright() as p:
             page.on('pageerror', lambda e: errs.append(str(e)))
             page.on('requestfailed', lambda r: errs.append('FAILED ' + r.url) if 'localhost' in r.url else None)
             page.goto(base + path, wait_until='networkidle')
-            page.evaluate("""async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 90)); } await Promise.all([...document.images].filter(i => i.offsetParent && !i.complete).map(i => new Promise(r => { i.onload = i.onerror = r; setTimeout(r, 4000) }))); window.scrollTo(0, 0); }""")
+            page.evaluate("""async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 90)); } await Promise.all([...document.images].filter(i => i.offsetParent && !i.complete).map(i => new Promise(r => { i.onload = i.onerror = r; setTimeout(r, 10000) }))); window.scrollTo(0, 0); }""")
             page.wait_for_timeout(300)
             over = page.evaluate('document.documentElement.scrollWidth - document.documentElement.clientWidth')
             page.screenshot(path=f'{out}/{name}-{w}.png', full_page=True)

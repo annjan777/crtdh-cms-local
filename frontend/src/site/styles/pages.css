@@ -98,6 +98,7 @@
   .work__grid > * { grid-row: auto !important; grid-column: auto !important; }
   .work__head, .work__tile--1 { grid-column: 1 / -1 !important; }
   .work__tile--2 .img { aspect-ratio: 4 / 3; }
+  .work__grid > .work__tile:nth-child(7) { display: none; } /* wide print + an even 2x2, no orphan */
 }
 @media (max-width: 767.98px) { .work__head h2 { font-size: var(--fs-28); } }
 
