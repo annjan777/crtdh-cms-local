@@ -64,3 +64,46 @@ def test_tunnel_routes_only_mcp_paths_to_mcp_host():
                "/mcpx", "/oauth/register/", "/oauth/applications/"]:
         assert not rx.search(no), no
     assert conf["ingress"][-1]["service"] == "http_status:404"
+
+
+def _compose():
+    return yaml.safe_load((ROOT / "deploy/docker-compose.yml").read_text())
+
+
+def _nets(svc):
+    n = svc.get("networks", [])
+    return set(n) if isinstance(n, list) else set(n)
+
+
+def test_only_gateway_and_cloudflared_are_trusted_proxies():
+    c = _compose()
+    gw = c["services"]["gateway"]["networks"]["internal"]["ipv4_address"]
+    cf = c["services"]["cloudflared"]["networks"]["internal"]["ipv4_address"]
+    subnet = c["networks"]["internal"]["ipam"]["config"][0]["subnet"]
+    import ipaddress
+    assert ipaddress.ip_address(gw) in ipaddress.ip_network(subnet) and c["networks"]["internal"]["internal"] is True
+    for name in ("cms", "mcp", "worker", "housekeeping", "migrate"):
+        env = c["services"][name]["environment"]
+        assert env["TRUSTED_PROXY_IPS"].split(",") == [gw, cf], name
+        assert env["REQUIRE_TRUSTED_PROXY"] == "True", name
+    mcp_cmd = c["services"]["mcp"]["command"]
+    assert "--no-proxy-headers" in mcp_cmd and '"*"' not in mcp_cmd and "--proxy-headers " not in mcp_cmd
+
+
+def test_internet_egress_is_minimal():
+    c = _compose()
+    on_egress = {n for n, s in c["services"].items() if "egress" in _nets(s)}
+    assert on_egress == {"cms", "mcp", "worker", "cloudflared"}
+    assert "egress" not in _nets(c["services"]["db"])
+
+
+def test_gateway_container_is_hardened_and_serves_static():
+    c = _compose()
+    gw = c["services"]["gateway"]
+    assert gw["read_only"] is True and gw["cap_drop"] == ["ALL"]
+    assert set(gw["cap_add"]) <= {"CHOWN", "SETUID", "SETGID", "NET_BIND_SERVICE"}
+    assert any(t.startswith("/etc/nginx/conf.d") for t in gw["tmpfs"])
+    assert "static_data:/srv/static:ro" in gw["volumes"]
+    assert "collectstatic" in c["services"]["migrate"]["command"]
+    conf = (ROOT / "deploy/nginx/templates/gateway.conf.template").read_text()
+    assert "location /static/" in conf and "alias /srv/static/;" in conf

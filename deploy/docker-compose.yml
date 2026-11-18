@@ -6,6 +6,12 @@
 #   mcp.<domain>      -> mcp (only /mcp, OAuth metadata and token paths; WAF: Anthropic range only)
 # Every secret comes from deploy/.env (never committed; copy .env.example).
 # No seeding and no default users: create the first admin as in README step 4.
+#
+# Networks: `internal` (no internet) holds everything; gateway and cloudflared have fixed addresses
+# on it. Only those two addresses may talk to the app processes: Django's TrustedProxyMiddleware
+# (REQUIRE_TRUSTED_PROXY + TRUSTED_PROXY_IPS) refuses any other peer, because "no published port" does
+# not stop a process on the server from reaching a container's bridge address directly. `egress` is
+# outbound only and joined just by the containers that must reach the internet (README "Network").
 
 name: crtdh-cms
 
@@ -19,16 +25,21 @@ x-backend: &backend
     DEBUG: "False"
     CRTDH_ENV: production
     TRUST_CF_CONNECTING_IP: "True"
+    # gateway, cloudflared (fixed below). Forwarding headers from any other peer are ignored/refused.
+    TRUSTED_PROXY_IPS: 172.30.80.10,172.30.80.11
+    REQUIRE_TRUSTED_PROXY: "True"
+    STATIC_ROOT: /data/static
     MEDIA_ROOT: /data/media
   volumes:
     - media_data:/data/media
+    - static_data:/data/static
   read_only: true
   tmpfs:
     - /tmp
   security_opt:
     - no-new-privileges:true
   cap_drop: [ALL]
-  networks: [internal, egress]
+  networks: [internal]
 
 services:
   db:
@@ -53,7 +64,9 @@ services:
   migrate:
     <<: *backend
     restart: "no"
-    command: sh -c "python manage.py migrate --noinput && python manage.py createcachetable"
+    command: >
+      sh -c "python manage.py migrate --noinput && python manage.py createcachetable
+      && python manage.py collectstatic --noinput --clear -v 0"
     depends_on:
       db:
         condition: service_healthy
@@ -63,6 +76,8 @@ services:
     command: >
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
       --limit-request-line 8190 --access-logfile - --worker-tmp-dir /tmp
+    # Outbound: Turnstile siteverify and SMTP.
+    networks: [internal, egress]
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -71,8 +86,12 @@ services:
   mcp:
     <<: *backend
     command: >
-      uvicorn mcp_server.asgi:app --host 0.0.0.0 --port 8400 --proxy-headers
-      --forwarded-allow-ips "*" --no-server-header
+      uvicorn mcp_server.asgi:app --host 0.0.0.0 --port 8400 --no-proxy-headers
+      --forwarded-allow-ips 172.30.80.11 --no-server-header
+    # No uvicorn proxy-header rewriting: the peer must stay cloudflared's address so the
+    # trusted-proxy check holds; Django reads CF-Connecting-IP/X-Forwarded-Proto from that peer only.
+    # Outbound: upload_image_from_url (SSRF-guarded fetch in mcp_server/fetch.py).
+    networks: [internal, egress]
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -81,6 +100,8 @@ services:
   worker:
     <<: *backend
     command: python manage.py run_publish_worker
+    # Outbound: review/publish notification email (SMTP).
+    networks: [internal, egress]
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -108,12 +129,27 @@ services:
       NGINX_ENVSUBST_FILTER: "^(CMS_HOST|CONTACT_HOST)$"
     volumes:
       - ./nginx/templates:/etc/nginx/templates:ro
-      - ./nginx/empty.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_data:/srv/static:ro
+    # Read-only root; envsubst renders into the conf.d tmpfs (which also hides the image's own
+    # catch-all default.conf). Root master only binds :80 and drops to the nginx user for workers.
+    read_only: true
+    tmpfs:
+      - /etc/nginx/conf.d:mode=0755
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID, NET_BIND_SERVICE]
     depends_on:
-      - cms
+      cms:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     security_opt:
       - no-new-privileges:true
-    networks: [internal]
+    networks:
+      internal:
+        ipv4_address: 172.30.80.10
 
   cloudflared:
     image: ${CLOUDFLARED_IMAGE:?pin cloudflare/cloudflared:<version>@sha256:<digest> in deploy/.env}
@@ -128,15 +164,27 @@ services:
     security_opt:
       - no-new-privileges:true
     read_only: true
-    networks: [internal, egress]
+    cap_drop: [ALL]
+    networks:
+      internal:
+        ipv4_address: 172.30.80.11
+      egress: {}
 
 networks:
-  # No route to the internet: the database is only on this network.
+  # No route to the internet. Fixed subnet so TRUSTED_PROXY_IPS can name gateway and cloudflared.
   internal:
     internal: true
-  # Outbound only (Turnstile, SMTP, Cloudflare edge). Nothing is published on the host.
-  egress: {}
+    ipam:
+      config:
+        - subnet: 172.30.80.0/24
+  # Outbound only (cloudflared to the Cloudflare edge; cms Turnstile/SMTP; mcp URL fetch; worker SMTP).
+  # Nothing is published on the host. db, migrate, housekeeping and gateway are not on it.
+  egress:
+    ipam:
+      config:
+        - subnet: 172.30.81.0/24
 
 volumes:
   pgdata:
   media_data:
+  static_data:

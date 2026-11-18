@@ -123,7 +123,8 @@ def test_huge_image_capped_to_max_edge():
 
 
 def test_pdf_accepted_and_script_pdf_rejected():
-    ok = b"%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF"
+    from .pdfs import simple_pdf
+    ok = simple_pdf()
     assert process_upload(f(ok, "a.pdf", "application/pdf"), kind="document").mime == "application/pdf"
     bad = b"%PDF-1.4\n1 0 obj << /OpenAction << /S /JavaScript /JS (app.alert(1)) >> >> endobj"
     with pytest.raises(CMSError):
@@ -212,8 +213,37 @@ def test_pdf_hidden_active_content_rejected(bad):
         process_upload(f(bad, "a.pdf", "application/pdf"), kind="document")
 
 
-def test_pdf_with_harmless_compressed_stream_accepted():
+def test_pdf_with_harmless_compressed_stream_and_object_streams_accepted():
+    import io as _io
 
-    ok = (b"%PDF-1.4\n1 0 obj << /Length 20 /Filter /FlateDecode >>\nstream\n" + zlib.compress(b"BT /F1 12 Tf (Hi) Tj ET")
-          + b"\nendstream\nendobj\n%%EOF")
+    import pikepdf
+
+    from .pdfs import simple_pdf
+    pdf = pikepdf.open(_io.BytesIO(simple_pdf()))
+    out = _io.BytesIO()
+    pdf.save(out, object_stream_mode=pikepdf.ObjectStreamMode.generate, compress_streams=True)
+    assert process_upload(f(out.getvalue(), "a.pdf", "application/pdf"), kind="document").mime == "application/pdf"
+
+
+@pytest.mark.parametrize("filters", [["ASCIIHexDecode"], ["FlateDecode", "ASCIIHexDecode"], ["FlateDecode"]])
+def test_pdf_action_hidden_in_object_stream_rejected(filters):
+    """Review repro: /S /JavaScript inside an /ObjStm under ASCIIHex or a [Flate ASCIIHex] chain."""
+    from .pdfs import objstm_action_pdf
+    data = objstm_action_pdf(filters)
+    assert b"JavaScript" not in data  # invisible to a raw-byte scan
+    with pytest.raises(CMSError):
+        process_upload(f(data, "a.pdf", "application/pdf"), kind="document")
+
+
+def test_pdf_harmless_action_in_object_stream_is_found_by_parser_not_filters():
+    """A Flate object stream holding a harmless GoTo is accepted; the same holding JavaScript is not
+    (so the parser walk, not just the filter allow-list, does the work)."""
+    from .pdfs import objstm_action_pdf
+    ok = objstm_action_pdf(["FlateDecode"], action=b"<< /S /GoTo /D [3 0 R /Fit] >>")
     assert process_upload(f(ok, "a.pdf", "application/pdf"), kind="document").mime == "application/pdf"
+
+
+def test_pdf_unparseable_rejected():
+    with pytest.raises(CMSError):
+        process_upload(f(b"%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF", "a.pdf", "application/pdf"),
+                       kind="document")

@@ -7,7 +7,7 @@ running and operating this service.
 
 ## Stack
 
-Django 5 + Django REST Framework, `djangorestframework-simplejwt` for auth,
+Django 5 + Django REST Framework, session cookies + CSRF with mandatory TOTP MFA for auth,
 `django-cors-headers`, `django-filter` for `?field=` query filtering,
 `django-environ` for `.env`-based settings, Pillow for image fields, `bleach`
 for sanitizing `Innovation.body` rich text on save. PostgreSQL in
@@ -34,20 +34,13 @@ python manage.py runserver
 
 The API is then live at `http://127.0.0.1:8000/api/v1/`.
 
-### Creating a staff user
+### Creating users
 
-The project uses Django's built-in `User` model unmodified — its `is_staff`
-flag is exactly what every write endpoint checks. `python manage.py
-createsuperuser` works out of the box and is the simplest path (superusers
-are staff). There's also a `createstaffuser` management command
-(`apps/core/management/commands/createstaffuser.py`) that's a thin,
-identically-behaved alias, for a more obviously-named entry point in scripts.
-For a staff-but-not-superuser account, use the Django shell:
-
-```python
-from django.contrib.auth.models import User
-User.objects.create_user("alice", "alice@example.com", "change-me", is_staff=True)
-```
+Roles are Django groups `editor` ⊂ `publisher` ⊂ `admin` (`apps/accounts/roles.py`); `is_staff` is not
+used. In local development (`DEBUG=True` only) `python manage.py create_dev_users` creates one user per
+role with random passwords printed once. In production create the first admin as in
+`../deploy/README.md` step 4; admins then add users from the admin UI (temporary password, must be
+changed, TOTP enrolment at first sign-in).
 
 ### Media & static files
 
@@ -91,24 +84,31 @@ filenames) — those are skipped rather than crashing the run, and every
 skip is listed in the summary the command prints at the end alongside the
 row count created per model.
 
-## JWT auth flow (for the admin SPA)
+## Auth flow (for the admin SPA)
 
-1. `POST /api/v1/auth/token/` with `{"username", "password"}` → `{"access", "refresh"}`.
-2. Send `Authorization: Bearer <access>` on every subsequent request. Access
-   tokens last 1 hour.
-3. When the access token expires, `POST /api/v1/auth/token/refresh/` with
-   `{"refresh"}` → a new `{"access"}`.
-4. `GET /api/v1/auth/me/` (any authenticated user) → `{id, username, email,
-   is_staff}` — use this to confirm the logged-in account is staff and to
-   populate the admin SPA's "logged in as" UI.
+Session cookies (HttpOnly, SameSite=Strict, `__Host-` prefixed in production) and CSRF; there are no
+bearer tokens and no token refresh. Every unsafe request sends `X-CSRFToken`.
 
-All `GET` requests across every resource are public/unauthenticated. Every
-non-`GET` request (create/update/delete, and the `reorder` action) requires
-`request.user.is_staff` — enforced by the shared `IsAdminOrReadOnly`
-permission class (`apps/common/permissions.py`), applied to every viewset.
-The one deliberate exception is `POST /api/v1/contact/`, which is `AllowAny`
-(it's the public contact form) — reading/deleting submitted messages is done
-through the separate, staff-only `/api/v1/contact-messages/` endpoint.
+1. `GET /api/v1/auth/csrf/` → `{csrfToken}` (the cookie itself is HttpOnly).
+2. `POST /api/v1/auth/login/` `{username, password}` → `{mfa_required: true}` or, on first sign-in,
+   `{mfa_setup_required: true}`. Password alone never creates a session.
+3. `POST /api/v1/auth/mfa/` `{code}` (TOTP or a recovery code), or for first sign-in
+   `POST /auth/mfa/enrol/` then `POST /auth/mfa/enrol/confirm/` `{code}` (returns 10 recovery codes once).
+   Success returns the profile plus a fresh `csrfToken`.
+4. `GET /api/v1/auth/me/`, `POST /auth/logout/`, `POST /auth/password/`, `POST /auth/sessions/revoke-all/`,
+   `POST /auth/mfa/recovery-codes/`; admins: `/api/v1/auth/users/` (contract addendum A12).
+5. `GET /cms/login?next=<relative path>`: used by the OAuth authorize step (sends an MFA-verified
+   session straight to `next`, anyone else to the SPA's `/login?next=`).
+
+Lockout: 5 failures per username / 20 per IP, exponential backoff, `429 CMS_RATE_LIMITED` with
+`locked_until`. Details: `apps/accounts/views.py`.
+
+**Merge note:** the admin SPA's `admin/src/api/client.js` in this branch is the old token client; take it
+from `v3/admin` when merging.
+
+CMS endpoints need a signed-in, MFA-verified session with at least the `editor` role (DRF default
+permission `IsEditor`); publishing, contact messages and user admin need `publisher`/`admin`. The one
+public endpoint is `POST /api/v1/contact/` (Turnstile, honeypot, 5/min/IP).
 
 ## Ordering & reorder
 
@@ -139,7 +139,7 @@ list of resources, fields, and per-page usage — every path there is wired up
 exactly as written. In short: one `ModelViewSet` per resource on a DRF
 `DefaultRouter` under `/api/v1/`, plus the singleton `/api/v1/site-settings/`
 (GET/PATCH APIView), the public `/api/v1/contact/` (POST-only APIView), and
-the three JWT auth endpoints above.
+the auth endpoints above.
 
 ## Deployment
 
@@ -148,9 +148,8 @@ See `Dockerfile` (installs `requirements.txt`, runs
 `../deploy/docker-compose.yml` for the full stack. Migrations are expected to
 run as a separate step/command override (e.g.
 `python manage.py migrate && gunicorn ...`) rather than baked into the image's
-default `CMD`. `DATABASE_URL` defaults to
-`postgres://crtdh:crtdh@db:5432/crtdh`, matching the `db` service name in
-docker-compose; override it via `.env` for any other environment.
+default `CMD`. `DATABASE_URL` is required when `DEBUG` is false (no default); see
+`../deploy/README.md`.
 
 ## Verification performed during development
 
@@ -160,9 +159,7 @@ docker-compose; override it via `.env` for any other environment.
 - All 25 list endpoints (`nav-items`, `team-members`, `site-settings`, etc.)
   return `200` with the paginated `{count, next, previous, results}` shape
   (or the singleton object, for `site-settings`).
-- JWT flow: obtained a token via `/api/v1/auth/token/`, confirmed
-  `/api/v1/auth/me/` returns the expected profile, confirmed a write
-  succeeds with the token and fails `401` without it.
+- Auth flow: covered by `apps/accounts/tests/` (`python -m pytest`).
 - `reorder` action verified on `/api/v1/nav-items/reorder/`, including its
   `400` validation when the id list doesn't exactly match the resource.
 - Image upload verified to serialize to an absolute URL
@@ -173,4 +170,4 @@ docker-compose; override it via `.env` for any other environment.
   `onclick` attribute submitted in `body` were stripped on save.
 - Contact flow verified end-to-end: public `POST /api/v1/contact/` (201,
   no auth), `GET`/`DELETE` on `/api/v1/contact-messages/` correctly gated to
-  staff (`401` unauthenticated, works with a staff token).
+  publishers (`401` unauthenticated).

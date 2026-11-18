@@ -120,14 +120,23 @@ class UserRoleView(_AdminView):
 
 
 class UserResetMFAView(_AdminView):
-    """For a lost phone: clears MFA and signs the user out; they enrol again at next sign-in."""
+    """For a lost phone: clears MFA, signs the user out and replaces the password with a one-time
+    temporary password (shown once). Keeping the old password would let anyone who knows it (a leak,
+    or the person who took the phone) enrol their own authenticator at the next sign-in."""
 
     def post(self, request, pk):
         user = self.get_target(pk)
-        mfa.reset(user)
+        if user.pk == request.user.pk:
+            raise CMSError("CMS_VALIDATION", "Another admin must reset your MFA.", fix="Ask another admin.")
+        temp = secrets.token_urlsafe(18)
+        with transaction.atomic():
+            mfa.reset(user)
+            user.set_password(temp)
+            user.save(update_fields=["password"])
+            UserSecurity.objects.update_or_create(user=user, defaults={"must_change_password": True})
         sessions.revoke_all(user)
         logger.info("mfa reset username=%s by=%s", user.username, request.user.username)
-        return Response(user_payload(user))
+        return Response(dict(user_payload(user), temporary_password=temp))
 
 
 class UserResetPasswordView(_AdminView):

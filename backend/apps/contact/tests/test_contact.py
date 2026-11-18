@@ -116,8 +116,19 @@ def test_cf_connecting_ip_ignored_unless_behind_tunnel(ok_turnstile, settings):
     assert resp.status_code == 429  # spoofed header does not dodge the limit
 
 
+def test_cf_connecting_ip_ignored_from_untrusted_peer_even_when_enabled(ok_turnstile, settings):
+    """Review finding: a process reaching the container directly must not pick its own client IP."""
+    settings.TRUST_CF_CONNECTING_IP = True
+    settings.TRUSTED_PROXY_IPS = ["172.30.80.10", "172.30.80.11"]
+    for i in range(5):
+        APIClient().post(URL, GOOD, format="json", REMOTE_ADDR="172.30.81.7", HTTP_CF_CONNECTING_IP=f"198.51.100.{i}")
+    resp = APIClient().post(URL, GOOD, format="json", REMOTE_ADDR="172.30.81.7", HTTP_CF_CONNECTING_IP="198.51.100.77")
+    assert resp.status_code == 429
+
+
 def test_cf_connecting_ip_used_behind_tunnel(ok_turnstile, settings):
     settings.TRUST_CF_CONNECTING_IP = True
+    settings.TRUSTED_PROXY_IPS = ["172.18.0.5"]
     for i in range(6):
         resp = APIClient().post(URL, GOOD, format="json", REMOTE_ADDR="172.18.0.5",
                                 HTTP_CF_CONNECTING_IP=f"198.51.100.{i}")
