@@ -68,7 +68,7 @@ export default function About({ data }) {
             <div className="section-head">
               <h2 id="about-objectives">How CRTDH supports MSMEs</h2>
             </div>
-            <div className="table-wrap">
+            <div className="table-wrap" role="region" aria-labelledby="about-objectives" tabIndex={0}>
               <table className="table">
                 <thead>
                   <tr>
@@ -85,8 +85,8 @@ export default function About({ data }) {
                           {r.category}
                         </th>
                       )}
-                      <td>{r.task}</td>
-                      <td>{r.outcome || '—'}</td>
+                      <td data-label="Task">{r.task}</td>
+                      <td data-label="Outcome">{r.outcome || '—'}</td>
                     </tr>
                   ))}
                 </tbody>

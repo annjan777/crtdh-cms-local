@@ -46,7 +46,7 @@ export default function Layout({ data, currentPath = '/', children }) {
       <main id="main" tabIndex={-1}>
         {children}
       </main>
-      <Footer settings={settings} groups={groups} contact={contact} publishedAt={data?.meta?.published_at} />
+      <Footer settings={settings} groups={groups} contact={contact} publishedAt={data?.meta?.published_at} privacyNotice={Boolean(data?.meta?.privacy_notice)} />
     </>
   )
 }
@@ -81,11 +81,12 @@ function Header({ settings, groups, contact, currentPath }) {
   return (
     <header className="site-header" ref={ref}>
       <div className="wrap site-header__bar">
-        <SiteLink to="/" className="wordmark" aria-label="CRTDH, IIT Kharagpur — home">
+        <SiteLink to="/" className="wordmark">
           {settings.site_logo && <img src={settings.site_logo} alt="" width="40" height="40" className="wordmark__logo" />}
           <span className="wordmark__text">
-            <span className="wordmark__name">CRTDH</span>
+            <span className="wordmark__name">CRTDH</span>{' '}
             <span className="wordmark__sub">IIT Kharagpur</span>
+            <span className="visually-hidden">, home</span>
           </span>
         </SiteLink>
 
@@ -165,7 +166,7 @@ function Header({ settings, groups, contact, currentPath }) {
   )
 }
 
-function Footer({ settings, groups, contact, publishedAt }) {
+function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
   const year = (publishedAt ? new Date(publishedAt) : new Date()).getUTCFullYear()
   const phones = [settings.phone_primary, settings.phone_secondary].filter(Boolean)
   const emails = [settings.email_primary, settings.email_secondary].filter(Boolean)
@@ -242,7 +243,7 @@ function Footer({ settings, groups, contact, publishedAt }) {
           </div>
           <p className="small">
             A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.{' '}
-            <SiteLink to="/contact#privacy">How we use contact messages</SiteLink>.
+            <SiteLink to={privacyNotice ? '/contact#privacy' : '/contact#contact-notice'}>How we use contact messages</SiteLink>.
             {publishedAt && <> Last updated {formatDate(publishedAt)}.</>}
           </p>
         </div>

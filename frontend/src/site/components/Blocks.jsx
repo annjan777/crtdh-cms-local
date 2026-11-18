@@ -43,7 +43,7 @@ export function RichText({ html, className = '' }) {
   return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-/** YouTube poster that loads the player only when pressed (no third-party requests before). */
+/** YouTube poster that loads the player (youtube-nocookie) only when pressed; no third-party requests before. */
 export function VideoPoster({ url, title }) {
   const [playing, setPlaying] = useState(false)
   const id = youtubeId(url)
@@ -59,8 +59,10 @@ export function VideoPoster({ url, title }) {
             allowFullScreen
           />
         ) : (
-          <button type="button" className="video__poster" onClick={() => setPlaying(true)}>
-            <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" loading="lazy" width="480" height="360" />
+          <button type="button" className="video__poster" onClick={() => setPlaying(true)} data-youtube={id}>
+            {/* No third-party thumbnail: the poster is drawn here, so nothing loads from YouTube before the press. */}
+            <span className="video__label" aria-hidden="true">Video</span>
+            {title && <span className="video__title" aria-hidden="true">{title}</span>}
             <span className="video__play">
               <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l12 7-12 7z" fill="currentColor" /></svg>
               <span>Play video<span className="visually-hidden">: {title}</span></span>

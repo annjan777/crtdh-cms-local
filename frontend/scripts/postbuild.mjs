@@ -36,7 +36,15 @@ for (const file of htmlFiles(out)) {
   }
 }
 const scriptHashes = [...hashes].sort()
-fs.writeFileSync(path.join(out, 'csp-hashes.json'), JSON.stringify({ 'script-src': scriptHashes }, null, 2) + '\n')
+
+// Embeds actually used by the built pages (frame-src lists only these).
+const allHtml = htmlFiles(out).map((f) => fs.readFileSync(f, 'utf8')).join('\n')
+const frameOrigins = new Set()
+for (const m of allHtml.matchAll(/<iframe[^>]*\ssrc="(https:\/\/[^"/]+)/g)) frameOrigins.add(m[1])
+if (allHtml.includes('data-youtube=')) frameOrigins.add('https://www.youtube-nocookie.com') // poster swaps in the player on press
+const imgOrigins = new Set()
+for (const m of allHtml.matchAll(/<img[^>]*\ssrc="(https?:\/\/[^"/]+)/g)) imgOrigins.add(m[1])
+if (imgOrigins.size) console.warn(`postbuild: third-party images in the build: ${[...imgOrigins].join(', ')}`)
 
 // 4. .htaccess (used only if the CIC server honours it; publish-agent discovery decides).
 const origin = (u) => {
@@ -48,14 +56,15 @@ const origin = (u) => {
 }
 const contactOrigin = origin(contactApi)
 const tsOrigin = turnstile ? 'https://challenges.cloudflare.com' : ''
+fs.writeFileSync(path.join(out, 'csp-hashes.json'), JSON.stringify({ 'script-src': scriptHashes, 'frame-src': [...frameOrigins].sort().concat(tsOrigin ? [tsOrigin] : []), 'connect-src': [contactOrigin].filter(Boolean) }, null, 2) + '\n')
 const csp = [
   "default-src 'self'",
   `script-src 'self' ${scriptHashes.join(' ')} ${tsOrigin}`.trim(),
   "style-src 'self' 'unsafe-inline'", // React style attributes (LQIP colour, focal point) only; no inline <style>
-  "img-src 'self' data: https://i.ytimg.com",
+  `img-src 'self' data: ${[...imgOrigins].join(' ')}`.trim(),
   "font-src 'self'",
   `connect-src 'self' ${contactOrigin}`.trim(),
-  `frame-src https://www.google.com https://www.youtube-nocookie.com ${tsOrigin}`.trim(),
+  frameOrigins.size || tsOrigin ? `frame-src ${[...frameOrigins].sort().join(' ')} ${tsOrigin}`.replace(/\s+/g, ' ').trim() : "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   `form-action 'self' ${contactOrigin}`.trim(),

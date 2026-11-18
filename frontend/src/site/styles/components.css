@@ -77,8 +77,12 @@
 /* Video poster: loads YouTube only on press */
 .video__frame { position: relative; background: #061c2b; overflow: hidden; }
 .video__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.video__poster { position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
-.video__poster img { width: 100%; height: 100%; object-fit: cover; }
+.video__poster {
+  position: absolute; inset: 0; width: 100%; padding: var(--s-6); border: 0; background: var(--navy-deep); color: var(--on-navy);
+  cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; gap: var(--s-2);
+}
+.video__label { font-family: var(--font-ui); font-size: var(--fs-14); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal-light); }
+.video__title { font-family: var(--font-display); font-size: clamp(var(--fs-22), 2.6vw, var(--fs-28)); line-height: var(--lh-heading); max-width: 22ch; text-wrap: balance; }
 .video__play {
   position: absolute; left: var(--s-4); bottom: var(--s-4); display: inline-flex; align-items: center; gap: 8px;
   min-height: 44px; padding: 8px 16px; background: var(--navy-deep); color: #fff; font-family: var(--font-ui); font-weight: 600;
@@ -112,6 +116,17 @@
 .table th, .table td { text-align: left; vertical-align: top; padding: 14px 16px; border-bottom: 1px solid var(--rule); }
 .table thead th { font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-14); color: var(--ink-soft); background: var(--paper); }
 .table tbody th { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-18); color: var(--navy); width: 18%; border-right: 1px solid var(--rule); }
+/* Phones: the table reads as stacked rows (stage heading, then task and outcome), no sideways scroll */
+@media (max-width: 639.98px) {
+  .table { min-width: 0; }
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table, .table tbody, .table tr, .table th, .table td { display: block; width: auto; }
+  .table tbody th { border-right: 0; background: var(--surface); padding-top: 18px; }
+  .table td { border-bottom: 0; padding-top: 4px; padding-bottom: 4px; }
+  .table td:last-child { padding-bottom: 14px; }
+  .table td[data-label]::before { content: attr(data-label); display: block; font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-14); color: var(--ink-soft); }
+  .table tr { border-bottom: 1px solid var(--rule); }
+}
 
 /* Timeline: an ordered list because it is a sequence */
 .timeline { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-8); }

@@ -48,6 +48,8 @@ export function loadLayout() {
       published_at: snap.published_at || null,
       site_url: (process.env.SITE_URL || 'https://crtdh.iitkgp.ac.in').replace(/\/$/, ''),
       og_image: firstHeroImage(snap),
+      // The footer links to /contact#privacy only when the full notice is published.
+      privacy_notice: Boolean(parsePrivacyNotice(readPrivacyNotice())?.paragraphs?.length),
     },
   }
 }
