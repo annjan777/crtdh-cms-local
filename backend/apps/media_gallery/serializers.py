@@ -6,7 +6,7 @@ from .models import GalleryImage, MediaCoverageLink, MediaEvent, MediaEventImage
 class MediaEventImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaEventImage
-        fields = ["id", "event", "image", "caption", "order"]
+        fields = ["id", "event", "image", "image_alt", "caption", "order", "is_published", "version"]
 
 
 class MediaEventSerializer(serializers.ModelSerializer):
@@ -14,16 +14,16 @@ class MediaEventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MediaEvent
-        fields = ["id", "title", "slug", "description", "event_date", "category", "order", "images"]
+        fields = ["id", "title", "slug", "description", "event_date", "category", "order", "images", "is_published", "version"]
 
 
 class MediaCoverageLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = MediaCoverageLink
-        fields = ["id", "title", "url", "order"]
+        fields = ["id", "title", "url", "order", "is_published", "version"]
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = GalleryImage
-        fields = ["id", "image", "caption", "order"]
+        fields = ["id", "image", "image_alt", "caption", "order", "is_published", "version"]

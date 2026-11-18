@@ -1,5 +1,6 @@
 import bleach
 from django.db import models
+from apps.common.versioning import VersionedModel
 
 ALLOWED_TAGS = [
     "p", "br", "b", "strong", "i", "em", "u", "a", "ul", "ol", "li",
@@ -14,11 +15,12 @@ ALLOWED_ATTRS = {
 }
 
 
-class Innovation(models.Model):
+class Innovation(VersionedModel):
     title = models.CharField(max_length=255)
     body = models.TextField(blank=True)
     video_url = models.URLField(blank=True, null=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -37,11 +39,13 @@ class Innovation(models.Model):
         return self.title
 
 
-class InnovationImage(models.Model):
+class InnovationImage(VersionedModel):
     innovation = models.ForeignKey(Innovation, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="innovation_images/")
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]

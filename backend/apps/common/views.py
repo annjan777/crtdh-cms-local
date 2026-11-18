@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
 
+from apps.publishing.drf import CMSResourceMixin
+
 from .mixins import ReorderMixin
 from .models import Document, ImageGridBlock, ImageGridItem, VideoBlock
 from .pagination import NonCollidingPagePagination
-from .permissions import IsAdminOrReadOnly
 from .serializers import (
     DocumentSerializer,
     ImageGridBlockSerializer,
@@ -12,36 +13,32 @@ from .serializers import (
 )
 
 
-class ImageGridBlockViewSet(ModelViewSet):
+class ImageGridBlockViewSet(CMSResourceMixin, ModelViewSet):
     """No `reorder` action: ImageGridBlock has no `order` field in the contract
     (page/section_title/anchor_slug/items only) — its items are ordered instead."""
 
     queryset = ImageGridBlock.objects.prefetch_related("items").all()
     serializer_class = ImageGridBlockSerializer
-    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["page"]
     # `page` here is a model field (which site page this block belongs to),
     # not a pagination cursor — see NonCollidingPagePagination's docstring.
     pagination_class = NonCollidingPagePagination
 
 
-class ImageGridItemViewSet(ReorderMixin, ModelViewSet):
+class ImageGridItemViewSet(CMSResourceMixin, ReorderMixin, ModelViewSet):
     queryset = ImageGridItem.objects.all()
     serializer_class = ImageGridItemSerializer
-    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["block"]
 
 
-class VideoBlockViewSet(ReorderMixin, ModelViewSet):
+class VideoBlockViewSet(CMSResourceMixin, ReorderMixin, ModelViewSet):
     queryset = VideoBlock.objects.all()
     serializer_class = VideoBlockSerializer
-    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["page"]
     pagination_class = NonCollidingPagePagination
 
 
-class DocumentViewSet(ReorderMixin, ModelViewSet):
+class DocumentViewSet(CMSResourceMixin, ReorderMixin, ModelViewSet):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["category"]

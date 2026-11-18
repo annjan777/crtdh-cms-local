@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crtdh.iitkgp.ac.in/schemas/snapshot-v1.json",
+  "title": "CRTDH published snapshot (contract \u00a71)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "published_at",
+    "published_by",
+    "singletons",
+    "collections",
+    "registry",
+    "media"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "snapshot_id": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ-[0-9a-f]{6}$"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "singletons": {
+      "type": "object",
+      "required": [
+        "site-settings",
+        "about-page",
+        "home-page"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "site-settings": {
+          "type": "object",
+          "required": [
+            "id"
+          ]
+        },
+        "about-page": {
+          "type": "object",
+          "required": [
+            "id"
+          ]
+        },
+        "home-page": {
+          "type": "object",
+          "required": [
+            "id"
+          ]
+        }
+      }
+    },
+    "collections": {
+      "type": "object",
+      "required": [
+        "nav-items",
+        "news-items",
+        "focus-areas",
+        "objective-rows",
+        "timeline-entries",
+        "hero-slides",
+        "project-slides",
+        "team-categories",
+        "team-members",
+        "equipment",
+        "services",
+        "innovations",
+        "innovation-images",
+        "products",
+        "product-images",
+        "product-partners",
+        "enterprises",
+        "media-events",
+        "media-event-images",
+        "media-coverage-links",
+        "gallery-images",
+        "image-grid-blocks",
+        "image-grid-items",
+        "video-blocks",
+        "documents"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "nav-items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "news-items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "focus-areas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "objective-rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "timeline-entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "hero-slides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "project-slides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "team-categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "team-members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "equipment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "innovations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "innovation-images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "product-images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "product-partners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "enterprises": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "media-events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "media-event-images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "media-coverage-links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "gallery-images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "image-grid-blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "image-grid-items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "video-blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "required": [
+        "pages"
+      ],
+      "properties": {
+        "pages": {
+          "type": "array",
+          "minItems": 12,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "path",
+              "title",
+              "sections"
+            ]
+          }
+        }
+      }
+    },
+    "media": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^/_media/[0-9a-f]{16}\\.[a-z0-9]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "source",
+          "width",
+          "height",
+          "variants"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "variants": {
+            "type": "object",
+            "required": [
+              "avif",
+              "webp"
+            ],
+            "properties": {
+              "avif": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "url",
+                    "width"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "pattern": "^/_media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
+                    },
+                    "width": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "webp": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "url",
+                    "width"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "pattern": "^/_media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
+                    },
+                    "width": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "is_published": {
+          "const": true
+        }
+      }
+    }
+  }
+}

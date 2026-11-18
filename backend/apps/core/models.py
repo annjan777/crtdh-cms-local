@@ -1,7 +1,8 @@
 from django.db import models
+from apps.common.versioning import VersionedModel
 
 
-class SiteSettings(models.Model):
+class SiteSettings(VersionedModel):
     """Singleton row (pk is always forced to 1). Use SiteSettings.load() to fetch/create it."""
 
     address = models.TextField(blank=True)
@@ -17,9 +18,12 @@ class SiteSettings(models.Model):
     # Header partner marks — IIT Kharagpur crest (left) and DSIR emblem
     # (right), flanking the nav bar on every page of the original site.
     logo_left = models.ImageField(upload_to="brand/", blank=True, null=True)
+    logo_left_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     logo_right = models.ImageField(upload_to="brand/", blank=True, null=True)
+    logo_right_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     # CRTDH's own mark, shown next to the "CRTDH" wordmark in the header/footer.
     site_logo = models.ImageField(upload_to="brand/", blank=True, null=True)
+    site_logo_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
 
     class Meta:
         verbose_name = "Site settings"
@@ -42,11 +46,12 @@ class SiteSettings(models.Model):
         return "Site settings"
 
 
-class NavItem(models.Model):
+class NavItem(VersionedModel):
     label = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
     order = models.IntegerField(default=0)
     in_more = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -55,10 +60,11 @@ class NavItem(models.Model):
         return self.label
 
 
-class NewsItem(models.Model):
+class NewsItem(VersionedModel):
     text = models.CharField(max_length=500)
     link_url = models.CharField(max_length=500, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -67,10 +73,11 @@ class NewsItem(models.Model):
         return self.text[:60]
 
 
-class FocusArea(models.Model):
+class FocusArea(VersionedModel):
     title = models.CharField(max_length=255)
     color = models.CharField(max_length=32, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -79,7 +86,7 @@ class FocusArea(models.Model):
         return self.title
 
 
-class ObjectiveRow(models.Model):
+class ObjectiveRow(VersionedModel):
     # Groups rows under a shared row-header in the Objectives table (e.g.
     # "Ideation", "Capacity-building", "Key risks mitigation") — several
     # rows share one category, matching the rowspan grouping on the
@@ -88,6 +95,7 @@ class ObjectiveRow(models.Model):
     task = models.CharField(max_length=500)
     outcome = models.CharField(max_length=500, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -96,11 +104,13 @@ class ObjectiveRow(models.Model):
         return self.task[:60]
 
 
-class TimelineEntry(models.Model):
+class TimelineEntry(VersionedModel):
     year = models.CharField(max_length=20)
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="timeline/", blank=True, null=True)
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -109,7 +119,7 @@ class TimelineEntry(models.Model):
         return f"{self.year} - {self.title}"
 
 
-class AboutPage(models.Model):
+class AboutPage(VersionedModel):
     """Singleton row (pk always 1, same pattern as SiteSettings) holding the
     long-form prose on the About page — the sections that aren't structured
     lists (FocusArea/ObjectiveRow/TimelineEntry already cover those)."""
@@ -119,7 +129,9 @@ class AboutPage(models.Model):
     focus_intro = models.TextField(blank=True, help_text="Short tagline(s) shown above the Focus Area color blocks, one per line.")
     ecosystem_heading = models.CharField(max_length=255, blank=True)
     ecosystem_image = models.ImageField(upload_to="about/", blank=True, null=True)
+    ecosystem_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     pi_desk_image = models.ImageField(upload_to="about/", blank=True, null=True)
+    pi_desk_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     pi_desk_document = models.FileField(upload_to="about/", blank=True, null=True)
     dsir_about = models.TextField(blank=True)
     iitkgp_about = models.TextField(blank=True)
@@ -144,7 +156,7 @@ class AboutPage(models.Model):
         return "About page"
 
 
-class HomePage(models.Model):
+class HomePage(VersionedModel):
     """Singleton row (pk always 1) holding the homepage's long-form
     sections that sit below the hero/stats/highlights — Objective,
     Enterprises Engagement, Women Empowerment, Location & Facility, and the
@@ -156,13 +168,18 @@ class HomePage(models.Model):
 
     enterprises_text = models.TextField(blank=True)
     enterprises_image_1 = models.ImageField(upload_to="home/", blank=True, null=True)
+    enterprises_image_1_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     enterprises_image_2 = models.ImageField(upload_to="home/", blank=True, null=True)
+    enterprises_image_2_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     msme_map_image = models.ImageField(upload_to="home/", blank=True, null=True)
+    msme_map_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     msme_caption = models.CharField(max_length=255, blank=True, default="MSME cluster supported by CRTDH, IIT KGP")
 
     women_text_1 = models.TextField(blank=True)
     women_image_1 = models.ImageField(upload_to="home/", blank=True, null=True)
+    women_image_1_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     women_image_2 = models.ImageField(upload_to="home/", blank=True, null=True)
+    women_image_2_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     women_text_2 = models.TextField(blank=True)
 
     location_address = models.CharField(max_length=255, blank=True, default="Second Floor, Diamond Jubilee Building, IIT Kharagpur")
@@ -170,17 +187,21 @@ class HomePage(models.Model):
 
     facility_card_1_title = models.CharField(max_length=255, blank=True, default="CRTDH Conference Room & Office")
     facility_card_1_image = models.ImageField(upload_to="home/facility/", blank=True, null=True)
+    facility_card_1_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     facility_card_1_link = models.CharField(max_length=255, blank=True)
     facility_card_2_title = models.CharField(max_length=255, blank=True, default="Pilot Plant and Manufacturing Units")
     facility_card_2_image = models.ImageField(upload_to="home/facility/", blank=True, null=True)
+    facility_card_2_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     facility_card_2_link = models.CharField(max_length=255, blank=True, default="/facilities#manufacturing-plants")
     facility_card_3_title = models.CharField(max_length=255, blank=True, default="CRTDH Sterile Room")
     facility_card_3_image = models.ImageField(upload_to="home/facility/", blank=True, null=True)
+    facility_card_3_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     facility_card_3_link = models.CharField(max_length=255, blank=True)
 
     chintan_shivir_youtube_id = models.CharField(max_length=32, blank=True)
     viksit_bharat_youtube_id = models.CharField(max_length=32, blank=True)
     office_image = models.ImageField(upload_to="home/", blank=True, null=True)
+    office_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
 
     membership_heading = models.CharField(max_length=255, blank=True, default="Annual Membership for MSME / Startup")
     membership_pdf = models.FileField(upload_to="home/", blank=True, null=True)

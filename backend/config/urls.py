@@ -10,6 +10,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.accounts.views import cms_login
+from apps.publishing.urls import agent_patterns, cms_patterns
 from apps.carousel.views import HeroSlideViewSet, ProjectSlideViewSet
 from apps.common.media_views import MediaFileView
 from apps.common.views import (
@@ -100,6 +101,8 @@ api_v1_patterns = [
     path("contact/", ContactCreateView.as_view(), name="contact-create"),
     path("auth/", include("apps.accounts.urls")),
     path("media/<path:path>", MediaFileView.as_view(), name="media-file"),
+    path("cms/", include(cms_patterns)),
+    path("agent/", include(agent_patterns)),
 ]
 
 urlpatterns = [

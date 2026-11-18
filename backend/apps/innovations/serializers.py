@@ -6,7 +6,7 @@ from .models import Innovation, InnovationImage
 class InnovationImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = InnovationImage
-        fields = ["id", "innovation", "image", "caption", "order"]
+        fields = ["id", "innovation", "image", "image_alt", "caption", "order", "is_published", "version"]
 
 
 class InnovationSerializer(serializers.ModelSerializer):
@@ -14,4 +14,4 @@ class InnovationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Innovation
-        fields = ["id", "title", "body", "video_url", "order", "images"]
+        fields = ["id", "title", "body", "video_url", "order", "images", "is_published", "version"]

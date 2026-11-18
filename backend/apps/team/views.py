@@ -1,20 +1,18 @@
 from rest_framework.viewsets import ModelViewSet
 
 from apps.common.mixins import ReorderMixin
-from apps.common.permissions import IsAdminOrReadOnly
+from apps.publishing.drf import CMSResourceMixin
 
 from .models import TeamCategory, TeamMember
 from .serializers import TeamCategorySerializer, TeamMemberSerializer
 
 
-class TeamCategoryViewSet(ReorderMixin, ModelViewSet):
+class TeamCategoryViewSet(CMSResourceMixin, ReorderMixin, ModelViewSet):
     queryset = TeamCategory.objects.all()
     serializer_class = TeamCategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
 
 
-class TeamMemberViewSet(ReorderMixin, ModelViewSet):
+class TeamMemberViewSet(CMSResourceMixin, ReorderMixin, ModelViewSet):
     queryset = TeamMember.objects.select_related("category").all()
     serializer_class = TeamMemberSerializer
-    permission_classes = [IsAdminOrReadOnly]
     filterset_fields = ["category"]
