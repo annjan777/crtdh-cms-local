@@ -46,4 +46,7 @@ export default defineConfig({
     proxy: process.env.VITE_USE_MOCK === '1' ? undefined : { '/api': 'http://localhost:8300' },
   },
   preview: { port: 3200, strictPort: true },
+  oxc: { jsx: { runtime: 'automatic' } },
+  esbuild: { jsx: 'automatic' }, // vitest's bundled vite
+  test: { environment: 'jsdom', include: ['src/**/*.test.{js,jsx}'] },
 });
