@@ -1,6 +1,7 @@
 import mimetypes
 
 from django.conf import settings
+from django.core.exceptions import SuspiciousFileOperation
 from django.http import FileResponse
 from django.utils._os import safe_join
 from rest_framework.views import APIView
@@ -21,7 +22,7 @@ class MediaFileView(APIView):
         try:
             full = safe_join(settings.MEDIA_ROOT, path)
             fh = open(full, "rb")
-        except (ValueError, OSError):
+        except (ValueError, OSError, SuspiciousFileOperation):
             raise CMSError("CMS_NOT_FOUND", "File not found.", fix="Re-upload the file.")
         ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"
         inline = ctype in INLINE_TYPES
