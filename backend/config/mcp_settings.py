@@ -65,6 +65,8 @@ MCP_FETCH_TIMEOUT_SECONDS = _env.float("MCP_FETCH_TIMEOUT_SECONDS", default=10.0
 # MCP protocol revisions this server accepts (pinned; see docs/mcp.md). Requests that
 # declare any other MCP-Protocol-Version are refused before they reach the SDK.
 MCP_PROTOCOL_VERSIONS = ["2025-06-18", "2025-11-25"]
+# Extra Host header values /mcp accepts besides MCP_PUBLIC_URL's (e.g. "127.0.0.1:8400" for local tests).
+MCP_EXTRA_ALLOWED_HOSTS = _env.list("MCP_EXTRA_ALLOWED_HOSTS", default=[])
 
 OAUTH2_PROVIDER = {
     "SCOPES": {MCP_OAUTH_SCOPE: "Edit website content as unpublished drafts"},

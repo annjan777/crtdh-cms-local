@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field as dc_field
 from typing import Any
 
 # code -> (default fix, retryable)
@@ -35,7 +36,7 @@ class CmsError(Exception):
     side_effects: str = "none"
     field: str | None = None
     current_version: int | None = None
-    extra: dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = dc_field(default_factory=dict)
 
     def __post_init__(self):
         if self.code not in CODES:
