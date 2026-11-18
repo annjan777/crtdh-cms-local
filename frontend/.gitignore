@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+build
+.react-router
+snapshot.json
+.taste-skill
+test-results
+playwright-report
