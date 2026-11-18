@@ -197,3 +197,23 @@ def test_media_requires_cms_session(api_as, media_root):
     r = api_as("editor").get("/api/v1/media/a/x.jpg")
     assert r.status_code == 200 and r["X-Content-Type-Options"] == "nosniff"
     assert api_as("editor").get("/api/v1/media/../settings.py").status_code == 404
+
+
+@pytest.mark.parametrize("bad", [
+    b"%PDF-1.4\n1 0 obj << /OpenAction << /S /J#61vaScript /J#53 (app.alert(1)) >> >> endobj\n%%EOF",
+    b"%PDF-1.7\n1 0 obj << /Type /ObjStm /Filter /FlateDecode /Length 99 >>\nstream\n"
+    + zlib.compress(b"<< /OpenAction << /S /JavaScript /JS (app.alert(1)) >> >>")
+    + b"\nendstream\nendobj\n%%EOF",
+    b"%PDF-1.4\n1 0 obj << /Names << /EmbeddedFiles 2 0 R >> >> endobj\n%%EOF".replace(b"EmbeddedFiles", b"Embedded#46ile"),
+    b"%PDF-1.4\ntrailer << /Encrypt 5 0 R >>\n%%EOF",
+])
+def test_pdf_hidden_active_content_rejected(bad):
+    with pytest.raises(CMSError):
+        process_upload(f(bad, "a.pdf", "application/pdf"), kind="document")
+
+
+def test_pdf_with_harmless_compressed_stream_accepted():
+
+    ok = (b"%PDF-1.4\n1 0 obj << /Length 20 /Filter /FlateDecode >>\nstream\n" + zlib.compress(b"BT /F1 12 Tf (Hi) Tj ET")
+          + b"\nendstream\nendobj\n%%EOF")
+    assert process_upload(f(ok, "a.pdf", "application/pdf"), kind="document").mime == "application/pdf"

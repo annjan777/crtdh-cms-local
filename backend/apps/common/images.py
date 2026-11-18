@@ -46,7 +46,11 @@ POLYGLOT_MARKERS = re.compile(
 )
 ZIP_EOCD = b"PK\x05\x06"  # end of a ZIP central directory (GIFAR/JAR-style polyglots)
 MP4_BRANDS = {b"isom", b"iso2", b"iso4", b"iso5", b"iso6", b"mp41", b"mp42", b"avc1", b"M4V ", b"dash"}
-PDF_FORBIDDEN = re.compile(rb"/(JavaScript|JS|Launch|EmbeddedFile|RichMedia|XFA|AA)\b")
+PDF_FORBIDDEN = re.compile(rb"/(JavaScript|JS|Launch|EmbeddedFile|RichMedia|XFA|AA|SubmitForm|ImportData|GoToE)\b")
+PDF_NAME = re.compile(rb"/(?:[^\s/<>\[\]()%{}#]|#[0-9A-Fa-f]{2})+")
+PDF_HEX = re.compile(rb"#([0-9A-Fa-f]{2})")
+PDF_STREAM = re.compile(rb"stream\r?\n")
+PDF_INFLATE_BUDGET = 64 * 1024 * 1024  # total decompressed bytes inspected per document
 
 Image.MAX_IMAGE_PIXELS = settings.IMAGE_MAX_PIXELS
 
@@ -151,10 +155,42 @@ def _process_image(data, min_width):
     return path, clean.size, mime
 
 
+def _pdf_normalise(chunk):
+    """Decode #xx escapes inside PDF names (/J#61vaScript -> /JavaScript)."""
+    return PDF_NAME.sub(lambda m: PDF_HEX.sub(lambda h: bytes([int(h.group(1), 16)]), m.group(0)), chunk)
+
+
+def _pdf_is_active(data):
+    """True if the PDF has (or may hide) scripts, actions or embedded files. Looks at the raw bytes
+    and inside every Flate-compressed stream (object streams can hold the catalog and actions);
+    encrypted PDFs and documents that inflate past the budget cannot be inspected and count as active."""
+    if PDF_FORBIDDEN.search(_pdf_normalise(data)) or POLYGLOT_MARKERS.search(data):
+        return True
+    if re.search(rb"/Encrypt\b", _pdf_normalise(data)):
+        return True
+    import zlib
+
+    budget = PDF_INFLATE_BUDGET
+    for m in PDF_STREAM.finditer(data):
+        end = data.find(b"endstream", m.end())
+        raw = data[m.end(): end if end != -1 else len(data)]
+        d = zlib.decompressobj()
+        try:
+            out = d.decompress(raw, budget + 1)
+        except zlib.error:
+            continue  # not Flate (images, fonts with other filters): nothing to inspect
+        if len(out) > budget or d.unconsumed_tail:
+            return True
+        budget -= len(out)
+        if PDF_FORBIDDEN.search(_pdf_normalise(out)) or POLYGLOT_MARKERS.search(out):
+            return True
+    return False
+
+
 def _process_document(data):
     if not data.startswith(b"%PDF-"):
         _reject("That file is not a PDF.", fix="Upload a PDF document.")
-    if PDF_FORBIDDEN.search(data) or POLYGLOT_MARKERS.search(data):
+    if _pdf_is_active(data):
         _reject("The PDF contains scripts, actions or embedded files and was rejected.",
                 fix="Print it to a new PDF (File > Print > Save as PDF) and upload that.")
     path = _tmp(".pdf")
