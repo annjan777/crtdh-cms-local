@@ -94,7 +94,7 @@ def test_media_is_content_hashed_with_variants(content, media_root):
     assert validate(snap) == []
 
 
-def test_missing_media_file_becomes_empty_with_warning(content, media_root):
+def test_missing_media_file_becomes_null_with_warning(content, media_root):
     snap = build_snapshot(now=NOW)
     assert any("missing media file" in w for w in snap.get("warnings", []))
     assert not any(isinstance(v, str) and v.startswith("/media/") and v not in snap["media"]
@@ -182,7 +182,7 @@ def test_first_snapshot_reproduces_todays_content(settings):
             for key, want_value in want.items():
                 got_value = norm(project(got[key], want_value), snap["media"])
                 want_value = norm(want_value, {})
-                if got_value == "" and isinstance(want_value, str) and want_value.removeprefix("media:") in missing_sources:
+                if got_value is None and isinstance(want_value, str) and want_value.removeprefix("media:") in missing_sources:
                     continue  # file is missing on disk today too; reported in warnings
                 assert got_value == want_value, (name, got["id"], key)
     for name, want in stub["singletons"].items():

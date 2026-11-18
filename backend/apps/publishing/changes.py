@@ -181,6 +181,9 @@ def _apply_row(obj, row, media_map, only=None):
         if isinstance(field, models.ForeignKey):
             setattr(obj, field.attname, value)
         elif isinstance(field, models.FileField):
+            current = getattr(obj, name)
+            if not value and current and not current.storage.exists(current.name):
+                continue  # missing on disk: published as "no file" already; keep the reference
             setattr(obj, name, (media_map.get(value, {}) or {}).get("source", "") if value else "")
         else:
             setattr(obj, name, field.to_python(value) if value is not None else None)

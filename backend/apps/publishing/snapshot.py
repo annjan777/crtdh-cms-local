@@ -100,7 +100,7 @@ class _MediaRewriter:
         path = Path(settings.MEDIA_ROOT) / source
         if not path.is_file():
             self.warnings.append(f"missing media file {source}")
-            return ""
+            return None  # same as an empty file field, so the public page simply omits the image
         sha, w, h = _file_info(path)
         key, entry = media_entry(source, sha, w, h)
         self.media[key] = entry
