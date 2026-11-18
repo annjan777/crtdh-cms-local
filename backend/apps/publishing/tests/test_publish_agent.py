@@ -304,3 +304,36 @@ def test_agent_report_after_a_racing_cancel_is_recorded(api_as, content, publish
     Publish.objects.filter(pk=q.pk).update(status=Publish.CANCELLED)
     assert agent_status(q, "failed", step="upload", message="disk full").status_code == 200
     assert q.status == Publish.FAILED
+
+
+def test_tarball_path_is_per_publish(content, publish_env, publisher):
+    first = built(publisher)
+    agent_status(first, "failed", step="upload", message="network")
+    second = built(publisher)  # same content -> same snapshot id
+    assert second.snapshot_id == first.snapshot_id
+    assert first.tarball_path != second.tarball_path and str(second.id) in second.tarball_path
+    assert second.tarball_path.endswith(f"crtdh-site-{second.snapshot.snapshot_id}.tar.gz")
+
+
+def test_reorder_from_a_stale_read_is_409(content, editor, monkeypatch):
+    from django.db.models import F
+
+    from apps.core.models import NewsItem
+    from apps.publishing import content as cms
+    from apps.publishing.audit import WriteContext
+    from apps.publishing.errors import CMSError
+    ids = list(NewsItem.objects.order_by("order", "id").values_list("id", flat=True))
+    real = NewsItem.objects.filter
+
+    class Racing:
+        def __init__(self, qs):
+            self.qs = qs
+
+        def select_for_update(self):
+            rows = list(self.qs.select_for_update())
+            NewsItem.objects.filter(pk=ids[0]).update(version=F("version") + 1)  # someone else saves meanwhile
+            return rows
+
+    with pytest.raises(CMSError) as exc:
+        cms.reorder("news-items", list(reversed(ids)), ctx=WriteContext(user=editor), queryset=Racing(real()))
+    assert exc.value.code == "CMS_STALE_VERSION"

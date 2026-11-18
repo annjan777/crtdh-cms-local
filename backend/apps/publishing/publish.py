@@ -169,7 +169,7 @@ def build(p):
     uploaded = (Snapshot.objects.filter(publishes__status=Publish.LIVE).exclude(pk=snap.pk)
                 .order_by("-published_at", "-id").first())
     prev_files = set(_media_files(uploaded.data)) if uploaded else set()
-    tar_path = publish_root() / "tarballs" / f"crtdh-site-{data['snapshot_id']}.tar.gz"
+    tar_path = publish_root() / "tarballs" / str(p.id) / f"crtdh-site-{data['snapshot_id']}.tar.gz"
     sha = pack_tarball(tar_path, site_dir=out_dir, media_dir=media_store(), media_all=files,
                        media_new=[f for f in files if f not in prev_files], snapshot_id=data["snapshot_id"],
                        publish_id=str(p.id), mtime=_epoch(data["published_at"]))

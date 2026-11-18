@@ -236,7 +236,7 @@ def reorder(resource, ids, *, ctx, queryset=None, field="order"):
     ids = [_pk_of(i, resource) for i in ids]
     model = get_model(resource)
     queryset = queryset if queryset is not None else model.objects.all()
-    with transaction.atomic():
+    with stale_as_409(resource), transaction.atomic():
         rows = {o.pk: o for o in queryset.select_for_update()}
         missing = [pk for pk in ids if pk not in rows]
         if missing:
@@ -247,7 +247,8 @@ def reorder(resource, ids, *, ctx, queryset=None, field="order"):
             if old == position:
                 continue
             before = audit.row_values(obj)
-            model.objects.filter(pk=pk).update(**{field: position, "version": F("version") + 1})
+            if not model.objects.filter(pk=pk, version=obj.version).update(**{field: position, "version": F("version") + 1}):
+                raise StaleWrite(model, pk, obj.version)
             obj.refresh_from_db()
             audit.record(ctx, "reorder", resource, pk, before, audit.row_values(obj), registry.item_id(resource, pk, obj))
 
