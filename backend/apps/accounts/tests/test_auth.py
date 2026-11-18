@@ -15,11 +15,13 @@ pytestmark = [pytest.mark.django_db, pytest.mark.security]
 
 def test_first_sign_in_enrols_mfa_then_signs_in(browser, editor):
     r = browser.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
-    assert r.json() == {"mfa_required": True, "mfa_enrolled": False}
+    assert r.json() == {"mfa_setup_required": True}
     assert browser.get("/api/v1/auth/me/").status_code == 401  # password alone is not a session
     r = browser.post("/api/v1/auth/mfa/enrol/")
     body = r.json()
     assert body["otpauth_uri"].startswith("otpauth://totp/") and body["qr_data_uri"].startswith("data:image/svg+xml;base64,")
+    assert body["qr_svg"].lstrip().startswith("<?xml") or "<svg" in body["qr_svg"][:200]
+    assert "<script" not in body["qr_svg"]
     r = browser.post("/api/v1/auth/mfa/enrol/confirm/", {"code": code_for(editor)})
     assert r.status_code == 200, r.content
     data = r.json()
@@ -81,7 +83,8 @@ def test_user_lockout_with_backoff(browser, editor):
     for _ in range(5):
         browser.post("/api/v1/auth/login/", {"username": editor.username, "password": "nope-nope-nope"})
     r = browser.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
-    assert_contract_error(r, "CMS_RATE_LIMITED", status=429)
+    assert r.status_code == 429 and r.json()["code"] == "CMS_RATE_LIMITED"
+    assert r.json()["locked_until"]  # contract addendum A6
     assert 0 < int(r.headers["Retry-After"]) <= 61
     # a different IP is still locked out for this username
     other = Browser(ip="198.51.100.99")
@@ -229,3 +232,10 @@ def test_process_upload_accepts_bytes():
     from apps.common.images import process_upload
     from tests.support.images import make_image_bytes
     assert process_upload(make_image_bytes(100, 80)).width == 100
+
+
+
+def test_login_for_enrolled_user_says_mfa_required(browser, editor):
+    enrol(editor)
+    r = browser.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
+    assert r.json() == {"mfa_required": True}

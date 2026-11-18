@@ -32,7 +32,8 @@ def is_enrolled(user):
 
 
 def start_enrolment(user):
-    """New unconfirmed secret; returns {secret, otpauth_uri, qr_data_uri}."""
+    """New unconfirmed secret; returns {secret, otpauth_uri, qr_svg, qr_data_uri} (contract A6;
+    qr_data_uri is the same SVG for an <img>, which is the safer way to render it)."""
     sec = security_for(user)
     sec.totp_secret = pyotp.random_base32(32)
     sec.totp_confirmed_at = None
@@ -42,8 +43,9 @@ def start_enrolment(user):
     img = qrcode.make(uri, image_factory=qrcode.image.svg.SvgPathImage)
     buf = io.BytesIO()
     img.save(buf)
-    data_uri = "data:image/svg+xml;base64," + base64.b64encode(buf.getvalue()).decode()
-    return {"secret": sec.totp_secret, "otpauth_uri": uri, "qr_data_uri": data_uri}
+    svg = buf.getvalue()
+    data_uri = "data:image/svg+xml;base64," + base64.b64encode(svg).decode()
+    return {"secret": sec.totp_secret, "otpauth_uri": uri, "qr_svg": svg.decode(), "qr_data_uri": data_uri}
 
 
 def _check_totp(sec, code):

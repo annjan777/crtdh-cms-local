@@ -59,3 +59,10 @@ def register_failure(keys):
 
 def clear(username):
     AuthThrottle.objects.filter(key__in=keys_for(username, None)).delete()
+
+
+def locked_until(keys):
+    """Latest lock expiry across keys (None if none is locked)."""
+    now = timezone.now()
+    t = AuthThrottle.objects.filter(key__in=keys, locked_until__gt=now).order_by("-locked_until").first()
+    return t.locked_until if t else None

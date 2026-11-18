@@ -72,10 +72,12 @@ def error_body(code, message, *, fix=None, retryable=False, side_effects="none",
 class CMSError(exceptions.APIException):
     """Raise anywhere in a DRF view (or MCP tool): rendered as the contract error body."""
 
-    def __init__(self, code, message, *, status_code=None, headers=None, **kw):
+    def __init__(self, code, message, *, status_code=None, headers=None, extra=None, **kw):
+        """`extra`: contract-addendum keys for specific codes (e.g. locked_until, edited_by, publish_id)."""
         self.code = code
         self.status_code = status_code or STATUS.get(code, 400)
         self.body = error_body(code, message, **kw)
+        self.body.update(extra or {})
         self.headers = headers or {}
         super().__init__(detail=message, code=code)
 

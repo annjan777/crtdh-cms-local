@@ -53,12 +53,15 @@ def _str(request, key, max_len):
 
 
 def _check_lock(request, username):
-    wait = lockout.retry_after(lockout.keys_for(username, client_ip(request)))
+    keys = lockout.keys_for(username, client_ip(request))
+    wait = lockout.retry_after(keys)
     if wait:
+        until = lockout.locked_until(keys)
         raise CMSError(
             "CMS_RATE_LIMITED", f"Too many failed attempts. Try again in {wait} seconds.",
             fix="Wait, then sign in again. An admin can reset your MFA if you lost your device.",
             retryable=True, headers={"Retry-After": str(wait)},
+            extra={"locked_until": until.isoformat() if until else None},
         )
 
 
@@ -114,7 +117,10 @@ class LoginView(_AuthView):
             _fail(request, username, "Wrong username or password.")
         request.session.cycle_key()
         request.session[PENDING] = {"uid": user.pk, "at": time.time(), "hash": user.get_session_auth_hash()}
-        return Response({"mfa_required": True, "mfa_enrolled": mfa.is_enrolled(user)})
+        # Contract addendum A6: enrolled -> {mfa_required}, not yet enrolled -> {mfa_setup_required}.
+        if mfa.is_enrolled(user):
+            return Response({"mfa_required": True})
+        return Response({"mfa_setup_required": True})
 
 
 class MFAView(_AuthView):
