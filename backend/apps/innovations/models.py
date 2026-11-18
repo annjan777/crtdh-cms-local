@@ -1,18 +1,6 @@
-import bleach
 from django.db import models
-from apps.common.versioning import VersionedModel
 
-ALLOWED_TAGS = [
-    "p", "br", "b", "strong", "i", "em", "u", "a", "ul", "ol", "li",
-    "h1", "h2", "h3", "h4", "blockquote", "span", "div", "img",
-]
-ALLOWED_ATTRS = {
-    "a": ["href", "title", "target", "rel"],
-    "img": ["src", "alt", "title", "width", "height"],
-    "span": ["class"],
-    "div": ["class"],
-    "*": ["style"],
-}
+from apps.common.versioning import VersionedModel
 
 
 class Innovation(VersionedModel):
@@ -26,13 +14,10 @@ class Innovation(VersionedModel):
         ordering = ["order"]
 
     def save(self, *args, **kwargs):
-        if self.body:
-            self.body = bleach.clean(
-                self.body,
-                tags=ALLOWED_TAGS,
-                attributes=ALLOWED_ATTRS,
-                strip=True,
-            )
+        # Kept for code paths without the publishing app's pre_save hook; same shared allow-list.
+        from apps.common.sanitize import clean_richtext
+
+        self.body = clean_richtext(self.body)
         super().save(*args, **kwargs)
 
     def __str__(self):
