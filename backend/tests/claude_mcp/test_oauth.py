@@ -426,3 +426,87 @@ def test_mcp_and_cms_hosts_are_allowed_hosts():
                          cwd=os.path.dirname(os.path.dirname(os.path.dirname(__file__))), check=True)
     hosts = out.stdout.strip().split(",")
     assert "mcp.example.org" in hosts and "cms.example.org" in hosts
+
+
+# ---------------------------------------------------------------- backend-security audit follow-ups
+@pytest.mark.parametrize("signal_name", ["user_sessions_revoked", "user_deactivated"])
+def test_account_signals_revoke_claude_tokens(claude_app, signal_name):
+    """Password reset/change, MFA reset and 'sign out everywhere' fire user_sessions_revoked;
+    a recovered account's Claude connector must lose access too."""
+    import types
+
+    from django.contrib.auth.models import User
+    from django.dispatch import Signal
+
+    from apps.oauth import signals as oauth_signals
+
+    try:
+        from apps.accounts import signals as real  # type: ignore
+        module = real
+    except ImportError:
+        module = types.SimpleNamespace(user_deactivated=Signal(), user_sessions_revoked=Signal())
+        assert set(oauth_signals.connect_account_signals(module)) == {"user_deactivated", "user_sessions_revoked"}
+    try:
+        user = make_user("recovered")
+        issue_token(user, claude_app)
+        bystander = make_user("bystander")
+        issue_token(bystander, claude_app)
+        getattr(module, signal_name).send(sender=User, user=user)
+        assert not AccessToken.objects.filter(user=user).exists()
+        assert AccessToken.objects.filter(user=bystander).exists()
+    finally:
+        if module is not getattr(oauth_signals, "_account_signals", None):
+            oauth_signals.connect_account_signals(oauth_signals._account_signals or types.SimpleNamespace())
+
+
+def test_consent_csp_allows_only_the_clients_redirect_origins(editor, claude_app, settings):
+    settings.CONTENT_SECURITY_POLICY = ("default-src 'none'; style-src 'self'; frame-ancestors 'none'; "
+                                        "form-action 'self'")
+    _, challenge = pkce()
+    client = signed_in(editor)
+    page = client.get("/oauth/authorize/", authorize_params(claude_app, challenge))
+    csp = page["Content-Security-Policy"]
+    assert "form-action 'self' https://claude.ai https://claude.com" in csp
+    assert csp.count("form-action") == 1 and "style-src 'self'" in csp and "frame-ancestors 'none'" in csp
+    assert "unsafe-inline" not in csp and "<style" not in page.content.decode()
+    assert "/static/oauth/consent.css" in page.content.decode()
+    # the POST response (302 to claude.ai) carries the same policy
+    resp = client.post("/oauth/authorize/", {**authorize_params(claude_app, challenge), "allow": "Authorize"})
+    assert resp.status_code == 302 and "https://claude.ai" in resp["Content-Security-Policy"]
+    # another client's origins are not added
+    other = Application.objects.create(name="Other", client_type="confidential",
+                                       authorization_grant_type="authorization-code",
+                                       redirect_uris="https://other.example.net/cb")
+    resp = client.get("/oauth/authorize/", authorize_params(other, challenge, redirect_uri="https://other.example.net/cb"))
+    assert "claude.ai" not in resp["Content-Security-Policy"]
+    assert "https://other.example.net" in resp["Content-Security-Policy"]
+    # an unknown client gets plain form-action 'self'
+    resp = client.get("/oauth/authorize/", authorize_params(claude_app, challenge, client_id="nope"))
+    assert resp["Content-Security-Policy"].endswith("form-action 'self'")
+
+
+def test_consent_stylesheet_exists():
+    from django.contrib.staticfiles import finders
+
+    assert finders.find("oauth/consent.css")
+
+
+def test_temporary_password_must_be_changed_before_connecting(editor, claude_app, monkeypatch):
+    from apps.oauth import views as oauth_views
+
+    monkeypatch.setattr(oauth_views, "must_change_password", lambda user: user.pk == editor.pk)
+    _, challenge = pkce()
+    resp = signed_in(editor).get("/oauth/authorize/", authorize_params(claude_app, challenge))
+    assert resp.status_code == 302 and resp["Location"].startswith("/cms/login?next=/oauth/authorize/")
+
+
+def test_must_change_password_reads_backend_security_flag(editor):
+    from apps.oauth.mfa import must_change_password
+
+    try:
+        from apps.accounts.models import UserSecurity  # type: ignore
+    except ImportError:
+        assert must_change_password(editor) is False  # nothing to check before backend-security merges
+        return
+    UserSecurity.objects.update_or_create(user=editor, defaults={"must_change_password": True})
+    assert must_change_password(editor) is True
