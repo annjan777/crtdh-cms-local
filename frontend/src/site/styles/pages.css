@@ -35,6 +35,15 @@
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .hero__slide { transition: none; } }
 
+/* Tablet: headline across the top, then the photographs at full width (16:9) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .hero__grid { grid-template-columns: minmax(0, 1fr); }
+  .hero__text { grid-column: 1; grid-row: 1; max-width: 34rem; padding-bottom: 0; }
+  .hero h1 { font-size: var(--fs-48); }
+  .hero__prints { grid-column: 1; grid-row: 2; margin-top: var(--s-12); }
+  .hero__print--small { margin-left: 0; width: 100%; }
+}
+
 @media (max-width: 767.98px) {
   .hero { padding-top: var(--s-6); }
   .hero__grid { grid-template-columns: minmax(0, 1fr); }
