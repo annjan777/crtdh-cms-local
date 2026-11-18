@@ -65,7 +65,8 @@ def error_body(code, message, *, fix=None, retryable=False, side_effects="none",
         "side_effects": side_effects,
         "field": field,
         "current_version": current_version,
-        "request_id": request_id,
+        # Always set (contract §4): bodies built outside a request (plain Django views, MCP) get a fresh id.
+        "request_id": request_id or new_request_id(),
     }
 
 
@@ -116,7 +117,8 @@ def exception_handler(exc, context):
     request = (context or {}).get("request")
     if isinstance(exc, CMSError):
         body = dict(exc.body)
-        body["request_id"] = body.get("request_id") or _rid(request)
+        # Prefer the id of the request being answered (matches X-Request-ID) over one minted at raise time.
+        body["request_id"] = getattr(request, "request_id", None) or body.get("request_id") or new_request_id()
         return Response(body, status=exc.status_code, headers=exc.headers)
     if isinstance(exc, Http404):
         exc = exceptions.NotFound()
