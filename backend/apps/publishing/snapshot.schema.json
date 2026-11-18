@@ -267,7 +267,7 @@
     "media": {
       "type": "object",
       "propertyNames": {
-        "pattern": "^/media/[0-9a-f]{16}\\.[a-z0-9]+$"
+        "pattern": "^/_media/[0-9a-f]{16}\\.[a-z0-9]+$"
       },
       "additionalProperties": {
         "type": "object",
@@ -312,7 +312,7 @@
                   "properties": {
                     "url": {
                       "type": "string",
-                      "pattern": "^/media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
+                      "pattern": "^/_media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
                     },
                     "width": {
                       "type": "integer"
@@ -331,7 +331,7 @@
                   "properties": {
                     "url": {
                       "type": "string",
-                      "pattern": "^/media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
+                      "pattern": "^/_media/[0-9a-f]{16}(-[0-9]+)?\\.[a-z0-9]+$"
                     },
                     "width": {
                       "type": "integer"

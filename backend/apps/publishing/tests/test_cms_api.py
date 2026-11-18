@@ -20,22 +20,46 @@ def test_pages_list_with_has_changes(api_as, baseline):
     assert pages["team"]["has_changes"] and not pages["home"]["has_changes"]
 
 
-def test_page_detail_has_values_and_versions(api_as, content):
+def test_page_detail_has_values_and_versions(api_as, content, media_root):
+    """Addendum A1: sections[i].items = [{item_id, pk, version, values, media, children}]."""
+    from apps.carousel.models import HeroSlide
+
+    from .conftest import image_file
+    image_file(media_root / "hero_slides" / "a.jpg", 1800, 1000)
+    HeroSlide.objects.filter(pk=18).update(image="hero_slides/a.jpg")
     page = api_as("editor").get("/api/v1/cms/pages/home/").json()
     hero = page["sections"][0]
     assert hero["id"] == "home.hero" and hero["fields"][0]["min_width"] == 1600
+    assert hero["fields"][0]["position_field"] == "image_position"
     ids = [i["item_id"] for i in hero["items"]]
     assert "home.hero.hero-slides:9001" in ids  # hidden rows are editable
-    item = hero["items"][0]
-    assert item["version"] == 1 and "heading" in item["values"]
+    item = next(i for i in hero["items"] if i["pk"] == 18)
+    assert item["version"] == 1 and "heading" in item["values"] and "version" not in item["values"]
+    assert item["media"]["image"] == {"width": 1800, "height": 1000, "name": "a.jpg"}
     objective = next(s for s in page["sections"] if s["id"] == "home.objective")
-    assert objective["item_id"] == "home.objective.home-page:1" and set(objective["values"]) == {"objective_text"}
+    assert len(objective["items"]) == 1
+    only = objective["items"][0]
+    assert only["item_id"] == "home.objective.home-page:1" and "objective_text" in only["values"]
     covid = api_as("editor").get("/api/v1/cms/pages/covid-19/").json()
-    grids = next(s for s in covid["sections"] if s["id"] == "covid-19.grids")
-    assert all(i["values"]["page"] == "covid-19" for i in grids["items"])
+    grids = next(s for s in covid["sections"] if s["id"] == "covid-19.photo-sections")
+    assert grids["items"] and all(i["values"]["page"] == "covid-19" for i in grids["items"])
+    photos = [c for i in grids["items"] for c in i["children"]["image-grid-items"]]
+    assert photos and all(c["item_id"].startswith("covid-19.photo-sections.image-grid-items:") for c in photos)
     site = api_as("editor").get("/api/v1/cms/pages/site/").json()
-    assert [s["id"] for s in site["sections"]][0] == "site.header"
+    assert {s["id"] for s in site["sections"]} == {"site.nav", "site.social", "site.logos"}
     assert_contract_error(api_as("editor").get("/api/v1/cms/pages/nope/"), "CMS_NOT_FOUND")
+
+
+def test_page_detail_children_per_parent(api_as, content):
+    from apps.innovations.models import InnovationImage
+    page = api_as("editor").get("/api/v1/cms/pages/innovations/").json()
+    section = next(s for s in page["sections"] if s["id"] == "innovations.list")
+    assert section["children"][0]["resource"] == "innovation-images"
+    for item in section["items"]:
+        kids = item["children"]["innovation-images"]
+        expected = list(InnovationImage.objects.filter(innovation_id=item["pk"]).order_by("order", "id")
+                        .values_list("id", flat=True))
+        assert [k["pk"] for k in kids] == expected
 
 
 def test_preview_is_snapshot_shaped_for_the_page(api_as, content):
@@ -109,13 +133,36 @@ def test_upload_link_expired_or_unknown(client, editor, content, settings):
 
 
 def test_audit_endpoint_filters_by_item(api_as, content):
+    """Addendum A8: {entries:[{item_id, at, author, channel, action, fields}]}."""
     client = api_as("editor")
     client.patch("/api/v1/hero-slides/18/", {"heading": "A", "expected_version": 1}, format="json")
     client.patch("/api/v1/hero-slides/19/", {"heading": "B", "expected_version": 1}, format="json")
     v = client.get("/api/v1/home-page/").json()["version"]
     client.patch("/api/v1/home-page/", {"women_text_1": "W", "expected_version": v}, format="json")
-    entries = client.get("/api/v1/cms/audit/", {"item_id": "home.hero.hero-slides:18"}).json()["results"]
-    assert len(entries) == 1 and entries[0]["after"]["heading"] == "A" and entries[0]["actor"] == "erin_editor"
-    assert client.get("/api/v1/cms/audit/", {"item_id": "home.women.home-page:1"}).json()["results"]
-    assert client.get("/api/v1/cms/audit/", {"item_id": "home.objective.home-page:1"}).json()["results"] == []
+    entries = client.get("/api/v1/cms/audit/", {"item_id": "home.hero.hero-slides:18"}).json()["entries"]
+    assert len(entries) == 1
+    e = entries[0]
+    assert (e["item_id"], e["author"], e["channel"], e["action"]) == ("home.hero.hero-slides:18", "erin_editor",
+                                                                      "admin", "changed")
+    assert [f["name"] for f in e["fields"]] == ["heading"] and e["fields"][0]["after"] == "A"
+    rural = client.get("/api/v1/cms/audit/", {"item_id": "home.rural.home-page:1"}).json()["entries"]
+    assert [f["name"] for f in rural[0]["fields"]] == ["women_text_1"]
+    assert client.get("/api/v1/cms/audit/", {"item_id": "home.objective.home-page:1"}).json()["entries"] == []
     assert AuditEntry.objects.count() == 3
+
+
+def test_changes_carry_review_request(api_as, content, publisher, mail_outbox, editor):
+    client = api_as(editor)
+    assert client.get("/api/v1/cms/changes/").json()["review_request"] is None
+    client.post("/api/v1/cms/review-requests/", {"note": "Please check the hero"}, format="json")
+    rr = client.get("/api/v1/cms/changes/").json()["review_request"]
+    assert rr["by"] == "Erin Editor" and rr["note"] == "Please check the hero" and rr["at"]
+
+
+def test_api_create_starts_hidden_unless_set(api_as, content):
+    """Addendum A3."""
+    client = api_as("editor")
+    hidden = client.post("/api/v1/news-items/", {"text": "Draft line", "order": 9}, format="json")
+    assert hidden.status_code == 201 and hidden.json()["is_published"] is False
+    shown = client.post("/api/v1/news-items/", {"text": "Shown line", "order": 9, "is_published": True}, format="json")
+    assert shown.status_code == 201 and shown.json()["is_published"] is True

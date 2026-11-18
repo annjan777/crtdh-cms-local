@@ -12,7 +12,7 @@ class MediaEvent(VersionedModel):
     ]
 
     title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, help_text="Left empty, it is made from the title.")
     # Optional details shown on the public Media page; all may be left blank.
     description = models.TextField(blank=True, default="")
     event_date = models.DateField(null=True, blank=True)
@@ -23,6 +23,17 @@ class MediaEvent(VersionedModel):
     class Meta:
         ordering = ["order"]
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+
+            base = slugify(self.title)[:240] or "event"
+            slug, n = base, 2
+            while MediaEvent.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug, n = f"{base}-{n}", n + 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -30,6 +41,7 @@ class MediaEvent(VersionedModel):
 class MediaEventImage(VersionedModel):
     event = models.ForeignKey(MediaEvent, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="media_event_images/")
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
     is_published = models.BooleanField(default=True)
@@ -56,6 +68,7 @@ class MediaCoverageLink(VersionedModel):
 
 class GalleryImage(VersionedModel):
     image = models.ImageField(upload_to="gallery_images/")
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
     is_published = models.BooleanField(default=True)

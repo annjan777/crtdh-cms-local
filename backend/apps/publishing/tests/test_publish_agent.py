@@ -15,6 +15,7 @@ from apps.publishing.models import AgentState, Publish, ReviewRequest, Snapshot
 from apps.publishing.snapshot import avif_supported
 from tests.support.errors import assert_contract_error
 
+from .a4 import assert_a4_error
 from .conftest import SECRET, image_file
 
 pytestmark = pytest.mark.django_db
@@ -53,8 +54,8 @@ def test_two_publishers_one_build(api_as, content, publish_env, cms_admin):
     first = api_as("publisher").post("/api/v1/cms/publish/", {}, format="json")
     second = api_as(cms_admin).post("/api/v1/cms/publish/", {}, format="json")
     assert first.status_code == 202
-    body = assert_contract_error(second, "CMS_PUBLISH_RUNNING")
-    assert first.json()["publish_id"] in body["message"]
+    body = assert_a4_error(second, "CMS_PUBLISH_RUNNING")
+    assert first.json()["publish_id"] in body["message"] and body["publish_id"] == first.json()["publish_id"]
     assert Publish.objects.count() == 1
 
 
@@ -81,8 +82,9 @@ def test_guard_abort_returns_422_and_nothing_queued(api_as, content, publish_env
     from apps.facilities.models import Equipment
     Equipment.objects.all().update(is_published=False)  # 3 -> 0
     resp = api_as("publisher").post("/api/v1/cms/publish/", {}, format="json")
-    body = assert_contract_error(resp, "CMS_BUILD_GUARD")
+    body = assert_a4_error(resp, "CMS_BUILD_GUARD")
     assert "equipment shrinks from 3 to 0" in body["message"]
+    assert {"resource": "equipment", "before": 3, "after": 0} in body["details"]
     assert Publish.objects.count() == 1
     ok = api_as("publisher").post("/api/v1/cms/publish/", {"confirm_shrink": True}, format="json")
     assert ok.status_code == 202

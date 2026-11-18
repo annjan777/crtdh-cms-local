@@ -7,6 +7,8 @@ from apps.core.models import HomePage
 from apps.publishing.models import AuditEntry
 from tests.support.errors import assert_contract_error
 
+from .a4 import assert_a4_error
+
 pytestmark = pytest.mark.django_db
 
 
@@ -23,7 +25,8 @@ def test_stale_save_two_tabs_second_gets_conflict_nothing_overwritten(api_as, co
     r1 = tab1.patch(url, {"heading": "From tab one", "expected_version": 1}, format="json")
     assert r1.status_code == 200 and r1.json()["version"] == 2
     r2 = tab2.patch(url, {"heading": "From tab two", "expected_version": 1}, format="json")
-    body = assert_contract_error(r2, "CMS_STALE_VERSION", current_version=2)
+    body = assert_a4_error(r2, "CMS_STALE_VERSION", current_version=2)
+    assert body["edited_by"] == "erin_editor" and body["edited_at"].endswith("Z")
     assert "home.hero.hero-slides:18" in body["message"]
     assert "you sent v1, current v2" in body["message"]
     assert "erin_editor" in body["message"]  # who changed it
@@ -41,8 +44,8 @@ def test_put_also_checks_version(api_as, content):
     client = api_as("editor")
     row = client.get("/api/v1/news-items/").json()["results"][0]
     data = {k: row[k] for k in ("text", "link_url", "order")}
-    assert_contract_error(client.put(f"/api/v1/news-items/{row['id']}/", {**data, "expected_version": 9}, format="json"),
-                          "CMS_STALE_VERSION", current_version=1)
+    assert_a4_error(client.put(f"/api/v1/news-items/{row['id']}/", {**data, "expected_version": 9}, format="json"),
+                    "CMS_STALE_VERSION", current_version=1)
     resp = client.put(f"/api/v1/news-items/{row['id']}/", {**data, "text": "New", "expected_version": 1}, format="json")
     assert resp.status_code == 200 and resp.json()["version"] == 2
 
@@ -53,7 +56,7 @@ def test_singleton_versioning(api_as, content):
     ok = client.patch("/api/v1/home-page/", {"objective_text": "New objective", "expected_version": v}, format="json")
     assert ok.status_code == 200 and ok.json()["version"] == v + 1
     stale = client.patch("/api/v1/home-page/", {"objective_text": "Again", "expected_version": v}, format="json")
-    body = assert_contract_error(stale, "CMS_STALE_VERSION", current_version=v + 1)
+    body = assert_a4_error(stale, "CMS_STALE_VERSION", current_version=v + 1)
     assert "home.objective.home-page:1" in body["message"]
     assert HomePage.load().objective_text == "New objective"
 

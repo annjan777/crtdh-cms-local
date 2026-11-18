@@ -1,4 +1,6 @@
-"""CMS endpoints (contract §3 "CMS"). Session/JWT auth; roles from apps.accounts.roles."""
+"""CMS endpoints (contract §3 "CMS" + addendum 1). Session auth; roles from apps.accounts.roles."""
+import os
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -41,25 +43,71 @@ class PagesView(EditorView):
                                                    "resource": s["resource"]} for s in exported["globals"]]}})
 
 
-def _section_values(section, request):
+_dims_cache = {}
+
+
+def _image_info(field_file):
+    """{width, height, name} of a stored image (addendum A1 `media`), or None. Header-only read, cached."""
+    if not field_file:
+        return None
+    name = field_file.name
+    try:
+        path = field_file.path
+        st = os.stat(path)
+    except (OSError, NotImplementedError, ValueError):
+        return None
+    key = (path, st.st_size, st.st_mtime_ns)
+    if key not in _dims_cache:
+        width = height = None
+        try:
+            from PIL import Image
+
+            with Image.open(path) as im:
+                width, height = im.size
+        except Exception:  # noqa: BLE001, S110 - not a readable image (e.g. SVG); dims stay unknown
+            pass
+        _dims_cache[key] = (width, height)
+    width, height = _dims_cache[key]
+    return {"width": width, "height": height, "name": name.rsplit("/", 1)[-1]}
+
+
+def _item(section_id, resource, obj, row, view):
+    values = {k: v for k, v in row.items() if k != "version"}
+    media = {fd["name"]: _image_info(getattr(obj, fd["name"], None))
+             for fd in view["fields"] if fd["type"] == "image"}
+    return {"item_id": f"{section_id}.{resource}:{obj.pk}", "pk": obj.pk, "version": obj.version,
+            "is_published": row.get("is_published", True), "label": changes._label(resource, row, view),
+            "values": values, "media": media}
+
+
+def _section_items(section, request):
+    """Addendum A1: [{item_id, pk, version, values, media, children}] (singletons: exactly one item).
+    Draft = current DB, hidden rows included (they stay editable)."""
     res = registry.RESOURCES[section["resource"]]
-    ser_class = res.serializer_class
     ctx = {"request": request}
-    names = [fd["name"] for fd in section["fields"]]
     if res.kind == "singleton":
         obj = res.model_class.load()
-        data = ser_class(obj, context=ctx).data
-        return {"item_id": f"{section['id']}.{section['resource']}:{obj.pk}", "pk": obj.pk, "version": obj.version,
-                "values": {n: data.get(n) for n in names}}
+        return [_item(section["id"], section["resource"], obj, res.serializer_class(obj, context=ctx).data, section)]
     qs = snapshot.queryset_for(section["resource"], include_hidden=True)
     if section.get("filter"):
         qs = qs.filter(**section["filter"])
-    items = []
-    for row in ser_class(qs, many=True, context=ctx).data:
-        items.append({"item_id": f"{section['id']}.{section['resource']}:{row['id']}", "pk": row["id"],
-                      "version": row.get("version"), "is_published": row.get("is_published", True),
-                      "label": changes._label(section["resource"], row, section), "values": dict(row)})
-    return {"items": items}
+    objs = list(qs)
+    rows = res.serializer_class(objs, many=True, context=ctx).data
+    items = [_item(section["id"], section["resource"], o, r, section) for o, r in zip(objs, rows, strict=True)]
+    for child in section.get("children") or []:
+        view = registry.section_view(section["id"], child["resource"])
+        cres = registry.RESOURCES[child["resource"]]
+        parent_ids = [o.pk for o in objs]
+        cobjs = list(snapshot.queryset_for(child["resource"], include_hidden=True)
+                     .filter(**{f"{child['parent_field']}__in": parent_ids}))
+        crows = cres.serializer_class(cobjs, many=True, context=ctx).data
+        grouped = {}
+        for o, r in zip(cobjs, crows, strict=True):
+            grouped.setdefault(getattr(o, f"{child['parent_field']}_id"), []).append(
+                _item(section["id"], child["resource"], o, r, view))
+        for it in items:
+            it.setdefault("children", {})[child["resource"]] = grouped.get(it["pk"], [])
+    return items
 
 
 class PageDetailView(EditorView):
@@ -71,7 +119,7 @@ class PageDetailView(EditorView):
         if page is None:
             raise CMSError("CMS_NOT_FOUND", f"There is no page {page_id!r}.")
         changed = changes.pages_with_changes()
-        sections = [{**s, **_section_values(s, request)} for s in page["sections"]]
+        sections = [{**s, "items": _section_items(s, request)} for s in page["sections"]]
         return Response({**page, "has_changes": page_id in changed, "sections": sections})
 
 
@@ -101,7 +149,8 @@ class DiscardView(EditorView):
             reverted = [item_id] if changed else []
         else:
             reverted = changes.discard_session(str(session_id), ctx=ctx)
-        return Response({"reverted": reverted, "pending": changes.pending_changes()["count"]})
+        now = changes.pending_changes()
+        return Response({"reverted": reverted, "discarded": len(reverted), "pending": now["count"], **now})
 
 
 class ReviewRequestsView(EditorView):
@@ -165,22 +214,27 @@ class PublishCancelView(PublisherView):
 
 # ---- snapshots --------------------------------------------------------------------------------------------------
 class SnapshotsView(EditorView):
+    """Addendum A8: {snapshots:[{id, snapshot_id, published_at, published_by, note, is_live}]}, newest first.
+    Only snapshots that went live are listed (a failed or cancelled publish never changed the site)."""
+
     def get(self, request):
+        live = publish.last_live_snapshot()
         out = []
-        for s in Snapshot.objects.select_related("created_by")[:50]:
-            out.append({"id": s.id, "snapshot_id": s.snapshot_id, "created_at": s.created_at,
-                        "created_by": s.created_by.get_username() if s.created_by else None,
-                        "published_at": s.published_at, "note": s.note,
-                        "counts": {k: len(v) for k, v in (s.data.get("collections") or {}).items()}})
-        return Response({"results": out})
+        qs = Snapshot.objects.filter(published_at__isnull=False).select_related("created_by").order_by("-published_at", "-id")
+        for s in qs[:50]:
+            by = s.created_by.get_username() if s.created_by else (s.data or {}).get("published_by")
+            out.append({"id": s.id, "snapshot_id": s.snapshot_id, "published_at": s.published_at,
+                        "published_by": by, "note": s.note, "is_live": live is not None and s.pk == live.pk,
+                        "counts": {k: len(v) for k, v in ((s.data or {}).get("collections") or {}).items()}})
+        return Response({"snapshots": out})
 
 
 class SnapshotRestoreView(PublisherView):
     def post(self, request, pk):
         snap = get_object_or_404(Snapshot, pk=pk)
         count = changes.restore_snapshot(snap, ctx=context_from_request(request))
-        return Response({"snapshot_id": snap.snapshot_id, "restored": count,
-                         "pending": changes.pending_changes()["count"]})
+        now = changes.pending_changes()
+        return Response({"snapshot_id": snap.snapshot_id, "restored": count, "pending": now["count"], **now})
 
 
 # ---- audit ------------------------------------------------------------------------------------------------------
@@ -196,7 +250,7 @@ class AuditView(EditorView):
                 raise CMSError("CMS_VALIDATION", str(e), field="item_id") from None
             qs = qs.filter(resource=resource, pk_value=str(pk))
             if registry.RESOURCES[resource].kind == "singleton":
-                fields = {fd["name"] for fd in registry.section_index()[section_id][1]["fields"]}
+                fields = registry.editable_fields(registry.section_view(section_id, resource)) - {"is_published", "order"}
         for param, lookup in (("resource", "resource"), ("session_id", "connector_session"), ("author", "actor_name")):
             if request.query_params.get(param):
                 qs = qs.filter(**{lookup: request.query_params[param]})
@@ -206,10 +260,10 @@ class AuditView(EditorView):
                 b, a = e.before or {}, e.after or {}
                 if not any(b.get(n) != a.get(n) for n in fields):
                     continue
-            out.append(serialize_entry(e))
+            out.append(serialize_entry(e, only=fields))
             if len(out) >= 200:
                 break
-        return Response({"results": out})
+        return Response({"entries": out})
 
 
 # ---- upload links -----------------------------------------------------------------------------------------------

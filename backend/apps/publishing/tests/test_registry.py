@@ -28,13 +28,13 @@ def test_registry_covers_every_content_resource():
     routed = {prefix for prefix, *_ in router.registry} - {"contact-messages"}
     assert routed == set(registry.COLLECTIONS)
     assert set(registry.SINGLETONS) == {"site-settings", "about-page", "home-page"}
-    used = {s["resource"] for _p, s in registry.all_sections()}
+    used = {s["resource"] for _p, s in registry._views()}
     assert used == set(registry.RESOURCES), "every resource is editable from some section"
 
 
 @pytest.mark.django_db
 def test_every_field_exists_on_model_and_serializer():
-    for _page, s in registry.all_sections():
+    for _page, s in registry._views():
         res = registry.RESOURCES[s["resource"]]
         model_fields = {f.name for f in res.model_class._meta.get_fields()}
         ser_fields = set(res.serializer_class().fields)
@@ -42,8 +42,9 @@ def test_every_field_exists_on_model_and_serializer():
             assert fd["name"] in model_fields, (s["id"], fd["name"])
             assert fd["name"] in ser_fields, (s["id"], fd["name"])
             assert fd["type"] in registry.FIELD_TYPES
-            if fd.get("alt_field"):
-                assert fd["alt_field"] in model_fields
+            for extra in ("alt_field", "position_field"):
+                if fd.get(extra):
+                    assert fd[extra] in model_fields and fd[extra] in ser_fields, (s["id"], fd[extra])
         for key in (s.get("filter") or {}):
             assert key.split("__")[0] in model_fields
 
@@ -67,18 +68,18 @@ def test_item_ids_round_trip():
 def test_page_scoped_sections_resolve_by_page(content):
     from apps.common.models import ImageGridBlock, ImageGridItem
     for block in ImageGridBlock.objects.all():
-        assert registry.item_id("image-grid-blocks", block.pk, block).startswith(f"{block.page}.grids.")
+        assert registry.item_id("image-grid-blocks", block.pk, block).startswith(f"{block.page}.photo-sections.image-grid-blocks:")
     item = ImageGridItem.objects.select_related("block").first()
-    assert registry.item_id("image-grid-items", item.pk, item).startswith(f"{item.block.page}.grid-images.")
+    assert registry.item_id("image-grid-items", item.pk, item).startswith(f"{item.block.page}.photo-sections.image-grid-items:")
     # dict rows (snapshot-only) resolve through the lookup
     row = {"id": 5, "block": 77}
     lookup = lambda res, pk: {"id": 77, "page": "covid-19"} if (res, pk) == ("image-grid-blocks", 77) else None
-    assert registry.item_id("image-grid-items", 5, row, lookup) == "covid-19.grid-images.image-grid-items:5"
+    assert registry.item_id("image-grid-items", 5, row, lookup) == "covid-19.photo-sections.image-grid-items:5"
 
 
 @pytest.mark.django_db
 def test_singleton_field_maps_to_its_section():
-    assert registry.item_id("home-page", 1, field="women_text_1") == "home.women.home-page:1"
+    assert registry.item_id("home-page", 1, field="women_text_1") == "home.rural.home-page:1"
     assert registry.item_id("site-settings", 1, field="facebook_url") == "site.social.site-settings:1"
     assert registry.item_id("site-settings", 1, field="address") == "contact.details.site-settings:1"
 
@@ -92,10 +93,10 @@ def test_export_registry_command_outputs_enriched_json():
     hero = data["pages"][0]["sections"][0]
     image = hero["fields"][0]
     assert image == {**image, "name": "image", "type": "image", "min_width": 1600, "alt_field": "alt_text", "required": True}
+    assert image["position_field"] == "image_position"
     heading = next(f for f in hero["fields"] if f["name"] == "heading")
-    assert heading["max"] == 255
-    pos = next(f for f in hero["fields"] if f["name"] == "image_position")
-    assert {"value": "center center", "label": "Centre"} in pos["options"]
+    assert heading["max"] == 40  # registry limit, never above the model's max_length
+    assert heading["label"] == "Headline" and heading["required"] is True
 
 
 def test_block_and_video_page_are_registry_choices():

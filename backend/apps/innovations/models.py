@@ -42,6 +42,7 @@ class Innovation(VersionedModel):
 class InnovationImage(VersionedModel):
     innovation = models.ForeignKey(Innovation, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="innovation_images/")
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
     is_published = models.BooleanField(default=True)

@@ -18,6 +18,7 @@ class TeamMember(VersionedModel):
     category = models.ForeignKey(TeamCategory, related_name="members", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     photo = models.ImageField(upload_to="team_members/", blank=True, null=True)
+    photo_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     # Shown on the public Team page when filled in; the admin Team editor already had inputs for these.
     designation = models.CharField(max_length=255, blank=True, default="")
     institution = models.CharField(max_length=255, blank=True, default="Indian Institute of Technology Kharagpur")

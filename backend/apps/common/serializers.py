@@ -6,7 +6,7 @@ from .models import Document, ImageGridBlock, ImageGridItem, VideoBlock
 class ImageGridItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageGridItem
-        fields = ["id", "block", "image", "caption", "order", "is_published", "version"]
+        fields = ["id", "block", "image", "image_alt", "caption", "order", "is_published", "version"]
 
 
 class ImageGridBlockSerializer(serializers.ModelSerializer):

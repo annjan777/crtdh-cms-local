@@ -44,6 +44,15 @@ def _label(resource, row, section):
     return f"{section['label']} #{(row or {}).get('id', '')}".strip()
 
 
+def _section_field_order(section):
+    """Field names a singleton section covers, in display order (each image followed by its alt/position)."""
+    out = []
+    for fd in section["fields"]:
+        out.append(fd["name"])
+        out.extend(fd[k] for k in ("alt_field", "position_field") if fd.get(k))
+    return out
+
+
 def _rows_by_id(rows):
     return {r["id"]: r for r in rows or []}
 
@@ -83,10 +92,11 @@ def diff(prev, current, visible_ids=None, media_lookup=None):
             before_row = (prev.get("singletons") or {}).get(resource) or {}
             after_row = (current.get("singletons") or {}).get(resource) or {}
             for _page_id, section in registry.sections_for_resource(resource):
+                names = [n for n in _section_field_order(section) if n in fields]
                 changed = [
-                    {"name": fd["name"], "before": _display(before_row.get(fd["name"]), media_lookup),
-                     "after": _display(after_row.get(fd["name"]), media_lookup)}
-                    for fd in section["fields"] if before_row.get(fd["name"]) != after_row.get(fd["name"])
+                    {"name": n, "before": _display(before_row.get(n), media_lookup),
+                     "after": _display(after_row.get(n), media_lookup)}
+                    for n in names if before_row.get(n) != after_row.get(n)
                 ]
                 if changed:
                     out.append({"item_id": f"{section['id']}.{resource}:{after_row.get('id', 1)}", "resource": resource,
@@ -149,19 +159,40 @@ def pending_changes(author=None, session_id=None):
         scope = {(r, p) for r, p in qs.values_list("resource", "pk_value")}
 
     page_of = {s["id"]: page_id for page_id, s in registry.all_sections()}
+    top_label = {s["id"]: s["label"] for _p, s in registry.all_sections()}
     grouped = {}
     for item in items:
         section = item.pop("_section")
+        labels = registry.field_labels(section)
+        for f in item["fields"]:
+            f["label"] = labels.get(f["name"], f["name"].replace("_", " ").capitalize())
+        item["section"] = top_label.get(section["id"], section.get("label"))
         if scope is not None and (item["resource"], str(item["pk"])) not in scope:
             continue
         fields = [f["name"] for f in item["fields"]] if registry.RESOURCES[item["resource"]].kind == "singleton" else None
         entry = audit.last_entry(item["resource"], item["pk"], fields=fields, since=since)
         item.update(author=(entry.actor_name or None) if entry else None, channel=entry.channel if entry else None,
-                    at=entry.at if entry else None, connector_session=entry.connector_session if entry else None)
+                    at=entry.at if entry else None, connector_session=entry.connector_session if entry else None,
+                    session_id=entry.connector_session if entry else None)
         grouped.setdefault(page_of[section["id"]], []).append(item)
     order = [p["id"] for p in registry.REGISTRY["pages"]] + ["site"]
-    pages = [{"page": p, "changes": grouped[p]} for p in order if p in grouped]
-    return {"count": sum(len(p["changes"]) for p in pages), "pages": pages}
+    titles = {p["id"]: p["title"] for p in registry.REGISTRY["pages"]} | {"site": "Header and footer"}
+    pages = [{"page": p, "title": titles[p], "changes": grouped[p]} for p in order if p in grouped]
+    return {"count": sum(len(p["changes"]) for p in pages), "pages": pages, "review_request": open_review_request()}
+
+
+def open_review_request():
+    """Addendum A5: the newest unresolved review request {by, at, note}, or None."""
+    from .models import ReviewRequest
+
+    rr = (ReviewRequest.objects.filter(resolved_at__isnull=True).select_related("requested_by")
+          .order_by("-created_at", "-id").first())
+    if rr is None:
+        return None
+    by = None
+    if rr.requested_by:
+        by = rr.requested_by.get_full_name() or rr.requested_by.get_username()
+    return {"id": rr.id, "by": by, "at": rr.created_at, "note": rr.note}
 
 
 def pages_with_changes():
@@ -231,13 +262,13 @@ def discard_item(item_id_value, *, ctx):
                        fix="Publish once (or run manage.py create_baseline_snapshot) before discarding changes.")
     res = registry.RESOURCES[resource]
     model = res.model_class
-    section = registry.section_index()[section_id][1]
+    section = registry.section_view(section_id, resource)
     with transaction.atomic():
         if res.kind == "singleton":
             prev_row = (prev.get("singletons") or {}).get(resource) or {}
             obj = model.load()
             before = audit.row_values(obj)
-            _apply_row(obj, prev_row, prev.get("media") or {}, only={fd["name"] for fd in section["fields"]})
+            _apply_row(obj, prev_row, prev.get("media") or {}, only=set(_section_field_order(section)))
             if audit.row_values(obj) == before:
                 return False
             obj.save()

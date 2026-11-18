@@ -37,6 +37,7 @@ class HeroSlide(VersionedModel):
 
 class ProjectSlide(VersionedModel):
     image = models.ImageField(upload_to="project_slides/")
+    image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     title = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
     is_published = models.BooleanField(default=True)

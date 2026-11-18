@@ -87,17 +87,39 @@ def last_entry(resource, pk, fields=None, since=None):
     return None
 
 
-def serialize_entry(e):
+ACTION_VERBS = {"create": "added", "update": "changed", "delete": "removed", "reorder": "moved",
+                "discard": "discarded", "restore": "restored"}
+
+
+def changed_fields(before, after, only=None):
+    """[{name, before, after}] for the keys that differ (version ignored); `only` limits to a field set."""
+    b, a = before or {}, after or {}
+    names = [k for k in dict.fromkeys([*b, *a]) if k not in ("version", "id")]
+    if only is not None:
+        names = [k for k in names if k in only]
+    return [{"name": k, "before": b.get(k), "after": a.get(k)} for k in names if b.get(k) != a.get(k)]
+
+
+def serialize_entry(e, only=None):
+    """Addendum A8 entry {item_id, at, author, channel, action, fields} plus raw details (actor, before, after)."""
+    fields = changed_fields(e.before, e.after, only) if e.before is not None and e.after is not None else []
+    verb = ACTION_VERBS.get(e.action, e.action)
+    if e.action == "update" and any(f["name"] == "is_published" for f in fields):
+        verb = "hid" if (e.after or {}).get("is_published") is False else "showed"
     return {
-        "id": e.id,
-        "at": e.at,
-        "actor": e.actor_name or None,
-        "channel": e.channel,
-        "connector_session": e.connector_session,
         "item_id": e.item_id,
+        "at": e.at,
+        "author": e.actor_name or None,
+        "channel": e.channel,
+        "action": verb,
+        "fields": fields,
+        "session_id": e.connector_session,
+        "raw_action": e.action,
+        "id": e.id,
+        "actor": e.actor_name or None,
+        "connector_session": e.connector_session,
         "resource": e.resource,
         "pk": e.pk_value,
-        "action": e.action,
         "before": e.before,
         "after": e.after,
     }

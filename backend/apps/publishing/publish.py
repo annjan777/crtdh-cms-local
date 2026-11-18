@@ -25,7 +25,7 @@ from django.db.models import F, Q
 from django.utils import timezone
 
 from . import guard
-from .errors import CMSError
+from .errors import CMSError, with_extra
 from .models import Publish, Snapshot
 from .snapshot import (
     _file_info,
@@ -55,8 +55,9 @@ def active_publish():
 
 
 def _running_error(p):
-    return CMSError("CMS_PUBLISH_RUNNING", f"A publish is already running (id {p.id}, status {p.status}).",
-                    fix="Wait for it to finish (GET /api/v1/cms/publish/<id>/), then publish again.", retryable=True)
+    return with_extra(CMSError("CMS_PUBLISH_RUNNING", f"A publish is already running (id {p.id}, status {p.status}).",
+                               fix="Wait for it to finish (GET /api/v1/cms/publish/<id>/), then publish again.",
+                               retryable=True), publish_id=str(p.id))
 
 
 def last_live_snapshot(exclude_id=None):
@@ -207,7 +208,7 @@ def materialize_media(data, store):
             sha = _file_info(src)[0]
             if not name.startswith(sha[:16]):
                 raise CMSError("CMS_BUILD_GUARD", f"Media file {entry['source']} changed after the snapshot; publish again.")
-            _atomic_write(dst, lambda tmp: shutil.copyfile(src, tmp))
+            _atomic_write(dst, lambda tmp, src=src: shutil.copyfile(src, tmp))
         for fmt, variants in entry["variants"].items():
             if fmt == "avif" and not avif_supported():
                 continue

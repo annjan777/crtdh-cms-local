@@ -18,7 +18,7 @@ def by_item(result):
 
 
 def test_no_changes_right_after_baseline(baseline):
-    assert changes.pending_changes() == {"count": 0, "pages": []}
+    assert changes.pending_changes() == {"count": 0, "pages": [], "review_request": None}
 
 
 def test_without_baseline_everything_is_added(content):
@@ -32,7 +32,7 @@ def test_diff_kinds_and_authors(baseline, editor, publisher):
     mcp = WriteContext(user=publisher, channel="mcp", connector_session="claude-7")
     cms.update_item("hero-slides", 18, {"heading": "New headline"}, ctx=ed, expected_version=1)
     cms.update_item("hero-slides", 19, {"is_published": False}, ctx=mcp, expected_version=1)
-    added = cms.create_item("news-items", {"text": "Health camp on 2 Dec", "order": 10}, ctx=mcp)
+    added = cms.create_item("news-items", {"text": "Health camp on 2 Dec", "order": 10, "is_published": True}, ctx=mcp)
     removed = NewsItem.objects.order_by("id").first()
     cms.delete_item("news-items", removed.pk, ctx=ed)
     cms.update_item("home-page", 1, {"women_text_1": "Updated women text"}, ctx=ed, expected_version=1)
@@ -42,22 +42,24 @@ def test_diff_kinds_and_authors(baseline, editor, publisher):
 
     hero = items["home.hero.hero-slides:18"]
     assert hero["kind"] == "changed"
-    assert hero["fields"] == [{"name": "heading", "before": baseline.data["collections"]["hero-slides"][0]["heading"]
-                               if baseline.data["collections"]["hero-slides"][0]["id"] == 18 else hero["fields"][0]["before"],
-                               "after": "New headline"}]
+    before = {r["id"]: r for r in baseline.data["collections"]["hero-slides"]}[18]["heading"]
+    assert hero["fields"] == [{"name": "heading", "label": "Headline", "before": before, "after": "New headline"}]
+    assert hero["section"] == "Hero" and hero["session_id"] is None
     assert (hero["author"], hero["channel"]) == ("erin_editor", "admin")
     assert hero["label"] == "New headline"
 
     hidden = items["home.hero.hero-slides:19"]
-    assert hidden["kind"] == "hidden" and hidden["fields"][0] == {"name": "is_published", "before": True, "after": False}
-    assert (hidden["author"], hidden["channel"], hidden["connector_session"]) == ("priya", "mcp", "claude-7")
+    assert hidden["kind"] == "hidden" and hidden["fields"][0] == {"name": "is_published", "label": "Visible on the site",
+                                                                 "before": True, "after": False}
+    assert (hidden["author"], hidden["channel"], hidden["session_id"]) == ("priya", "mcp", "claude-7")
 
     new = items[f"home.news.news-items:{added.pk}"]
-    assert new["kind"] == "added" and {"name": "text", "before": None, "after": "Health camp on 2 Dec"} in new["fields"]
+    assert new["kind"] == "added" and {"name": "text", "label": "News line", "before": None,
+                                     "after": "Health camp on 2 Dec"} in new["fields"]
     gone = items[f"home.news.news-items:{removed.pk}"]
     assert gone["kind"] == "removed" and gone["author"] == "erin_editor"
 
-    women = items["home.women.home-page:1"]
+    women = items["home.rural.home-page:1"]
     assert women["kind"] == "changed" and women["fields"][0]["name"] == "women_text_1"
     assert [p["page"] for p in result["pages"]] == ["home"]
 
@@ -65,7 +67,7 @@ def test_diff_kinds_and_authors(baseline, editor, publisher):
     assert set(by_item(only_session)) == {"home.hero.hero-slides:19", f"home.news.news-items:{added.pk}"}
     only_author = changes.pending_changes(author="erin_editor")
     assert set(by_item(only_author)) == {"home.hero.hero-slides:18", f"home.news.news-items:{removed.pk}",
-                                         "home.women.home-page:1"}
+                                         "home.rural.home-page:1"}
 
 
 def test_hidden_item_never_published_is_not_a_change(baseline, editor):
@@ -79,7 +81,7 @@ def test_discard_each_kind(baseline, editor):
     original = HeroSlide.objects.get(pk=18).heading
     cms.update_item("hero-slides", 18, {"heading": "Oops"}, ctx=ctx, expected_version=1)
     cms.update_item("hero-slides", 19, {"is_published": False}, ctx=ctx, expected_version=1)
-    added = cms.create_item("news-items", {"text": "Temp", "order": 10}, ctx=ctx)
+    added = cms.create_item("news-items", {"text": "Temp", "order": 10, "is_published": True}, ctx=ctx)
     removed = NewsItem.objects.order_by("id").first()
     removed_text = removed.text
     cms.delete_item("news-items", removed.pk, ctx=ctx)
@@ -87,7 +89,7 @@ def test_discard_each_kind(baseline, editor):
                     expected_version=1)
 
     for iid in ["home.hero.hero-slides:18", "home.hero.hero-slides:19", f"home.news.news-items:{added.pk}",
-                f"home.news.news-items:{removed.pk}", "home.women.home-page:1"]:
+                f"home.news.news-items:{removed.pk}", "home.rural.home-page:1"]:
         assert changes.discard_item(iid, ctx=ctx) is True
 
     assert HeroSlide.objects.get(pk=18).heading == original
@@ -110,7 +112,7 @@ def test_discard_recreates_removed_parent(baseline, editor):
     parent_id = image.innovation_id
     cms.delete_item("innovations", parent_id, ctx=ctx)  # cascades the image
     assert not InnovationImage.objects.filter(pk=image.pk).exists()
-    changes.discard_item(f"innovations.images.innovation-images:{image.pk}", ctx=ctx)
+    changes.discard_item(f"innovations.list.innovation-images:{image.pk}", ctx=ctx)
     assert Innovation.objects.filter(pk=parent_id).exists() and InnovationImage.objects.filter(pk=image.pk).exists()
 
 
@@ -119,7 +121,7 @@ def test_discard_session(baseline, editor, publisher):
     other = WriteContext(user=publisher)
     cms.update_item("hero-slides", 18, {"heading": "Claude 1"}, ctx=mcp, expected_version=1)
     cms.update_item("hero-slides", 18, {"heading": "Claude 2"}, ctx=mcp, expected_version=2)
-    made = cms.create_item("news-items", {"text": "Claude news", "order": 4}, ctx=mcp)
+    made = cms.create_item("news-items", {"text": "Claude news", "order": 4, "is_published": True}, ctx=mcp)
     cms.update_item("hero-slides", 20, {"heading": "Human"}, ctx=other, expected_version=1)
     reverted = changes.discard_session("sess-a", ctx=WriteContext(user=editor))
     assert set(reverted) == {"home.hero.hero-slides:18", f"home.news.news-items:{made.pk}"}
@@ -135,7 +137,7 @@ def test_discard_without_baseline_refuses(content, editor):
 def test_restore_snapshot_copies_values_back_as_changes(baseline, editor):
     ctx = WriteContext(user=editor)
     cms.update_item("hero-slides", 18, {"heading": "Later"}, ctx=ctx, expected_version=1)
-    later = cms.create_item("news-items", {"text": "Added later", "order": 7}, ctx=ctx)
+    later = cms.create_item("news-items", {"text": "Added later", "order": 7, "is_published": True}, ctx=ctx)
     victim = NewsItem.objects.order_by("id").first()
     cms.delete_item("news-items", victim.pk, ctx=ctx)
     count = changes.restore_snapshot(baseline, ctx=ctx)
@@ -155,9 +157,13 @@ def test_changes_and_discard_endpoints(api_as, baseline):
     body = resp.json()
     assert body["count"] == 1
     change = body["pages"][0]["changes"][0]
-    assert set(change) >= {"item_id", "resource", "pk", "label", "kind", "fields", "author", "channel", "at"}
+    assert set(change) >= {"item_id", "resource", "pk", "label", "kind", "fields", "author", "channel", "at",
+                           "session_id", "section"}
+    assert body["review_request"] is None
     resp = client.post("/api/v1/cms/changes/discard/", {"item_id": change["item_id"]}, format="json")
-    assert resp.status_code == 200 and resp.json() == {"reverted": [change["item_id"]], "pending": 0}
+    assert resp.status_code == 200
+    assert resp.json() | {"pages": []} == {"reverted": [change["item_id"]], "discarded": 1, "pending": 0, "count": 0,
+                                         "pages": [], "review_request": None}
     assert_contract_error(client.post("/api/v1/cms/changes/discard/", {}, format="json"), "CMS_VALIDATION")
     assert_contract_error(client.post("/api/v1/cms/changes/discard/", {"item_id": "bogus"}, format="json"),
                           "CMS_NOT_FOUND")
@@ -168,5 +174,6 @@ def test_snapshot_restore_endpoint_is_publisher_only(api_as, baseline):
     assert_contract_error(api_as("editor").post(url, {}, format="json"), "CMS_FORBIDDEN_ROLE")
     resp = api_as("publisher").post(url, {}, format="json")
     assert resp.status_code == 200 and resp.json()["snapshot_id"] == baseline.snapshot_id
-    listing = api_as("editor").get("/api/v1/cms/snapshots/").json()["results"]
+    listing = api_as("editor").get("/api/v1/cms/snapshots/").json()["snapshots"]
     assert listing[0]["snapshot_id"] == baseline.snapshot_id and listing[0]["counts"]["hero-slides"] == 3
+    assert listing[0]["is_live"] is True and set(listing[0]) >= {"id", "published_at", "published_by", "note"}

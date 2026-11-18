@@ -84,7 +84,7 @@ def test_media_is_content_hashed_with_variants(content, media_root):
     eq = {r["id"]: r for r in snap["collections"]["equipment"]}
     path = eq[rows[0].pk]["image"]
     assert path == eq[rows[1].pk]["image"]
-    assert path.startswith("/media/") and path.endswith(".jpg") and len(path) == len("/media/") + 16 + 4
+    assert path.startswith("/_media/") and path.endswith(".jpg") and len(path) == len("/_media/") + 16 + 4
     entry = snap["media"][path]
     assert entry["width"] == 2000 and entry["height"] == 1000
     assert entry["source"] in ("equipment/lathe.jpg", "equipment/copy.jpg")
@@ -97,7 +97,7 @@ def test_media_is_content_hashed_with_variants(content, media_root):
 def test_missing_media_file_becomes_null_with_warning(content, media_root):
     snap = build_snapshot(now=NOW)
     assert any("missing media file" in w for w in snap.get("warnings", []))
-    assert not any(isinstance(v, str) and v.startswith("/media/") and v not in snap["media"]
+    assert not any(isinstance(v, str) and v.startswith("/_media/") and v not in snap["media"]
                    for rows in snap["collections"].values() for r in rows for v in r.values())
 
 
@@ -155,9 +155,9 @@ def test_first_snapshot_reproduces_todays_content(settings):
     assert validate(snap) == []
 
     def norm(value, media):
+        if isinstance(value, str) and value in media:
+            return "media:" + media[value]["source"]
         if isinstance(value, str) and "/media/" in value:
-            if value in media:
-                return "media:" + media[value]["source"]
             return "media:" + value.split("/media/", 1)[1]
         if isinstance(value, list):
             return [norm(v, media) for v in value]

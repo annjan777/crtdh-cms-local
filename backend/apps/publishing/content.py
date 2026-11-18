@@ -8,7 +8,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from . import audit, registry
-from .errors import CMSError
+from .errors import CMSError, with_extra
 
 
 def resource_for_model(model):
@@ -33,17 +33,20 @@ def _parse_version(value):
 
 
 def stale_error(resource, obj, sent):
+    """409 CMS_STALE_VERSION with addendum-A4 extras edited_by (username) and edited_at (ISO 8601)."""
     entry = audit.last_entry(resource, obj.pk)
-    who = ""
+    who, edited_by, edited_at = "", None, None
     if entry:
         local = timezone.localtime(entry.at)
-        who = f", edited by {entry.actor_name or 'someone'} at {local:%H:%M}"
+        edited_by = entry.actor_name or None
+        edited_at = entry.at.isoformat().replace("+00:00", "Z")
+        who = f", edited by {edited_by or 'someone'} at {local:%H:%M}"
     iid = registry.item_id(resource, obj.pk, obj)
-    return CMSError(
+    return with_extra(CMSError(
         "CMS_STALE_VERSION",
         f"{iid} changed since you read it (you sent v{sent}, current v{obj.version}{who}).",
         current_version=obj.version,
-    )
+    ), edited_by=edited_by, edited_at=edited_at)
 
 
 def _lock(model, pk):
@@ -53,8 +56,37 @@ def _lock(model, pk):
         raise CMSError("CMS_NOT_FOUND", f"{model._meta.verbose_name} {pk} does not exist.") from None
 
 
-def create_item(resource, data, *, ctx, serializer_class=None, context=None):
+def _plain(data):
+    """QueryDict (multipart) or dict -> a plain mutable dict (files kept as uploaded objects)."""
+    if hasattr(data, "dict") and hasattr(data, "getlist"):
+        return {k: data.get(k) for k in data}
+    return dict(data or {})
+
+
+def create_item(resource, data, *, ctx, serializer_class=None, context=None, section_id=None):
+    """Create a row. Addendum A3: rows start hidden (is_published=false) unless the caller sets is_published.
+
+    With `section_id` (MCP), unknown fields are refused and the section's page filter (e.g. page="covid-19" for
+    an image grid) is applied, so the new row lands in that section. A child list (e.g. innovation photos) is
+    addressed by its parent section id; pass the parent's pk in the parent field (e.g. "innovation": 4).
+    """
     serializer_class = serializer_class or registry.RESOURCES[resource].serializer_class
+    data = _plain(data)
+    if section_id is not None:
+        view = registry.section_view(section_id, resource)
+        if view is None:
+            raise CMSError("CMS_NOT_FOUND", f"Section {section_id} does not hold {resource}.", field="section")
+        if view["kind"] != "collection":
+            raise CMSError("CMS_VALIDATION", f"{section_id} is a single block; update it instead of adding items.",
+                           field="section")
+        unknown = sorted(set(data) - registry.editable_fields(view))
+        if unknown:
+            raise CMSError("CMS_VALIDATION", f"{section_id} has no field(s) {', '.join(unknown)}.", field=unknown[0])
+        for key, value in (view.get("filter") or {}).items():
+            if "__" not in key:
+                data[key] = value
+    if registry.RESOURCES[resource].has_visibility and "is_published" not in data:
+        data["is_published"] = False
     with transaction.atomic():
         ser = serializer_class(data=data, context=context or {})
         ser.is_valid(raise_exception=True)
@@ -100,12 +132,33 @@ def delete_item(resource, pk, *, ctx, expected_version=None):
         audit.record(ctx, "delete", resource, pk, before, None, iid)
 
 
+def _pk_of(value, resource):
+    """Accept a pk (int / digit string) or an item id `<section>.<resource>:<pk>`."""
+    if isinstance(value, str) and ":" in value:
+        try:
+            _s, res, pk = registry.parse_item_id(value)
+        except ValueError as e:
+            raise CMSError("CMS_VALIDATION", str(e), field="order") from None
+        if res != resource:
+            raise CMSError("CMS_VALIDATION", f"{value} is not a {resource} item.", field="order")
+        return pk
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise CMSError("CMS_VALIDATION", f"{value!r} is not an item id.", field="order") from None
+
+
 def reorder(resource, ids, *, ctx, queryset=None, field="order"):
-    """Renumber `field` to the position of each id. Rows whose position changes get a version bump + audit row."""
+    """Renumber `field` to the position of each id (pks or item ids). Rows whose position changes get a version
+    bump + audit row. Unknown ids -> CMS_VALIDATION and nothing changes."""
+    ids = [_pk_of(i, resource) for i in ids]
     model = get_model(resource)
     queryset = queryset if queryset is not None else model.objects.all()
     with transaction.atomic():
         rows = {o.pk: o for o in queryset.select_for_update()}
+        missing = [pk for pk in ids if pk not in rows]
+        if missing:
+            raise CMSError("CMS_VALIDATION", f"Unknown {resource} id(s): {', '.join(map(str, missing))}.", field="order")
         for position, pk in enumerate(ids):
             obj = rows[pk]
             old = getattr(obj, field)
@@ -118,24 +171,27 @@ def reorder(resource, ids, *, ctx, queryset=None, field="order"):
 
 
 def update_by_item_id(item_id, data, *, ctx, expected_version):
+    """PATCH one item by its registry id; only the fields its section (or child list) shows may be written."""
     try:
-        section_id, resource, pk = registry.parse_item_id(item_id)
+        _page, view, resource, pk = registry.view_for_item(item_id)
     except ValueError as e:
         raise CMSError("CMS_NOT_FOUND", str(e)) from None
-    allowed = {fd["name"] for fd in registry.section_index()[section_id][1]["fields"]}
-    unknown = sorted(set(data) - allowed - {"expected_version", "order"})
+    section_id = view["id"]
+    unknown = sorted(set(data) - registry.editable_fields(view) - {"expected_version"})
     if unknown:
         raise CMSError("CMS_VALIDATION", f"{section_id} has no field(s) {', '.join(unknown)}.", field=unknown[0])
     return update_item(resource, pk, data, ctx=ctx, expected_version=expected_version)
 
 
 def attach_media(resource, pk, field, media_id, *, ctx, expected_version):
-    """Point an image field at an uploaded MediaAsset (from a one-time upload link)."""
+    """Point an image field at an uploaded MediaAsset (from a one-time upload link). media_id: int or "media:<id>"."""
     from .models import MediaAsset
 
+    if isinstance(media_id, str) and media_id.startswith("media:"):
+        media_id = media_id.split(":", 1)[1]
     try:
-        asset = MediaAsset.objects.get(pk=media_id)
-    except MediaAsset.DoesNotExist:
+        asset = MediaAsset.objects.get(pk=int(media_id))
+    except (MediaAsset.DoesNotExist, TypeError, ValueError):
         raise CMSError("CMS_NOT_FOUND", f"Media {media_id} does not exist.") from None
     min_width = 0
     for _page, s in registry.sections_for_resource(resource):
@@ -146,6 +202,12 @@ def attach_media(resource, pk, field, media_id, *, ctx, expected_version):
         raise CMSError("CMS_IMAGE_TOO_SMALL", f"This photo is {asset.width} px wide; {field} needs at least {min_width} px.",
                        field=field, fix=f"Upload a photo at least {min_width} px wide.")
     model = get_model(resource)
+    try:
+        model_field = model._meta.get_field(field)
+    except Exception:  # noqa: BLE001 - FieldDoesNotExist
+        model_field = None
+    if model_field is None or model_field.get_internal_type() not in ("ImageField", "FileField"):
+        raise CMSError("CMS_VALIDATION", f"{resource} has no image field {field!r}.", field=field)
     sent = _parse_version(expected_version)
     with transaction.atomic():
         obj = _lock(model, pk)

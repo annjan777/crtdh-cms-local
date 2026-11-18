@@ -2,7 +2,7 @@
 
 build_snapshot() reads the CMS database through the existing DRF list serializers (so row shapes stay what the
 public pages already use), keeps only visible rows, sorts by order then id, and rewrites every media URL to a
-content-hashed site path `/media/<sha256[:16]>.<ext>` listed in `media`.
+content-hashed site path `/_media/<sha256[:16]>.<ext>` (addendum A13) listed in `media`.
 """
 import hashlib
 import json
@@ -71,10 +71,10 @@ def media_entry(source, sha, width, height):
     variants = {"avif": [], "webp": []}
     if ext in RASTER_EXTS and width:
         widths = [w for w in VARIANT_WIDTHS if w < width]
-        variants["webp"] = [{"url": f"/media/{h16}-{w}.webp", "width": w} for w in widths]
+        variants["webp"] = [{"url": f"/_media/{h16}-{w}.webp", "width": w} for w in widths]
         if avif_supported():
-            variants["avif"] = [{"url": f"/media/{h16}-{w}.avif", "width": w} for w in widths]
-    return f"/media/{h16}{ext}", {"source": source, "width": width, "height": height, "variants": variants}
+            variants["avif"] = [{"url": f"/_media/{h16}-{w}.avif", "width": w} for w in widths]
+    return f"/_media/{h16}{ext}", {"source": source, "width": width, "height": height, "variants": variants}
 
 
 class _MediaRewriter:

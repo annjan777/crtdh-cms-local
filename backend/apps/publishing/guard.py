@@ -7,7 +7,7 @@ MAX_SHRINK = 0.30
 
 
 class BuildGuardError(CMSError):
-    def __init__(self, problems, shrinks):
+    def __init__(self, problems, shrinks, details=None):
         self.problems, self.shrinks = problems, shrinks
         only_shrink = shrinks and len(problems) == len(shrinks)
         super().__init__(
@@ -17,11 +17,12 @@ class BuildGuardError(CMSError):
                  else "Fix the snapshot problems listed; nothing was built or uploaded."),
             side_effects="none",
         )
+        self.body["details"] = details or []  # addendum A4: [{resource, before, after}] per shrinking collection
 
 
 def check(snapshot, previous=None, confirm_shrink=False):
     """Raise BuildGuardError if the snapshot is invalid, misses a collection, or shrinks >30% unconfirmed."""
-    problems, shrinks = [], []
+    problems, shrinks, details = [], [], []
     collections = snapshot.get("collections") if isinstance(snapshot, dict) else None
     missing = [name for name in registry.COLLECTIONS if not isinstance((collections or {}).get(name), list)]
     if missing:
@@ -36,8 +37,9 @@ def check(snapshot, previous=None, confirm_shrink=False):
                 msg = f"{name} shrinks from {before} to {after} (-{round(100 * (before - after) / before)}%)"
                 problems.append(msg)
                 shrinks.append(msg)
+                details.append({"resource": name, "before": before, "after": after})
     if problems:
-        raise BuildGuardError(problems, shrinks)
+        raise BuildGuardError(problems, shrinks, details)
 
 
 check_snapshot = check  # name used by the qa lane's contract tests

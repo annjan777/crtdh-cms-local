@@ -12,4 +12,4 @@ class HeroSlideSerializer(serializers.ModelSerializer):
 class ProjectSlideSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectSlide
-        fields = ["id", "image", "title", "order", "is_published", "version"]
+        fields = ["id", "image", "image_alt", "title", "order", "is_published", "version"]
