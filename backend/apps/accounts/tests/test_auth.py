@@ -239,3 +239,57 @@ def test_login_for_enrolled_user_says_mfa_required(browser, editor):
     enrol(editor)
     r = browser.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
     assert r.json() == {"mfa_required": True}
+
+
+# --- /cms/login (OAuth authorize entry point for the mcp lane) ---
+
+NEXT = "/oauth/authorize/?response_type=code&client_id=abc&state=x%2Fy&scope=cms"
+
+
+def test_cms_login_sends_verified_user_straight_to_next_with_query(browser, editor):
+    enrol(editor)
+    sign_in(browser, editor)
+    from urllib.parse import quote
+    r = browser.get("/cms/login?next=" + quote(NEXT, safe=""))
+    assert r.status_code == 302 and r["Location"] == NEXT
+    assert r["Cache-Control"] == "no-store"
+    assert browser.get("/cms/login").status_code == 302 and browser.get("/cms/login")["Location"] == "/"
+
+
+def test_cms_login_sends_anonymous_user_to_spa_login_with_next(browser):
+    from urllib.parse import quote, unquote
+    r = browser.get("/cms/login?next=" + quote(NEXT, safe=""))
+    assert r.status_code == 302 and r["Location"].startswith("/login?next=")
+    assert unquote(r["Location"].split("next=", 1)[1]) == NEXT
+
+
+def test_cms_login_password_only_session_is_not_enough(browser, editor):
+    enrol(editor)
+    browser.post("/api/v1/auth/login/", {"username": editor.username, "password": TEST_PASSWORD})
+    r = browser.get("/cms/login?next=/oauth/authorize/")
+    assert r["Location"].startswith("/login?next=")
+
+
+def test_cms_login_pending_password_change_goes_to_spa(browser, editor):
+    enrol(editor)
+    sign_in(browser, editor)
+    editor.security.must_change_password = True
+    editor.security.save()
+    assert browser.get("/cms/login?next=/oauth/authorize/")["Location"].startswith("/login")
+
+
+@pytest.mark.parametrize("bad", [
+    "https://evil.example/x", "//evil.example/x", "/\\evil.example", "\\\\evil", "javascript:alert(1)",
+    "evil.example", "/ok\r\nSet-Cookie:x=1", "///evil.example", "http:/evil.example",
+])
+def test_cms_login_rejects_off_origin_next(browser, editor, bad):
+    enrol(editor)
+    sign_in(browser, editor)
+    r = browser.c.get("/cms/login", {"next": bad})
+    assert r.status_code == 302 and r["Location"] == "/"
+    anon = Browser(ip="198.51.100.77")
+    assert anon.c.get("/cms/login", {"next": bad})["Location"] == "/login"
+
+
+def test_cms_login_rejects_post(browser):
+    assert browser.post("/cms/login").status_code in (403, 405)

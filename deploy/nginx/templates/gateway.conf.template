@@ -28,6 +28,14 @@ server {
         proxy_read_timeout 60s;
     }
 
+    # Sign-in entry for the OAuth authorize step: Django sends an MFA-verified session straight to
+    # ?next=, anyone else to the SPA's /login?next=.
+    location ~ ^/cms/login/?$ {
+        proxy_pass http://cms:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+
     location /oauth/ {
         proxy_pass http://cms:8000;
         proxy_set_header Host $host;

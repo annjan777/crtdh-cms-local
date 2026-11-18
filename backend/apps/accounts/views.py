@@ -236,3 +236,49 @@ class PasswordChangeView(APIView):
         sessions.revoke_all(user, keep=request.session.session_key)
         UserSecurity.objects.filter(user=user).update(must_change_password=False)
         return Response(dict(me_payload(user), csrfToken=get_token(request)))
+
+
+# --- /cms/login: entry point for flows that need a signed-in CMS user (OAuth authorize) ----------
+
+SPA_LOGIN_PATH = "/login"
+
+
+def safe_next(value):
+    """`value` if it is a same-origin relative path ("/x?y"), else None. Rejects absolute and
+    scheme-relative URLs, backslash tricks and control characters; the query string is kept."""
+    from urllib.parse import urlsplit
+
+    if not isinstance(value, str) or not value or len(value) > 4096:
+        return None
+    if not value.startswith("/") or value.startswith("//") or "\\" in value:
+        return None
+    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in value):
+        return None
+    parts = urlsplit(value)
+    if parts.scheme or parts.netloc:
+        return None
+    return value
+
+
+def cms_login(request):
+    """GET /cms/login?next=<relative path>.
+
+    A user whose session already completed password + MFA (and has no pending temporary-password
+    change) goes straight to `next`. Anyone else is sent to the admin SPA's sign-in page with the
+    same `next`, which returns here (or to `next`) after MFA. Off-origin `next` values are dropped."""
+    from urllib.parse import quote
+
+    from django.http import HttpResponseNotAllowed, HttpResponseRedirect
+
+    if request.method not in ("GET", "HEAD"):
+        return HttpResponseNotAllowed(["GET", "HEAD"])
+    nxt = safe_next(request.GET.get("next", ""))
+    user = request.user
+    if mfa.is_verified(request) and not getattr(getattr(user, "security", None), "must_change_password", False):
+        resp = HttpResponseRedirect(nxt or "/")
+    else:
+        target = SPA_LOGIN_PATH + ("?next=" + quote(nxt, safe="") if nxt else "")
+        resp = HttpResponseRedirect(target)
+    resp["Cache-Control"] = "no-store"
+    resp["Referrer-Policy"] = "same-origin"
+    return resp

@@ -9,6 +9,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from apps.accounts.views import cms_login
 from apps.carousel.views import HeroSlideViewSet, ProjectSlideViewSet
 from apps.common.media_views import MediaFileView
 from apps.common.views import (
@@ -103,6 +104,9 @@ api_v1_patterns = [
 
 urlpatterns = [
     path("api/v1/", include(api_v1_patterns)),
+    # Sign-in entry point for the OAuth authorize step (mcp lane): see apps.accounts.views.cms_login.
+    path("cms/login", cms_login, name="cms-login"),
+    path("cms/login/", cms_login),
 ]
 
 # The Django admin bypasses MFA: local development only (settings refuse it in production).
