@@ -38,3 +38,6 @@ def check(snapshot, previous=None, confirm_shrink=False):
                 shrinks.append(msg)
     if problems:
         raise BuildGuardError(problems, shrinks)
+
+
+check_snapshot = check  # name used by the qa lane's contract tests

@@ -2,7 +2,7 @@
 
 Auth: X-Agent-Timestamp (unix s) + X-Agent-Signature = hex HMAC-SHA256(AGENT_HMAC_SECRET,
       METHOD + "\n" + PATH + "\n" + TIMESTAMP + "\n" + hex sha256(body)), |now - ts| <= AGENT_MAX_SKEW,
-      each (timestamp, signature) accepted once (replay protection).
+      each POST (timestamp, signature) accepted once (replay protection; GETs are read-only and idempotent).
 """
 import hashlib
 import hmac
@@ -52,11 +52,14 @@ def _verify(request):
     expected = sign(secret, request.method, request.path, ts, request.body)
     if not hmac.compare_digest(expected, sig):
         return False
-    try:
-        with transaction.atomic():
-            AgentNonce.objects.create(nonce=f"{ts_int}:{sig}")
-    except IntegrityError:
-        return False  # replayed
+    if request.method not in ("GET", "HEAD"):
+        # State-changing calls are single-use. Reads are idempotent, so a replayed GET within the window is harmless
+        # (and two identical polls in one second must not lock the agent out).
+        try:
+            with transaction.atomic():
+                AgentNonce.objects.create(nonce=f"{ts_int}:{sig}")
+        except IntegrityError:
+            return False  # replayed
     AgentNonce.objects.filter(seen_at__lt=timezone.now() - timedelta(seconds=2 * settings.AGENT_MAX_SKEW + 60)).delete()
     AgentState.objects.update_or_create(pk=1, defaults={"last_seen": timezone.now()})
     return True
