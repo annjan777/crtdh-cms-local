@@ -121,7 +121,11 @@ def registry_pages() -> list[dict]:
     for page in fallback.PAGES:
         sections = []
         for s in page["sections"]:
-            sections.append({**s, "fields": _model_fields(s["resource"], resources[s["resource"]])})
+            # A section's filter keys (e.g. ImageGridBlock.page) place the row on this page;
+            # they are set on create and never editable, or a row could be moved elsewhere.
+            fields = [f for f in _model_fields(s["resource"], resources[s["resource"]])
+                      if f["name"] not in s.get("filter", {})]
+            sections.append({**s, "fields": fields})
         pages.append({**page, "sections": sections})
     return pages
 
@@ -671,40 +675,84 @@ def reorder(actor: Actor, section_id: str, item_ids: list[str]) -> dict:
             "deduplicated": False}
 
 
-def _restore(model, pk, raw: dict | None, kind: str):
-    if kind == "reordered":
-        model.objects.bulk_update([model(pk=int(k), order=v) for k, v in raw.items()
-                                   if model.objects.filter(pk=int(k)).exists()], ["order"])
-        return
-    obj = model.objects.filter(pk=pk).first()
+def _changed_keys(writes: list[ConnectorWrite]) -> list[str]:
+    """Fields Claude actually changed across these writes (never the whole row)."""
+    keys: set[str] = set()
+    for w in writes:
+        before, after = w.before or {}, w.after or {}
+        keys |= {k for k in after if before.get(k) != after.get(k)}
+    keys.discard("id")
+    return sorted(keys)
+
+
+def _undo_plan(writes: list[ConnectorWrite]):
+    """Check that nobody changed Claude's fields since its last write, and return a callable
+    that restores only those fields. Raises CMS_STALE_VERSION (nothing changed) otherwise."""
+    first, last = writes[0], writes[-1]
+    resources = _resource_models()
+    if first.kind == "reordered":
+        _, section = _section(first.item_id)
+        model = resources[section["resource"]]
+        current = {str(pk): order for pk, order in model.objects.filter(
+            **section.get("filter", {})).values_list("pk", "order")}
+        if any(current.get(k) != v for k, v in (last.after or {}).items()):
+            raise _discard_stale(first.item_id)
+
+        def apply():
+            model.objects.bulk_update([model(pk=int(k), order=v) for k, v in (first.before or {}).items()
+                                       if k in current], ["order"])
+        return apply
+
+    resource, pk = first.item_id.rsplit(".", 1)[1].split(":")
+    model = resources[resource]
+    obj = model.objects.select_for_update().filter(pk=int(pk)).first()
     if obj is None:
-        return
-    if kind == "added":
+        raise CmsError("CMS_NOT_FOUND", f"{first.item_id} no longer exists.", field="id")
+    now = _raw(obj)
+    keys = _changed_keys(writes)
+    if any(now.get(k) != (last.after or {}).get(k) for k in keys):
+        raise _discard_stale(first.item_id, version_of(obj))
+
+    if first.kind == "added":
         # Fallback can't tell whether a Publisher has published the row since, so it never
         # deletes: it hides the row. Core's discard removes never-published rows properly.
         if not hasattr(obj, "is_published"):
             raise CmsError("CMS_VALIDATION", "This new item can't be undone from Claude yet; remove it in the CMS.",
                            fix="Tell the user to remove it in the CMS editor.", field="id")
-        obj.is_published = False
-        obj.save(update_fields=["is_published"])
-        return
-    for f in obj._meta.concrete_fields:
-        if f.attname in raw and not f.primary_key:
-            setattr(obj, f.attname, f.to_python(raw[f.attname]) if raw[f.attname] is not None else None)
-    obj.save()
+
+        def apply():
+            obj.is_published = False
+            obj.save(update_fields=["is_published"])
+        return apply
+
+    def apply():
+        fields = {f.attname: f for f in obj._meta.concrete_fields}
+        for k in keys:
+            value = (first.before or {}).get(k)
+            setattr(obj, k, fields[k].to_python(value) if value is not None else None)
+        obj.save(update_fields=[fields[k].name for k in keys] or None)
+    return apply
+
+
+def _discard_stale(item_id: str, current: int | None = None) -> CmsError:
+    return CmsError("CMS_STALE_VERSION",
+                    f"{item_id} was edited by someone else after Claude's change, so it can't be undone "
+                    "automatically. Nothing was changed.",
+                    fix="Tell the user to review this item in the CMS editor.", current_version=current, field="id")
 
 
 @transaction.atomic
 def discard_change(actor: Actor, item_id: str) -> dict:
     # TODO(integration, backend-core): apps.publishing.changes.discard_item(item_id, ctx=ctx) —
     # reverts to the last PUBLISHED values whoever changed it. Fallback: undo this user's
-    # Claude changes on it.
+    # Claude changes on it, field by field, only if nobody edited those fields since.
     writes = list(ConnectorWrite.objects.select_for_update()
                   .filter(session__user=actor.user, item_id=item_id, discarded=False).order_by("id"))
     if not writes:
         raise CmsError("CMS_NOT_FOUND", f"There is no unpublished change from Claude on {item_id}.",
                        fix="Changes made in the CMS editor can be discarded there.", field="id")
-    _undo(writes)
+    _undo_plan(writes)()
+    ConnectorWrite.objects.filter(pk__in=[w.pk for w in writes]).update(discarded=True)
     return {"id": item_id, "discarded": len(writes), "status": "draft"}
 
 
@@ -716,22 +764,12 @@ def discard_session(actor: Actor) -> dict:
     by_item: dict[str, list] = {}
     for w in writes:
         by_item.setdefault(w.item_id, []).append(w)
-    for item_writes in reversed(list(by_item.values())):
-        _undo(item_writes)
-    return {"discarded": len(writes), "items": list(by_item), "status": "draft"}
-
-
-def _undo(writes: list[ConnectorWrite]):
-    first = writes[0]
-    resources = _resource_models()
-    if first.kind == "reordered":
-        _, section = _section(first.item_id)
-        model = resources[section["resource"]]
-        _restore(model, None, first.before, "reordered")
-    else:
-        resource, pk = first.item_id.rsplit(".", 1)[1].split(":")
-        _restore(resources[resource], int(pk), first.before, first.kind)
+    # Check every item first: if any was edited by someone else, refuse and change nothing.
+    plans = [_undo_plan(item_writes) for item_writes in by_item.values()]
+    for apply in reversed(plans):
+        apply()
     ConnectorWrite.objects.filter(pk__in=[w.pk for w in writes]).update(discarded=True)
+    return {"discarded": len(writes), "items": list(by_item), "status": "draft"}
 
 
 def request_upload_link(actor: Actor) -> dict:
