@@ -26,7 +26,7 @@ summary.nav__link::-webkit-details-marker { display: none; }
 }
 .nav__menu a { display: flex; align-items: center; min-height: var(--target); padding: 0 12px; text-decoration: none; color: var(--ink); font-family: var(--font-ui); font-weight: 500; }
 .nav__menu a:hover { background: var(--surface); color: var(--navy); }
-.nav__menu a[aria-current='page'] { color: var(--navy); box-shadow: inset 3px 0 0 var(--teal); }
+.nav__menu a[aria-current='page'] { color: var(--teal); font-weight: 600; } /* no coloured side bar (WS2.1) */
 .site-header__action { min-height: 44px; padding: 8px 18px; }
 
 /* Mobile: a full-screen menu with 48 px rows (WS2.9) */
