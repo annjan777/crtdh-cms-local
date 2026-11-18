@@ -1,0 +1,25 @@
+"""Test settings (QA lane). Used by pytest via backend/pytest.ini.
+
+Imports the real settings so tests exercise production code paths, then swaps in
+SQLite, fast hashing, in-memory email/cache and a throwaway MEDIA_ROOT.
+Env vars are set *before* the import so fail-closed production checks see sane values.
+"""
+import os
+import tempfile
+
+os.environ.setdefault("SECRET_KEY", "test-only-not-a-secret-0123456789abcdefghijklmnopqrstuvwxyz")
+os.environ.setdefault("DEBUG", "False")
+os.environ.setdefault("ALLOWED_HOSTS", "testserver,localhost,127.0.0.1")
+os.environ.setdefault("CORS_ALLOW_ALL_ORIGINS", "False")
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+os.environ.setdefault("DJANGO_ENV", "test")
+
+from .settings import *  # noqa: E402,F401,F403
+
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+MEDIA_ROOT = tempfile.mkdtemp(prefix="crtdh-test-media-")
+# Turnstile / external calls must never leave the box in tests.
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "1x0000000000000000000000000000000AA")
