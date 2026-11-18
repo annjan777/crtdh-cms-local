@@ -102,9 +102,8 @@ function SignIn({ expired }) {
             value={username}
             aria-invalid={showErr('username') || undefined}
             aria-describedby="username-msg"
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => { setUsername(e.target.value); setTouched((t) => ({ ...t, username: false })); }}
             onBlur={() => setTouched((t) => ({ ...t, username: true }))}
-            onFocus={() => setTouched((t) => ({ ...t, username: false }))}
           />
         </Field>
         <Field label="Password" htmlFor="password" error={showErr('password') ? 'Enter your password.' : null}>
@@ -117,9 +116,8 @@ function SignIn({ expired }) {
             value={password}
             aria-invalid={showErr('password') || undefined}
             aria-describedby="password-msg"
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); setTouched((t) => ({ ...t, password: false })); }}
             onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-            onFocus={() => setTouched((t) => ({ ...t, password: false }))}
           />
         </Field>
         <SubmitButton busy={busy}>Sign in</SubmitButton>

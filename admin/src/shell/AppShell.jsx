@@ -135,7 +135,7 @@ export default function AppShell({ crumb, children, onOpenNav }) {
             <span>Pages</span>
           </button>
         ) : null}
-        <Link to="/pages/home" className="brand">
+        <Link to="/pages/home" className="brand" aria-label="CRTDH website">
           <img src="/apple-touch-icon.png" alt="" width="28" height="28" />
           <span className="brand-name">CRTDH website</span>
         </Link>

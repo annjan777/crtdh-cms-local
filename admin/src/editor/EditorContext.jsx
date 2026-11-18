@@ -305,7 +305,6 @@ export function EditorProvider({ pageId, children }) {
     if (!preview) return null;
     const data = { ...preview, singletons: { ...preview.singletons }, collections: { ...preview.collections } };
     for (const r of Object.values(records)) {
-      if (r.status === 'idle' || r.status === 'saved') continue;
       if (data.singletons[r.resource]) data.singletons[r.resource] = { ...data.singletons[r.resource], ...r.values };
       else if (data.collections[r.resource]) data.collections[r.resource] = data.collections[r.resource].map((row) => (row.id === r.pk ? { ...row, ...r.values } : row));
     }
