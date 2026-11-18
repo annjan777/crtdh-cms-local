@@ -27,7 +27,7 @@ export default function About({ data }) {
             </div>
             {about.ecosystem_image && (
               <figure className="split__side">
-                <Img src={about.ecosystem_image} alt={about.ecosystem_heading || ''} ratio={null} contain sizes="(min-width: 768px) 30vw, 100vw" />
+                <Img src={about.ecosystem_image} alt={about.ecosystem_image_alt || about.ecosystem_heading || ''} ratio={null} contain sizes="(min-width: 768px) 30vw, 100vw" />
                 {about.ecosystem_heading && <figcaption>{about.ecosystem_heading}</figcaption>}
               </figure>
             )}
@@ -35,29 +35,28 @@ export default function About({ data }) {
         </section>
       )}
 
-      {about.mission_vision && (
-        <section className="section section--surface" aria-labelledby="about-mission">
-          <div className="wrap">
-            <h2 id="about-mission">Mission and vision</h2>
-            <Prose text={about.mission_vision} className="mt-6" />
-          </div>
-        </section>
-      )}
-
-      {focus.length > 0 && (
-        <section className="section" aria-labelledby="about-focus">
-          <div className="wrap grid12">
-            <div className="col-head">
-              <h2 id="about-focus">Where we work</h2>
-              {taglines.map((t) => (
-                <p className="soft mt-4" key={t}>{t}</p>
-              ))}
-            </div>
-            <ul className="names names--focus col-body">
-              {focus.map((f) => (
-                <li key={f.id}>{f.title}</li>
-              ))}
-            </ul>
+      {(about.mission_vision || focus.length > 0) && (
+        <section className="section section--surface" aria-labelledby={about.mission_vision ? 'about-mission' : 'about-focus'}>
+          <div className={about.mission_vision && focus.length > 0 ? 'wrap split' : 'wrap'}>
+            {about.mission_vision && (
+              <div className="split__main">
+                <h2 id="about-mission">Mission and vision</h2>
+                <Prose text={about.mission_vision} className="mt-6" />
+              </div>
+            )}
+            {focus.length > 0 && (
+              <aside className="split__side about__focus" aria-labelledby="about-focus">
+                {about.mission_vision ? <h3 id="about-focus">Where we work</h3> : <h2 id="about-focus">Where we work</h2>}
+                {taglines.map((t) => (
+                  <p className="soft mt-4" key={t}>{t}</p>
+                ))}
+                <ul className="names names--focus names--stack mt-6">
+                  {focus.map((f) => (
+                    <li key={f.id}>{f.title}</li>
+                  ))}
+                </ul>
+              </aside>
+            )}
           </div>
         </section>
       )}
@@ -106,7 +105,7 @@ export default function About({ data }) {
               {timeline.map((t) => (
                 <li key={t.id}>
                   <p className="timeline__year">{t.year}</p>
-                  {t.image && <Img src={t.image} alt="" ratio="3x2" sizes="(min-width: 768px) 30vw, 100vw" />}
+                  {t.image && <Img src={t.image} alt={t.image_alt || ''} ratio="3x2" sizes="(min-width: 768px) 30vw, 100vw" />}
                   <h3>{t.title}</h3>
                 </li>
               ))}
@@ -115,7 +114,8 @@ export default function About({ data }) {
         </section>
       )}
 
-      {about.pi_desk_image && (
+      {/* Shown only once there is a message to read; a poster alone is not a section. */}
+      {about.pi_desk_document && (
         <section className="section section--surface" aria-labelledby="about-pi">
           <div className="wrap split split--reverse">
             <div className="split__main">
@@ -126,9 +126,11 @@ export default function About({ data }) {
                 </p>
               )}
             </div>
+            {about.pi_desk_image && (
             <figure className="split__side split__side--wide">
-              <Img src={about.pi_desk_image} alt="Note from the Principal Investigator’s desk" ratio={null} contain sizes="(min-width: 768px) 50vw, 100vw" />
+              <Img src={about.pi_desk_image} alt={about.pi_desk_image_alt || 'Note from the Principal Investigator’s desk'} ratio={null} contain sizes="(min-width: 768px) 50vw, 100vw" />
             </figure>
+            )}
           </div>
         </section>
       )}

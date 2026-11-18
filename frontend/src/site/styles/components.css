@@ -162,3 +162,7 @@
 /* Closing band: one heading, one sentence, one action */
 .closing { max-width: 44rem; }
 .closing .lead { margin-top: var(--s-4); }
+
+/* A list of names set as one column in a side panel (About: Where we work beside the mission) */
+.names--stack { columns: 1; }
+.about__focus h3 { font-family: var(--font-display); font-weight: 500; font-size: var(--fs-28); color: var(--ink); }
