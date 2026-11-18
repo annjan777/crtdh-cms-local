@@ -1,0 +1,197 @@
+"""The four ways to make an uploaded release live. Each switch is undoable by switching back."""
+from __future__ import annotations
+
+import os
+import posixpath
+import re
+import stat
+import tempfile
+import time
+from typing import Callable
+
+from .layout import MARKER, Layout
+from .logutil import LOG
+from .remote import Remote, RemoteError
+
+HTACCESS_BEGIN = "# BEGIN crtdh-publish-agent"
+HTACCESS_END = "# END crtdh-publish-agent"
+LEGACY_HTACCESS = "legacy.htaccess"
+_APACHE_SAFE = re.compile(r"^[A-Za-z0-9._/-]+$")
+
+
+def _ts() -> str:
+    return time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+
+
+# ---------------------------------------------------------------------------- first takeover
+def take_over(remote: Remote, layout: Layout, state: dict) -> str | None:
+    """Move the existing (pre-agent) site aside once, so it can be rolled back to. Returns legacy id."""
+    if layout.strategy == "copy":
+        return None
+    if layout.strategy == "htaccess":
+        legacy = remote.read_bytes(posixpath.join(layout.web_root, ".htaccess"))
+        remote.makedirs(layout.base)
+        remote.write_bytes(posixpath.join(layout.base, LEGACY_HTACCESS), legacy or b"")
+        return "legacy-" + _ts()
+    st = remote.lstat(layout.web_root)
+    if st is None:
+        return None
+    rid = "legacy-" + _ts()
+    remote.makedirs(layout.releases)
+    if layout.strategy == "symlink":
+        LOG.info("first publish: moving the existing site %s to %s", layout.web_root, layout.stored(rid))
+        remote.sftp.rename(layout.web_root, layout.stored(rid))
+        if stat.S_ISDIR(st.st_mode) or stat.S_ISLNK(st.st_mode):
+            # Point the web root at the old site straight away so the window without a site is two calls long.
+            remote.symlink(posixpath.relpath(layout.stored(rid), posixpath.dirname(layout.web_root)), layout.web_root)
+    # swap: the old site stays in the web root (it is now "current"); the first switch moves it to releases/<id>.
+    return rid
+
+
+# ---------------------------------------------------------------------------- per-release prep
+def prepare_release(remote: Remote, layout: Layout, staging: str) -> None:
+    if layout.strategy == "symlink":
+        link = posixpath.join(staging, "media")
+        if not remote.exists(link):
+            remote.symlink(posixpath.relpath(layout.media_dir, staging), link)
+
+
+# ---------------------------------------------------------------------------- switch
+def switch(remote: Remote, layout: Layout, state: dict, target: str,
+           local_files: Callable[[str], str] | None = None) -> None:
+    kind = state["kinds"].get(target, "release")
+    fn = {"symlink": _switch_symlink, "htaccess": _switch_htaccess,
+          "swap": _switch_swap, "copy": _switch_copy}[layout.strategy]
+    fn(remote, layout, state, target, kind, local_files)
+
+
+def _switch_symlink(remote, layout, state, target, kind, _local):
+    dest = layout.stored(target)
+    if not remote.exists(dest):
+        raise RemoteError(f"release {target} is missing on the server")
+    rel = posixpath.relpath(dest, posixpath.dirname(layout.web_root))
+    tmp = layout.web_root + ".crtdh-new"
+    remote.rmtree(tmp)
+    remote.symlink(rel, tmp)
+    st = remote.lstat(layout.web_root)
+    if st is not None and not stat.S_ISLNK(st.st_mode):
+        raise RemoteError(f"{layout.web_root} is a real folder, not the agent's link; refusing to replace it")
+    remote.replace(tmp, layout.web_root)  # atomic rename of the link
+
+
+def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
+    rel = posixpath.relpath(layout.base, layout.web_root)
+    rel_release = f"{rel}/releases/{target}"
+    if not (_APACHE_SAFE.match(rel_release) and _APACHE_SAFE.match(rel)):
+        raise RemoteError("folder names contain characters unsafe for .htaccess")
+    esc = re.escape
+    lines = [
+        HTACCESS_BEGIN,
+        f"# Live release: {target}. Written by the CRTDH publish agent; edits are overwritten.",
+        "Options -Indexes",
+        "RewriteEngine On",
+        "RewriteBase /",
+        "# Block direct requests to the release store",
+        "RewriteCond %{ENV:REDIRECT_STATUS} ^$",
+        f"RewriteRule ^{esc(rel)}(/|$) - [F,L]",
+        f"RewriteRule ^media/(.+)$ {rel}/media/$1 [L]",
+        f"RewriteRule ^$ {rel_release}/index.html [L]",
+    ]
+    dirs = sorted(d for d in index_dirs if d and _APACHE_SAFE.match(d))
+    if dirs:
+        alt = "|".join(esc(d) for d in dirs)
+        lines.append(f"RewriteRule ^({alt})/?$ {rel_release}/$1/index.html [L]")
+    lines += [
+        f"RewriteCond %{{REQUEST_URI}} !^/{esc(rel)}/",
+        f"RewriteRule ^(.*)$ {rel_release}/$1 [L]",
+        HTACCESS_END,
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _switch_htaccess(remote, layout, state, target, kind, _local):
+    path = posixpath.join(layout.web_root, ".htaccess")
+    if kind == "legacy":
+        legacy = remote.read_bytes(posixpath.join(layout.base, LEGACY_HTACCESS)) or b""
+        if legacy:
+            remote.write_bytes(path, legacy)
+        elif remote.exists(path):
+            remote.sftp.remove(path)
+        return
+    meta = remote.read_json(posixpath.join(layout.stored(target), MARKER)) or {}
+    if not meta:
+        raise RemoteError(f"release {target} is missing or incomplete on the server")
+    remote.write_bytes(path, htaccess_rules(layout, target, meta.get("index_dirs", [])).encode())
+
+
+def _switch_swap(remote, layout, state, target, kind, _local):
+    current = state.get("current")
+    src = layout.stored(target)
+    if not remote.exists(src):
+        raise RemoteError(f"release {target} is missing on the server")
+    if not current and not remote.exists(layout.web_root):
+        remote.sftp.rename(src, layout.web_root)
+        return
+    if not current:
+        raise RemoteError("swap strategy: cannot tell which release is live; refusing to touch the web root")
+    out = layout.stored(current)
+    if remote.exists(out):
+        raise RemoteError(f"{out} already exists; refusing to overwrite it")
+    incoming_media = posixpath.join(src, "media")
+    if remote.exists(incoming_media):
+        remote.sftp.rename(incoming_media, posixpath.join(src, f"media.stale-{_ts()}"))
+    # Non-atomic window starts: the web root is missing between rename 1 and rename 3.
+    remote.sftp.rename(layout.web_root, out)
+    try:
+        if remote.exists(posixpath.join(out, "media")):
+            remote.sftp.rename(posixpath.join(out, "media"), incoming_media)
+        remote.sftp.rename(src, layout.web_root)
+    except Exception:
+        LOG.error("swap failed half way; putting the previous site back")
+        if remote.exists(incoming_media) and not remote.exists(posixpath.join(out, "media")):
+            remote.sftp.rename(incoming_media, posixpath.join(out, "media"))
+        if not remote.exists(layout.web_root):
+            remote.sftp.rename(out, layout.web_root)
+        raise
+
+
+def _switch_copy(remote, layout, state, target, kind, local_files):
+    """Last resort: overwrite files in the web root one by one (each file swap is atomic, the set is not)."""
+    src = layout.stored(target)
+    meta = remote.read_json(posixpath.join(src, MARKER)) or {}
+    files = [f for f, _ in meta.get("files", [])]
+    if not files:
+        raise RemoteError(f"release {target} is missing or incomplete on the server")
+    tmpdir = None
+    if local_files is None:
+        tmpdir = tempfile.mkdtemp(prefix="crtdh-copy-")
+
+        def local_files(rel, _tmp=tmpdir):  # noqa: F811 - download from the stored release
+            dest = os.path.join(_tmp, *rel.split("/"))
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            remote.sftp.get(posixpath.join(src, rel), dest)
+            return dest
+    made = set()
+    try:
+        for rel in files:
+            dest = posixpath.join(layout.web_root, rel)
+            parent = posixpath.dirname(dest)
+            if parent not in made:
+                remote.makedirs(parent)
+                made.add(parent)
+            remote.put_file(local_files(rel), dest)
+    finally:
+        if tmpdir:
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
+    previous = state.get("current")
+    if previous and previous != target:
+        old = remote.read_json(posixpath.join(layout.stored(previous), MARKER)) or {}
+        keep = set(files)
+        for rel, _ in old.get("files", []):
+            if rel not in keep and not rel.startswith("media/"):
+                try:
+                    remote.sftp.remove(posixpath.join(layout.web_root, rel))
+                except IOError:
+                    pass
