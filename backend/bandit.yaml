@@ -1,0 +1,3 @@
+# bandit -c bandit.yaml -r . (run by scripts/security_check.sh)
+exclude_dirs: ["tests", "venv", ".venv", "node_modules", "apps/*/tests", "apps/*/migrations"]
+skips: []

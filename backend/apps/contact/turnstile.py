@@ -26,7 +26,7 @@ def verify(token, remote_ip=None):
         body["remoteip"] = remote_ip
     req = urllib.request.Request(VERIFY_URL, data=urllib.parse.urlencode(body).encode(), method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=5) as resp:  # nosec B310 - constant https URL
+        with urllib.request.urlopen(req, timeout=5) as resp:  # nosec B310 (constant https URL)
             return bool(json.loads(resp.read(65536)).get("success"))
     except Exception:
         logger.exception("Turnstile verification failed to complete")

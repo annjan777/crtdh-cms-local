@@ -103,7 +103,7 @@ def verify_code(user, code):
 
 
 def reset(user):
-    UserSecurity.objects.filter(user=user).update(totp_secret="", totp_confirmed_at=None, totp_last_step=0)
+    UserSecurity.objects.filter(user=user).update(totp_secret="", totp_confirmed_at=None, totp_last_step=0)  # nosec B106 (clears the secret)
     RecoveryCode.objects.filter(user=user).delete()
 
 
