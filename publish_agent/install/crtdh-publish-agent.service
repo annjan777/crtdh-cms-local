@@ -1,0 +1,23 @@
+# CRTDH publish agent as a systemd service (Linux).
+# Install:  sudo cp crtdh-publish-agent.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now crtdh-publish-agent
+# Logs:     journalctl -u crtdh-publish-agent -f   (and /opt/crtdh-agent/state/logs/agent.log)
+# Change User= to the account that ran `check`, and the paths if the agent is not in /opt/crtdh-agent.
+[Unit]
+Description=CRTDH publish agent
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=CHANGE_ME
+WorkingDirectory=/opt/crtdh-agent
+ExecStart=/opt/crtdh-agent/.venv/bin/python -m publish_agent -c /opt/crtdh-agent/config.ini run
+Restart=always
+RestartSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
