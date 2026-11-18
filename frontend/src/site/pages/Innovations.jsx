@@ -1,5 +1,5 @@
 import PageShell from '../components/PageShell.jsx'
-import { PageBanner, RichText, VideoPoster } from '../components/Blocks.jsx'
+import { ClosingBand, PageBanner, RichText, VideoPoster } from '../components/Blocks.jsx'
 import { Img } from '../media.jsx'
 
 /** Innovations (listing + detail): an index of all titles, then one article per innovation. */
@@ -39,7 +39,7 @@ export default function Innovations({ data }) {
               {slides.map((s) => (
                 <li key={s.id}>
                   <figure>
-                    <Img src={s.image} alt={s.title || ''} ratio="1x1" figure sizes="(min-width: 768px) 22vw, 45vw" />
+                    <Img src={s.image} alt={s.image_alt || s.title || ''} ratio="1x1" figure sizes="(min-width: 768px) 22vw, 45vw" />
                     {s.title && <figcaption>{s.title}</figcaption>}
                   </figure>
                 </li>
@@ -65,7 +65,7 @@ export default function Innovations({ data }) {
                     <div className={`article__media article__media--${Math.min(imgs.length, 4)}`}>
                       {imgs.slice(0, 4).map((im) => (
                         <figure key={im.id}>
-                          <Img src={im.image} alt={im.caption || it.title} ratio={null} contain sizes="(min-width: 768px) 30vw, 100vw" />
+                          <Img src={im.image} alt={im.image_alt || im.caption || it.title} ratio={null} contain sizes="(min-width: 768px) 30vw, 100vw" />
                           {im.caption && imgs.length > 1 && <figcaption>{im.caption}</figcaption>}
                         </figure>
                       ))}
@@ -77,6 +77,13 @@ export default function Innovations({ data }) {
           </div>
         </section>
       )}
+      <ClosingBand
+        id="innovations-cta"
+        surface
+        title="Licence or co-develop a technology"
+        text="Enterprises and health programmes can licence a CRTDH device or develop one further with the team."
+        action="Talk to the centre"
+      />
     </PageShell>
   )
 }

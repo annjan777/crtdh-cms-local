@@ -1,5 +1,5 @@
 import PageShell from '../components/PageShell.jsx'
-import { GridBlock, PageBanner } from '../components/Blocks.jsx'
+import { ClosingBand, GridBlock, PageBanner } from '../components/Blocks.jsx'
 import { Img } from '../media.jsx'
 import { blocksFor } from '../util.js'
 
@@ -24,7 +24,7 @@ export default function Facilities({ data }) {
               {equipment.map((e) => (
                 <li key={e.id} className="tile card">
                   {e.image ? (
-                    <Img src={e.image} alt={e.name} ratio="3x2" sizes="(min-width: 1024px) 23vw, (min-width: 768px) 30vw, 100vw" />
+                    <Img src={e.image} alt={e.image_alt || e.name} ratio="3x2" sizes="(min-width: 1024px) 23vw, (min-width: 768px) 30vw, 100vw" />
                   ) : null}
                   <h3 className="tile__title">{e.name}</h3>
                 </li>
@@ -43,6 +43,12 @@ export default function Facilities({ data }) {
           </div>
         </section>
       )}
+      <ClosingBand
+        id="facilities-cta"
+        title="Book a facility"
+        text="MSMEs, startups and researchers can use the laboratories and pilot plant. Tell us what you want to make or test."
+        action="Ask about a facility"
+      />
     </PageShell>
   )
 }

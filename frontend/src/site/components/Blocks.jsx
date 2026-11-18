@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import SiteLink from '../link.jsx'
 import { Img } from '../media.jsx'
 import { paragraphs, youtubeId } from '../util.js'
 
@@ -37,9 +38,10 @@ export function Prose({ text, className = '' }) {
   )
 }
 
-/** Rich text from the CMS (sanitised on the server: b, i, a, ul, ol, h3). */
+/** Rich text from the CMS. Only Innovation.body is rendered this way; Innovation.save() runs bleach.clean (b, i, a, ul, ol, h3). */
 export function RichText({ html, className = '' }) {
   if (!html) return null
+  // nosemgrep: crtdh-no-dangerously-set-inner-html -- sanitised by Innovation.save (bleach)
   return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
@@ -127,7 +129,7 @@ export function Gallery({ items, title, limit = 0, columns = 3 }) {
         {shown.map((item, i) => (
           <li key={item.id ?? i}>
             <button type="button" className="gallery__item" onClick={() => setIndex(i)} aria-label={`Open ${label(item, i)}`}>
-              <Img src={item.image} alt={item.caption || ''} ratio="3x2" sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 100vw" />
+              <Img src={item.image} alt={item.image_alt || item.caption || ''} ratio="3x2" sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 100vw" />
             </button>
             {item.caption && <p className="gallery__caption">{item.caption}</p>}
           </li>
@@ -153,7 +155,7 @@ export function Gallery({ items, title, limit = 0, columns = 3 }) {
       >
         {open && (
           <div className="viewer__body">
-            <img src={current.image} alt={current.caption || ''} className="viewer__img" />
+            <img src={current.image} alt={current.image_alt || current.caption || ''} className="viewer__img" />
             <div className="viewer__bar">
               <p aria-live="polite">
                 {current.caption ? `${current.caption} · ` : ''}
@@ -184,6 +186,21 @@ export function GridBlock({ block, headingLevel = 2, limit = 0, extraAnchor }) {
         {block.intro && <p>{block.intro}</p>}
       </div>
       <Gallery items={block.items} title={block.section_title} limit={limit} />
+    </section>
+  )
+}
+
+/** Closing band at the foot of a page: one sentence and one action. `surface` alternates the ground. */
+export function ClosingBand({ id, title, text, action, to = '/contact', surface = false }) {
+  return (
+    <section className={`section${surface ? ' section--surface' : ''}`} aria-labelledby={id}>
+      <div className="wrap closing">
+        <h2 id={id}>{title}</h2>
+        {text && <p className="lead">{text}</p>}
+        <div className="actions">
+          <SiteLink to={to} className="btn btn--primary">{action}</SiteLink>
+        </div>
+      </div>
     </section>
   )
 }

@@ -1,6 +1,5 @@
 import PageShell from '../components/PageShell.jsx'
-import { PageBanner } from '../components/Blocks.jsx'
-import SiteLink from '../link.jsx'
+import { ClosingBand, PageBanner } from '../components/Blocks.jsx'
 import { Img } from '../media.jsx'
 import { visible } from '../util.js'
 
@@ -25,7 +24,7 @@ export default function Team({ data }) {
                   {g.members.map((m) => (
                     <li key={m.id} className="person">
                       {m.photo ? (
-                        <Img src={m.photo} alt={`Portrait of ${m.name}`} ratio="4x5" sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw" />
+                        <Img src={m.photo} alt={m.photo_alt || `Portrait of ${m.name}`} ratio="4x5" sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw" />
                       ) : (
                         <div className="img r-4x5 person__nophoto" aria-hidden="true" />
                       )}
@@ -41,15 +40,13 @@ export default function Team({ data }) {
           </div>
         </section>
       )}
-      <section className="section section--surface" aria-labelledby="team-cta">
-        <div className="wrap closing">
-          <h2 id="team-cta">Work with the team</h2>
-          <p className="lead">Researchers, clinicians and enterprises can reach the centre through the contact page.</p>
-          <div className="actions">
-            <SiteLink to="/contact" className="btn btn--primary">Contact CRTDH</SiteLink>
-          </div>
-        </div>
-      </section>
+      <ClosingBand
+        id="team-cta"
+        surface
+        title="Work with the team"
+        text="Researchers, clinicians and enterprises can reach the centre through the contact page."
+        action="Contact CRTDH"
+      />
     </PageShell>
   )
 }
