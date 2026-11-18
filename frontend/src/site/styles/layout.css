@@ -61,8 +61,8 @@ summary.nav__link::-webkit-details-marker { display: none; }
 .site-footer a { color: #fff; text-decoration-color: rgba(255, 255, 255, 0.45); }
 .site-footer a:hover { color: var(--teal-light); }
 .site-footer__name {
-  font-family: var(--font-display); font-weight: 400; font-size: clamp(1.75rem, 3.6vw, 3rem); line-height: 1.1;
-  letter-spacing: -0.015em; max-width: 22ch; text-wrap: balance;
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(1.5rem, 2.8vw, 2.25rem); line-height: 1.15;
+  letter-spacing: -0.015em; max-width: 34ch; text-wrap: balance;
 }
 .site-footer__grid { display: grid; grid-template-columns: 5fr 7fr; gap: var(--s-12); margin-top: var(--s-16); }
 .site-footer__h { font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-16); color: var(--on-navy-soft); margin-bottom: var(--s-3); letter-spacing: 0; }

@@ -2,7 +2,7 @@
 .hero { background: var(--navy-deep); color: var(--on-navy); padding-block: clamp(40px, 6vw, 88px) clamp(48px, 7vw, 96px); overflow: hidden; }
 .hero__grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); align-items: end; }
 .hero__text { grid-column: 1 / span 5; grid-row: 1; padding-bottom: var(--s-2); }
-.hero h1 { color: #fff; font-size: clamp(2.25rem, 3.9vw, 3.5rem); line-height: 1.06; font-weight: 450; letter-spacing: -0.02em; }
+.hero h1 { color: #fff; font-size: clamp(2.25rem, 3.6vw, 3rem); line-height: 1.06; font-weight: 450; letter-spacing: -0.02em; }
 .hero__line { margin-top: var(--s-6); font-size: var(--fs-18); line-height: 1.55; color: var(--on-navy-soft); max-width: 36ch; }
 .hero__prints { grid-column: 6 / -1; grid-row: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: auto auto; column-gap: clamp(16px, 2vw, 32px); }
 .hero__print--large { grid-column: 1 / -1; position: relative; aspect-ratio: 16 / 9; background: #08283d; }
@@ -20,7 +20,7 @@
 .hero__count { margin-right: auto; padding-left: var(--s-4); font-family: var(--font-ui); font-weight: 500; font-size: var(--fs-14); color: var(--on-navy-soft); }
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 10px;
-  background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.45); border-radius: var(--radius); cursor: pointer;
+  background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, 0.7); border-radius: var(--radius); cursor: pointer;
   font-family: var(--font-ui); font-weight: 600; font-size: var(--fs-14);
   transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
 }
@@ -35,28 +35,27 @@
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .hero__slide { transition: none; } }
 
-/* Tablet: headline across the top, then the photographs at full width (16:9) */
-@media (min-width: 768px) and (max-width: 1023.98px) {
-  .hero__grid { grid-template-columns: minmax(0, 1fr); }
-  .hero__text { grid-column: 1; grid-row: 1; max-width: 34rem; padding-bottom: 0; }
-  .hero h1 { font-size: var(--fs-48); }
-  .hero__prints { grid-column: 1; grid-row: 2; margin-top: var(--s-12); }
-  .hero__print--small { margin-left: 0; width: 100%; }
-}
-
-@media (max-width: 767.98px) {
+/* Below 1024 the hero stacks: photograph, then headline and actions, then the carousel
+   controls, so the counter never reads as a label above the H1. */
+@media (max-width: 1023.98px) {
   .hero { padding-top: var(--s-6); }
   .hero__grid { grid-template-columns: minmax(0, 1fr); }
-  .hero__text { grid-column: 1; grid-row: 2; margin-top: var(--s-8); }
+  .hero__text { grid-column: 1; grid-row: 2; margin-top: var(--s-8); max-width: 40rem; }
+  .hero__prints { display: contents; }
+  .hero__print--large { grid-column: 1; grid-row: 1; }
+  .hero__print--small { display: none; }
+  .hero__controls { grid-column: 1; grid-row: 3; margin-top: var(--s-8); }
+  .hero__count { padding-left: 0; }
+}
+@media (max-width: 767.98px) {
   .hero h1 { font-size: var(--fs-28); line-height: 1.12; }
   .hero__line { font-size: var(--fs-16); }
-  .hero__prints { grid-column: 1; grid-row: 1; grid-template-columns: repeat(10, minmax(0, 1fr)); column-gap: 8px; }
-  .hero__print--large { aspect-ratio: 4 / 5; grid-column: 1 / -1; }
-  .hero__print--small { display: none; }
-  .hero__controls { grid-column: 1 / -1; }
-  .hero__count { padding-left: 0; }
+  .hero__print--large { aspect-ratio: 4 / 5; }
   .hero .actions .btn { flex: 1 1 100%; }
 }
+
+/* Section intro sentences are read, so they take the full ink (ink-soft is for captions) */
+.proof__head p.soft, .work__head p.soft { color: var(--ink); }
 
 /* Proof: names in columns */
 .proof__head { grid-column: 1 / span 4; }

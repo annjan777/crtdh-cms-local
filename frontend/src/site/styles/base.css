@@ -76,8 +76,8 @@ a:hover { color: var(--teal); }
 
 /* Section heading: a display H2 and, at most, one sentence under it */
 .section-head { margin-bottom: var(--s-12); max-width: 44rem; }
-.section-head p { margin-top: var(--s-4); color: var(--ink-soft); }
-.section--navy .section-head p { color: var(--on-navy-soft); }
+.section-head p { margin-top: var(--s-4); color: var(--ink); }
+.section--navy .section-head p { color: var(--on-navy); }
 
 /* Buttons: square-cornered, one fill, Montserrat label, 48px tall */
 .btn {
