@@ -1,18 +1,23 @@
-"""Contract §4 error bodies for every API response.
+"""Contract §4 error bodies for every API response (the one exception handler).
 
-Raise `CMSError(code, message, fix=..., status=...)` from any view; DRF's own
-exceptions are mapped by `exception_handler`. Bodies never carry secrets,
+    raise CMSError("CMS_STALE_VERSION", "...", current_version=8)
+    error_response("CMS_NOT_FOUND", "Not found.")
+    as_error_body(exc)   # for MCP structuredContent / non-DRF callers
+
+apps.publishing.errors re-exports these names. Bodies never carry secrets,
 tokens, signed URLs or tracebacks.
 """
 import logging
+import uuid
 
-from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.http import Http404, JsonResponse
 from rest_framework import exceptions, status
 from rest_framework.response import Response
 
 logger = logging.getLogger("crtdh.security")
 
-STATUS_BY_CODE = {
+STATUS = {
     "CMS_VALIDATION": 400,
     "CMS_UNAUTHENTICATED": 401,
     "CMS_MFA_REQUIRED": 401,
@@ -28,99 +33,133 @@ STATUS_BY_CODE = {
     "CMS_BUILD_GUARD": 422,
     "CMS_INTERNAL": 500,
 }
+STATUS_BY_CODE = STATUS  # older name
+
+DEFAULT_FIX = {
+    "CMS_VALIDATION": "Correct the field and try again.",
+    "CMS_UNAUTHENTICATED": "Sign in to the CMS and try again.",
+    "CMS_MFA_REQUIRED": "Set up your authenticator app, then sign in.",
+    "CMS_FORBIDDEN_ROLE": "Ask a CMS admin for the role this action needs.",
+    "CMS_CSRF_FAILED": "Fetch /api/v1/auth/csrf/ and resend with the X-CSRFToken header.",
+    "CMS_NOT_FOUND": "Reload the page; the item may have been removed.",
+    "CMS_STALE_VERSION": "Reload the section and reapply your change.",
+    "CMS_PUBLISH_RUNNING": "Wait for the running publish to finish, then publish again.",
+    "CMS_IMAGE_TOO_SMALL": "Upload the original photo (2400 px or wider is best).",
+    "CMS_RATE_LIMITED": "Wait a minute and try again.",
+    "CMS_BUILD_GUARD": "Check the listed collections; publish again with confirm_shrink if the removals are intended.",
+    "CMS_INTERNAL": "Try again; if it keeps failing, tell the site maintainer the request id.",
+}
+
+
+def new_request_id():
+    return uuid.uuid4().hex
+
+
+def error_body(code, message, *, fix=None, retryable=False, side_effects="none", field=None,
+               current_version=None, request_id=None):
+    return {
+        "code": code,
+        "message": message,
+        "fix": fix or DEFAULT_FIX.get(code, "Try again."),
+        "retryable": retryable,
+        "side_effects": side_effects,
+        "field": field,
+        "current_version": current_version,
+        "request_id": request_id,
+    }
 
 
 class CMSError(exceptions.APIException):
-    def __init__(self, code, message, *, fix="", retryable=False, side_effects="none",
-                 field=None, current_version=None, status_code=None, extra=None, headers=None):
-        self.status_code = status_code or STATUS_BY_CODE.get(code, 400)
+    """Raise anywhere in a DRF view (or MCP tool): rendered as the contract error body."""
+
+    def __init__(self, code, message, *, status_code=None, headers=None, **kw):
         self.code = code
-        self.body = {
-            "code": code,
-            "message": message,
-            "fix": fix,
-            "retryable": retryable,
-            "side_effects": side_effects,
-            "field": field,
-            "current_version": current_version,
-        }
-        if extra:
-            self.body.update(extra)
+        self.status_code = status_code or STATUS.get(code, 400)
+        self.body = error_body(code, message, **kw)
         self.headers = headers or {}
         super().__init__(detail=message, code=code)
 
 
-def _body(request, code, message, fix="", **kw):
-    body = {"code": code, "message": message, "fix": fix, "retryable": False,
-            "side_effects": "none", "field": None, "current_version": None}
-    body.update(kw)
-    body["request_id"] = getattr(request, "request_id", None)
-    return body
+def _rid(request):
+    return getattr(request, "request_id", None) or new_request_id()
 
 
-def _first_field(detail):
+def error_response(code, message, *, request=None, http_status=None, headers=None, **kw):
+    kw.setdefault("request_id", _rid(request))
+    return Response(error_body(code, message, **kw), status=http_status or STATUS[code], headers=headers)
+
+
+def _validation_message(detail, prefix=""):
+    """Flatten DRF validation detail into (first_field, 'field: msg; other: msg')."""
+    parts, first = [], None
     if isinstance(detail, dict):
-        for key, val in detail.items():
-            sub = _first_field(val)
-            return (key if key != "non_field_errors" else None), (sub[1] if sub else str(val))
-    if isinstance(detail, list) and detail:
-        return _first_field(detail[0])
-    return None, str(detail)
+        for key, value in detail.items():
+            name = f"{prefix}{key}" if key != "non_field_errors" else prefix.rstrip(".") or None
+            sub_first, sub_msg = _validation_message(value, f"{name}." if name else "")
+            first = first or sub_first or name
+            parts.append(f"{name}: {sub_msg}" if name and not isinstance(value, dict) else sub_msg)
+    elif isinstance(detail, list):
+        msgs = []
+        for v in detail:
+            f, m = _validation_message(v, prefix)
+            first = first or f
+            msgs.append(m)
+        return first, " ".join(msgs)
+    else:
+        return None, str(detail)
+    return first, "; ".join(p for p in parts if p)
 
 
 def exception_handler(exc, context):
-    request = context.get("request")
+    request = (context or {}).get("request")
     if isinstance(exc, CMSError):
-        body = dict(exc.body, request_id=getattr(request, "request_id", None))
+        body = dict(exc.body)
+        body["request_id"] = body.get("request_id") or _rid(request)
         return Response(body, status=exc.status_code, headers=exc.headers)
+    if isinstance(exc, Http404):
+        exc = exceptions.NotFound()
+    elif isinstance(exc, DjangoPermissionDenied):
+        exc = exceptions.PermissionDenied()
 
-    if isinstance(exc, exceptions.ValidationError):
-        field, msg = _first_field(exc.detail)
-        return Response(
-            _body(request, "CMS_VALIDATION", msg, "Correct the highlighted field and try again.",
-                  field=field),
-            status=400,
-        )
     if isinstance(exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)):
-        return Response(_body(request, "CMS_UNAUTHENTICATED", "Sign in to continue.", "Sign in again."),
-                        status=401, headers={"WWW-Authenticate": "Session"})
+        return error_response("CMS_UNAUTHENTICATED", "You are not signed in, or your session has expired.",
+                              request=request, headers={"WWW-Authenticate": "Session"})
     if isinstance(exc, exceptions.PermissionDenied):
         detail = str(exc.detail)
         if detail.startswith("CSRF Failed"):
-            return Response(_body(request, "CMS_CSRF_FAILED", "Security token missing or expired.",
-                                  "Fetch /api/v1/auth/csrf/ and resend with the X-CSRFToken header.",
-                                  retryable=True), status=403)
-        return Response(_body(request, "CMS_FORBIDDEN_ROLE", "Your role does not allow this action.",
-                              "Ask an admin for the right role."), status=403)
+            return error_response("CMS_CSRF_FAILED", "Security token missing or expired.", request=request,
+                                  retryable=True)
+        msg = detail if exc.detail != exceptions.PermissionDenied.default_detail else "Your role does not allow this action."
+        return error_response("CMS_FORBIDDEN_ROLE", msg, request=request)
     if isinstance(exc, exceptions.NotFound):
-        return Response(_body(request, "CMS_NOT_FOUND", "Not found.", "Check the id and try again."), status=404)
+        return error_response("CMS_NOT_FOUND", "Not found.", request=request)
     if isinstance(exc, exceptions.Throttled):
         wait = int(exc.wait or 60)
-        return Response(_body(request, "CMS_RATE_LIMITED", f"Too many requests. Try again in {wait} seconds.",
-                              "Wait and retry.", retryable=True),
-                        status=429, headers={"Retry-After": str(wait)})
+        return error_response("CMS_RATE_LIMITED", f"Too many requests. Try again in {wait} seconds.",
+                              request=request, retryable=True, headers={"Retry-After": str(wait)})
+    if isinstance(exc, exceptions.ValidationError):
+        field, message = _validation_message(exc.detail)
+        return error_response("CMS_VALIDATION", message or "Invalid input.", request=request, field=field)
+    if isinstance(exc, exceptions.MethodNotAllowed):
+        return error_response("CMS_VALIDATION", str(exc.detail), request=request, fix="Use a supported HTTP method.",
+                              http_status=status.HTTP_405_METHOD_NOT_ALLOWED)
     if isinstance(exc, exceptions.APIException):
-        # MethodNotAllowed, ParseError, UnsupportedMediaType, NotAcceptable ...
-        return Response(_body(request, "CMS_VALIDATION", str(exc.detail), "Check the request format."),
-                        status=exc.status_code)
-    from django.http import Http404
-    from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
-    if isinstance(exc, Http404):
-        return Response(_body(request, "CMS_NOT_FOUND", "Not found.", "Check the id and try again."), status=404)
-    if isinstance(exc, DjangoPermissionDenied):
-        return Response(_body(request, "CMS_FORBIDDEN_ROLE", "Your role does not allow this action.",
-                              "Ask an admin for the right role."), status=403)
+        code = "CMS_VALIDATION" if exc.status_code < 500 else "CMS_INTERNAL"
+        return error_response(code, str(exc.detail), request=request, http_status=exc.status_code)
 
-    logger.exception("unhandled API error request_id=%s", getattr(request, "request_id", None))
-    return Response(_body(request, "CMS_INTERNAL", "Something went wrong on our side.",
-                          "Try again; if it keeps failing, report the request id.", retryable=True),
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    rid = _rid(request)
+    logger.exception("unhandled API error request_id=%s", rid)
+    return error_response("CMS_INTERNAL", "Something went wrong on the server.", retryable=True,
+                          side_effects="unknown", request_id=rid)
+
+
+def as_error_body(exc):
+    """Any exception -> contract §4 body (for MCP structuredContent and non-DRF callers)."""
+    resp = exception_handler(exc, {})
+    return resp.data
 
 
 def csrf_failure(request, reason=""):
     """Django-level CSRF failures (non-DRF views) get the same JSON body."""
-    return JsonResponse(
-        _body(request, "CMS_CSRF_FAILED", "Security token missing or expired.",
-              "Fetch /api/v1/auth/csrf/ and resend with the X-CSRFToken header.", retryable=True),
-        status=403,
-    )
+    return JsonResponse(error_body("CMS_CSRF_FAILED", "Security token missing or expired.", retryable=True,
+                                   request_id=_rid(request)), status=403)
