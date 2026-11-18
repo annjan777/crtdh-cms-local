@@ -1,10 +1,9 @@
 import pytest
-from django.contrib.auth.models import Group
 from django.test import override_settings
 
 from apps.accounts import mfa
 from apps.accounts.models import AuthThrottle
-from apps.accounts.signals import user_deactivated, user_sessions_revoked
+from apps.accounts.signals import user_sessions_revoked
 from tests.support.errors import assert_contract_error
 from tests.support.factories import TEST_PASSWORD
 
@@ -200,7 +199,6 @@ def test_no_bearer_token_endpoints():
     from rest_framework.test import APIClient
     for url in ("/api/v1/auth/token/", "/api/v1/auth/token/refresh/"):
         assert APIClient().post(url, {}).status_code in (403, 404)
-    import importlib.util
     from django.conf import settings
     assert "rest_framework_simplejwt" not in settings.INSTALLED_APPS
     assert all("JWT" not in c for c in settings.REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"])
