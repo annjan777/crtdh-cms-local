@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import configparser
 import os
+import urllib.parse
 from dataclasses import dataclass, field
 
 STRATEGIES = ("symlink", "htaccess", "swap", "copy")
@@ -136,8 +137,10 @@ def load(path: str) -> Config:
 
 
 def validate(cfg: Config) -> None:
-    if not cfg.cms_url.startswith(("https://", "http://")):
-        raise ConfigError("[cms] url must start with https://")
+    parts = urllib.parse.urlsplit(cfg.cms_url)
+    local = parts.hostname in ("localhost", "127.0.0.1", "::1")
+    if not (parts.scheme == "https" or (parts.scheme == "http" and local)) or not parts.hostname:
+        raise ConfigError("[cms] url must start with https:// (plain http is only allowed for localhost testing)")
     if not cfg.sftp_host or not cfg.sftp_user:
         raise ConfigError("[sftp] host and user are required")
     if cfg.strategy not in ("auto",) + STRATEGIES:

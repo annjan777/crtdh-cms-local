@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -17,7 +18,22 @@ import urllib.request
 from dataclasses import dataclass
 
 from . import __version__
-from .logutil import LOG, register_secret
+from .logutil import LOG, redact, register_secret
+
+HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+class _SameOriginRedirects(urllib.request.HTTPRedirectHandler):
+    """Signed headers must never be sent to another host: refuse any redirect that leaves the CMS origin."""
+
+    def __init__(self, origin):
+        super().__init__()
+        self.origin = origin
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if urllib.parse.urlsplit(newurl)[:2] != self.origin:
+            raise BuildRejected("CMS redirected the agent to another host; refusing to follow it")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 MAX_TARBALL_BYTES = 2 * 1024 ** 3
 
@@ -52,6 +68,8 @@ def build_signature(secret: str, publish_id: str, snapshot_id: str, sha256: str)
 
 
 def verify_job(secret: str, job: Job) -> None:
+    if not HEX64.match(job.sha256 or "") or not HEX64.match(job.signature or ""):
+        raise BuildRejected("build signature or sha256 is malformed (expected 64 hex characters)")
     expected = build_signature(secret, job.publish_id, job.snapshot_id, job.sha256)
     if not hmac.compare_digest(expected, job.signature or ""):
         raise BuildRejected("build signature does not match (wrong secret or tampered build)")
@@ -65,6 +83,7 @@ class CMSClient:
         register_secret(secret)
         self._origin = urllib.parse.urlsplit(self.base_url)[:2]
         self._last_signed = None
+        self._opener = urllib.request.build_opener(_SameOriginRedirects(self._origin))
 
     # ---- low level ---------------------------------------------------------
     def _url(self, path_or_url: str) -> str:
@@ -90,7 +109,7 @@ class CMSClient:
             headers["Content-Type"] = content_type
         req = urllib.request.Request(url, data=body if method != "GET" else None, method=method, headers=headers)
         try:
-            return urllib.request.urlopen(req, timeout=self.timeout)  # noqa: S310 - URL is checked above
+            return self._opener.open(req, timeout=self.timeout)  # URL origin checked above and on redirects
         except urllib.error.HTTPError as exc:
             detail = ""
             try:
@@ -140,7 +159,7 @@ class CMSClient:
 
     def report(self, publish_id: str, status: str, step: str, message: str) -> bool:
         body = json.dumps({"publish_id": publish_id, "status": status, "step": step,
-                           "message": message[:1000]}).encode()
+                           "message": redact(message)[:1000]}).encode()
         try:
             with self._request("POST", "/api/v1/agent/status/", body, "application/json"):
                 pass

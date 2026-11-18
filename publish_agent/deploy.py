@@ -149,6 +149,11 @@ class Publisher:
         state = load_state(remote, layout)
         if not found:
             state = empty_state(strategy)
+        if self.dry_run:
+            if remote.lstat(layout.web_root) is None:
+                LOG.warning("[dry-run] the web root is missing; a real run would restore it first")
+        elif strategies.recover(remote, layout, state):
+            save_state(remote, layout, state)
         self.reconcile(remote, layout, state)
         return layout, state
 
@@ -208,6 +213,12 @@ class Publisher:
         try:
             verify_job(self.cms.secret, job)
             sid = safe_id(job.snapshot_id)
+            seen = self.local_state().get("published") or []
+            # The last live publish may be offered again if our "live" report was lost: the server-side
+            # check in _publish_on handles that case, so only older entries are refused here.
+            if seen and seen[-1] == [job.publish_id, sid]:
+                seen = seen[:-1]
+            self._refuse_replay(job, sid, seen, None)
             self.report(job, "uploading", "download", "Downloading the build")
             bundle = self.fetch_bundle(job, sid)
             step = "upload"
@@ -220,6 +231,9 @@ class Publisher:
         except CMSError as exc:
             LOG.warning("CMS problem, will retry: %s", exc)
             raise
+        except Exception as exc:  # noqa: BLE001 - anything else must end this publish, or it blocks the queue
+            LOG.debug("unexpected error detail", exc_info=True)
+            return self._fail(job, step, f"unexpected error: {exc.__class__.__name__}: {exc}")
         if result == "live":
             shutil.rmtree(os.path.join(self.cfg.work_dir, sid), ignore_errors=True)
             for name in os.listdir(self.cfg.work_dir):
@@ -285,12 +299,16 @@ class Publisher:
 
         if state.get("current") == sid:
             meta = remote.read_json(posixpath.join(layout.live_path(state, sid), MARKER)) or {}
-            if meta.get("tarball_sha256") == job.sha256:
+            if meta.get("tarball_sha256") == job.sha256 and meta.get("publish_id") == job.publish_id:
                 LOG.info("snapshot %s is already live; confirming", sid)
-                self._check_live(sid)
+                ok, detail = self._check_live(sid)
+                if not ok:
+                    raise PublishFailed("check_live", f"release {sid} is switched in on the server, but the "
+                                                      f"site does not show it ({detail})")
                 self.report(job, "live", "check_live", f"Live (release {sid})")
                 self.save_local_state(last_result="live", last_live=sid, last_result_at=_now())
                 return "live"
+        self._refuse_replay(job, sid, state.get("published") or [], state)
 
         if self.dry_run:
             return self._plan(remote, layout, state, bundle, sid)
@@ -313,6 +331,7 @@ class Publisher:
         if sid not in state["history"]:
             state["history"].append(sid)
         state["kinds"][sid] = "release"
+        state["published"] = ((state.get("published") or []) + [[job.publish_id, sid]])[-2000:]
         state.setdefault("live_at", {})[sid] = _now()
         save_state(remote, layout, state)
 
@@ -327,6 +346,7 @@ class Publisher:
             raise PublishFailed("check_live", msg)
 
         self.report(job, "live", "check_live", f"Live at {_now()} (release {sid})")
+        self.save_local_state(published=((self.local_state().get("published") or []) + [[job.publish_id, sid]])[-2000:])
         self.save_local_state(last_result="live", last_live=sid, last_result_at=_now(), last_error="")
         try:
             self.cleanup(remote, layout, state, active=None)
@@ -334,6 +354,16 @@ class Publisher:
         except Exception as exc:  # noqa: BLE001 - the site is live; cleanup can wait for the next run
             LOG.warning("cleanup after publish failed (will retry next time): %s", exc)
         return "live"
+
+    @staticmethod
+    def _refuse_replay(job: Job, sid: str, published: list, state: dict | None) -> None:
+        """A signed job that was already published must never be applied again (it would act as a rollback)."""
+        for pid, old_sid in published:
+            if pid == job.publish_id or old_sid == sid:
+                raise PublishFailed("verify", (
+                    f"publish {job.publish_id} / snapshot {sid} was already published before; refusing to apply it "
+                    "again (an old signed build replayed would roll the site back). Use `rollback` on the PC "
+                    "or publish a new snapshot from the CMS."))
 
     def _first_takeover(self, remote: Remote, layout: Layout, state: dict) -> None:
         from .discover import backup_live_site

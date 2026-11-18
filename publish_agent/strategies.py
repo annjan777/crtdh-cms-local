@@ -9,7 +9,8 @@ import tempfile
 import time
 from typing import Callable
 
-from .layout import MARKER, Layout
+from .bundle import MEDIA_PREFIX
+from .layout import MARKER, Layout, save_state
 from .logutil import LOG
 from .remote import Remote, RemoteError
 
@@ -25,7 +26,7 @@ def _ts() -> str:
 
 # ---------------------------------------------------------------------------- first takeover
 def take_over(remote: Remote, layout: Layout, state: dict) -> str | None:
-    """Move the existing (pre-agent) site aside once, so it can be rolled back to. Returns legacy id."""
+    """Keep the existing (pre-agent) site reachable for rollback. Returns its legacy id."""
     if layout.strategy == "copy":
         return None
     if layout.strategy == "htaccess":
@@ -39,19 +40,75 @@ def take_over(remote: Remote, layout: Layout, state: dict) -> str | None:
     rid = "legacy-" + _ts()
     remote.makedirs(layout.releases)
     if layout.strategy == "symlink":
+        if stat.S_ISLNK(st.st_mode):
+            # The web root is already a link (e.g. to a folder managed elsewhere): leave that folder where it
+            # is and remember where the link pointed, so rollback can point back at it.
+            target = remote.sftp.normalize(layout.web_root)
+            state.setdefault("legacy_targets", {})[rid] = target
+            LOG.info("first publish: the web root is a link to %s; recorded it as %s", target, rid)
+            return rid
         LOG.info("first publish: moving the existing site %s to %s", layout.web_root, layout.stored(rid))
         remote.sftp.rename(layout.web_root, layout.stored(rid))
-        if stat.S_ISDIR(st.st_mode) or stat.S_ISLNK(st.st_mode):
-            # Point the web root at the old site straight away so the window without a site is two calls long.
-            remote.symlink(posixpath.relpath(layout.stored(rid), posixpath.dirname(layout.web_root)), layout.web_root)
+        # Point the web root at the old site straight away; recover() repairs a crash between these two calls.
+        remote.symlink(posixpath.relpath(layout.stored(rid), posixpath.dirname(layout.web_root)), layout.web_root)
     # swap: the old site stays in the web root (it is now "current"); the first switch moves it to releases/<id>.
     return rid
+
+
+# ---------------------------------------------------------------------------- crash recovery
+def recover(remote: Remote, layout: Layout, state: dict) -> bool:
+    """Repair a web root left missing by a dropped connection or a crash part-way through a switch.
+
+    Returns True if something was repaired (the caller saves the state)."""
+    if layout.strategy == "swap":
+        return _recover_swap(remote, layout, state)
+    if layout.strategy == "symlink" and remote.lstat(layout.web_root) is None:
+        cur = state.get("current")
+        dest = None
+        if cur:
+            dest = (state.get("legacy_targets") or {}).get(cur) or layout.stored(cur)
+        if not dest or not remote.exists(dest):
+            legacy = sorted(n for n in remote.listdir(layout.releases) if n.startswith("legacy-")
+                            and not n.endswith(".partial"))
+            dest = layout.stored(legacy[-1]) if legacy else None
+        if not dest or not remote.exists(dest):
+            raise RemoteError(f"{layout.web_root} is missing and no release was found to restore it; "
+                              "see the README runbook")
+        LOG.error("web root %s was missing (interrupted switch); pointing it back at %s", layout.web_root, dest)
+        remote.symlink(posixpath.relpath(dest, posixpath.dirname(layout.web_root)), layout.web_root)
+        return True
+    return False
+
+
+def _recover_swap(remote: Remote, layout: Layout, state: dict) -> bool:
+    sw = state.get("switching") or {}
+    if remote.exists(layout.web_root):
+        if sw:
+            state.pop("switching", None)  # either never started or finished; reconcile() reads the marker
+            return True
+        return False
+    frm = sw.get("from") or state.get("current")
+    to = sw.get("to")
+    out = layout.stored(frm) if frm else None
+    if not out or not remote.exists(out):
+        raise RemoteError(f"{layout.web_root} is missing and the previous site ({frm}) was not found; "
+                          "see the README runbook")
+    out_media = posixpath.join(out, MEDIA_PREFIX)
+    if to and not remote.exists(out_media):
+        moved = posixpath.join(layout.stored(to), MEDIA_PREFIX)
+        if remote.exists(moved):
+            remote.sftp.rename(moved, out_media)
+    LOG.error("web root %s was missing (interrupted swap); putting %s back", layout.web_root, frm)
+    remote.sftp.rename(out, layout.web_root)
+    state.pop("switching", None)
+    state["current"] = frm
+    return True
 
 
 # ---------------------------------------------------------------------------- per-release prep
 def prepare_release(remote: Remote, layout: Layout, staging: str) -> None:
     if layout.strategy == "symlink":
-        link = posixpath.join(staging, "media")
+        link = posixpath.join(staging, MEDIA_PREFIX)
         if not remote.exists(link):
             remote.symlink(posixpath.relpath(layout.media_dir, staging), link)
 
@@ -66,7 +123,7 @@ def switch(remote: Remote, layout: Layout, state: dict, target: str,
 
 
 def _switch_symlink(remote, layout, state, target, kind, _local):
-    dest = layout.stored(target)
+    dest = (state.get("legacy_targets") or {}).get(target) or layout.stored(target)
     if not remote.exists(dest):
         raise RemoteError(f"release {target} is missing on the server")
     rel = posixpath.relpath(dest, posixpath.dirname(layout.web_root))
@@ -87,14 +144,15 @@ def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
     esc = re.escape
     lines = [
         HTACCESS_BEGIN,
-        f"# Live release: {target}. Written by the CRTDH publish agent; edits are overwritten.",
+        f"# Live release: {target}. Written by the CRTDH publish agent; edits inside this block are overwritten,",
+        "# rules outside it are kept.",
         "Options -Indexes",
         "RewriteEngine On",
         "RewriteBase /",
         "# Block direct requests to the release store",
         "RewriteCond %{ENV:REDIRECT_STATUS} ^$",
         f"RewriteRule ^{esc(rel)}(/|$) - [F,L]",
-        f"RewriteRule ^media/(.+)$ {rel}/media/$1 [L]",
+        f"RewriteRule ^{MEDIA_PREFIX}/(.+)$ {rel}/{MEDIA_PREFIX}/$1 [L]",
         f"RewriteRule ^$ {rel_release}/index.html [L]",
     ]
     dirs = sorted(d for d in index_dirs if d and _APACHE_SAFE.match(d))
@@ -110,22 +168,34 @@ def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
     return "\n".join(lines)
 
 
+_BLOCK = re.compile(re.escape(HTACCESS_BEGIN) + r".*?" + re.escape(HTACCESS_END) + r"\n?", re.S)
+
+
+def strip_block(text: str) -> str:
+    return _BLOCK.sub("", text)
+
+
 def _switch_htaccess(remote, layout, state, target, kind, _local):
+    """Replace only the agent's BEGIN/END block; every other line of .htaccess is kept as it was."""
     path = posixpath.join(layout.web_root, ".htaccess")
+    raw = remote.read_bytes(path)
+    rest = strip_block((raw or b"").decode("latin-1"))
     if kind == "legacy":
-        legacy = remote.read_bytes(posixpath.join(layout.base, LEGACY_HTACCESS)) or b""
-        if legacy:
-            remote.write_bytes(path, legacy)
-        elif remote.exists(path):
+        if rest.strip():
+            remote.write_bytes(path, rest.encode("latin-1"))
+        elif raw is not None:
             remote.sftp.remove(path)
         return
     meta = remote.read_json(posixpath.join(layout.stored(target), MARKER)) or {}
     if not meta:
         raise RemoteError(f"release {target} is missing or incomplete on the server")
-    remote.write_bytes(path, htaccess_rules(layout, target, meta.get("index_dirs", [])).encode())
+    block = htaccess_rules(layout, target, meta.get("index_dirs", []))
+    remote.write_bytes(path, (block + rest).encode("latin-1"))
 
 
 def _switch_swap(remote, layout, state, target, kind, _local):
+    if _recover_swap(remote, layout, state):
+        save_state(remote, layout, state)
     current = state.get("current")
     src = layout.stored(target)
     if not remote.exists(src):
@@ -138,22 +208,28 @@ def _switch_swap(remote, layout, state, target, kind, _local):
     out = layout.stored(current)
     if remote.exists(out):
         raise RemoteError(f"{out} already exists; refusing to overwrite it")
-    incoming_media = posixpath.join(src, "media")
+    incoming_media = posixpath.join(src, MEDIA_PREFIX)
     if remote.exists(incoming_media):
-        remote.sftp.rename(incoming_media, posixpath.join(src, f"media.stale-{_ts()}"))
-    # Non-atomic window starts: the web root is missing between rename 1 and rename 3.
+        remote.sftp.rename(incoming_media, posixpath.join(src, f"{MEDIA_PREFIX}.stale-{_ts()}"))
+    # Record the intent first: if the connection or the PC dies inside the window below, recover() on the
+    # next connection knows which folder to put back.
+    state["switching"] = {"from": current, "to": target}
+    save_state(remote, layout, state)
+    # Non-atomic window: the web root is missing between rename 1 and rename 3.
     remote.sftp.rename(layout.web_root, out)
     try:
-        if remote.exists(posixpath.join(out, "media")):
-            remote.sftp.rename(posixpath.join(out, "media"), incoming_media)
+        if remote.exists(posixpath.join(out, MEDIA_PREFIX)):
+            remote.sftp.rename(posixpath.join(out, MEDIA_PREFIX), incoming_media)
         remote.sftp.rename(src, layout.web_root)
     except Exception:
         LOG.error("swap failed half way; putting the previous site back")
-        if remote.exists(incoming_media) and not remote.exists(posixpath.join(out, "media")):
-            remote.sftp.rename(incoming_media, posixpath.join(out, "media"))
-        if not remote.exists(layout.web_root):
-            remote.sftp.rename(out, layout.web_root)
+        try:
+            _recover_swap(remote, layout, state)
+            save_state(remote, layout, state)
+        except Exception as exc:  # noqa: BLE001 - connection gone: the next run recovers from state["switching"]
+            LOG.error("could not put the previous site back now (%s); the next run will", exc)
         raise
+    state.pop("switching", None)
 
 
 def _switch_copy(remote, layout, state, target, kind, local_files):
@@ -190,7 +266,7 @@ def _switch_copy(remote, layout, state, target, kind, local_files):
         old = remote.read_json(posixpath.join(layout.stored(previous), MARKER)) or {}
         keep = set(files)
         for rel, _ in old.get("files", []):
-            if rel not in keep and not rel.startswith("media/"):
+            if rel not in keep and not rel.startswith(MEDIA_PREFIX + "/"):
                 try:
                     remote.sftp.remove(posixpath.join(layout.web_root, rel))
                 except IOError:

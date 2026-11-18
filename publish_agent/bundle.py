@@ -13,7 +13,18 @@ from .cmsclient import BuildRejected
 
 MAX_FILES = 50_000
 MAX_TOTAL_BYTES = 4 * 1024 ** 3
-MEDIA_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,200}$")
+# Contract addendum A13: /_media/<hash16>.<ext>, variants /_media/<hash16>-<width>.<fmt>
+MEDIA_NAME = re.compile(r"^[0-9a-f]{16}(-\d+)?\.\w+$", re.ASCII)
+MEDIA_PREFIX = "_media"  # web path of the shared, content-hashed media folder
+# Every path segment must look like this on every OS the agent runs on (no ':' drive letters, no '\\').
+SEGMENT = re.compile(r"^[A-Za-z0-9._@+~-]{1,200}$")
+WINDOWS_RESERVED = re.compile(r"^(con|prn|aux|nul|com[1-9]|lpt[1-9])$", re.I)
+
+
+def _check_segment(seg: str, full: str) -> None:
+    if (not SEGMENT.match(seg) or seg in (".", "..") or seg.endswith((".", " "))
+            or WINDOWS_RESERVED.match(seg.split(".", 1)[0])):
+        raise BuildRejected(f"unsafe path in build tarball: {full!r}")
 
 
 @dataclass
@@ -56,7 +67,16 @@ def _clean_name(name: str) -> str | None:
     norm = posixpath.normpath(name)
     if norm != name or norm.startswith("..") or "/../" in f"/{norm}/":
         raise BuildRejected(f"unsafe path in build tarball: {name!r}")
+    for seg in norm.split("/"):
+        _check_segment(seg, name)
     return norm
+
+
+def _inside(dest_real: str, target: str) -> str:
+    real = os.path.realpath(target)
+    if os.path.commonpath([dest_real, real]) != dest_real:
+        raise BuildRejected(f"unsafe path in build tarball: {target!r}")
+    return real
 
 
 def safe_id(value: str) -> str:
@@ -68,9 +88,19 @@ def safe_id(value: str) -> str:
 
 
 def open_bundle(tar_path: str, dest: str, expect_snapshot: str, expect_publish: str) -> Bundle:
+    try:
+        return _open_bundle(tar_path, dest, expect_snapshot, expect_publish)
+    except OSError as exc:  # e.g. site/x is a file and site/x/y follows, or the local disk is full
+        raise BuildRejected(f"build tarball cannot be unpacked: {exc.__class__.__name__}: {exc.strerror or exc}") from None
+    except (tarfile.TarError, EOFError, UnicodeError) as exc:
+        raise BuildRejected(f"build tarball is damaged: {exc}") from None
+
+
+def _open_bundle(tar_path: str, dest: str, expect_snapshot: str, expect_publish: str) -> Bundle:
     if os.path.exists(dest):
         shutil.rmtree(dest)
     os.makedirs(dest)
+    dest_real = os.path.realpath(dest)
     total = 0
     count = 0
     try:
@@ -86,20 +116,24 @@ def open_bundle(tar_path: str, dest: str, expect_snapshot: str, expect_publish: 
             if top not in ("site", "media", "manifest.json"):
                 raise BuildRejected(f"unexpected entry in build tarball: {name}")
             if m.isdir():
-                os.makedirs(os.path.join(dest, *name.split("/")), exist_ok=True)
+                d = _inside(dest_real, os.path.join(dest_real, *name.split("/")))
+                os.makedirs(d, exist_ok=True)
+                _inside(dest_real, d)  # re-check: nothing on the way may have become a link
                 continue
             if not m.isfile():
                 raise BuildRejected(f"build tarball may only contain files and folders: {name}")
             if top == "media" and (name.count("/") != 1 or not MEDIA_NAME.match(name.split("/")[1])):
                 raise BuildRejected(f"bad media file name in build: {name}")
-            if name.startswith("site/media/") or name == "site/media":
-                raise BuildRejected("site/media/ is reserved for the shared media folder")
+            if name.split("/")[:2] == ["site", MEDIA_PREFIX]:
+                raise BuildRejected(f"site/{MEDIA_PREFIX}/ is reserved for the shared media folder")
             count += 1
             total += m.size
             if count > MAX_FILES or total > MAX_TOTAL_BYTES:
                 raise BuildRejected("build tarball is too large")
-            target = os.path.join(dest, *name.split("/"))
+            target = _inside(dest_real, os.path.join(dest_real, *name.split("/")))
             os.makedirs(os.path.dirname(target), exist_ok=True)
+            # Re-check after creating the parents: the final path must still resolve inside dest.
+            target = _inside(dest_real, target)
             src = tf.extractfile(m)
             with src, open(target, "wb") as out:
                 shutil.copyfileobj(src, out)

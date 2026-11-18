@@ -68,8 +68,8 @@ def test_symlink_layout_and_media_link(make_pub, cms, server):
     root = server.home_path("public_html")
     assert os.path.islink(root)
     assert os.readlink(root) == "crtdh-releases/releases/s1"  # relative: survives chroot
-    assert os.path.islink(os.path.join(root, "media"))
-    assert open(os.path.join(root, "media", m), "rb").read() == img
+    assert os.path.islink(os.path.join(root, "_media"))
+    assert open(os.path.join(root, "_media", m), "rb").read() == img
     legacy = [n for n in os.listdir(server.home_path("crtdh-releases", "releases")) if n.startswith("legacy-")]
     assert legacy and os.path.exists(server.home_path("crtdh-releases", "releases", legacy[0], "images", "logo.png"))
 
@@ -79,7 +79,7 @@ def test_htaccess_rules_shape(make_pub, cms, server):
     assert publish(cms, pub, "s1", "p1") == "live"
     text = open(server.home_path("public_html", ".htaccess")).read()
     assert "# Live release: s1." in text
-    assert "RewriteRule ^media/(.+)$ _crtdh/media/$1 [L]" in text
+    assert "RewriteRule ^_media/(.+)$ _crtdh/_media/$1 [L]" in text
     assert "RewriteRule ^(about)/?$ _crtdh/releases/s1/$1/index.html [L]" in text
     # the old .htaccess (none here) is restorable and the old files are untouched
     assert os.path.exists(server.home_path("public_html", "images", "logo.png"))
@@ -232,7 +232,7 @@ def test_retention_and_media_gc(make_pub, cms, server):
     a, b, c = b"A" * 10, b"B" * 20, b"C" * 30
     ma, mb, mc = media_name(a), media_name(b), media_name(c)
     assert publish(cms, pub, "s1", "p1", media={ma: a, mb: b}) == "live"
-    media_dir = server.home_path("crtdh-releases", "media")
+    media_dir = server.home_path("crtdh-releases", "_media")
     with open(os.path.join(media_dir, "keep-me.txt"), "w") as fh:
         fh.write("not ours")  # names that are not content hashes are never touched
     assert publish(cms, pub, "s2", "p2", media={mc: c}, media_all=[mb, mc]) == "live"

@@ -59,13 +59,21 @@ class _SFTP(SFTPServerInterface):
         super().__init__(server, *args, **kwargs)
         self.ctx = server.ctx
 
-    def _real(self, path):
-        return os.path.join(self.ctx.root, self.canonicalize(path).lstrip("/"))
-
-    def canonicalize(self, path):
+    def _virt(self, path):
         if not path.startswith("/"):
             path = posixpath.join(HOME, path)
         return posixpath.normpath(path) or "/"
+
+    def _real(self, path):
+        return os.path.join(self.ctx.root, self._virt(path).lstrip("/"))
+
+    def canonicalize(self, path):
+        """Like OpenSSH realpath: resolves symlinks (inside the fake root)."""
+        root = os.path.realpath(self.ctx.root)
+        real = os.path.realpath(self._real(path))
+        if os.path.commonpath([root, real]) != root:
+            return self._virt(path)
+        return "/" + os.path.relpath(real, root).replace(os.sep, "/").lstrip(".")
 
     def _err(self, exc):
         return SFTPServer.convert_errno(exc.errno)
@@ -307,6 +315,7 @@ class FakeCMS:
         self.builds: dict[str, bytes] = {}
         self.statuses: list[dict] = []
         self.bad_auth = 0
+        self.redirects: dict[str, str] = {}
         cms = self
 
         class H(BaseHTTPRequestHandler):
@@ -327,6 +336,11 @@ class FakeCMS:
             def do_GET(self):
                 if not self._auth(b""):
                     self.send_response(401); self.end_headers(); return
+                if self.path in cms.redirects:
+                    self.send_response(302)
+                    self.send_header("Location", cms.redirects[self.path])
+                    self.end_headers()
+                    return
                 if self.path == "/api/v1/agent/next/":
                     if not cms.jobs:
                         self.send_response(204); self.end_headers(); return
