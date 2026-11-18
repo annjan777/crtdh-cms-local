@@ -1,6 +1,7 @@
 // Pattern 1 — List / Index: CMS users, their roles, add and deactivate.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
+import { ROLE_LABEL, topRole } from '../auth/roles.js';
 import { users as usersApi } from '../api/cms.js';
 import AppShell, { PageNav } from '../shell/AppShell.jsx';
 import { Banner, Dialog, ErrorPanel, Field, Spinner, fmtDate } from '../ui/index.jsx';
@@ -11,52 +12,73 @@ const ROLES = [
   ['admin', 'Admin', 'Also manages users'],
 ];
 
+const EMPTY = { name: '', username: '', email: '', role: 'editor' };
+const suggestUsername = (name) => name.trim().toLowerCase().split(/\s+/)[0]?.replace(/[^a-z0-9._-]/g, '') || '';
+
 function AddUser({ open, onClose, onAdded }) {
-  const [v, setV] = useState({ name: '', email: '', role: 'editor' });
+  const [v, setV] = useState(EMPTY);
+  const [userEdited, setUserEdited] = useState(false);
   const [touched, setTouched] = useState({});
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
-  const nameRef = useRef(null);
-  const emailRef = useRef(null);
+  const refs = { name: useRef(null), username: useRef(null), email: useRef(null) };
   const errs = {
     name: !v.name.trim() ? 'Enter the person’s full name.' : null,
+    username: !/^[A-Za-z0-9._-]{3,64}$/.test(v.username) ? 'Use 3 or more letters or digits (dots, dashes and underscores are fine).' : null,
     email: !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email) ? 'Enter an email like name@iitkgp.ac.in.' : null,
   };
   const shown = (k) => (touched[k] && errs[k]) || (err?.field === k ? err.message : null);
+  const set = (k, value) => {
+    setV((cur) => ({ ...cur, [k]: value, ...(k === 'name' && !userEdited ? { username: suggestUsername(value) } : {}) }));
+    setTouched((t) => ({ ...t, [k]: false }));
+    if (err?.field === k) setErr(null);
+  };
   const close = () => {
-    setV({ name: '', email: '', role: 'editor' });
+    setV(EMPTY);
+    setUserEdited(false);
     setTouched({});
     setErr(null);
     onClose();
   };
   async function submit(e) {
     e.preventDefault();
-    setTouched({ name: true, email: true });
-    if (errs.name) return nameRef.current?.focus();
-    if (errs.email) return emailRef.current?.focus();
+    setTouched({ name: true, username: true, email: true });
+    const first = ['name', 'username', 'email'].find((k) => errs[k]);
+    if (first) return refs[first].current?.focus();
     setBusy(true);
     setErr(null);
+    const [first_name, ...rest] = v.name.trim().split(/\s+/);
     try {
-      const res = await usersApi.create({ name: v.name.trim(), email: v.email.trim(), role: v.role });
-      onAdded(res.user);
+      const res = await usersApi.create({ username: v.username, email: v.email.trim(), first_name, last_name: rest.join(' '), role: v.role });
+      const { temporary_password, ...user } = res;
+      onAdded(user, temporary_password);
       close();
     } catch (e2) {
       setErr(e2);
+      if (e2.field && refs[e2.field]) refs[e2.field].current?.focus();
     } finally {
       setBusy(false);
     }
   }
+  const input = (k, label, props = {}) => (
+    <Field label={label} htmlFor={`u-${k}`} error={shown(k)}>
+      <input ref={refs[k]} id={`u-${k}`} data-autofocus={k === 'name' ? 'name' : undefined} autoComplete="off" value={v[k]} aria-invalid={!!shown(k) || undefined} aria-describedby={`u-${k}-msg`} onChange={(e) => set(k, e.target.value)} onBlur={() => setTouched((t) => ({ ...t, [k]: true }))} {...props} />
+    </Field>
+  );
   return (
     <Dialog open={open} onClose={close} size="drawer" title="Add a user" initialFocus="name">
       <form onSubmit={submit} noValidate className="drawer-form">
-        <p className="dialog-lead">They get an email with a link to choose a password and set up two-step sign-in.</p>
+        <p className="dialog-lead">You’ll get a temporary password to pass on. At first sign-in they set up two-step sign-in and choose their own password.</p>
         {err && !err.field ? <Banner tone="danger">{err.message} {err.fix}</Banner> : null}
-        <Field label="Full name" htmlFor="u-name" error={shown('name')}>
-          <input ref={nameRef} id="u-name" data-autofocus="name" autoComplete="off" value={v.name} aria-invalid={!!shown('name') || undefined} aria-describedby="u-name-msg" onChange={(e) => setV({ ...v, name: e.target.value })} onBlur={() => setTouched((t) => ({ ...t, name: true }))} onFocus={() => setTouched((t) => ({ ...t, name: false }))} />
-        </Field>
-        <Field label="Email" htmlFor="u-email" error={shown('email')}>
-          <input ref={emailRef} id="u-email" type="email" autoComplete="off" placeholder="name@iitkgp.ac.in" value={v.email} aria-invalid={!!shown('email') || undefined} aria-describedby="u-email-msg" onChange={(e) => setV({ ...v, email: e.target.value })} onBlur={() => setTouched((t) => ({ ...t, email: true }))} onFocus={() => setTouched((t) => ({ ...t, email: false }))} />
-        </Field>
+        {input('name', 'Full name')}
+        {input('username', 'Username', {
+          spellCheck: false,
+          onChange: (e) => {
+            setUserEdited(true);
+            set('username', e.target.value);
+          },
+        })}
+        {input('email', 'Email', { type: 'email', placeholder: 'name@iitkgp.ac.in' })}
         <fieldset className="field">
           <legend>Role</legend>
           {ROLES.map(([value, label, desc]) => (
@@ -74,7 +96,7 @@ function AddUser({ open, onClose, onAdded }) {
           </button>
           <button type="submit" className="btn btn-primary" aria-busy={busy || undefined}>
             {busy ? <Spinner /> : null}
-            Add and send invite
+            Add user
           </button>
         </div>
       </form>
@@ -90,18 +112,20 @@ export default function UsersPage() {
   const [confirm, setConfirm] = useState(null);
   const [rowState, setRowState] = useState({});
   const [notice, setNotice] = useState(null);
+  const [temp, setTemp] = useState(null);
+  const [resetting, setResetting] = useState(null);
 
   const load = useCallback(() => {
     setError(null);
-    usersApi.list().then((r) => setList(r.users), setError);
+    usersApi.list().then(setList, setError);
   }, []);
   useEffect(load, [load]);
 
-  async function update(u, values, msg) {
+  async function update(u, call, msg) {
     setRowState((s) => ({ ...s, [u.id]: { busy: true } }));
     try {
-      const res = await usersApi.update(u.id, values);
-      setList((l) => l.map((x) => (x.id === u.id ? res.user : x)));
+      const res = await call();
+      setList((l) => l.map((x) => (x.id === u.id ? res : x)));
       setRowState((s) => ({ ...s, [u.id]: { ok: msg } }));
       setTimeout(() => setRowState((s) => ({ ...s, [u.id]: {} })), 2500);
     } catch (err) {
@@ -178,27 +202,34 @@ export default function UsersPage() {
                         <label className="visually-hidden" htmlFor={`role-${u.id}`}>
                           Role for {u.name}
                         </label>
-                        <select id={`role-${u.id}`} className="select-compact" value={u.roles[0]} disabled={self || !u.is_active} onChange={(e) => update(u, { roles: [e.target.value] }, 'Role saved')}>
-                          {ROLES.map(([v, l]) => (
-                            <option key={v} value={v}>
-                              {l}
-                            </option>
-                          ))}
-                        </select>
+                        {u.is_active ? (
+                          <select id={`role-${u.id}`} className="select-compact" value={topRole(u.roles) || 'editor'} disabled={self} onChange={(e) => { const role = e.target.value; update(u, () => usersApi.setRole(u.id, role), 'Role saved'); }}>
+                            {ROLES.map(([v, l]) => (
+                              <option key={v} value={v}>
+                                {l}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="muted">Deactivated</span>
+                        )}
                         <span className="cell-status" aria-live="polite">
                           {st.busy ? 'Saving…' : st.ok || (st.err ? `${st.err.message}` : '')}
                         </span>
                       </td>
-                      <td>{u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}</td>
+                      <td>
+                        {u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}
+                        {u.mfa_enrolled && u.is_active && !self ? (
+                          <button type="button" className="link-btn cell-action" onClick={() => setResetting(u)}>
+                            Reset<span className="visually-hidden"> two-step sign-in for {u.name}</span>
+                          </button>
+                        ) : null}
+                      </td>
                       <td>{u.last_login ? fmtDate(u.last_login) : <span className="muted">Never</span>}</td>
                       <td className="actions-cell">
-                        {self ? null : u.is_active ? (
+                        {self || !u.is_active ? null : (
                           <button type="button" className="btn btn-small btn-danger-text" onClick={() => setConfirm(u)}>
                             Deactivate
-                          </button>
-                        ) : (
-                          <button type="button" className="btn btn-small" onClick={() => update(u, { is_active: true }, 'Reactivated')}>
-                            Reactivate
                           </button>
                         )}
                       </td>
@@ -213,11 +244,57 @@ export default function UsersPage() {
       <AddUser
         open={adding}
         onClose={() => setAdding(false)}
-        onAdded={(u) => {
+        onAdded={(u, password) => {
           setList((l) => [...(l || []), u]);
-          setNotice(`${u.name} was added as ${u.roles[0]}. An invite email is on its way to ${u.email}.`);
+          setNotice(`${u.name} was added as ${ROLE_LABEL[topRole(u.roles)] || 'Editor'}.`);
+          if (password) setTemp({ user: u, password });
         }}
       />
+      <Dialog
+        open={!!temp}
+        onClose={() => setTemp(null)}
+        title={`Temporary password for ${temp?.user.name}`}
+        actions={
+          <button type="button" className="btn btn-primary" data-autofocus="done" onClick={() => setTemp(null)}>
+            Done
+          </button>
+        }
+      >
+        <p>
+          Give this to {temp?.user.name?.split(' ')[0]} in person or by phone, with the username <strong>{temp?.user.username}</strong>. It’s shown only once. They’ll choose their own password at first sign-in.
+        </p>
+        <p className="temp-password">
+          <code>{temp?.password}</code>
+          <button type="button" className="btn btn-small" onClick={() => navigator.clipboard?.writeText(temp?.password || '')}>
+            Copy
+          </button>
+        </p>
+      </Dialog>
+      <Dialog
+        open={!!resetting}
+        onClose={() => setResetting(null)}
+        title={`Reset two-step sign-in for ${resetting?.name}?`}
+        actions={
+          <>
+            <button type="button" className="btn" data-autofocus="cancel" onClick={() => setResetting(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={async () => {
+                const u = resetting;
+                setResetting(null);
+                await update(u, () => usersApi.resetMfa(u.id), 'Two-step sign-in reset');
+              }}
+            >
+              Reset for {resetting?.name?.split(' ')[0]}
+            </button>
+          </>
+        }
+      >
+        <p>Use this when {resetting?.name} has lost their phone. Their authenticator app and recovery codes stop working, and they set up two-step sign-in again next time they sign in.</p>
+      </Dialog>
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
@@ -233,7 +310,7 @@ export default function UsersPage() {
               onClick={async () => {
                 const u = confirm;
                 setConfirm(null);
-                await update(u, { is_active: false }, 'Deactivated');
+                await update(u, () => usersApi.deactivate(u.id), 'Deactivated');
               }}
             >
               Deactivate {confirm?.name?.split(' ')[0]}
@@ -241,7 +318,7 @@ export default function UsersPage() {
           </>
         }
       >
-        <p>{confirm?.name} won’t be able to sign in, and any Claude connection they set up stops working within a minute. Their past edits stay in the history. You can reactivate them later.</p>
+        <p>{confirm?.name} won’t be able to sign in, and any Claude connection they set up stops working within a minute. Their past edits stay in the history. To undo this, ask the server administrator.</p>
       </Dialog>
     </AppShell>
   );

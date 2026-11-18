@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useMatch } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
+import { ROLE_LABEL, topRole } from '../auth/roles.js';
 import { useChanges } from './ChangesContext.jsx';
 import DraftBar from './DraftBar.jsx';
 import { USE_MOCK } from '../api/client.js';
 
-const ROLE_LABEL = { admin: 'Admin', publisher: 'Publisher', editor: 'Editor' };
 
 function UserMenu() {
-  const { user, logout } = useAuth();
+  const { user, logout, signOutEverywhere } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -26,7 +26,7 @@ function UserMenu() {
       document.removeEventListener('keydown', close);
     };
   }, [open]);
-  const role = ROLE_LABEL[user.roles?.[0]] || 'Editor';
+  const role = ROLE_LABEL[topRole(user.roles)] || 'Editor';
   return (
     <div className="user-menu" ref={ref}>
       <button type="button" className="user-btn" aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>
@@ -42,6 +42,9 @@ function UserMenu() {
           </p>
           <button type="button" role="menuitem" className="menu-item" onClick={logout}>
             Sign out
+          </button>
+          <button type="button" role="menuitem" className="menu-item" onClick={signOutEverywhere}>
+            Sign out on all devices
           </button>
         </div>
       ) : null}

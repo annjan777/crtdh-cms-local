@@ -5,6 +5,8 @@
 export const CODES = [
   'CMS_VALIDATION',
   'CMS_UNAUTHENTICATED',
+  'CMS_MFA_REQUIRED',
+  'CMS_CSRF_FAILED',
   'CMS_FORBIDDEN_ROLE',
   'CMS_NOT_FOUND',
   'CMS_STALE_VERSION',
@@ -34,6 +36,8 @@ const STATUS_FALLBACK = {
 const DEFAULT_MESSAGE = {
   CMS_VALIDATION: 'Some of this can’t be saved as it is.',
   CMS_UNAUTHENTICATED: 'You’ve been signed out.',
+  CMS_MFA_REQUIRED: 'Two-step sign-in isn’t finished.',
+  CMS_CSRF_FAILED: 'This page’s security check expired.',
   CMS_FORBIDDEN_ROLE: 'Your role can’t do this.',
   CMS_NOT_FOUND: 'This item no longer exists.',
   CMS_STALE_VERSION: 'Someone else changed this since you opened it.',
@@ -50,6 +54,8 @@ const DEFAULT_MESSAGE = {
 const DEFAULT_FIX = {
   CMS_VALIDATION: 'Check the highlighted field.',
   CMS_UNAUTHENTICATED: 'Sign in again. Your unsaved text is kept on this computer.',
+  CMS_MFA_REQUIRED: 'Sign in again and enter the code from your authenticator app.',
+  CMS_CSRF_FAILED: 'Try again. If it keeps happening, reload the page.',
   CMS_FORBIDDEN_ROLE: 'Ask a Publisher or Admin.',
   CMS_NOT_FOUND: 'Reload the page.',
   CMS_STALE_VERSION: 'Reload the section and apply your change again.',
@@ -63,7 +69,7 @@ const DEFAULT_FIX = {
   NETWORK: 'Check the connection. Your text is kept on this computer and saves when you’re back.',
 };
 
-const RETRYABLE_DEFAULT = new Set(['CMS_RATE_LIMITED', 'CMS_INTERNAL', 'NETWORK', 'CMS_PUBLISH_RUNNING']);
+const RETRYABLE_DEFAULT = new Set(['CMS_CSRF_FAILED', 'CMS_RATE_LIMITED', 'CMS_INTERNAL', 'NETWORK', 'CMS_PUBLISH_RUNNING']);
 
 export class ApiError extends Error {
   constructor({ code, message, fix, retryable, status, field, currentVersion, requestId, sideEffects, details }) {

@@ -26,17 +26,16 @@ async function getTransport() {
 export function setTransport(fn) {
   transport = fn;
   csrfReady = null;
+  csrfToken = null;
 }
 
-export function readCookie(name) {
-  if (typeof document === 'undefined') return null;
-  const hit = document.cookie.split('; ').find((c) => c.startsWith(`${name}=`));
-  return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
-}
-
+// Addendum A12: the CSRF cookie is HttpOnly. The token comes in the body of
+// GET /auth/csrf/ and of the login/MFA/password responses, and lives only in
+// memory (never localStorage).
+let csrfToken = null;
 let csrfReady = null;
 export function ensureCsrf(force = false) {
-  if (force || !csrfReady || !readCookie('csrftoken')) {
+  if (force || !csrfReady || !csrfToken) {
     csrfReady = rawRequest('GET', '/auth/csrf/').catch((e) => {
       csrfReady = null;
       throw e;
@@ -59,8 +58,7 @@ async function rawRequest(method, path, { body, form } = {}) {
     payload = JSON.stringify(body);
   }
   if (!SAFE.has(method)) {
-    const token = readCookie('csrftoken');
-    if (token) headers['X-CSRFToken'] = token;
+    if (csrfToken) headers['X-CSRFToken'] = csrfToken;
   }
   let res;
   try {
@@ -78,9 +76,10 @@ async function rawRequest(method, path, { body, form } = {}) {
       data = null;
     }
   }
+  if (data && typeof data.csrfToken === 'string') csrfToken = data.csrfToken;
   if (!res.ok) {
     const err = mapError(res.status, data);
-    if (err.code === 'CMS_UNAUTHENTICATED' && !AUTH_PATHS.some((p) => path.startsWith(p)) && typeof window !== 'undefined') {
+    if ((err.code === 'CMS_UNAUTHENTICATED' || err.code === 'CMS_MFA_REQUIRED') && !AUTH_PATHS.some((p) => path.startsWith(p)) && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('crtdh:session-expired'));
     }
     throw err;
@@ -93,8 +92,8 @@ export async function request(method, path, opts = {}) {
   try {
     return await rawRequest(method, path, opts);
   } catch (err) {
-    // A rotated CSRF token (after sign-in) shows up as a 403 without a CMS code: refresh once.
-    if (err.status === 403 && err.details?.detail?.toLowerCase?.().includes('csrf')) {
+    // A rotated or missing CSRF token: fetch a fresh one and retry once.
+    if (err.code === 'CMS_CSRF_FAILED' || (err.status === 403 && err.details?.detail?.toLowerCase?.().includes('csrf'))) {
       await ensureCsrf(true);
       return rawRequest(method, path, opts);
     }

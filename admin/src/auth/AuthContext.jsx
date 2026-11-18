@@ -1,13 +1,27 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from '../api/cms.js';
 import { ensureCsrf } from '../api/client.js';
+import { nextFromLocation } from './next.js';
 
-// status: loading | signed-out | mfa | setup | signed-in | expired
+// status: loading | signed-out | mfa | setup | change-password | signed-in | expired
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [status, setStatus] = useState('loading');
   const [user, setUser] = useState(null);
+
+  // A fully signed-in user: a temporary password must be changed first, and an
+  // OAuth `next` (Django page) gets a full page navigation.
+  const arrive = useCallback((u) => {
+    setUser(u);
+    if (u?.must_change_password) return setStatus('change-password');
+    const next = nextFromLocation();
+    if (next) {
+      window.location.assign(next);
+      return undefined;
+    }
+    return setStatus('signed-in');
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -15,8 +29,7 @@ export function AuthProvider({ children }) {
       .then(() => auth.me())
       .then((u) => {
         if (!alive) return;
-        setUser(u);
-        setStatus('signed-in');
+        arrive(u);
       })
       .catch(() => alive && setStatus('signed-out'));
     const onExpired = () => setStatus((s) => (s === 'signed-in' ? 'expired' : s));
@@ -25,27 +38,36 @@ export function AuthProvider({ children }) {
       alive = false;
       window.removeEventListener('crtdh:session-expired', onExpired);
     };
-  }, []);
+  }, [arrive]);
 
   const login = useCallback(async (username, password) => {
     const res = await auth.login(username, password);
     if (res?.mfa_setup_required) setStatus('setup');
     else if (res?.mfa_required) setStatus('mfa');
-    else {
-      setUser(await auth.me());
-      setStatus('signed-in');
-    }
-  }, []);
+    else arrive(await auth.me());
+  }, [arrive]);
 
   const verifyMfa = useCallback(async (code) => {
     const u = await auth.mfa(code);
-    setUser(u?.username ? u : await auth.me());
-    setStatus('signed-in');
-  }, []);
+    arrive(u?.username ? u : await auth.me());
+  }, [arrive]);
 
   const finishSetup = useCallback(async () => {
-    setUser(await auth.me());
-    setStatus('signed-in');
+    arrive(await auth.me());
+  }, [arrive]);
+
+  const changePassword = useCallback(async (current, next) => {
+    const u = await auth.changePassword(current, next);
+    arrive(u?.username ? u : await auth.me());
+  }, [arrive]);
+
+  const signOutEverywhere = useCallback(async () => {
+    try {
+      await auth.revokeAllSessions();
+    } finally {
+      setUser(null);
+      setStatus('signed-out');
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -66,11 +88,13 @@ export function AuthProvider({ children }) {
       login,
       verifyMfa,
       finishSetup,
+      changePassword,
+      signOutEverywhere,
       logout,
       canPublish: roles.includes('publisher') || roles.includes('admin'),
       isAdmin: roles.includes('admin'),
     };
-  }, [status, user, login, verifyMfa, finishSetup, logout]);
+  }, [status, user, login, verifyMfa, finishSetup, changePassword, signOutEverywhere, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

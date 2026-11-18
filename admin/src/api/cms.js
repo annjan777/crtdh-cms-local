@@ -14,6 +14,10 @@ export const auth = {
   // Addendum A6: enrolment for a first sign-in
   mfaSetup: () => api.post('/auth/mfa/enrol/', {}),
   mfaConfirm: (code) => api.post('/auth/mfa/enrol/confirm/', { code }),
+  // Addendum A12
+  changePassword: (current_password, new_password) => api.post('/auth/password/', { current_password, new_password }),
+  revokeAllSessions: () => api.post('/auth/sessions/revoke-all/', {}),
+  newRecoveryCodes: (code) => api.post('/auth/mfa/recovery-codes/', { code }),
 };
 
 export const cms = {
@@ -46,9 +50,12 @@ export const content = {
   list: (resource) => api.get(`/${resource}/`),
 };
 
-// Addendum A7: user management (admin role)
+// Addendum A12 (supersedes A7): user management, admin role only.
 export const users = {
-  list: () => api.get('/users/'),
-  create: (values) => api.post('/users/', values),
-  update: (id, values) => api.patch(`/users/${id}/`, values),
+  list: () => api.get('/auth/users/').then((r) => r.results),
+  // {username, email, first_name?, last_name?, role} -> user + temporary_password (shown once)
+  create: (values) => api.post('/auth/users/', values),
+  setRole: (id, role) => api.post(`/auth/users/${id}/role/`, { role }),
+  deactivate: (id) => api.post(`/auth/users/${id}/deactivate/`, {}),
+  resetMfa: (id) => api.post(`/auth/users/${id}/reset-mfa/`, {}),
 };

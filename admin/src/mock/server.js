@@ -56,11 +56,12 @@ function prepRow(resource, row) {
 }
 
 const USERS = [
-  { id: 1, username: 'priya', name: 'Priya Sen', email: 'priya@example.test', roles: ['publisher'], mfa_enrolled: true, is_active: true, last_login: '2026-11-19T04:12:00Z' },
+  { id: 1, username: 'priya', name: 'Priya Sen', email: 'priya@example.test', roles: ['editor', 'publisher'], mfa_enrolled: true, is_active: true, last_login: '2026-11-19T04:12:00Z' },
   { id: 2, username: 'ravi', name: 'Ravi Kumar', email: 'ravi@example.test', roles: ['editor'], mfa_enrolled: true, is_active: true, last_login: '2026-11-18T10:40:00Z' },
-  { id: 3, username: 'sita', name: 'Sita Das', email: 'sita@example.test', roles: ['admin'], mfa_enrolled: true, is_active: true, last_login: '2026-11-17T08:05:00Z' },
+  { id: 3, username: 'sita', name: 'Sita Das', email: 'sita@example.test', roles: ['editor', 'publisher', 'admin'], mfa_enrolled: true, is_active: true, last_login: '2026-11-17T08:05:00Z' },
   { id: 4, username: 'arjun', name: 'Arjun Paul', email: 'arjun@example.test', roles: ['editor'], mfa_enrolled: false, is_active: true, last_login: null },
-  { id: 5, username: 'mohan', name: 'Mohan Roy', email: 'mohan@example.test', roles: ['editor'], mfa_enrolled: true, is_active: false, last_login: '2026-06-02T09:00:00Z' },
+  { id: 6, username: 'meera', name: 'Meera Iyer', email: 'meera@example.test', roles: ['editor'], mfa_enrolled: true, must_change_password: true, is_active: true, last_login: null },
+  { id: 5, username: 'mohan', name: 'Mohan Roy', email: 'mohan@example.test', roles: [], mfa_enrolled: true, is_active: false, last_login: '2026-06-02T09:00:00Z' },
 ];
 
 function buildSeed() {
@@ -140,14 +141,17 @@ function setSession(s) {
   if (s) sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
   else sessionStorage.removeItem(SESSION_KEY);
 }
+// A12: the real CSRF cookie is HttpOnly, so the page can't read it. The mock
+// keeps "the server's" token out of reach of the client code (sessionStorage
+// key the client never touches) and hands it over only in response bodies.
+const CSRF_KEY = 'crtdh-mock-csrf';
 function setCsrfCookie() {
   const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-  document.cookie = `csrftoken=${token}; path=/; SameSite=Strict`;
+  sessionStorage.setItem(CSRF_KEY, token);
   return token;
 }
 function csrfCookie() {
-  const hit = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='));
-  return hit ? hit.slice('csrftoken='.length) : null;
+  return sessionStorage.getItem(CSRF_KEY);
 }
 
 // ------------------------------------------------------------ registry --
@@ -222,8 +226,10 @@ function fail(status, code, message, fix, extra = {}) {
 }
 
 function me(user) {
-  return { id: user.id, username: user.username, name: user.name, roles: user.roles, mfa_enrolled: user.mfa_enrolled };
+  return { id: user.id, username: user.username, name: user.name, email: user.email, roles: user.is_active ? user.roles : [], mfa_enrolled: user.mfa_enrolled, must_change_password: !!user.must_change_password };
 }
+const ROLE_ORDER = ['editor', 'publisher', 'admin'];
+const rolesUpTo = (role) => ROLE_ORDER.slice(0, ROLE_ORDER.indexOf(role) + 1);
 const can = (user, ...roles) => user.roles.some((r) => r === 'admin' || roles.includes(r));
 
 const timeOf = (iso) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
@@ -512,8 +518,7 @@ async function route(method, path, body) {
 
   // ---- auth
   if (path === '/auth/csrf/') {
-    if (!csrfCookie()) setCsrfCookie();
-    return json(200, {});
+    return json(200, { csrfToken: csrfCookie() || setCsrfCookie() });
   }
   if (path === '/auth/login/' && method === 'POST') {
     const { username = '', password = '' } = body.data || {};
@@ -537,20 +542,18 @@ async function route(method, path, body) {
     const code = String(body.data?.code || '').replace(/\s/g, '');
     if (code !== TEST_CODE && !RECOVERY.includes(code)) return fail(400, 'CMS_VALIDATION', 'That code didn’t match.', 'Codes change every 30 seconds. Enter the newest one.', { field: 'code' });
     setSession({ userId: s.userId, stage: 'ok' });
-    setCsrfCookie();
-    return json(200, me(db.users.find((u) => u.id === s.userId)));
+    return json(200, { ...me(db.users.find((u) => u.id === s.userId)), csrfToken: setCsrfCookie() });
   }
   if (path === '/auth/mfa/enrol/' || path === '/auth/mfa/enrol/confirm/') {
     if (!s || s.stage !== 'setup') return fail(401, 'CMS_UNAUTHENTICATED', 'Your sign-in timed out.', 'Sign in again.');
     const u = db.users.find((x) => x.id === s.userId);
-    if (path === '/auth/mfa/enrol/') return json(200, { qr_svg: null, otpauth_uri: `otpauth://totp/CRTDH%20CMS:${u.username}?secret=JBSWY3DPEHPK3PXP&issuer=CRTDH%20CMS`, secret: 'JBSWY3DPEHPK3PXP' });
+    if (path === '/auth/mfa/enrol/') return json(200, { qr_svg: null, qr_data_uri: null, otpauth_uri: `otpauth://totp/CRTDH%20CMS:${u.username}?secret=JBSWY3DPEHPK3PXP&issuer=CRTDH%20CMS`, secret: 'JBSWY3DPEHPK3PXP' });
     const code = String(body.data?.code || '').replace(/\s/g, '');
     if (code !== TEST_CODE) return fail(400, 'CMS_VALIDATION', 'That code didn’t match.', 'Check the app shows “CRTDH CMS”, then enter its newest code.', { field: 'code' });
     u.mfa_enrolled = true;
     save();
     setSession({ userId: u.id, stage: 'ok' });
-    setCsrfCookie();
-    return json(200, { recovery_codes: RECOVERY, user: me(u) });
+    return json(200, { ...me(u), csrfToken: setCsrfCookie(), recovery_codes: RECOVERY });
   }
   if (path === '/auth/logout/') {
     setSession(null);
@@ -565,6 +568,22 @@ async function route(method, path, body) {
     return fail(401, 'CMS_UNAUTHENTICATED', 'You’ve been signed out after 30 minutes without activity.', 'Sign in again. Your unsaved text is kept on this computer.');
   }
   if (path === '/auth/me/') return json(200, me(user));
+  if (path === '/auth/password/' && method === 'POST') {
+    const v = body.data || {};
+    if (v.current_password !== TEST_PASSWORD) return fail(400, 'CMS_VALIDATION', 'That isn’t your current password.', 'Check it and try again.', { field: 'current_password' });
+    if (String(v.new_password || '').length < 12) return fail(400, 'CMS_VALIDATION', 'Use at least 12 characters.', 'Choose a longer password.', { field: 'new_password' });
+    user.must_change_password = false;
+    save();
+    return json(200, { ...me(user), csrfToken: setCsrfCookie() });
+  }
+  if (path === '/auth/sessions/revoke-all/' && method === 'POST') {
+    setSession(null);
+    return json(200, { revoked: 2 });
+  }
+  if (path === '/auth/mfa/recovery-codes/' && method === 'POST') {
+    if (String(body.data?.code || '') !== TEST_CODE) return fail(400, 'CMS_VALIDATION', 'That code didn’t match.', 'Enter the newest code from the app.', { field: 'code' });
+    return json(200, { recovery_codes: RECOVERY });
+  }
 
   // ---- cms
   if (path === '/cms/pages/') {
@@ -658,32 +677,40 @@ async function route(method, path, body) {
     return json(200, { entries: db.audit.filter((a) => a.item_id === itemId || a.item_id.endsWith(`.${ref}`) || a.item_id === ref).reverse() });
   }
 
-  // ---- users (assumed endpoints)
-  if (path.startsWith('/users/')) {
+  // ---- users (addendum A12, matches backend-security accounts/users.py)
+  if (path.startsWith('/auth/users/')) {
     if (!can(user, 'admin')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only Admins can manage users.', 'Ask an Admin.');
-    const out = (u) => ({ id: u.id, username: u.username, name: u.name, email: u.email, roles: u.roles, mfa_enrolled: u.mfa_enrolled, is_active: u.is_active, last_login: u.last_login });
-    if (path === '/users/' && method === 'GET') return json(200, { users: db.users.map(out) });
-    if (path === '/users/' && method === 'POST') {
-      const v = body.data || {};
-      if (!v.name?.trim()) return fail(400, 'CMS_VALIDATION', 'Enter the person’s name.', 'Enter their full name.', { field: 'name' });
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email || '')) return fail(400, 'CMS_VALIDATION', 'Enter an email like name@iitkgp.ac.in.', 'Check the email address.', { field: 'email' });
-      if (db.users.some((u) => u.email === v.email)) return fail(400, 'CMS_VALIDATION', 'Someone already uses this email.', 'Use a different email.', { field: 'email' });
-      const username = v.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-      const u = { id: db.nextId++, username, name: v.name.trim(), email: v.email, roles: [v.role || 'editor'], mfa_enrolled: false, is_active: true, last_login: null };
+    const out = (u) => ({ ...me(u), is_active: u.is_active, last_login: u.last_login });
+    if (path === '/auth/users/' && method === 'GET') return json(200, { results: db.users.map(out) });
+    const v = body.data || {};
+    if (path === '/auth/users/' && method === 'POST') {
+      if (!/^[A-Za-z0-9._-]{3,64}$/.test(v.username || '')) return fail(400, 'CMS_VALIDATION', 'Use 3 to 64 letters, digits, dots, dashes or underscores.', 'Change the username.', { field: 'username' });
+      if (db.users.some((u) => u.username.toLowerCase() === v.username.toLowerCase())) return fail(400, 'CMS_VALIDATION', 'That username is taken.', 'Choose another username.', { field: 'username' });
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email || '')) return fail(400, 'CMS_VALIDATION', 'Enter a valid email address.', 'Check the email address.', { field: 'email' });
+      if (!ROLE_ORDER.includes(v.role)) return fail(400, 'CMS_VALIDATION', 'Pick a role.', 'Pick a role.', { field: 'role' });
+      const name = [v.first_name, v.last_name].filter(Boolean).join(' ').trim() || v.username;
+      const u = { id: db.nextId++, username: v.username, name, email: v.email, roles: rolesUpTo(v.role), mfa_enrolled: false, must_change_password: true, is_active: true, last_login: null };
       db.users.push(u);
       save();
-      return json(201, { user: out(u), invite_sent: true });
+      return json(201, { ...out(u), temporary_password: 'tmp-Kq7v-Rw2m-Xp9d' });
     }
-    m = path.match(/^\/users\/(\d+)\/$/);
+    m = path.match(/^\/auth\/users\/(\d+)\/(role|deactivate|reset-mfa)\/$/);
     const u = m && db.users.find((x) => String(x.id) === m[1]);
-    if (!u) return fail(404, 'CMS_NOT_FOUND', 'That user no longer exists.', 'Reload the page.');
-    const v = body.data || {};
-    if (u.id === user.id && (v.is_active === false || (v.roles && !v.roles.includes('admin'))))
-      return fail(400, 'CMS_VALIDATION', 'You can’t remove your own Admin access.', 'Ask another Admin to do this.');
-    if (v.roles) u.roles = v.roles;
-    if (typeof v.is_active === 'boolean') u.is_active = v.is_active;
+    if (!u || method !== 'POST') return fail(404, 'CMS_NOT_FOUND', 'That user no longer exists.', 'Reload the page.');
+    const admins = () => db.users.filter((x) => x.is_active && x.roles.includes('admin'));
+    if (m[2] === 'deactivate') {
+      if (u.id === user.id) return fail(400, 'CMS_VALIDATION', 'You cannot deactivate yourself.', 'Ask another admin.');
+      if (u.roles.includes('admin') && admins().length <= 1) return fail(400, 'CMS_VALIDATION', 'This is the last admin.', 'Make someone else admin first.');
+      u.is_active = false;
+    } else if (m[2] === 'role') {
+      if (!ROLE_ORDER.includes(v.role)) return fail(400, 'CMS_VALIDATION', 'Pick a role.', 'Pick a role.', { field: 'role' });
+      if (u.roles.includes('admin') && v.role !== 'admin' && admins().length <= 1) return fail(400, 'CMS_VALIDATION', 'This is the last admin.', 'Make someone else admin first.');
+      u.roles = rolesUpTo(v.role);
+    } else {
+      u.mfa_enrolled = false;
+    }
     save();
-    return json(200, { user: out(u) });
+    return json(200, out(u));
   }
 
   // ---- content

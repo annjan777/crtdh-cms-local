@@ -139,21 +139,65 @@ test('build guard: a big shrink needs a named confirmation', async ({ page }) =>
   await expect(page.getByText(/Live at \d\d:\d\d/)).toBeVisible({ timeout: 15_000 });
 });
 
-test('users: admin adds a user and deactivates one with a named confirmation', async ({ page }) => {
+test('users: admin adds a user (temporary password shown once), changes a role, deactivates with a named confirmation', async ({ page }) => {
   await signIn(page, 'sita', '/users');
   await page.getByRole('button', { name: 'Add user' }).click();
   const drawer = page.getByRole('dialog', { name: 'Add a user' });
-  await drawer.getByRole('button', { name: 'Add and send invite' }).click();
+  await drawer.getByRole('button', { name: 'Add user' }).click();
   await expect(drawer.getByText('Enter the person’s full name.')).toBeVisible();
   await drawer.getByLabel('Full name').fill('Nandini Ghosh');
+  await expect(drawer.getByLabel('Username')).toHaveValue('nandini');
   await drawer.getByLabel('Email').fill('nandini@example.test');
   await drawer.getByLabel(/Publisher/).check();
-  await drawer.getByRole('button', { name: 'Add and send invite' }).click();
-  await expect(page.getByText('Nandini Ghosh was added as publisher.')).toBeVisible();
+  await drawer.getByRole('button', { name: 'Add user' }).click();
+  const temp = page.getByRole('dialog', { name: 'Temporary password for Nandini Ghosh' });
+  await expect(temp).toContainText('tmp-Kq7v-Rw2m-Xp9d');
+  await temp.getByRole('button', { name: 'Done' }).click();
+  await expect(page.getByText('Nandini Ghosh was added as Publisher.')).toBeVisible();
+  await expect(page.getByText('tmp-Kq7v-Rw2m-Xp9d')).toHaveCount(0);
+  // Role change goes to /auth/users/<id>/role/.
+  await page.getByLabel('Role for Ravi Kumar').selectOption('publisher');
+  await expect(page.getByRole('row', { name: /Ravi Kumar/ })).toContainText('Role saved');
+  expect((await mock(page, 'state')).users.find((u) => u.username === 'ravi').roles).toEqual(['editor', 'publisher']);
   await page.getByRole('row', { name: /Ravi Kumar/ }).getByRole('button', { name: 'Deactivate' }).click();
   const dlg = page.getByRole('dialog', { name: 'Deactivate Ravi Kumar?' });
   await dlg.getByRole('button', { name: 'Deactivate Ravi' }).click();
-  await expect(page.getByRole('row', { name: /Ravi Kumar/ }).getByRole('button', { name: 'Reactivate' })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Ravi Kumar/ })).toContainText('Deactivated');
+  await expect(page.getByRole('row', { name: /Ravi Kumar/ }).getByRole('button', { name: 'Deactivate' })).toHaveCount(0);
+});
+
+test('first sign-in with a temporary password: choose a new one before editing', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Username').fill('meera');
+  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByLabel('Code', { exact: true }).fill(CODE);
+  await page.getByRole('button', { name: 'Verify code' }).click();
+  await expect(page.getByRole('heading', { name: 'Choose your own password' })).toBeVisible();
+  await page.getByLabel('Temporary password').fill(PASSWORD);
+  await page.getByLabel('New password', { exact: true }).fill('short');
+  await page.getByLabel('New password again').fill('short');
+  await page.getByRole('button', { name: 'Save password' }).click();
+  await expect(page.getByText('Use at least 12 characters (now 5).')).toBeVisible();
+  await page.getByLabel('New password', { exact: true }).fill('a long enough sentence');
+  await page.getByLabel('New password again').fill('a long enough sentence');
+  await page.getByRole('button', { name: 'Save password' }).click();
+  await expect(page.getByRole('button', { name: 'Meera Iyer' })).toBeVisible();
+});
+
+test('OAuth next: a same-origin path is followed after sign-in, another site is not', async ({ page }) => {
+  await signIn(page, 'priya', '/login?next=%2Fhistory%3Ftab%3Dall');
+  await expect(page).toHaveURL(/\/history\?tab=all$/);
+  await page.goto('/login?next=%2F%2Fevil.example%2F');
+  await expect(page.getByRole('button', { name: 'Priya Sen' })).toBeVisible();
+  expect(new URL(page.url()).host).toBe('localhost:3200');
+});
+
+test('CSRF token lives in memory only and is sent as X-CSRFToken', async ({ page }) => {
+  await signIn(page, 'priya');
+  expect(await page.evaluate(() => document.cookie)).not.toContain('csrftoken');
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  expect(keys.filter((k) => /csrf/i.test(k))).toEqual([]);
 });
 
 test('users page is for admins only', async ({ page }) => {

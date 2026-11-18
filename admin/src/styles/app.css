@@ -1687,6 +1687,24 @@ textarea:focus-visible {
   color: var(--mute);
   min-height: 18px;
 }
+.cell-action {
+  margin-left: 8px;
+  font-size: 14px;
+}
+.temp-password {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.temp-password code {
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
 .select-compact {
   min-height: 40px;
   width: auto;

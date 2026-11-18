@@ -211,8 +211,8 @@ function Enrol() {
       .mfaSetup()
       .then(async (s) => {
         setSetup(s);
-        // Server-drawn QR when given (A6), else drawn here from the otpauth URI.
-        setQr(s.qr_svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s.qr_svg)}` : await QRCode.toDataURL(s.otpauth_uri, { margin: 1, width: 176, color: { dark: '#16202a', light: '#ffffff' } }));
+        // Server-drawn QR as a data URI (A6/A12, rendered in an <img>), else drawn here from the otpauth URI.
+        setQr(s.qr_data_uri?.startsWith('data:image/') ? s.qr_data_uri : await QRCode.toDataURL(s.otpauth_uri, { margin: 1, width: 176, color: { dark: '#16202a', light: '#ffffff' } }));
       })
       .catch((err) => (err.code === 'CMS_UNAUTHENTICATED' ? setStatus('signed-out') : setError(`${err.message} ${err.fix}`)));
   }, [setStatus]);
@@ -295,8 +295,70 @@ function Enrol() {
   );
 }
 
+function ChangePassword() {
+  const { changePassword, logout } = useAuth();
+  const [v, setV] = useState({ current: '', next: '', again: '' });
+  const [touched, setTouched] = useState({});
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const refs = { current: useRef(null), next: useRef(null), again: useRef(null) };
+  const errs = {
+    current: !v.current ? 'Enter the temporary password you were given.' : null,
+    next: v.next.length < 12 ? `Use at least 12 characters (now ${v.next.length}).` : null,
+    again: v.again !== v.next ? 'Type the same new password again.' : null,
+  };
+  const shown = (k) => (touched[k] && errs[k]) || (error?.field === (k === 'next' ? 'new_password' : k === 'current' ? 'current_password' : '') ? error.message : null);
+  const set = (k) => (e) => {
+    setV({ ...v, [k]: e.target.value });
+    setTouched((t) => ({ ...t, [k]: false }));
+    if (error?.field) setError(null);
+  };
+  async function submit(e) {
+    e.preventDefault();
+    setTouched({ current: true, next: true, again: true });
+    const first = ['current', 'next', 'again'].find((k) => errs[k]);
+    if (first) return refs[first].current?.focus();
+    setBusy(true);
+    setError(null);
+    try {
+      await changePassword(v.current, v.next);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+  const input = (k, label, autoComplete) => (
+    <Field label={label} htmlFor={`pw-${k}`} error={shown(k)}>
+      <input ref={refs[k]} id={`pw-${k}`} type="password" autoComplete={autoComplete} value={v[k]} aria-invalid={!!shown(k) || undefined} aria-describedby={`pw-${k}-msg`} onChange={set(k)} onBlur={() => setTouched((t) => ({ ...t, [k]: true }))} />
+    </Field>
+  );
+  return (
+    <Card title="Choose your own password" lead="You signed in with a temporary password. Choose a new one before you start editing.">
+      {error && !error.field ? (
+        <Banner tone="danger">
+          {error.message} {error.fix}
+        </Banner>
+      ) : null}
+      <form onSubmit={submit} noValidate>
+        {input('current', 'Temporary password', 'current-password')}
+        {input('next', 'New password', 'new-password')}
+        <p className="field-hint">At least 12 characters. A short sentence works well.</p>
+        {input('again', 'New password again', 'new-password')}
+        <SubmitButton busy={busy}>Save password</SubmitButton>
+      </form>
+      <div className="auth-links">
+        <button type="button" className="link-btn" onClick={logout}>
+          Sign out
+        </button>
+      </div>
+    </Card>
+  );
+}
+
 export default function AuthScreens() {
   const { status } = useAuth();
+  if (status === 'change-password') return <ChangePassword />;
   if (status === 'mfa') return <Mfa />;
   if (status === 'setup') return <Enrol />;
   return <SignIn expired={status === 'expired'} />;
