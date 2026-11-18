@@ -1,6 +1,6 @@
 import PageShell from '../components/PageShell.jsx'
 import ContactForm from '../components/ContactForm.jsx'
-import { PageBanner } from '../components/Blocks.jsx'
+import { MapEmbed, PageBanner } from '../components/Blocks.jsx'
 
 /** Contact (form pattern): the form, then address and map. */
 export default function Contact({ data, settings: settingsProp }) {
@@ -48,11 +48,7 @@ export default function Contact({ data, settings: settingsProp }) {
                 </>
               )}
             </dl>
-            {settings.map_embed_url && (
-              <div className="map">
-                <iframe src={settings.map_embed_url} title="Map: CRTDH at IIT Kharagpur" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-              </div>
-            )}
+            <MapEmbed src={settings.map_embed_url} address={settings.address} />
           </aside>
         </div>
       </section>

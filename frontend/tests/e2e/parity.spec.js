@@ -17,7 +17,7 @@ test('home: headline, enterprises, partners, innovations, news, documents, visit
   await expect(page.locator('h1')).toHaveText([slide.heading, slide.highlight_heading, slide.heading_end].join(' '))
   expectInOrder(expect, t, c.enterprises.map((e) => e.name), 'enterprises')
   expectInOrder(expect, t, c.products.filter((p) => p.partners.length).map((p) => p.name), 'products')
-  expectInOrder(expect, t, c.innovations.filter((i) => i.images?.[0]?.image).slice(0, 6).map((i) => i.title), 'innovations')
+  expectInOrder(expect, t, c.innovations.filter((i) => i.images?.[0]?.image).slice(0, 5).map((i) => i.title), 'innovations')
   expectInOrder(expect, t, c['news-items'].map((n) => n.text), 'news')
   expectInOrder(expect, t, c.documents.map((d) => d.title), 'documents')
   expect(t).toContain(s['home-page'].enterprises_text.slice(0, 60))

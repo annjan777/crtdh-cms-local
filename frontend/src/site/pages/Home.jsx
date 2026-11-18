@@ -60,7 +60,7 @@ function Proof({ enterprises = [], products = [] }) {
             {enterprises.length} enterprises engaged with the centre
             {partners.length > 0 && `, and the partners taking ${products.length} of its products to market`}.
           </p>
-          <SiteLink to="/enterprises" className="text-link">All enterprises</SiteLink>
+          <SiteLink to="/enterprises" className="text-link proof__all">All enterprises</SiteLink>
           {partners.length > 0 && (
             <dl className="names names--partners">
               <dt className="soft">Products and their partners</dt>
@@ -83,18 +83,21 @@ function Proof({ enterprises = [], products = [] }) {
               ))}
             </ul>
           )}
+          {enterprises.length > 8 && (
+            <SiteLink to="/enterprises" className="text-link proof__more">All {enterprises.length} enterprises</SiteLink>
+          )}
         </div>
       </div>
     </section>
   )
 }
 
-/** Our work: innovations as staggered prints at uneven sizes, with real empty cells. */
+/** Our work: one featured innovation beside the heading, then a row of four at one size and ratio. */
 function Work({ innovations = [] }) {
   const withImages = innovations.filter((i) => (i.images || [])[0]?.image)
-  const shown = withImages.slice(0, 6)
+  const shown = withImages.slice(0, 5)
   if (!shown.length) return null
-  const shapes = ['wide', 'tall', 'single', 'single', 'wide', 'single']
+  const shapes = ['wide', 'single', 'single', 'single', 'single']
   return (
     <section className="section section--surface work" aria-labelledby="work-title">
       <div className="wrap">
@@ -114,7 +117,7 @@ function Work({ innovations = [] }) {
                     src={img.image}
                     alt={img.caption || ''}
                     figure
-                    ratio={shape === 'tall' ? '4x5' : '3x2'}
+                    ratio="3x2"
                     sizes={shape === 'wide' ? '(min-width: 768px) 48vw, 100vw' : '(min-width: 768px) 24vw, 50vw'}
                   />
                   <span className="work__title">{inv.title}</span>

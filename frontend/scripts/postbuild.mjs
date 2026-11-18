@@ -42,6 +42,7 @@ const allHtml = htmlFiles(out).map((f) => fs.readFileSync(f, 'utf8')).join('\n')
 const frameOrigins = new Set()
 for (const m of allHtml.matchAll(/<iframe[^>]*\ssrc="(https:\/\/[^"/]+)/g)) frameOrigins.add(m[1])
 if (allHtml.includes('data-youtube=')) frameOrigins.add('https://www.youtube-nocookie.com') // poster swaps in the player on press
+if (allHtml.includes('data-map-embed')) frameOrigins.add('https://www.google.com') // map facade swaps in the embed on press
 const imgOrigins = new Set()
 for (const m of allHtml.matchAll(/<img[^>]*\ssrc="(https?:\/\/[^"/]+)/g)) imgOrigins.add(m[1])
 if (imgOrigins.size) console.warn(`postbuild: third-party images in the build: ${[...imgOrigins].join(', ')}`)

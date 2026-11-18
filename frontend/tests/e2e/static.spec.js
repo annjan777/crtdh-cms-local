@@ -152,3 +152,17 @@ test('mobile menu opens full screen with 48px rows and closes on navigation', as
   await expect(page.locator('h1')).toHaveText('Our team')
   await expect(page.locator('.mnav__panel')).toBeHidden()
 })
+
+test('contact map and videos load third-party frames only when pressed', async ({ page }) => {
+  await page.route('https://www.google.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>map</p>' }))
+  await page.goto('/contact')
+  await expect(page.locator('iframe')).toHaveCount(0)
+  const show = page.getByRole('button', { name: 'Show the map' })
+  if (await show.count()) {
+    await show.click()
+    await expect(page.locator('.map iframe')).toHaveAttribute('src', /^https:\/\/www\.google\.com\/maps\/embed/)
+  }
+  await page.goto('/')
+  await expect(page.locator('iframe')).toHaveCount(0)
+  await expect(page.locator('img[src^="http"]')).toHaveCount(0)
+})

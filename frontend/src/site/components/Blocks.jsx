@@ -43,6 +43,28 @@ export function RichText({ html, className = '' }) {
   return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+/** Google map that loads only when pressed (no third-party requests on page load), with a directions link. */
+export function MapEmbed({ src, address }) {
+  const [shown, setShown] = useState(false)
+  // Only Google's embed endpoint may be framed (the CSP frame-src allows nothing else).
+  if (!src || !src.startsWith('https://www.google.com/maps/embed')) return null
+  const directions = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null
+  return (
+    <div className="map" data-map-embed>
+      {shown ? (
+        <iframe src={src} title="Map: CRTDH at IIT Kharagpur" referrerPolicy="no-referrer-when-downgrade" />
+      ) : (
+        <div className="map__facade">
+          <p className="map__label">Map of the centre</p>
+          <button type="button" className="btn btn--secondary" onClick={() => setShown(true)}>Show the map</button>
+          <p className="small soft">Loads Google Maps.</p>
+          {directions && <a href={directions} className="text-link" target="_blank" rel="noopener noreferrer">Directions in Google Maps</a>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** YouTube poster that loads the player (youtube-nocookie) only when pressed; no third-party requests before. */
 export function VideoPoster({ url, title }) {
   const [playing, setPlaying] = useState(false)
@@ -70,7 +92,7 @@ export function VideoPoster({ url, title }) {
           </button>
         )}
       </div>
-      {title && <figcaption>{title}</figcaption>}
+      {title && playing && <figcaption>{title}</figcaption>}
     </figure>
   )
 }
