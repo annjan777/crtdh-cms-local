@@ -5,14 +5,12 @@ Every resource path below matches API_CONTRACT.md exactly.
 """
 
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from apps.accounts.views import MeView
 from apps.carousel.views import HeroSlideViewSet, ProjectSlideViewSet
+from apps.common.media_views import MediaFileView
 from apps.common.views import (
     DocumentViewSet,
     ImageGridBlockViewSet,
@@ -99,15 +97,14 @@ api_v1_patterns = [
     path("about-page/", AboutPageView.as_view(), name="about-page"),
     path("home-page/", HomePageView.as_view(), name="home-page"),
     path("contact/", ContactCreateView.as_view(), name="contact-create"),
-    path("auth/token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
-    path("auth/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
-    path("auth/me/", MeView.as_view(), name="auth-me"),
+    path("auth/", include("apps.accounts.urls")),
+    path("media/<path:path>", MediaFileView.as_view(), name="media-file"),
 ]
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1_patterns)),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# The Django admin bypasses MFA: local development only (settings refuse it in production).
+if settings.DEBUG and settings.DJANGO_ADMIN_ENABLED:
+    urlpatterns.append(path("admin/", admin.site.urls))
