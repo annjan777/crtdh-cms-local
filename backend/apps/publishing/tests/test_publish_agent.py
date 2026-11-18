@@ -277,3 +277,30 @@ def test_agent_failure_keeps_previous_live(client, content, publish_env, publish
     assert Snapshot.last_published().pk == p1.snapshot_id
     assert_contract_error(agent_call(client, "GET", f"/api/v1/agent/builds/{p2.id}.tar.gz"), "CMS_NOT_FOUND")
     assert publish.start_publish(publisher)  # lock released
+
+
+@pytest.mark.regression_critical
+def test_cannot_cancel_after_agent_fetched_the_tarball(api_as, client, content, publish_env, publisher):
+    p = built(publisher)
+    dl = agent_call(client, "GET", f"/api/v1/agent/builds/{p.id}.tar.gz")
+    assert dl.status_code == 200
+    b"".join(dl.streaming_content)
+    p.refresh_from_db()
+    assert p.fetched_at is not None
+    resp = api_as("publisher").post(f"/api/v1/cms/publish/{p.id}/cancel/", {}, format="json")
+    assert_contract_error(resp, "CMS_VALIDATION")
+    assert agent_status(p, "live").status_code == 200
+    assert p.status == Publish.LIVE and p.snapshot.__class__.objects.get(pk=p.snapshot_id).published_at
+
+
+@pytest.mark.regression_critical
+def test_agent_report_after_a_racing_cancel_is_recorded(api_as, content, publish_env, publisher):
+    from apps.publishing.models import Snapshot
+    p = built(publisher)
+    Publish.objects.filter(pk=p.pk).update(status=Publish.CANCELLED)  # cancel won the race before the fetch mark
+    assert agent_status(p, "live").status_code == 200
+    assert p.status == Publish.LIVE and Snapshot.objects.get(pk=p.snapshot_id).published_at is not None
+    q = built(publisher)
+    Publish.objects.filter(pk=q.pk).update(status=Publish.CANCELLED)
+    assert agent_status(q, "failed", step="upload", message="disk full").status_code == 200
+    assert q.status == Publish.FAILED

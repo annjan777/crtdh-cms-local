@@ -69,6 +69,8 @@ class Publish(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     started_at = models.DateTimeField(null=True, blank=True)
     live_at = models.DateTimeField(null=True, blank=True)
+    # When the publish agent first downloaded the tarball: from then on the upload may happen, so no cancel.
+    fetched_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

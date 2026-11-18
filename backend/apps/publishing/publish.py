@@ -91,11 +91,17 @@ def start_publish(user, confirm_shrink=False):
 
 
 def cancel_publish(p):
-    if p.status not in (Publish.QUEUED, Publish.READY):
-        raise CMSError("CMS_VALIDATION", f"A publish that is {p.status} cannot be cancelled.")
-    Publish.objects.filter(pk=p.pk, status=p.status).update(status=Publish.CANCELLED, message="Cancelled; the live site is unchanged.",
-                                                            updated_at=timezone.now())
+    """Cancel a publish the upload machine has not fetched yet (queued, or built and never downloaded)."""
+    if p.status not in (Publish.QUEUED, Publish.READY) or p.fetched_at is not None:
+        what = "already being uploaded" if p.fetched_at is not None else p.status
+        raise CMSError("CMS_VALIDATION", f"This publish is {what} and cannot be cancelled.",
+                       fix="Wait for it to finish; publish again afterwards if needed.")
+    done = Publish.objects.filter(pk=p.pk, status=p.status, fetched_at__isnull=True).update(
+        status=Publish.CANCELLED, message="Cancelled; the live site is unchanged.", updated_at=timezone.now())
     p.refresh_from_db()
+    if not done:
+        raise CMSError("CMS_VALIDATION", "The upload machine picked this publish up just now; it can no longer be "
+                       "cancelled.", fix="Wait for it to finish.")
     return p
 
 
