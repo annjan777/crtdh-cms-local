@@ -743,11 +743,11 @@ def request_upload_link(actor: Actor) -> dict:
         raise CmsError("CMS_INTERNAL", "Photo upload links aren't available on this server yet.",
                        fix="Ask the user for a public https link to the photo and use upload_image_from_url, or "
                            "ask them to upload it in the CMS.", retryable=False) from None
-    from apps.publishing.audit import WriteContext  # type: ignore  # pragma: no cover
+    from apps.publishing.audit import WriteContext  # type: ignore
 
-    ctx = WriteContext(user=actor.user, channel="mcp", connector_session=actor.session_key)  # pragma: no cover
-    link = create_upload_link(actor.user, ctx=ctx)  # pragma: no cover
-    return {"upload_url": link["url"], "expires_at": link["expires_at"]}  # pragma: no cover
+    ctx = WriteContext(user=actor.user, channel="mcp", connector_session=actor.session_key)
+    link = create_upload_link(actor.user, ctx=ctx)
+    return {"upload_url": link["url"], "expires_at": link["expires_at"]}
 
 
 def fetch_image_from_url(actor: Actor, url: str, *, resolver=None, connector=None) -> dict:

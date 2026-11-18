@@ -334,3 +334,28 @@ async def test_every_call_is_audited(asgi_app, editor, token):
     assert [(r["tool"], r["outcome"]) for r in rows] == [("find_content", "ok"), ("get_page", "CMS_NOT_FOUND")]
     assert all(r["user_id"] == editor.pk and r["session_key"] for r in rows)
     assert rows[0]["arg_names"] == "query"
+
+
+async def test_request_upload_link_uses_core_when_present(asgi_app, editor, token, monkeypatch):
+    """Happy path against backend-core's contract signature (stand-in module until it merges)."""
+    import sys
+    import types
+
+    seen = {}
+
+    class WriteContext:
+        def __init__(self, **kw):
+            seen["ctx"] = kw
+
+    def create_upload_link(user, *, ctx):
+        seen["user"] = user.pk
+        return {"url": "https://cms.example.org/upload/one-time-abc", "token": "abc", "expires_at": "2026-11-20T10:00:00Z"}
+
+    if "apps.publishing" not in sys.modules:
+        monkeypatch.setitem(sys.modules, "apps.publishing", types.ModuleType("apps.publishing"))
+    monkeypatch.setitem(sys.modules, "apps.publishing.uploads", types.SimpleNamespace(create_upload_link=create_upload_link))
+    monkeypatch.setitem(sys.modules, "apps.publishing.audit", types.SimpleNamespace(WriteContext=WriteContext))
+    async with mcp_client(asgi_app, token) as client:
+        data = ok(await call(client, "request_upload_link", {}))
+    assert data == {"upload_url": "https://cms.example.org/upload/one-time-abc", "expires_at": "2026-11-20T10:00:00Z"}
+    assert seen["user"] == editor.pk and seen["ctx"]["channel"] == "mcp" and seen["ctx"]["connector_session"]
