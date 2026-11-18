@@ -1,0 +1,29 @@
+{% extends "oauth/_base.html" %}
+{% block title %}Allow Claude to edit drafts{% endblock %}
+{% block content %}
+<p class="mark">CRTDH CMS</p>
+{% if not error %}
+<h1>Allow Claude to edit drafts as {{ cms_user_name }} ({{ cms_user_role }})?</h1>
+<p class="small">Requested by <strong>{{ application.name }}</strong> · you'll return to <strong>{{ redirect_host }}</strong></p>
+<p>Claude will be able to:</p>
+<ul>
+  <li>read the website's pages and your unpublished changes</li>
+  <li>add, change, hide and reorder content as unpublished changes</li>
+</ul>
+<p>Claude can't publish, delete anything or manage users. Every change waits for a Publisher.</p>
+<form method="post">
+  {% csrf_token %}
+  {% for field in form %}{% if field.is_hidden %}{{ field }}{% endif %}{% endfor %}
+  {{ form.non_field_errors }}
+  <div class="actions">
+    <button type="submit" class="primary" name="allow" value="Authorize">Allow</button>
+    <button type="submit" class="secondary">Cancel</button>
+  </div>
+</form>
+<p class="small">The connection lasts up to 30 days. You can disconnect Claude any time from your CMS profile.</p>
+{% else %}
+<h1>Claude couldn't be connected</h1>
+<p>{{ error.description|default:"The connection request was not valid." }}</p>
+<p class="small">Remove the connector in Claude and add it again. If this keeps happening, send this message to the site admin: {{ error.error }}</p>
+{% endif %}
+{% endblock %}

@@ -10,6 +10,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.accounts.views import cms_login
+from apps.oauth.urls import cms_api_urlpatterns as claude_access_patterns
+from apps.oauth.urls import oauth_urlpatterns
 from apps.publishing.urls import agent_patterns, cms_patterns
 from apps.carousel.views import HeroSlideViewSet, ProjectSlideViewSet
 from apps.common.media_views import MediaFileView
@@ -102,6 +104,7 @@ api_v1_patterns = [
     path("auth/", include("apps.accounts.urls")),
     path("media/<path:path>", MediaFileView.as_view(), name="media-file"),
     path("cms/", include(cms_patterns)),
+    path("cms/", include(claude_access_patterns)),  # Claude connector access (apps.oauth)
     path("agent/", include(agent_patterns)),
 ]
 
@@ -110,6 +113,8 @@ urlpatterns = [
     # Sign-in entry point for the OAuth authorize step (mcp lane): see apps.accounts.views.cms_login.
     path("cms/login", cms_login, name="cms-login"),
     path("cms/login/", cms_login),
+    # Claude connector OAuth (authorize page runs here, on the CMS origin)
+    *oauth_urlpatterns,
 ]
 
 # The Django admin bypasses MFA: local development only (settings refuse it in production).
