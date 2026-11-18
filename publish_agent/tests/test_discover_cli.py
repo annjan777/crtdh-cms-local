@@ -157,3 +157,37 @@ def test_single_instance_lock(tmp_path):
         with pytest.raises(SystemExit, match="already running"):
             with agent.SingleInstance(lock):
                 pass
+
+
+def test_keygen_key_logs_in(tmp_path, make_cfg):
+    import paramiko
+    from .fakes import FakeSFTPServer
+    path = str(tmp_path / "keys" / "k")
+    assert agent.main(["keygen", path]) == 0
+    assert agent.main(["keygen", path]) == 1  # never overwrites
+    key = paramiko.Ed25519Key(filename=path)
+    assert open(path + ".pub").read().startswith("ssh-ed25519 " + key.get_base64())
+    srv = FakeSFTPServer(str(tmp_path / "srv2"), key)
+    try:
+        cfg = make_cfg(key_file=path, sftp_port=srv.port)
+        with open(cfg.known_hosts, "w") as fh:
+            fh.write(srv.known_hosts_line())
+        r = Remote.connect(cfg)
+        assert r.home == "/home/u"
+        r.close()
+    finally:
+        srv.close()
+
+
+def test_example_config_loads(tmp_path, monkeypatch):
+    import shutil
+    src = os.path.join(os.path.dirname(__file__), "..", "config.example.ini")
+    dst = tmp_path / "config.ini"
+    text = open(src).read().replace("user = CHANGE_ME", "user = crtdh").replace("key_file = keys/crtdh_publish_ed25519", "key_file =")
+    dst.write_text(text)
+    (tmp_path / "agent-secret.txt").write_text("from-file-secret\n")
+    cfg = load(str(dst))
+    assert cfg.secret() == "from-file-secret"
+    assert cfg.strategy == "auto" and cfg.keep_releases == 3
+    assert cfg.state_dir == str(tmp_path / "state")
+    del shutil

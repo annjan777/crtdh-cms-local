@@ -6,6 +6,7 @@
   rollback [--to ID]         make the previous (or a named) release live again
   status                     show what is live, kept releases and the last result
   set-password               store the SFTP password in the system keyring (only if you cannot use an SSH key)
+  keygen [PATH]              create an SSH key pair for the agent (no ssh-keygen needed)
 Global: --dry-run (change nothing on the server, report nothing), --verbose
 """
 from __future__ import annotations
@@ -75,6 +76,8 @@ def _parser() -> argparse.ArgumentParser:
     rb.add_argument("--to", help="release id to make live (see `status`)")
     sub.add_parser("status", help="show what is live")
     sub.add_parser("set-password", help="store the SFTP password in the system keyring")
+    k = sub.add_parser("keygen", help="create an ed25519 SSH key pair for the agent")
+    k.add_argument("path", nargs="?", default=os.path.join("keys", "crtdh_publish_ed25519"))
     return p
 
 
@@ -180,12 +183,36 @@ def cmd_set_password(cfg: Config, args) -> int:
     return 0
 
 
+def cmd_keygen(path: str) -> int:
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    if os.path.exists(path):
+        print(f"{path} already exists; not overwriting it")
+        return 1
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    key = Ed25519PrivateKey.generate()
+    private = key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.OpenSSH,
+                                serialization.NoEncryption())
+    public = key.public_key().public_bytes(serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as fh:
+        fh.write(private)
+    with open(path + ".pub", "wb") as fh:
+        fh.write(public + b" crtdh-publish-agent\n")
+    print(f"private key: {path}  (keep it on this PC only)")
+    print(f"public key : {path}.pub  -> add this line to ~/.ssh/authorized_keys on the server:")
+    print(public.decode() + " crtdh-publish-agent")
+    return 0
+
+
 COMMANDS = {"check": cmd_check, "backup": cmd_backup, "run": cmd_run, "rollback": cmd_rollback,
             "status": cmd_status, "set-password": cmd_set_password}
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.cmd == "keygen":
+        return cmd_keygen(args.path)
     try:
         cfg = load(args.config)
     except ConfigError as exc:

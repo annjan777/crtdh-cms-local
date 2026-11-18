@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- CRTDH publish agent for macOS (launchd).
+     Replace CHANGE_ME with your macOS user name (3 places), then:
+       cp in.ac.iitkgp.crtdh.publish-agent.plist ~/Library/LaunchAgents/
+       launchctl load -w ~/Library/LaunchAgents/in.ac.iitkgp.crtdh.publish-agent.plist
+     Stop: launchctl unload -w ~/Library/LaunchAgents/in.ac.iitkgp.crtdh.publish-agent.plist -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>in.ac.iitkgp.crtdh.publish-agent</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/CHANGE_ME/crtdh-agent/.venv/bin/python</string>
+    <string>-m</string><string>publish_agent</string>
+    <string>-c</string><string>/Users/CHANGE_ME/crtdh-agent/config.ini</string>
+    <string>run</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/CHANGE_ME/crtdh-agent</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+</dict>
+</plist>
