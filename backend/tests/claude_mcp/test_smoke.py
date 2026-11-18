@@ -2,7 +2,7 @@ import pytest
 
 from .conftest import mcp_client
 
-pytestmark = pytest.mark.django_db(transaction=True)
+pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
 
 
 async def test_list_tools_and_find(asgi_app, token):

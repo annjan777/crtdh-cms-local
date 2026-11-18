@@ -20,6 +20,7 @@ from mcp_server.models import StagedImage
 MCP_URL = "http://localhost:8400/mcp"
 
 
+
 @pytest.fixture(autouse=True)
 def _settings(settings, tmp_path):
     settings.MCP_PUBLIC_URL = "http://localhost:8400"
