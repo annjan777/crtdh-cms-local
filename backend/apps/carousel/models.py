@@ -1,8 +1,10 @@
 from django.db import models
+from apps.common.versioning import VersionedModel
 
 
-class HeroSlide(models.Model):
+class HeroSlide(VersionedModel):
     image = models.ImageField(upload_to="hero_slides/")
+    alt_text = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
     eyebrow = models.CharField(max_length=255, blank=True, default="DSIR · GOVERNMENT OF INDIA")
     heading = models.CharField(max_length=255, blank=True, default="Common Research &")
     highlight_heading = models.CharField(max_length=255, blank=True, default="Technology Development")
@@ -33,10 +35,11 @@ class HeroSlide(models.Model):
         return f"{self.heading} {self.highlight_heading} (Slide {self.pk})"
 
 
-class ProjectSlide(models.Model):
+class ProjectSlide(VersionedModel):
     image = models.ImageField(upload_to="project_slides/")
     title = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]

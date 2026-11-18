@@ -21,6 +21,7 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "logo_left",
             "logo_right",
             "site_logo",
+            "version",
         ]
         read_only_fields = ["id"]
 
@@ -39,6 +40,7 @@ class AboutPageSerializer(serializers.ModelSerializer):
             "pi_desk_document",
             "dsir_about",
             "iitkgp_about",
+            "version",
         ]
         read_only_fields = ["id"]
 
@@ -74,6 +76,7 @@ class HomePageSerializer(serializers.ModelSerializer):
             "office_image",
             "membership_heading",
             "membership_pdf",
+            "version",
         ]
         read_only_fields = ["id"]
 
@@ -81,28 +84,28 @@ class HomePageSerializer(serializers.ModelSerializer):
 class NavItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = NavItem
-        fields = ["id", "label", "url", "order", "in_more"]
+        fields = ["id", "label", "url", "order", "in_more", "is_published", "version"]
 
 
 class NewsItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsItem
-        fields = ["id", "text", "link_url", "order"]
+        fields = ["id", "text", "link_url", "order", "is_published", "version"]
 
 
 class FocusAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = FocusArea
-        fields = ["id", "title", "color", "order"]
+        fields = ["id", "title", "color", "order", "is_published", "version"]
 
 
 class ObjectiveRowSerializer(serializers.ModelSerializer):
     class Meta:
         model = ObjectiveRow
-        fields = ["id", "category", "task", "outcome", "order"]
+        fields = ["id", "category", "task", "outcome", "order", "is_published", "version"]
 
 
 class TimelineEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = TimelineEntry
-        fields = ["id", "year", "title", "image", "order"]
+        fields = ["id", "year", "title", "image", "order", "is_published", "version"]

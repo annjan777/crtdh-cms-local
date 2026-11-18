@@ -1,7 +1,8 @@
 from django.db import models
+from apps.common.versioning import VersionedModel
 
 
-class MediaEvent(models.Model):
+class MediaEvent(VersionedModel):
     CATEGORY_CHOICES = [
         ("events", "Events"),
         ("health-camps", "Health Camps"),
@@ -17,6 +18,7 @@ class MediaEvent(models.Model):
     event_date = models.DateField(null=True, blank=True)
     category = models.CharField(max_length=32, choices=CATEGORY_CHOICES, blank=True, default="")
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -25,11 +27,12 @@ class MediaEvent(models.Model):
         return self.title
 
 
-class MediaEventImage(models.Model):
+class MediaEventImage(VersionedModel):
     event = models.ForeignKey(MediaEvent, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="media_event_images/")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -38,10 +41,11 @@ class MediaEventImage(models.Model):
         return self.caption or f"MediaEventImage {self.pk}"
 
 
-class MediaCoverageLink(models.Model):
+class MediaCoverageLink(VersionedModel):
     title = models.CharField(max_length=255)
     url = models.URLField()
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -50,10 +54,11 @@ class MediaCoverageLink(models.Model):
         return self.title
 
 
-class GalleryImage(models.Model):
+class GalleryImage(VersionedModel):
     image = models.ImageField(upload_to="gallery_images/")
     caption = models.CharField(max_length=255, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]

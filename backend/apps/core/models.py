@@ -1,7 +1,8 @@
 from django.db import models
+from apps.common.versioning import VersionedModel
 
 
-class SiteSettings(models.Model):
+class SiteSettings(VersionedModel):
     """Singleton row (pk is always forced to 1). Use SiteSettings.load() to fetch/create it."""
 
     address = models.TextField(blank=True)
@@ -42,11 +43,12 @@ class SiteSettings(models.Model):
         return "Site settings"
 
 
-class NavItem(models.Model):
+class NavItem(VersionedModel):
     label = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
     order = models.IntegerField(default=0)
     in_more = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -55,10 +57,11 @@ class NavItem(models.Model):
         return self.label
 
 
-class NewsItem(models.Model):
+class NewsItem(VersionedModel):
     text = models.CharField(max_length=500)
     link_url = models.CharField(max_length=500, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -67,10 +70,11 @@ class NewsItem(models.Model):
         return self.text[:60]
 
 
-class FocusArea(models.Model):
+class FocusArea(VersionedModel):
     title = models.CharField(max_length=255)
     color = models.CharField(max_length=32, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -79,7 +83,7 @@ class FocusArea(models.Model):
         return self.title
 
 
-class ObjectiveRow(models.Model):
+class ObjectiveRow(VersionedModel):
     # Groups rows under a shared row-header in the Objectives table (e.g.
     # "Ideation", "Capacity-building", "Key risks mitigation") — several
     # rows share one category, matching the rowspan grouping on the
@@ -88,6 +92,7 @@ class ObjectiveRow(models.Model):
     task = models.CharField(max_length=500)
     outcome = models.CharField(max_length=500, blank=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -96,11 +101,12 @@ class ObjectiveRow(models.Model):
         return self.task[:60]
 
 
-class TimelineEntry(models.Model):
+class TimelineEntry(VersionedModel):
     year = models.CharField(max_length=20)
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="timeline/", blank=True, null=True)
     order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["order"]
@@ -109,7 +115,7 @@ class TimelineEntry(models.Model):
         return f"{self.year} - {self.title}"
 
 
-class AboutPage(models.Model):
+class AboutPage(VersionedModel):
     """Singleton row (pk always 1, same pattern as SiteSettings) holding the
     long-form prose on the About page — the sections that aren't structured
     lists (FocusArea/ObjectiveRow/TimelineEntry already cover those)."""
@@ -144,7 +150,7 @@ class AboutPage(models.Model):
         return "About page"
 
 
-class HomePage(models.Model):
+class HomePage(VersionedModel):
     """Singleton row (pk always 1) holding the homepage's long-form
     sections that sit below the hero/stats/highlights — Objective,
     Enterprises Engagement, Women Empowerment, Location & Facility, and the

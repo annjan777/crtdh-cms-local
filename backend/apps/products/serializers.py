@@ -6,13 +6,13 @@ from .models import Product, ProductImage, ProductPartner
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ["id", "product", "image", "order"]
+        fields = ["id", "product", "image", "order", "is_published", "version"]
 
 
 class ProductPartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductPartner
-        fields = ["id", "product", "name", "logo"]
+        fields = ["id", "product", "name", "logo", "is_published", "version"]
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -21,4 +21,4 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "name", "order", "images", "partners"]
+        fields = ["id", "name", "order", "images", "partners", "is_published", "version"]
