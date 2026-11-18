@@ -159,6 +159,7 @@ def pending_changes(author=None, session_id=None):
             qs = qs.filter(connector_session=session_id)
         scope = {(r, p) for r, p in qs.values_list("resource", "pk_value")}
 
+    history = _audit_history(items, since)
     page_of = {s["id"]: page_id for page_id, s in registry.all_sections()}
     top_label = {s["id"]: s["label"] for _p, s in registry.all_sections()}
     grouped = {}
@@ -171,7 +172,7 @@ def pending_changes(author=None, session_id=None):
         if scope is not None and (item["resource"], str(item["pk"])) not in scope:
             continue
         fields = [f["name"] for f in item["fields"]] if registry.RESOURCES[item["resource"]].kind == "singleton" else None
-        entry = audit.last_entry(item["resource"], item["pk"], fields=fields, since=since)
+        entry = _last(history.get((item["resource"], str(item["pk"])), []), fields)
         item.update(author=(entry.actor_name or None) if entry else None, channel=entry.channel if entry else None,
                     at=entry.at if entry else None, connector_session=entry.connector_session if entry else None,
                     session_id=entry.connector_session if entry else None)
@@ -194,6 +195,37 @@ def open_review_request():
     if rr.requested_by:
         by = rr.requested_by.get_full_name() or rr.requested_by.get_username()
     return {"id": rr.id, "by": by, "at": rr.created_at, "note": rr.note}
+
+
+def _audit_history(items, since):
+    """{(resource, pk): [entries newest first]} for all changed rows, in one query."""
+    if not items:
+        return {}
+    from django.db.models import Q
+
+    cond = Q()
+    by_resource = {}
+    for item in items:
+        by_resource.setdefault(item["resource"], set()).add(str(item["pk"]))
+    for resource, pks in by_resource.items():
+        cond |= Q(resource=resource, pk_value__in=pks)
+    qs = AuditEntry.objects.filter(cond)
+    if since:
+        qs = qs.filter(at__gt=since)
+    out = {}
+    for e in qs.order_by("-at", "-id"):
+        out.setdefault((e.resource, e.pk_value), []).append(e)
+    return out
+
+
+def _last(entries, fields=None):
+    for e in entries:
+        if not fields:
+            return e
+        b, a = e.before or {}, e.after or {}
+        if any(b.get(n) != a.get(n) for n in fields):
+            return e
+    return None
 
 
 def pages_with_changes():

@@ -176,6 +176,9 @@ def queryset_for(resource, include_hidden=False):
             if any(f.name == "is_published" for f in parent_model._meta.concrete_fields):
                 qs = qs.filter(**{f"{parent}__is_published": True})
     order = ["order", "id"] if any(f.name == "order" for f in model._meta.concrete_fields) else ["id"]
+    fks = [f.name for f in model._meta.concrete_fields if f.many_to_one]
+    if fks:
+        qs = qs.select_related(*fks)  # serializers read parent names (e.g. a member's category); no N+1
     return qs.prefetch_related(*_nested_prefetches(res.serializer_class, include_hidden)).order_by(*order)
 
 
