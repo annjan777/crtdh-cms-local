@@ -10,7 +10,7 @@ import time
 from typing import Callable
 
 from .bundle import MEDIA_PREFIX
-from .layout import MARKER, Layout, save_state
+from .layout import Layout, read_meta, save_state
 from .logutil import LOG
 from .remote import Remote, RemoteError
 
@@ -187,7 +187,7 @@ def _switch_htaccess(remote, layout, state, target, kind, _local):
         elif raw is not None:
             remote.sftp.remove(path)
         return
-    meta = remote.read_json(posixpath.join(layout.stored(target), MARKER)) or {}
+    meta = read_meta(remote, layout, target) or {}
     if not meta:
         raise RemoteError(f"release {target} is missing or incomplete on the server")
     block = htaccess_rules(layout, target, meta.get("index_dirs", []))
@@ -236,7 +236,7 @@ def _switch_swap(remote, layout, state, target, kind, _local):
 def _switch_copy(remote, layout, state, target, kind, local_files):
     """Last resort: overwrite files in the web root one by one (each file swap is atomic, the set is not)."""
     src = layout.stored(target)
-    meta = remote.read_json(posixpath.join(src, MARKER)) or {}
+    meta = read_meta(remote, layout, target) or {}
     files = [f for f, _ in meta.get("files", [])]
     if not files:
         raise RemoteError(f"release {target} is missing or incomplete on the server")
@@ -264,7 +264,7 @@ def _switch_copy(remote, layout, state, target, kind, local_files):
             shutil.rmtree(tmpdir, ignore_errors=True)
     previous = state.get("current")
     if previous and previous != target:
-        old = remote.read_json(posixpath.join(layout.stored(previous), MARKER)) or {}
+        old = read_meta(remote, layout, previous) or {}
         keep = set(files)
         for rel, _ in old.get("files", []):
             if rel not in keep and not rel.startswith(MEDIA_PREFIX + "/"):

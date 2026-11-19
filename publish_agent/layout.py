@@ -5,6 +5,7 @@
     swap      web_root IS the live release dir; others in <base>/releases/   media: <web_root>/_media (moves with the live dir)
     copy      files copied into web_root; releases kept in <base>/releases/   media: <web_root>/_media
 
+Release metadata: <base>/meta/<id>.json (never inside a served folder); state: <base>/state.json.
 Media is served at /_media/ (contract addendum A13); /media/ is the Media & Gallery page and is ordinary site content.
 """
 from __future__ import annotations
@@ -16,9 +17,9 @@ from .bundle import MEDIA_NAME, MEDIA_PREFIX
 from .config import Config
 from .remote import Remote
 
-MARKER = ".crtdh-release.json"
-STAGING_MARKER = ".crtdh-staging.json"
+STAGING_MARKER = ".crtdh-staging.json"  # only inside <id>.partial folders, which are never served
 STATE_FILE = "state.json"
+META_DIR = "meta"  # <base>/meta/<release id>.json: what each release holds (never inside a served folder)
 OUR_MEDIA = MEDIA_NAME  # media GC only ever touches names like this
 
 
@@ -36,6 +37,13 @@ class Layout:
     @property
     def state_file(self) -> str:
         return posixpath.join(self.base, STATE_FILE)
+
+    @property
+    def meta_dir(self) -> str:
+        return posixpath.join(self.base, META_DIR)
+
+    def meta_file(self, rid: str) -> str:
+        return posixpath.join(self.meta_dir, rid + ".json")
 
     def staging(self, rid: str) -> str:
         return posixpath.join(self.releases, rid + ".partial")
@@ -68,6 +76,24 @@ def make_layout(cfg: Config, remote: Remote, strategy: str) -> Layout:
 
 def empty_state(strategy: str) -> dict:
     return {"version": 1, "strategy": strategy, "current": None, "history": [], "kinds": {}}
+
+
+def read_meta(remote: Remote, layout: Layout, rid: str) -> dict | None:
+    """Release metadata (files, media, index folders, build id). Kept beside releases/, not in the release folder,
+    so the web server never serves it: <base> is outside the web root, or (htaccess strategy) inside _crtdh/,
+    which the agent's rules refuse to serve directly."""
+    meta = remote.read_json(layout.meta_file(rid))
+    return meta if isinstance(meta, dict) else None
+
+
+def write_meta(remote: Remote, layout: Layout, rid: str, meta: dict) -> None:
+    remote.makedirs(layout.meta_dir)
+    remote.write_json(layout.meta_file(rid), meta)
+
+
+def drop_meta(remote: Remote, layout: Layout, rid: str) -> None:
+    if remote.exists(layout.meta_file(rid)):
+        remote.sftp.remove(layout.meta_file(rid))
 
 
 def load_state(remote: Remote, layout: Layout) -> dict:
