@@ -1,7 +1,7 @@
 {
  "_meta": {
   "source": "834f59a runtime SPA, full seed (items, images)",
-  "rebaselined": "2026-11-19: headings taken from the v3 build (redesign); 'Research Member'-style role badges dropped by design (DESIGN.md); Home figures and Team heading must still match (D10 decision); 2026-11-19 final: '/' h1 is the seed hero headline (test edits are normalised in the spec), 'Explore CRTDH' added with the D13 restore | 2026-11-20 (R-6): headings re-taken from the restored old-look design (owner's 2026-11-19 request to go back to the previous public design; commit 429bd2d). Items and images unchanged: test_items_not_lost passed on all 12 pages before the re-baseline. Fewer headings on Facilities/Services/Social impact is logged as F-18. | 2026-11-20 fix: '/media' gains 'Media coverage' (the first re-capture ran on a rehearsal whose coverage links an earlier E2E run had emptied; confirmed on a wiped rehearsal).",
+  "rebaselined": "2026-11-19: headings taken from the v3 build (redesign); 'Research Member'-style role badges dropped by design (DESIGN.md); Home figures and Team heading must still match (D10 decision); 2026-11-19 final: '/' h1 is the seed hero headline (test edits are normalised in the spec), 'Explore CRTDH' added with the D13 restore | 2026-11-20 (R-6): headings re-taken from the restored old-look design (owner's 2026-11-19 request to go back to the previous public design; commit 429bd2d). Items and images unchanged: test_items_not_lost passed on all 12 pages before the re-baseline. Fewer headings on Facilities/Services/Social impact is logged as F-18. | 2026-11-20 fix: '/media' gains 'Media coverage' (the first re-capture ran on a rehearsal whose coverage links an earlier E2E run had emptied; confirmed on a wiped rehearsal). | 2026-11-20 (F-18): Facilities/Services item names and the Social impact gallery title are headings again (same look, pixel-identical); the other 9 pages' headings were unchanged.",
   "previous": "public_content.v2-v3design.json"
  },
  "/": {
@@ -673,6 +673,90 @@
     "Lab & testing equipment"
    ],
    [
+    "h3",
+    "Two Sterile rooms BSL level 2"
+   ],
+   [
+    "h3",
+    "Pilot Plant for Paper based Devices"
+   ],
+   [
+    "h3",
+    "Electronic Dispenser"
+   ],
+   [
+    "h3",
+    "Vacuum Packaging Machine"
+   ],
+   [
+    "h3",
+    "Two Cryogenic Refrigerators (-80 & -20 degree)"
+   ],
+   [
+    "h3",
+    "Wave Soldering Machine"
+   ],
+   [
+    "h3",
+    "Heat Chamber/ Autoclave"
+   ],
+   [
+    "h3",
+    "Programmable syringe pump"
+   ],
+   [
+    "h3",
+    "High frequency (up to GHz) amplifier"
+   ],
+   [
+    "h3",
+    "Digital ECG and APIs"
+   ],
+   [
+    "h3",
+    "Server and computer accessories"
+   ],
+   [
+    "h3",
+    "Laser Cutter"
+   ],
+   [
+    "h3",
+    "Thermal Imaging System with IR Fusion Technology"
+   ],
+   [
+    "h3",
+    "Arbitrary Waveform Generator, DC Power Supply | Multimeter, Spectrum Analyzer"
+   ],
+   [
+    "h3",
+    "LFA manufacturing unit"
+   ],
+   [
+    "h3",
+    "Covirap manufacturing unit"
+   ],
+   [
+    "h3",
+    "Kit preparation plant"
+   ],
+   [
+    "h3",
+    "Paper based device pilot plant"
+   ],
+   [
+    "h3",
+    "Prototyping for PCB"
+   ],
+   [
+    "h3",
+    "3d Printing Facilities"
+   ],
+   [
+    "h3",
+    "Pathology Lab at Midnapur"
+   ],
+   [
     "h2",
     "Pilot plant & manufacturing units"
    ],
@@ -804,6 +888,30 @@
    [
     "h2",
     "Services for healthcare innovators"
+   ],
+   [
+    "h3",
+    "R&D support"
+   ],
+   [
+    "h3",
+    "Prototyping and testing facilities"
+   ],
+   [
+    "h3",
+    "Regulatory guidance"
+   ],
+   [
+    "h3",
+    "Training & capacity-building"
+   ],
+   [
+    "h3",
+    "Market access opportunities"
+   ],
+   [
+    "h3",
+    "Support for scalability and sustainability"
    ]
   ],
   "items": [
@@ -1105,6 +1213,10 @@
    [
     "h1",
     "Technology reaching communities"
+   ],
+   [
+    "h2",
+    "Community outreach"
    ]
   ],
   "items": [],

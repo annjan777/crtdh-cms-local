@@ -95,3 +95,13 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* A label that is also a heading looks exactly like a plain caption. */
+.image-grid__heading {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  text-transform: inherit;
+  margin: 0;
+}

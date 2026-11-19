@@ -31,7 +31,7 @@ function FacilitiesView() {
             <h2 className="section-title">Lab &amp; testing equipment</h2>
           </Reveal>
           <DataState loading={loading} error={error} data={equipment} emptyProps={{ title: 'Equipment list coming soon' }}>
-            {(items) => <ImageGrid items={items} labelKey="name" />}
+            {(items) => <ImageGrid items={items} labelKey="name" headingLevel={3} />}
           </DataState>
         </div>
       </section>

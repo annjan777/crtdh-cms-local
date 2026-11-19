@@ -59,6 +59,7 @@ function SocialImpactView() {
               const uniqueItems = block.items.filter((item, i, self) => self.findIndex(t => t.image === item.image && t.caption === item.caption) === i)
               return (
                 <div className="image-grid-block" id={block.anchor_slug || undefined} key={block.id} style={{ marginBottom: 'var(--space-8)' }}>
+                  {block.section_title && <h2 className="visually-hidden">{block.section_title}</h2>}
                   <Carousel
                     items={uniqueItems}
                     ariaLabel={block.section_title || 'Image carousel'}
