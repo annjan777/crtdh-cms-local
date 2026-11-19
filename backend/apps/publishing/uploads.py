@@ -58,18 +58,38 @@ def process_upload(file, min_width=0):
         return _fallback_process_upload(file, min_width)
     result = real(file, min_width or None, kind="image")
     if hasattr(result, "path") and hasattr(result, "sha256"):  # apps.common.images.ProcessedImage
-        # The re-encoded temp file is ours: read it into storage-ready content and remove it.
-        try:
-            with open(result.path, "rb") as fh:
-                body = fh.read()
-        finally:
-            Path(result.path).unlink(missing_ok=True)
-        return ContentFile(body, name=f"{result.sha256[:16]}.{result.ext}"), result.width, result.height
+        return processed_to_content(result), result.width, result.height
     if isinstance(result, tuple):
         return result
     if isinstance(result, dict):
         return result["file"], result.get("width"), result.get("height")
     return result, getattr(result, "width", None), getattr(result, "height", None)
+
+
+def processed_to_content(processed):
+    """apps.common.images.ProcessedImage -> ContentFile named <sha16>.<ext>; removes the temp file it owns."""
+    try:
+        with open(processed.path, "rb") as fh:
+            body = fh.read()
+    finally:
+        Path(processed.path).unlink(missing_ok=True)
+    return ContentFile(body, name=f"{processed.sha256[:16]}.{processed.ext}")
+
+
+def save_media(processed, *, user):
+    """Store an already-checked image (apps.common.images.ProcessedImage) as a MediaAsset owned by `user`.
+
+    Used by the MCP adapter (upload_image_from_url). Re-encoding is deterministic, so the same photo gets the same
+    <sha16>.<ext> name: an existing asset of the same user with that name is returned instead of a copy.
+    Returns (asset, deduplicated).
+    """
+    content = processed_to_content(processed)
+    existing = MediaAsset.objects.filter(uploaded_by=user, file=f"uploads/{content.name}").first()
+    if existing is not None:
+        return existing, True
+    asset = MediaAsset(uploaded_by=user)
+    asset.file.save(content.name, content, save=True)
+    return asset, False
 
 
 def _hash(token):
