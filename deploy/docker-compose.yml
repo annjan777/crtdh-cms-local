@@ -97,7 +97,14 @@ services:
     # No uvicorn proxy-header rewriting: the peer must stay cloudflared's address so the
     # trusted-proxy check holds; Django reads CF-Connecting-IP/X-Forwarded-Proto from that peer only.
     # Outbound: upload_image_from_url (SSRF-guarded fetch in mcp_server/fetch.py).
-    networks: [internal, egress]
+    # cloudflared reaches this as mcp-internal, never plain `mcp`: cloudflared is on egress too, so Docker DNS can
+    # answer `mcp` with the egress address. The request then leaves from cloudflared's egress IP, which isn't in
+    # TRUSTED_PROXY_IPS, and TrustedProxyGuard refuses it with an empty 403. Aliases are per network, so
+    # mcp-internal only ever resolves to the internal address.
+    networks:
+      internal:
+        aliases: [mcp-internal]
+      egress: {}
     depends_on:
       migrate:
         condition: service_completed_successfully

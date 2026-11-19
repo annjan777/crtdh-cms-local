@@ -25,7 +25,7 @@ ingress:
   # (/oauth/register/ only if MCP_OAUTH_DCR_ENABLED; add it to the regex then.)
   - hostname: mcp.<domain>
     path: ^/(mcp|\.well-known/oauth-protected-resource(/mcp)?|\.well-known/oauth-authorization-server|oauth/token/|oauth/revoke_token/)$
-    service: http://mcp:8400
+    service: http://mcp-internal:8400
   - hostname: mcp.<domain>
     service: http_status:404
 

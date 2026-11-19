@@ -54,7 +54,7 @@ def test_tunnel_routes_only_mcp_paths_to_mcp_host():
     conf = yaml.safe_load((ROOT / "deploy/cloudflared/config.yml.template").read_text())
     mcp_rules = [r for r in conf["ingress"] if r.get("hostname") == "mcp.<domain>"]
     routed = [r for r in mcp_rules if "path" in r]
-    assert len(routed) == 1 and routed[0]["service"] == "http://mcp:8400"
+    assert len(routed) == 1 and routed[0]["service"] == "http://mcp-internal:8400"
     assert mcp_rules[-1]["service"] == "http_status:404"  # everything else on the MCP host
     rx = re.compile(routed[0]["path"])
     for ok in ["/mcp", "/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp",
@@ -266,3 +266,21 @@ def test_housekeeping_runs_every_daily_cleanup():
     from django.core.management import get_commands
 
     assert set(jobs) <= set(get_commands())  # each one exists in this codebase
+
+
+def test_tunnel_reaches_mcp_over_internal_network_only():
+    """cloudflared sits on internal and egress. If the tunnel used plain `mcp`, Docker DNS could answer with
+    mcp's egress address, the request would come from cloudflared's egress IP (not in TRUSTED_PROXY_IPS) and
+    TrustedProxyGuard would 403 every Claude call. The tunnel must use an alias that exists only on internal."""
+    import yaml
+
+    compose = yaml.safe_load((ROOT / "deploy/docker-compose.yml").read_text())
+    nets = compose["services"]["mcp"]["networks"]
+    assert isinstance(nets, dict), "mcp networks must be a mapping so internal can carry the alias"
+    assert "mcp-internal" in (nets["internal"] or {}).get("aliases", [])
+    for name, cfg in nets.items():
+        if name != "internal":
+            assert "mcp-internal" not in ((cfg or {}).get("aliases") or [])
+    conf = yaml.safe_load((ROOT / "deploy/cloudflared/config.yml.template").read_text())
+    services = {r["service"] for r in conf["ingress"] if "mcp:" in r.get("service", "") or "mcp-" in r.get("service", "")}
+    assert services == {"http://mcp-internal:8400"}

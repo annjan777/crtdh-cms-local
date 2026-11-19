@@ -9,7 +9,7 @@ opens a port.
 | `crtdh.annjan.in` | public website (stands in for crtdh.iitkgp.ac.in) | `http://site:80` |
 | `cms-crtdh.annjan.in` | admin app, CMS API, OAuth sign-in page | `http://gateway:80` |
 | `contact-crtdh.annjan.in` | contact form relay: only `POST /api/v1/contact/` | `http://gateway:80` |
-| `mcp-crtdh.annjan.in` | Claude connector: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | `http://mcp:8400` |
+| `mcp-crtdh.annjan.in` | Claude connector: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | `http://mcp-internal:8400` |
 
 The service names (`site`, `gateway`, `mcp`) and ports come from `deploy/docker-compose.yml` and
 `docker-compose.staging.yml`. `cloudflared` runs inside the same Docker network, so it reaches them by name.
@@ -54,7 +54,7 @@ these **six** routes. For each route: Subdomain, Domain `annjan.in`, Path, then 
 | 2 | `cms-crtdh` | *(empty)* | HTTP | `gateway:80` |
 | 3 | `contact-crtdh` | `^/api/v1/contact/$` | HTTP | `gateway:80` |
 | 4 | `contact-crtdh` | *(empty)* | HTTP_STATUS | `404` |
-| 5 | `mcp-crtdh` | `^/(mcp\|\.well-known/oauth-protected-resource(/mcp)?\|\.well-known/oauth-authorization-server\|oauth/token/\|oauth/revoke_token/)$` | HTTP | `mcp:8400` |
+| 5 | `mcp-crtdh` | `^/(mcp\|\.well-known/oauth-protected-resource(/mcp)?\|\.well-known/oauth-authorization-server\|oauth/token/\|oauth/revoke_token/)$` | HTTP | `mcp-internal:8400` |
 | 6 | `mcp-crtdh` | *(empty)* | HTTP_STATUS | `404` |
 
 Route 5's path, ready to copy (it's one line, with no spaces):
@@ -80,7 +80,7 @@ Rules:
   again.
 - Routes 4 and 6 make the 404 explicit. If your dashboard has no HTTP_STATUS type, leave both out: a request that
   matches no route falls through to the tunnel's built-in last rule, which also answers 404 (`smoke.sh` checks
-  this). **Never** add a catch-all for `mcp-crtdh` that points at `mcp:8400`: that would publish
+  this). **Never** add a catch-all for `mcp-crtdh` that points at `mcp-internal:8400`: that would publish
   `/oauth/authorize/` on the MCP host.
 
 Check after `setup.sh` has started the stack:
