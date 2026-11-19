@@ -336,3 +336,56 @@ def test_reorder_from_a_stale_read_is_409(content, editor, monkeypatch):
     with pytest.raises(CMSError) as exc:
         cms.reorder("news-items", list(reversed(ids)), ctx=WriteContext(user=editor), queryset=Racing(real()))
     assert exc.value.code == "CMS_STALE_VERSION"
+
+
+# ---- QA wave 2 D2: a publish stuck in "uploading" ----------------------------------------------------------------
+@pytest.mark.regression_critical
+def test_uploading_publish_can_be_cancelled_until_the_tarball_is_fetched(api_as, client, content, publish_env,
+                                                                         publisher):
+    p = built(publisher)
+    assert agent_status(p, "uploading", "download").status_code == 200  # agent reports, then its download fails
+    assert p.fetched_at is None
+    assert api_as("editor").get(f"/api/v1/cms/publish/{p.id}/").json()["cancellable"] is True
+    resp = api_as("publisher").post(f"/api/v1/cms/publish/{p.id}/cancel/", {}, format="json")
+    assert resp.status_code == 200 and resp.json()["status"] == "cancelled" and resp.json()["cancellable"] is False
+    # the agent's next download is refused and it can't put the publish back into the single-flight slot
+    assert_contract_error(agent_call(client, "GET", f"/api/v1/agent/builds/{p.id}.tar.gz"), "CMS_NOT_FOUND")
+    assert_contract_error(agent_status(p, "uploading", "download", "retry"), "CMS_VALIDATION")  # distinct body
+    assert p.status == Publish.CANCELLED
+    assert publish.start_publish(publisher).status == Publish.QUEUED
+
+
+def test_uploading_publish_cannot_be_cancelled_after_fetch(api_as, client, content, publish_env, publisher):
+    p = built(publisher)
+    agent_status(p, "uploading", "download")
+    b"".join(agent_call(client, "GET", f"/api/v1/agent/builds/{p.id}.tar.gz").streaming_content)
+    assert api_as("editor").get(f"/api/v1/cms/publish/{p.id}/").json()["cancellable"] is False
+    assert_contract_error(api_as("publisher").post(f"/api/v1/cms/publish/{p.id}/cancel/", {}, format="json"),
+                          "CMS_VALIDATION")
+
+
+@pytest.mark.regression_critical
+def test_uploading_without_agent_progress_times_out(content, publish_env, publisher, settings):
+    settings.PUBLISH_STALE_UPLOAD_AFTER = 1800
+    p = built(publisher)
+    agent_status(p, "uploading", "download")
+    Publish.objects.filter(pk=p.pk).update(updated_at=timezone.now() - timedelta(minutes=29))
+    assert publish.expire_stale_uploads() == 0  # still within the window
+    Publish.objects.filter(pk=p.pk).update(updated_at=timezone.now() - timedelta(minutes=31))
+    nxt = publish.start_publish(publisher)  # the stale one is failed first, so this is not CMS_PUBLISH_RUNNING
+    p.refresh_from_db()
+    assert p.status == Publish.FAILED and p.step == publish.STALE_UPLOAD_STEP
+    assert "no progress for 30 minutes" in p.message and "live site is unchanged" in p.message
+    assert nxt.status == Publish.QUEUED
+
+
+def test_worker_also_expires_stale_uploads_and_a_late_live_report_is_recorded(content, publish_env, publisher):
+    p = built(publisher)
+    agent_status(p, "uploading", "upload")
+    Publish.objects.filter(pk=p.pk).update(updated_at=timezone.now() - timedelta(hours=2))
+    publish.run_once()
+    p.refresh_from_db()
+    assert p.status == Publish.FAILED and p.step == publish.STALE_UPLOAD_STEP
+    assert agent_status(p, "uploading").status_code == 400  # cannot re-take the slot
+    assert agent_status(p, "live", "check_live").status_code == 200  # but what happened on the server is recorded
+    assert p.status == Publish.LIVE and Snapshot.last_published().pk == p.snapshot_id

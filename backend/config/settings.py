@@ -307,6 +307,9 @@ FRONTEND_BUILD_TIMEOUT = env.int("FRONTEND_BUILD_TIMEOUT", default=900)
 # Shared secret with the publish agent (HMAC-SHA256, contract agreed with publish-agent). Empty = agent endpoints refuse every request.
 AGENT_HMAC_SECRET = env("AGENT_HMAC_SECRET", default="")
 AGENT_MAX_SKEW = env.int("AGENT_MAX_SKEW", default=300)
+# An "uploading" publish with no status report from the agent for this many seconds is marked failed, so a dead
+# or stuck agent can't wedge publishing (single-flight) until someone edits the database.
+PUBLISH_STALE_UPLOAD_AFTER = env.int("PUBLISH_STALE_UPLOAD_AFTER", default=1800)
 # Optional: lets an internal caller (same host) set X-CMS-Channel via X-CMS-Internal. Empty = header ignored.
 CMS_INTERNAL_SECRET = env("CMS_INTERNAL_SECRET", default="")
 UPLOAD_LINK_TTL_MINUTES = env.int("UPLOAD_LINK_TTL_MINUTES", default=30)

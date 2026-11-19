@@ -124,7 +124,7 @@ export function PublishStatus({ publish, onRetry, onCancel }) {
       ) : (
         <p className="muted">You can keep working; the live site changes only at the last step.</p>
       )}
-      {onCancel && CANCELLABLE.has(status) ? (
+      {onCancel && (publish.cancellable ?? CANCELLABLE.has(status)) ? (
         <div className="row-actions">
           <button
             type="button"

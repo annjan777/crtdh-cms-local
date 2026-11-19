@@ -19,6 +19,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from .errors import STATUS, error_body
 from .models import AgentNonce, AgentState, Publish, ReviewRequest, Snapshot
+from .publish import STALE_UPLOAD_STEP
 
 AGENT_STEPS = {"download", "verify", "upload", "switch", "check_live", "cleanup"}
 
@@ -120,9 +121,12 @@ ALLOWED = {
     Publish.UPLOADING: {Publish.UPLOADING, Publish.LIVE, Publish.FAILED},
     Publish.LIVE: {Publish.LIVE},
     Publish.FAILED: {Publish.FAILED},
-    # A cancel can race an agent that already holds the tarball: record what really happened on the server.
-    Publish.CANCELLED: {Publish.UPLOADING, Publish.LIVE, Publish.FAILED},
+    # A cancel can race an agent that already holds the job: record what really happened on the server. Not back
+    # to "uploading": a cancelled publish (never fetched) must not take the single-flight slot again.
+    Publish.CANCELLED: {Publish.LIVE, Publish.FAILED},
 }
+# Failed by the stale-upload timeout (publish.expire_stale_uploads): the agent may still finish late.
+TIMED_OUT = {Publish.LIVE, Publish.FAILED}
 
 
 @agent_view
@@ -139,7 +143,8 @@ def post_status(request):
         p = Publish.objects.select_for_update().filter(pk=publish_id).first() if _is_uuid(publish_id) else None
         if p is None:
             return _err("CMS_NOT_FOUND", "Unknown publish id.")
-        if new not in ALLOWED.get(p.status, set()):
+        allowed = TIMED_OUT if (p.status == Publish.FAILED and p.step == STALE_UPLOAD_STEP) else ALLOWED.get(p.status, set())
+        if new not in allowed:
             return _err("CMS_VALIDATION", f"Cannot move a {p.status} publish to {new}.", field="status")
         now = timezone.now()
         p.status, p.step = new, step or p.step

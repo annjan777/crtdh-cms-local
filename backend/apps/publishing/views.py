@@ -180,7 +180,8 @@ def publish_payload(p, agent_seen=None):
     return {"id": str(p.id), "publish_id": str(p.id), "status": p.status, "step": p.step, "message": message,
             "live_at": p.live_at, "agent_last_seen": agent_seen, "created_at": p.created_at,
             "created_by": p.created_by.get_username() if p.created_by else None,
-            "snapshot_id": p.snapshot.snapshot_id if p.snapshot_id else None, "attempts": p.attempts}
+            "snapshot_id": p.snapshot.snapshot_id if p.snapshot_id else None, "attempts": p.attempts,
+            "cancellable": publish.is_cancellable(p)}
 
 
 class PublishView(APIView):

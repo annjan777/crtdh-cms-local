@@ -69,7 +69,24 @@ def last_live_snapshot(exclude_id=None):
     return qs.order_by("-published_at", "-id").first()
 
 
+STALE_UPLOAD_STEP = "timeout"
+
+
+def expire_stale_uploads(now=None):
+    """Fail "uploading" publishes the agent has stopped reporting on (no status post for
+    PUBLISH_STALE_UPLOAD_AFTER seconds), releasing the single-flight lock. Returns how many were failed.
+    If the agent turns up later its live/failed report is still recorded (agent.ALLOWED)."""
+    now = now or timezone.now()
+    minutes = max(1, settings.PUBLISH_STALE_UPLOAD_AFTER // 60)
+    return Publish.objects.filter(
+        status=Publish.UPLOADING, updated_at__lt=now - timedelta(seconds=settings.PUBLISH_STALE_UPLOAD_AFTER),
+    ).update(status=Publish.FAILED, step=STALE_UPLOAD_STEP, updated_at=now,
+             message=f"Upload timed out: the upload machine sent no progress for {minutes} minutes. "
+                     "The live site is unchanged; check the upload machine (agent.log), then publish again.")
+
+
 def start_publish(user, confirm_shrink=False):
+    expire_stale_uploads()
     running = active_publish()
     if running:
         raise _running_error(running)
@@ -90,9 +107,18 @@ def start_publish(user, confirm_shrink=False):
         raise
 
 
+CANCELLABLE = (Publish.QUEUED, Publish.READY, Publish.UPLOADING)
+
+
+def is_cancellable(p):
+    return p.status in CANCELLABLE and p.fetched_at is None
+
+
 def cancel_publish(p):
-    """Cancel a publish the upload machine has not fetched yet (queued, or built and never downloaded)."""
-    if p.status not in (Publish.QUEUED, Publish.READY) or p.fetched_at is not None:
+    """Cancel a publish the upload machine has not fetched yet: queued, built, or "uploading" while its download
+    has not succeeded (the agent reports uploading/download before it fetches; a failing download must not wedge
+    publishing)."""
+    if not is_cancellable(p):
         what = "already being uploaded" if p.fetched_at is not None else p.status
         raise CMSError("CMS_VALIDATION", f"This publish is {what} and cannot be cancelled.",
                        fix="Wait for it to finish; publish again afterwards if needed.")
@@ -129,6 +155,7 @@ def _set(p, **kw):
 
 def run_once():
     """Build one publish if there is one. Returns it (or None)."""
+    expire_stale_uploads()
     p = claim_next()
     if p is None:
         return None
