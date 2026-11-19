@@ -60,6 +60,10 @@ server {
     # The Django admin is never exposed.
     location /admin/ { return 404; }
 
+    # Dot-paths (/.env, /.git/config, /backend/.env) are never app routes: a plain 404 instead of the SPA's
+    # index.html, so scanners and people see that nothing is there (R-17 / F-14). /.well-known/ is left alone.
+    location ~ /\.(?!well-known/) { return 404; }
+
     location /assets/ {
         try_files $uri =404;
         add_header Cache-Control "public, max-age=31536000, immutable" always;

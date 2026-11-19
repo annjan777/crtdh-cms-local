@@ -368,7 +368,7 @@ class FakeCMS:
                 sig = self.headers.get("X-Agent-Signature", "")
                 if not ts.isdigit() or abs(time.time() - int(ts)) > 300:
                     return False
-                exp = sign_request(cms.secret, self.command, self.path.split("?")[0], body, int(ts))
+                exp = sign_request(cms.secret, self.command, self.path, body, int(ts))  # full path, like the CMS
                 ok = exp["X-Agent-Signature"] == sig
                 if not ok:
                     cms.bad_auth += 1

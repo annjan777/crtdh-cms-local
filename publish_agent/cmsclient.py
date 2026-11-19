@@ -102,7 +102,8 @@ class CMSClient:
 
     def _request(self, method: str, path_or_url: str, body: bytes = b"", content_type: str | None = None):
         url = self._url(path_or_url)
-        path = urllib.parse.urlsplit(url).path
+        parts = urllib.parse.urlsplit(url)
+        path = parts.path + (f"?{parts.query}" if parts.query else "")  # same as the CMS's get_full_path()
         # The CMS accepts each (timestamp, signature) pair once, so never send an identical request twice in a second.
         ts = int(time.time())
         key = (ts, method, path, hashlib.sha256(body).hexdigest())

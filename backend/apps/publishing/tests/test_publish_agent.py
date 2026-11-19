@@ -229,6 +229,19 @@ def test_agent_auth(client, content, publish_env):
     assert client.post("/api/v1/agent/status/", b"", content_type="application/json", **headers).status_code == 401
 
 
+def test_agent_signature_covers_the_query_string(client, content, publish_env):
+    """R-17 / F-15: a signed request cannot have a query string added (or changed) after signing."""
+    ts = str(int(time.time()))
+    path_only = sign(SECRET, "GET", "/api/v1/agent/next/", ts, b"")
+    hdr = {"HTTP_X_AGENT_TIMESTAMP": ts, "HTTP_X_AGENT_SIGNATURE": path_only}
+    assert client.get("/api/v1/agent/next/", **hdr).status_code == 204  # today's agent: no query, unchanged
+    assert_contract_error(client.get("/api/v1/agent/next/?x=1", **hdr), "CMS_UNAUTHENTICATED")
+    with_query = sign(SECRET, "GET", "/api/v1/agent/next/?x=1", ts, b"")
+    hdr["HTTP_X_AGENT_SIGNATURE"] = with_query
+    assert client.get("/api/v1/agent/next/?x=1", **hdr).status_code == 204
+    assert_contract_error(client.get("/api/v1/agent/next/?x=2", **hdr), "CMS_UNAUTHENTICATED")
+
+
 def test_agent_refuses_everything_without_secret(client, content, publish_env, settings, api_as):
     settings.AGENT_HMAC_SECRET = ""
     assert agent_call(client, "GET", "/api/v1/agent/next/", secret="").status_code == 401

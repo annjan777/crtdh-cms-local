@@ -423,3 +423,25 @@ def test_media_folder_gets_an_empty_index_page(make_pub, cms, server, strategy):
     assert publish(cms, pub, S2, "p2", media={}, media_all=[]) == "live"
     with open(index, "rb") as fh:
         assert fh.read() == MEDIA_INDEX
+
+
+def test_agent_signs_the_query_string_like_the_cms(monkeypatch):
+    """R-17 / F-15: the agent signs path + query, exactly what the CMS verifies (request.get_full_path())."""
+    from publish_agent import cmsclient
+
+    seen = []
+    real = cmsclient.sign_request
+    monkeypatch.setattr(cmsclient, "sign_request", lambda secret, method, path, body, ts=None: seen.append(path) or real(secret, method, path, body, ts))
+    client = cmsclient.CMSClient("https://cms.example", "s" * 32, timeout=1)
+
+    class Opener:
+        def open(self, req, timeout):
+            raise RuntimeError("stop")
+
+    client._opener = Opener()
+    for target in ("/api/v1/agent/next/", "/api/v1/agent/next/?x=1"):
+        try:
+            client._request("GET", target)
+        except Exception:
+            pass
+    assert seen == ["/api/v1/agent/next/", "/api/v1/agent/next/?x=1"]

@@ -50,7 +50,8 @@ def _verify(request):
         return False
     if abs(time.time() - ts_int) > settings.AGENT_MAX_SKEW:
         return False
-    expected = sign(secret, request.method, request.path, ts, request.body)
+    # The full path including any query string, so nothing can be appended to a signed request (R-17 / F-15).
+    expected = sign(secret, request.method, request.get_full_path(), ts, request.body)
     if not hmac.compare_digest(expected, sig):
         return False
     if request.method not in ("GET", "HEAD"):

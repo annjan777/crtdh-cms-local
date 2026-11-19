@@ -235,6 +235,22 @@ def test_worker_has_node_frontend_and_a_publish_volume():
     assert "/data/publish" in (ROOT / "backend/Dockerfile").read_text()
 
 
+def test_cms_gateway_answers_404_for_dot_paths():
+    """R-17 / F-14: /.env and /.git/config on the CMS host get a real 404, not the SPA's index.html."""
+    import re
+
+    conf = (ROOT / "deploy/nginx/templates/gateway.conf.template").read_text()
+    cms = conf.split("server_name ${CMS_HOST};", 1)[1].split("server_name ${CONTACT_HOST};", 1)[0]
+    rule = re.search(r"location ~ (\S+) \{ return 404; \}", cms)
+    assert rule, "CMS server block needs a dot-path 404 rule"
+    pattern = re.compile(rule.group(1).replace("\\.", "\\."))
+    for path in ("/.env", "/.git/config", "/backend/.env", "/x/.htpasswd"):
+        assert pattern.search(path), path
+    for path in ("/pages/home", "/assets/app.js", "/.well-known/oauth-authorization-server", "/review"):
+        assert not pattern.search(path), path
+    assert cms.index("return 404; }", cms.index("location ~ /")) < cms.index("    location / {")
+
+
 def test_worker_build_ships_the_privacy_notice():
     """F-05: the contact page's privacy notice is read from docs/privacy-notice.md at build time. The worker image
     must contain it, or every published site silently ships without the notice and without the footer link target."""
