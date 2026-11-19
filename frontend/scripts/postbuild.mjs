@@ -61,7 +61,12 @@ fs.writeFileSync(path.join(out, 'csp-hashes.json'), JSON.stringify({ 'script-src
 const csp = [
   "default-src 'self'",
   `script-src 'self' ${scriptHashes.join(' ')} ${tsOrigin}`.trim(),
-  "style-src 'self' 'unsafe-inline'", // React style attributes (LQIP colour, focal point) only; no inline <style>
+  // React writes style *attributes* (prerendered, then managed by React), so those stay allowed; inline <style>
+  // elements, the CSS-injection vector that can carry selectors, are not (R-15 / F-12). style-src is the fallback
+  // for browsers without the -elem/-attr directives.
+  "style-src 'self' 'unsafe-inline'",
+  "style-src-elem 'self'",
+  "style-src-attr 'unsafe-inline'",
   `img-src 'self' data: ${[...imgOrigins].join(' ')}`.trim(),
   "font-src 'self'",
   `connect-src 'self' ${contactOrigin}`.trim(),
