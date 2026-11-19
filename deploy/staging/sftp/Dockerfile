@@ -21,4 +21,7 @@ COPY entrypoint.sh /usr/local/bin/sftp-entrypoint
 RUN chmod 0644 /etc/ssh/sshd_config && chmod 0755 /usr/local/bin/sftp-entrypoint
 
 EXPOSE 22
+# Root by necessity (R-11 / F-11 reviewed): OpenSSH must start as root to chroot the SFTP user and to drop to it per
+# session. The user itself is key-only, chrooted and SFTP-only (sshd_config); compose adds no-new-privileges.
+# Staging stand-in only: production SFTP is the CIC server.
 ENTRYPOINT ["/usr/local/bin/sftp-entrypoint"]

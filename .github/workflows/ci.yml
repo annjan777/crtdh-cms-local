@@ -257,3 +257,29 @@ jobs:
             .preprod/logs/
             .preprod/DB_MODE
           if-no-files-found: ignore
+
+  images:
+    name: "container images: build and Trivy scan (fail on fixable HIGH/CRITICAL)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: backend, context: backend, file: backend/Dockerfile }
+          - { name: worker, context: ., file: deploy/worker/Dockerfile }
+          - { name: admin, context: ., file: admin/Dockerfile }
+          - { name: staging-agent, context: ., file: deploy/staging/agent/Dockerfile }
+          - { name: staging-sftp, context: deploy/staging/sftp, file: deploy/staging/sftp/Dockerfile }
+    steps:
+      - uses: actions/checkout@v4
+      - name: build ${{ matrix.name }}
+        run: docker build -t crtdh-${{ matrix.name }}:ci -f ${{ matrix.file }} ${{ matrix.context }}
+      - name: Trivy (R-11 / F-11)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: crtdh-${{ matrix.name }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table

@@ -17,5 +17,8 @@ RUN pip install --no-cache-dir --require-hashes -r /tmp/agent-requirements.txt &
 COPY publish_agent/ /opt/agent/publish_agent/
 
 WORKDIR /agent
+# Never root by default (R-11 / F-11). docker-compose.staging.yml overrides this with the host user (`user:`) so the
+# agent can read its 0600 key files; run without compose, it is `nobody`.
+USER 65534:65534
 ENTRYPOINT ["python", "-m", "publish_agent"]
 CMD ["run"]
