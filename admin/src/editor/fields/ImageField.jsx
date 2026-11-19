@@ -1,10 +1,10 @@
-// Photo field: current photo with its size, replace/upload with the size
-// rule (hero rejects < min_width, others warn < 1200 px), required alt text,
-// and, where the registry gives a position field, a focus point previewed at
-// the desktop (16:9) and phone (4:5) crops side by side.
+// Photo field, kept deliberately simple: the photo, a Replace button, and Save / Keep current when a new
+// one is chosen. Size rule: hero rejects < min_width, others warn < 1200 px. The photo description for
+// screen readers is filled in automatically (the section's own title, else the file name), and the crop
+// stays centred, so editors only ever pick a photo.
 import { useEffect, useRef, useState } from 'react';
-import { Banner, Field, Spinner } from '../../ui/index.jsx';
-import { POSITIONS, checkImageSize, normalisePosition } from '../validate.js';
+import { Banner, Spinner } from '../../ui/index.jsx';
+import { checkImageSize } from '../validate.js';
 
 const SHOT_LIST = '/shot-list';
 
@@ -16,34 +16,21 @@ async function readDims(file) {
   return out;
 }
 
-function Crops({ src, position, label }) {
-  return (
-    <div className="crops" aria-label={`${label} crops`}>
-      <figure className="crop crop-169">
-        <img src={src} alt="" style={{ objectPosition: position }} />
-        <figcaption>Desktop · 16:9</figcaption>
-      </figure>
-      <figure className="crop crop-45">
-        <img src={src} alt="" style={{ objectPosition: position }} />
-        <figcaption>Phone · 4:5</figcaption>
-      </figure>
-    </div>
-  );
+/** A short description for screen readers when the editor doesn't write one. */
+export function autoDescription(record, file) {
+  const v = record?.values || {};
+  const own = ['title', 'heading', 'name', 'caption', 'text'].map((k) => v[k]).find((x) => typeof x === 'string' && x.trim());
+  if (own) return own.trim().slice(0, 200);
+  const base = (file?.name || '').replace(/\.[a-z0-9]+$/i, '').replace(/[_-]+/g, ' ').trim();
+  return (base || 'Photo').slice(0, 200);
 }
 
 export default function ImageField({ field, record, onChange, onUpload, id }) {
   const url = record.values[field.name];
   const media = record.media?.[field.name];
-  const altName = field.alt_field;
-  const alt = altName ? record.values[altName] ?? '' : '';
-  const posName = field.position_field;
-  const position = posName ? normalisePosition(record.values[posName]) : 'center center';
   const fileInput = useRef(null);
-  const altInput = useRef(null);
   const [pending, setPending] = useState(null); // {file, url, width, height}
-  const [pendingAlt, setPendingAlt] = useState('');
   const [problem, setProblem] = useState(null); // {level, message}
-  const [altTouched, setAltTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
 
@@ -66,19 +53,11 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
     }
     if (check.level === 'warn') setProblem(check);
     setPending({ file, url: URL.createObjectURL(file), ...d });
-    setPendingAlt(alt);
-    setAltTouched(false);
-    setTimeout(() => altInput.current?.focus(), 0);
   }
 
   async function savePhoto() {
-    if (altName && !pendingAlt.trim()) {
-      setAltTouched(true);
-      altInput.current?.focus();
-      return;
-    }
     setBusy(true);
-    const err = await onUpload(field, pending.file, pendingAlt.trim());
+    const err = await onUpload(field, pending.file, autoDescription(record, pending.file));
     setBusy(false);
     if (err) {
       setProblem({ level: 'reject', message: `${err.message} ${err.fix || ''} Your current photo is kept.` });
@@ -89,10 +68,7 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
   }
 
   const shown = pending?.url || url;
-  const sizeNote = pending ? `${pending.file.name} · ${pending.width} × ${pending.height}` : media ? `${media.name} · ${media.width} × ${media.height}` : url ? url.split('/').pop().slice(0, 40) : null;
   const existingCheck = !pending && media ? checkImageSize(field, media.width) : null;
-  const altMissing = altName && (pending ? altTouched && !pendingAlt.trim() : url && !String(alt).trim());
-  const altId = `${id}-alt`;
 
   return (
     <fieldset className="field image-field">
@@ -101,13 +77,9 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
         {field.required ? <span className="req" aria-hidden="true"> *</span> : null}
       </legend>
       {shown ? (
-        posName ? (
-          <Crops src={shown} position={position} label={field.label} />
-        ) : (
-          <div className="image-preview">
-            <img src={shown} alt="" />
-          </div>
-        )
+        <div className="image-preview">
+          <img src={shown} alt="" />
+        </div>
       ) : (
         <div
           className={`drop-zone${drag ? ' is-over' : ''}`}
@@ -126,7 +98,7 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
           <p className="field-hint">{field.min_width ? `At least ${field.min_width} px wide.` : `JPEG, PNG or WebP. ${field.warn_width || 1200} px wide or more looks best.`}</p>
         </div>
       )}
-      {sizeNote ? <p className="field-hint">{sizeNote}{pending ? ' · not saved yet' : ''}</p> : null}
+      {pending ? <p className="field-hint">New photo, not saved yet.</p> : null}
       {existingCheck && existingCheck.level !== 'ok' && !problem ? (
         <p className={existingCheck.level === 'reject' ? 'field-warn strong' : 'field-warn'}>
           {existingCheck.level === 'reject'
@@ -153,38 +125,6 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
           e.target.value = '';
         }}
       />
-      {altName ? (
-        <Field
-          label="Photo description"
-          htmlFor={altId}
-          required
-          error={altMissing ? (pending ? 'Describe this photo before it can be saved.' : 'Add a description so people using screen readers know what this photo shows.') : null}
-          hint="What the photo shows, e.g. “Health worker testing a blood sample at a village camp”."
-        >
-          <input
-            ref={altInput}
-            id={altId}
-            type="text"
-            maxLength={200}
-            value={pending ? pendingAlt : alt}
-            aria-invalid={altMissing || undefined}
-            aria-describedby={`${altId}-msg`}
-            onChange={(e) => (pending ? setPendingAlt(e.target.value) : onChange({ [altName]: e.target.value }))}
-            onBlur={() => setAltTouched(true)}
-          />
-        </Field>
-      ) : null}
-      {posName && shown ? (
-        <Field label="Focus point" htmlFor={`${id}-pos`} hint="The part of the photo that must stay in view when it is cropped.">
-          <select id={`${id}-pos`} value={position} aria-describedby={`${id}-pos-msg`} onChange={(e) => onChange({ [posName]: e.target.value }, { immediate: true })}>
-            {POSITIONS.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </Field>
-      ) : null}
       <div className="row-actions">
         {pending ? (
           <>
@@ -193,7 +133,7 @@ export default function ImageField({ field, record, onChange, onUpload, id }) {
               {busy ? 'Uploading…' : 'Save photo'}
             </button>
             <button type="button" className="btn" onClick={() => { setPending(null); setProblem(null); }}>
-              Keep current photo
+              Cancel
             </button>
           </>
         ) : (

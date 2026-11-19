@@ -19,8 +19,9 @@ function fieldIndex(page) {
   const add = (resource, fields) => {
     for (const f of fields) {
       (idx[resource] ||= {})[f.name] = f;
-      if (f.alt_field) idx[resource][f.alt_field] = { name: f.alt_field, type: 'text', label: 'Photo description', max: 200 };
-      if (f.position_field) idx[resource][f.position_field] = { name: f.position_field, type: 'text', label: 'Focus point' };
+      // Filled in automatically by the photo field (ImageField.autoDescription / centred crop); never shown as inputs.
+      if (f.alt_field) idx[resource][f.alt_field] = { name: f.alt_field, type: 'text', label: 'Photo description', max: 200, hidden: true };
+      if (f.position_field) idx[resource][f.position_field] = { name: f.position_field, type: 'text', label: 'Focus point', hidden: true };
     }
   };
   for (const s of page?.sections || []) {
