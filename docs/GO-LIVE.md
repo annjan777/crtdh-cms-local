@@ -21,9 +21,9 @@ Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.`,
 > 3. **Nothing in `deploy/` has been run under Docker yet.** The sandbox had no Docker daemon (`docs/testing.md`).
 >    The production settings were tested in the rehearsal instead. Expect to fix small issues on the day, and keep
 >    this runbook open to note them.
-> 4. **Anthropic now publishes two outbound IPv4 ranges:** `160.79.104.0/21` and `153.61.208.0/20`
->    (platform.claude.com/docs/en/api/ip-addresses, checked 19 Nov 2026). The repo's template and docs only name
->    the first one. Step 2.6 allows both. Check the page again on the day you set this up.
+> 4. **Anthropic publishes two outbound IPv4 ranges:** `160.79.104.0/21` and `153.61.208.0/20`
+>    (platform.claude.com/docs/en/api/ip-addresses, checked 19 Nov 2026). The tunnel template, `docs/mcp.md` and
+>    step 2.6 use both. Check the page again on the day you set this up.
 
 ---
 
@@ -254,8 +254,8 @@ exception). Security → WAF → Custom rules → Create:
   `(http.host eq "mcp.<domain>" and not ip.src in {160.79.104.0/21 153.61.208.0/20})`
 - Action **Block**.
 
-The template names only `160.79.104.0/21`. Anthropic's page now lists `153.61.208.0/20` as well. Check
-platform.claude.com/docs/en/api/ip-addresses and use exactly the outbound IPv4 ranges listed there.
+Check platform.claude.com/docs/en/api/ip-addresses and use exactly the outbound IPv4 ranges listed there (on
+19 Nov 2026: `160.79.104.0/21` and `153.61.208.0/20`, as in the expression above).
 
 Verify: from your laptop,
 `curl -s -o /dev/null -w '%{http_code}\n' https://mcp.<domain>/.well-known/oauth-authorization-server` → `403`.

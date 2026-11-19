@@ -176,3 +176,24 @@ def test_worker_has_node_frontend_and_a_publish_volume():
     assert {"backend/.env", "frontend/node_modules", "backend/media"} <= set(ignore)
     # the backend image creates /data/publish too, so the named volume is owned by app whichever container mounts it first
     assert "/data/publish" in (ROOT / "backend/Dockerfile").read_text()
+
+
+# ---- Anthropic outbound ranges for the mcp. WAF rule (platform.claude.com/docs/en/api/ip-addresses, 19 Nov 2026) ---
+ANTHROPIC_OUTBOUND = ("160.79.104.0/21", "153.61.208.0/20")
+WAF_EXPRESSION = "not ip.src in {160.79.104.0/21 153.61.208.0/20}"
+
+
+def test_every_place_that_names_the_anthropic_ranges_names_both():
+    import re
+
+    # the phased-out single addresses must not come back
+    phased_out = ("34.162.46.92", "34.162.102.82", "34.162.136.91", "34.162.142.92", "34.162.183.95")
+    for rel in ("deploy/cloudflared/config.yml.template", "docs/mcp.md", "docs/GO-LIVE.md", "deploy/README.md"):
+        text = (ROOT / rel).read_text()
+        for cidr in ANTHROPIC_OUTBOUND:
+            assert cidr in text, f"{rel} does not name {cidr}"
+        assert not any(ip in text for ip in phased_out), rel
+        for expr in re.findall(r"not ip\.src in \{[^}]*\}", text):
+            assert expr == WAF_EXPRESSION, f"{rel}: {expr}"
+    assert WAF_EXPRESSION in (ROOT / "deploy/cloudflared/config.yml.template").read_text()
+    assert WAF_EXPRESSION in (ROOT / "docs/GO-LIVE.md").read_text()

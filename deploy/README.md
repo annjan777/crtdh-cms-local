@@ -9,7 +9,7 @@ Nothing publishes a host port. All traffic arrives through one Cloudflare Tunnel
 | Hostname | Goes to | Protection |
 |---|---|---|
 | `cms.<domain>` | gateway: admin SPA, `/api/`, `/oauth/authorize/` | Cloudflare Access (SSO) + CMS sign-in with TOTP |
-| `mcp.<domain>` | mcp: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | WAF: source IP in `160.79.104.0/21` only + OAuth |
+| `mcp.<domain>` | mcp: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | WAF: source IP in `160.79.104.0/21` or `153.61.208.0/20` only + OAuth |
 | `contact.<domain>` | gateway: only `POST /api/v1/contact/` | Turnstile, 5/min/IP in the app, WAF rate limit |
 
 ### Network

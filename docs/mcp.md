@@ -25,7 +25,7 @@ claude.ai connection.
 ## Architecture
 
 ```
- claude.ai (Anthropic cloud, 160.79.104.0/21)
+ claude.ai (Anthropic cloud, 160.79.104.0/21 and 153.61.208.0/20)
      │  https://mcp.<domain>   Cloudflare Tunnel; WAF allows only Anthropic's range
      ▼
  uvicorn mcp_server.asgi:app  :8400   (its own process; never in gunicorn)
@@ -197,10 +197,11 @@ anyone who saw the secret leaves, or if it may have leaked.
 
 There are no signing keys to rotate: tokens are opaque random strings, not JWTs.
 
-### Updating the Anthropic IP range
+### Updating the Anthropic IP ranges
 
-Claude's outbound range is published at platform.claude.com/docs/en/api/ip-addresses
-(160.79.104.0/21 on 19 Nov 2026). The filter lives at the edge (the Cloudflare WAF rule on
+Claude's outbound ranges are published at platform.claude.com/docs/en/api/ip-addresses
+(160.79.104.0/21 and 153.61.208.0/20 on 19 Nov 2026; the WAF expression is
+`not ip.src in {160.79.104.0/21 153.61.208.0/20}`). The filter lives at the edge (the Cloudflare WAF rule on
 the MCP hostname), not in this code. If connections start failing with 403 at the edge,
 compare the rule with the published list and update it. The app itself still requires OAuth
 on every request, so a too-wide rule is not an open door, but keep it exact.
