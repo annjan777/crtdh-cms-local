@@ -21,7 +21,7 @@ from . import strategies
 from .bundle import Bundle, open_bundle, safe_id
 from .cmsclient import BuildRejected, CMSClient, CMSError, Job, verify_job
 from .config import STRATEGIES, Config
-from .layout import (MARKER, OUR_MEDIA, STAGING_MARKER, Layout, empty_state, load_state,
+from .layout import (OUR_MEDIA, STAGING_MARKER, Layout, drop_meta, empty_state, load_state, read_meta, write_meta,
                      make_layout, save_state)
 from .logutil import LOG
 from .remote import Remote, RemoteError
@@ -174,8 +174,12 @@ class Publisher:
                     return None
             return None
         if layout.strategy == "swap":
-            meta = remote.read_json(posixpath.join(layout.web_root, MARKER))
-            return safe_id(meta["snapshot_id"]) if isinstance(meta, dict) and meta.get("snapshot_id") else None
+            # The live release is the one with metadata whose folder has moved out of releases/ (into the web root).
+            if remote.lstat(layout.web_root) is None or not remote.isdir(layout.meta_dir):
+                return None
+            ids = [n[: -len(".json")] for n in remote.listdir(layout.meta_dir) if n.endswith(".json")]
+            live = [r for r in ids if not remote.exists(layout.stored(r)) and not remote.exists(layout.staging(r))]
+            return live[0] if len(live) == 1 else None
         if layout.strategy == "htaccess":
             raw = remote.read_bytes(posixpath.join(layout.web_root, ".htaccess")) or b""
             m = re.search(rb"# Live release: ([A-Za-z0-9._-]+)\.", raw)
@@ -185,7 +189,7 @@ class Publisher:
     def reconcile(self, remote: Remote, layout: Layout, state: dict) -> None:
         live = self.detect_live(remote, layout)
         if live and live != state.get("current") and (live in state["history"] or
-                                                      remote.exists(posixpath.join(layout.stored(live), MARKER)) or
+                                                      read_meta(remote, layout, live) is not None or
                                                       layout.strategy == "swap"):
             LOG.warning("server is serving %s but state said %s; correcting the state", live, state.get("current"))
             state["current"] = live
@@ -320,7 +324,7 @@ class Publisher:
         LOG.info("strategy %s, web root %s, release store %s", layout.strategy, layout.web_root, layout.base)
 
         if state.get("current") == sid:
-            meta = remote.read_json(posixpath.join(layout.live_path(state, sid), MARKER)) or {}
+            meta = read_meta(remote, layout, sid) or {}
             if meta.get("tarball_sha256") == job.sha256 and meta.get("publish_id") == job.publish_id:
                 LOG.info("snapshot %s is already live; confirming", sid)
                 ok, detail = self._check_live(job.snapshot_id)
@@ -401,8 +405,8 @@ class Publisher:
 
     def upload_release(self, remote: Remote, layout: Layout, state: dict, job: Job, bundle: Bundle, sid: str) -> None:
         final = layout.stored(sid)
-        meta = remote.read_json(posixpath.join(final, MARKER))
-        if isinstance(meta, dict) and meta.get("tarball_sha256") == job.sha256:
+        meta = read_meta(remote, layout, sid)
+        if meta and meta.get("tarball_sha256") == job.sha256 and remote.isdir(final):
             LOG.info("release %s already fully uploaded; skipping upload", sid)
             return
         if remote.exists(final):
@@ -463,14 +467,15 @@ class Publisher:
         strategies.prepare_release(remote, layout, staging)
         index_dirs = sorted({posixpath.dirname(r) for r, _ in bundle.site_files
                              if r.endswith("/index.html")} - {""})
-        remote.write_json(posixpath.join(staging, MARKER), {
+        remote.sftp.remove(posixpath.join(staging, STAGING_MARKER))
+        remote.sftp.rename(staging, final)
+        # Written last: metadata present means the release folder is complete (a crash before this re-uploads).
+        write_meta(remote, layout, sid, {
             # snapshot_id is the folder-safe id; build_id is the raw id the pages' crtdh-build meta carries.
             "publish_id": job.publish_id, "snapshot_id": sid, "build_id": job.snapshot_id, "tarball_sha256": job.sha256,
             "files": bundle.site_files, "index_dirs": index_dirs,
             "media": sorted(bundle.media_referenced) if bundle.media_referenced is not None else None,
             "uploaded_at": _now()})
-        remote.sftp.remove(posixpath.join(staging, STAGING_MARKER))
-        remote.sftp.rename(staging, final)
         LOG.info("release %s uploaded to %s", sid, final)
 
     @staticmethod
@@ -543,6 +548,7 @@ class Publisher:
             else:
                 LOG.info("removing old release %s", name)
                 remote.rmtree(posixpath.join(layout.releases, name))
+                drop_meta(remote, layout, name)
         pruned = [r for r in state["history"] if r not in kept and r != active]
         if pruned:
             state["history"] = [r for r in state["history"] if r not in pruned]
@@ -557,8 +563,8 @@ class Publisher:
         for rid in self.kept_ids(state):
             if state["kinds"].get(rid) == "legacy":
                 continue
-            meta = remote.read_json(posixpath.join(layout.live_path(state, rid), MARKER))
-            if not isinstance(meta, dict) or meta.get("media") is None:
+            meta = read_meta(remote, layout, rid)
+            if meta is None or meta.get("media") is None:
                 LOG.info("media list unknown for release %s; skipping media clean-up", rid)
                 return 0
             refs |= set(meta["media"])
@@ -614,7 +620,7 @@ class Publisher:
             state["current"] = target
             save_state(remote, layout, state)
             if state["kinds"].get(target) != "legacy":
-                meta = remote.read_json(posixpath.join(layout.live_path(state, target), MARKER)) or {}
+                meta = read_meta(remote, layout, target) or {}
                 ok, detail = self._check_live(meta.get("build_id") or target)
                 if not ok:
                     LOG.warning("rolled back, but the live check did not confirm it: %s", detail)

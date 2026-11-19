@@ -68,11 +68,18 @@ def store_keyring_password(cfg: Config, password: str) -> None:
     keyring.set_password(KEYRING_SERVICE, f"{cfg.sftp_user}@{cfg.sftp_host}", password)
 
 
+# Explicit permissions for everything the agent creates, so the web server (another user) can read the site
+# whatever umask the hosting account's SFTP server applies (an umask of 077 would otherwise make it 0600/0700).
+FILE_MODE = 0o644
+DIR_MODE = 0o755
+
+
 class Remote:
     def __init__(self, sftp: paramiko.SFTPClient, client: paramiko.SSHClient | None = None):
         self.sftp = sftp
         self.client = client
         self.home = sftp.normalize(".")
+        self._chmod_refused = False
 
     # ---- connection --------------------------------------------------------
     @classmethod
@@ -185,6 +192,18 @@ class Remote:
             return []
 
     # ---- changes -----------------------------------------------------------
+    def chmod(self, path: str, mode: int) -> None:
+        """Set permissions; if the server refuses (some hosts disallow SETSTAT), warn once and carry on."""
+        if self._chmod_refused:
+            return
+        try:
+            self.sftp.chmod(path, mode)
+        except IOError as exc:
+            self._chmod_refused = True
+            LOG.warning("the server refused to set file permissions (%s); uploaded files keep the server's "
+                        "default permissions. If the site then shows 403 errors, ask the host about the SFTP umask.",
+                        exc)
+
     def makedirs(self, path: str) -> None:
         if self.isdir(path):
             return
@@ -196,6 +215,8 @@ class Remote:
         except IOError:
             if not self.isdir(path):
                 raise
+            return
+        self.chmod(path, DIR_MODE)
 
     def replace(self, src: str, dst: str) -> None:
         """Rename src over dst (atomic where the server supports posix-rename)."""
@@ -224,12 +245,14 @@ class Remote:
             except Exception:  # noqa: BLE001
                 pass
             raise
+        self.chmod(tmp, FILE_MODE)  # before the rename: the real name never has other permissions
         self.replace(tmp, remote)
 
     def write_bytes(self, remote: str, data: bytes) -> None:
         tmp = f"{remote}.part-{uuid.uuid4().hex[:8]}"
         with self.sftp.open(tmp, "wb") as fh:
             fh.write(data)
+        self.chmod(tmp, FILE_MODE)
         self.replace(tmp, remote)
 
     def read_bytes(self, remote: str) -> bytes | None:

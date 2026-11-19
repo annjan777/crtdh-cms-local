@@ -81,6 +81,8 @@ def test_htaccess_rules_shape(make_pub, cms, server):
     assert f"# Live release: {F1}." in text
     assert "RewriteRule ^_media/(.+)$ _crtdh/_media/$1 [L]" in text
     assert f"RewriteRule ^(about)/?$ _crtdh/releases/{F1}/$1/index.html [L]" in text
+    # Only FileInfo directives: an "Options" line is a 500 on hosts that allow AllowOverride FileInfo only.
+    assert "Options" not in text
     # the old .htaccess (none here) is restorable and the old files are untouched
     assert os.path.exists(server.home_path("public_html", "images", "logo.png"))
 

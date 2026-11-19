@@ -1,0 +1,5 @@
+# Runtime dependencies of the publish agent (runs on the campus PC: Windows, Linux or macOS, Python 3.10+).
+# Edit this file, then regenerate the hash-pinned lock for every OS and Python 3.10+ at once:
+#   uv pip compile --universal --python-version 3.10 --generate-hashes -o requirements.txt requirements.in
+# (plain pip-compile resolves for the interpreter it runs on and would drop 3.10-only dependencies.)
+paramiko>=3.4,<6

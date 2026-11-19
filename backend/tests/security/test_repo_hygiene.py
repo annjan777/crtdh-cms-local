@@ -66,6 +66,16 @@ def test_tunnel_routes_only_mcp_paths_to_mcp_host():
     assert conf["ingress"][-1]["service"] == "http_status:404"
 
 
+class _ComposeLoader(yaml.SafeLoader):
+    """Reads Compose override files: !override / !reset just return the tagged value."""
+
+
+for _tag in ("!override", "!reset"):
+    _ComposeLoader.add_constructor(_tag, lambda loader, node: (
+        loader.construct_sequence(node) if isinstance(node, yaml.SequenceNode)
+        else loader.construct_mapping(node) if isinstance(node, yaml.MappingNode) else loader.construct_scalar(node)))
+
+
 def _compose():
     return yaml.safe_load((ROOT / "deploy/docker-compose.yml").read_text())
 
@@ -88,6 +98,53 @@ def test_only_gateway_and_cloudflared_are_trusted_proxies():
         assert env["REQUIRE_TRUSTED_PROXY"] == "True", name
     mcp_cmd = c["services"]["mcp"]["command"]
     assert "--no-proxy-headers" in mcp_cmd and '"*"' not in mcp_cmd and "--proxy-headers " not in mcp_cmd
+
+
+def test_fixed_addresses_are_outside_the_dynamic_range():
+    """A container started first (reboot order, `docker compose run`) must never be given .10/.11."""
+    import ipaddress
+    c = _compose()
+    for net_name, net in c["networks"].items():
+        fixed = [s["networks"][net_name]["ipv4_address"] for s in c["services"].values()
+                 if isinstance(s.get("networks"), dict) and isinstance(s["networks"].get(net_name), dict)
+                 and s["networks"][net_name].get("ipv4_address")]
+        if not fixed:
+            continue
+        cfg = net["ipam"]["config"][0]
+        assert "ip_range" in cfg, f"network {net_name} has fixed addresses but no ip_range"
+        subnet, pool = ipaddress.ip_network(cfg["subnet"]), ipaddress.ip_network(cfg["ip_range"])
+        assert pool.subnet_of(subnet)
+        for ip in fixed:
+            addr = ipaddress.ip_address(ip)
+            assert addr in subnet and addr not in pool, (net_name, ip)
+
+
+def test_staging_override_never_reuses_production_image_tags():
+    """deploy/staging builds under its own tags, so a staging build can't replace :prod images on one machine."""
+    staging = yaml.load((ROOT / "deploy/staging/docker-compose.staging.yml").read_text(), Loader=_ComposeLoader)
+    base = _compose()["services"]
+    built = {name for name, svc in base.items() if "build" in svc or "<<" in svc}
+    for name in built | {n for n, s in staging["services"].items() if "build" in s}:
+        image = (staging["services"].get(name) or {}).get("image")
+        assert image and image.endswith(":staging"), (name, image)
+        assert image != base.get(name, {}).get("image")
+
+
+def test_publish_agent_dependencies_are_hash_pinned_everywhere():
+    import re
+    lock = (ROOT / "publish_agent/requirements.txt").read_text()
+    reqs = re.findall(r"^([A-Za-z0-9_.-]+)==\S+(?: ;[^\\\n]*)? \\\n((?:\s+--hash=sha256:[0-9a-f]{64}(?: \\)?\n)+)", lock, re.M)
+    names = re.findall(r"^([A-Za-z0-9_.-]+)==", lock, re.M)
+    assert "paramiko" in names and len(reqs) == len(names), "every pinned package needs --hash lines"
+    assert "--hash" not in (ROOT / "publish_agent/requirements-dev.txt").read_text()
+    assert "-r requirements.txt" not in (ROOT / "publish_agent/requirements-dev.txt").read_text()
+    for installer in ("publish_agent/install/setup.sh", "publish_agent/install/setup.ps1",
+                      "deploy/staging/agent/Dockerfile"):
+        text = (ROOT / installer).read_text()
+        assert "--require-hashes -r" in text and "requirements.txt" in text, installer
+    ci = (ROOT / ".github/workflows/ci.yml").read_text()
+    assert ci.count("pip install --require-hashes -r publish_agent/requirements.txt") == ci.count(
+        "pip install -r publish_agent/requirements-dev.txt") >= 1
 
 
 def test_internet_egress_is_minimal():

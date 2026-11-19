@@ -7,7 +7,7 @@ if ($py) { $python = "py"; $pyargs = @("-3") } else { $python = "python"; $pyarg
 & $python @pyargs -c "import sys; sys.exit(0 if sys.version_info >= (3, 10) else 'Python 3.10 or newer is needed')"
 if (-not (Test-Path .venv)) { & $python @pyargs -m venv .venv }
 & .\.venv\Scripts\python.exe -m pip install --upgrade pip | Out-Null
-& .\.venv\Scripts\python.exe -m pip install -r publish_agent\requirements.txt
+& .\.venv\Scripts\python.exe -m pip install --require-hashes -r publish_agent\requirements.txt
 if (-not (Test-Path config.ini)) { Copy-Item publish_agent\config.example.ini config.ini }
 New-Item -ItemType Directory -Force keys, state | Out-Null
 if (-not (Test-Path keys\crtdh_publish_ed25519)) {

@@ -420,6 +420,11 @@ Expect the server fingerprint, then a report that includes `Web root`, `Symlinks
 - If the `Web root` is wrong, set `web_root` to one of the listed "Other web-root folders" and run it again.
 - If `CMS connection` says "Cloudflare Access sent the agent to its sign-in page" or `403`, the service token or
   its Access policy (step 2.5) is missing or wrong.
+- File permissions: the agent sets every file it uploads to `0644` and every folder to `0755` itself, so the
+  site is readable by the web server whatever umask the account's SFTP server uses. If the agent log ever says
+  "the server refused to set file permissions", the host doesn't allow `chmod` over SFTP. Then the uploaded files
+  keep the server's default permissions. Check with `curl -sI https://crtdh.iitkgp.ac.in/` after the first publish:
+  a `403` means the files aren't readable, so ask the CIC to set the SFTP umask to `022`.
 - **Paste the whole report into HANDOVER.md → "Server facts"**, including the fingerprint. Also run
   `ssh <USER>@academicweb.iitkgp.ac.in 'sh -s' < publish_agent/discover.sh` if SSH commands are allowed (PHP or
   Python on the server, quota).

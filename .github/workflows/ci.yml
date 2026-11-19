@@ -48,6 +48,7 @@ jobs:
         run: |
           pip install --require-hashes -r backend/requirements.txt
           pip install -r backend/requirements-dev.txt
+          pip install --require-hashes -r publish_agent/requirements.txt
           pip install -r publish_agent/requirements-dev.txt
       - name: ruff (correctness gate, ruff.toml)
         run: ruff check .
@@ -96,7 +97,7 @@ jobs:
       - name: pip-audit (known CVEs in pinned deps)
         run: |
           pip-audit --strict --require-hashes --disable-pip -r backend/requirements.txt
-          pip-audit --strict -r publish_agent/requirements.txt
+          pip-audit --strict --require-hashes --disable-pip -r publish_agent/requirements.txt
       - name: bandit (medium+ severity and confidence)
         run: >-
           bandit -r backend/apps backend/mcp_server backend/config publish_agent
@@ -228,6 +229,7 @@ jobs:
         run: |
           pip install --require-hashes -r backend/requirements.txt
           pip install -r backend/requirements-dev.txt
+          pip install --require-hashes -r publish_agent/requirements.txt
           pip install -r publish_agent/requirements-dev.txt
           python -m playwright install --with-deps chromium
           (cd frontend && npm ci --no-fund)

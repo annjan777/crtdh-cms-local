@@ -131,6 +131,10 @@ If the disk quota is full, the upload is marked failed with a message that menti
 | `swap` | `public_html` *is* the live release; old ones in `crtdh-releases/releases/` | three folder renames | under a second, while the folders are renamed |
 | `copy` (last resort) | files overwritten in `public_html` one by one | per-file renames | visitors may briefly see a mix of old and new pages |
 
+The agent's own bookkeeping (`state.json` and `meta/<release>.json`: each release's file and media lists) is kept in
+the release store (`crtdh-releases/`, or `public_html/_crtdh/` with `htaccess`, whose rules refuse direct requests), never
+inside a release folder, so the web server never serves it.
+
 The first publish backs up the existing site to this PC. With `symlink` and `swap`, it then moves the old site to `releases/legacy-<time>` (if `public_html` is already a link, the folder it points to is left in place and only recorded); with `htaccess`, the agent only ever writes its own `# BEGIN/# END crtdh-publish-agent` block, and any other rules in `.htaccess` are kept. Rolling back to `legacy-…` brings the old site back.
 
 **Changing strategy**: don't flip the setting on a live site. Roll back to `legacy-…`, move the agent's folders
@@ -184,7 +188,10 @@ If everything is broken, restore `state/backups/live-site-before-agent-*.tar.gz`
 
 - Code: `agent.py` (CLI), `deploy.py` (flow, retention, media GC), `strategies.py`, `layout.py`, `remote.py`
   (SFTP helpers), `cmsclient.py` (HMAC), `bundle.py` (safe unpack), `discover.py` + `discover.sh`, `logutil.py` (redaction).
-- Tests: `pip install -r publish_agent/requirements-dev.txt; python -m pytest publish_agent/tests -p no:asyncio`.
+- Tests: `pip install --require-hashes -r publish_agent/requirements.txt; pip install -r publish_agent/requirements-dev.txt;
+  python -m pytest publish_agent/tests -p no:asyncio`.
+- Dependencies: edit `requirements.in`, then regenerate the hash-pinned `requirements.txt` with the `uv pip compile`
+  command at the top of `requirements.in` (it resolves for Windows, Linux and macOS on Python 3.10+ at once).
   They run an in-process paramiko SFTP server (with fault injection for dropped connections and a full quota), a fake CMS, and a fake web server.
 - Manual sandbox: `python -m publish_agent.tests.run_fakes /tmp/crtdh-e2e` (fake CMS on :8500, SFTP on :2222), then
   `CRTDH_AGENT_SECRET=local-test-agent-secret-0123456789 python -m publish_agent -c /tmp/crtdh-e2e/config.ini run --once`.

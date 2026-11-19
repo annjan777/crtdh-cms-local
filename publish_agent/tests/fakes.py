@@ -31,6 +31,8 @@ class Faults:
         self.files_opened = 0
         self.no_symlink = False
         self.no_posix_rename = False
+        self.umask = None             # e.g. 0o077: new files/dirs get 0o666/0o777 minus this, like a real sshd umask
+        self.no_chmod = False         # refuse SETSTAT (chmod), as some shared hosts do
         self.lock = threading.Lock()
 
 
@@ -115,10 +117,13 @@ class _SFTP(SFTPServerInterface):
             if drop:
                 self.ctx.drop_all()
                 return SFTP_FAILURE
+        creating = bool(flags & os.O_CREAT) and not os.path.exists(real)
         try:
             fd = os.open(real, flags, 0o644)
         except OSError as e:
             return self._err(e)
+        if creating and f.umask is not None:
+            os.chmod(real, 0o666 & ~f.umask)
         if (flags & os.O_CREAT) and attr is not None:
             attr._flags &= ~attr.FLAG_PERMISSIONS
         mode = "rb"
@@ -162,6 +167,8 @@ class _SFTP(SFTPServerInterface):
     def mkdir(self, path, attr):
         try:
             os.mkdir(self._real(path))
+            if self.ctx.faults.umask is not None:
+                os.chmod(self._real(path), 0o777 & ~self.ctx.faults.umask)
         except OSError as e:
             return self._err(e)
         return SFTP_OK
@@ -174,6 +181,13 @@ class _SFTP(SFTPServerInterface):
         return SFTP_OK
 
     def chattr(self, path, attr):
+        if attr._flags & attr.FLAG_PERMISSIONS:
+            if self.ctx.faults.no_chmod:
+                return paramiko.sftp.SFTP_PERMISSION_DENIED
+            try:
+                os.chmod(self._real(path), attr.st_mode & 0o7777)
+            except OSError as e:
+                return self._err(e)
         return SFTP_OK
 
     def symlink(self, target_path, path):

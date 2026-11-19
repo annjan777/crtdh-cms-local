@@ -1,2 +1,4 @@
--r requirements.txt
+# Test tooling only. Install the hash-pinned runtime first, then this (pip can't mix hashed and unhashed files):
+#   pip install --require-hashes -r publish_agent/requirements.txt
+#   pip install -r publish_agent/requirements-dev.txt
 pytest>=7
