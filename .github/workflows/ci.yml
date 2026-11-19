@@ -130,14 +130,14 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci --no-fund
-      - name: unit tests (vitest)
-        run: npm test
       - name: snapshot from the seed (contract shape, /_media/ paths)
         env:
           MEDIA_ROOT: ../backend/seed_media
         run: node scripts/dev-snapshot.mjs ../backend/tests/fixtures/full_snapshot.json snapshot.json
       - name: build (prerender every route)
         run: npm run build
+      - name: unit tests (vitest; build.test.js and hardening.test.jsx read snapshot.json and build/)
+        run: npm test
       - name: JS size budget
         run: npm run size
       - name: placeholder / broken-content sweep
