@@ -7,6 +7,7 @@ import { StrictMode, useEffect, useLayoutEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import SitePreview from './SitePreview.jsx';
 import { CmsPreviewContext } from './cms-context.js';
+import { tagSections } from './section-map.js';
 
 const EDITOR_CSS = `
 html,body{margin:0}
@@ -39,6 +40,8 @@ function App() {
     if (!state) return;
     document.documentElement.classList.toggle('cms-interactive', !!state.interactive);
     const labels = Object.fromEntries((state.sections || []).map((s) => [s.id, s.label]));
+    // The real public components carry no editor markup: tag their blocks with section ids.
+    tagSections(document.getElementById('preview-root'), state.pageId, labels);
     let selectedEl = null;
     for (const el of document.querySelectorAll('[data-cms-section]')) {
       const id = el.getAttribute('data-cms-section');

@@ -3,10 +3,10 @@
 // exported as `pages` keyed by registry page id, plus an optional `Layout`).
 // Until that package exists the Vite alias points at ./site-shim.
 //
-// Clickable sections: each section root carries `data-cms-section="<section id>"`
-// (and collection items `data-cms-item="<pk>"`). The canvas adds outlines and
-// selection around those attributes; nothing editor-specific is needed in the
-// public components beyond them.
+// Clickable sections: the public components carry no editor markup, so the canvas
+// tags their blocks with `data-cms-section` (and `data-cms-item` where the markup
+// names the row) from src/preview/section-map.js after each render. The shim
+// carries those attributes itself.
 import { Fragment } from 'react';
 import * as site from '@site';
 
