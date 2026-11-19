@@ -41,6 +41,9 @@ COPY --from=frontend /usr/local/lib/node_modules/npm /usr/local/lib/node_modules
 RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && node --version && npm --version
 
 COPY --from=frontend /srv/frontend /srv/frontend
+# The contact page's privacy notice is read at build time (frontend/app/snapshot.server.js).
+COPY docs/privacy-notice.md /srv/docs/privacy-notice.md
+ENV PRIVACY_NOTICE_PATH=/srv/docs/privacy-notice.md
 COPY deploy/worker/build-site.sh /usr/local/bin/crtdh-build-site
 COPY backend/ ./
 RUN chmod 755 /usr/local/bin/crtdh-build-site \

@@ -235,6 +235,17 @@ def test_worker_has_node_frontend_and_a_publish_volume():
     assert "/data/publish" in (ROOT / "backend/Dockerfile").read_text()
 
 
+def test_worker_build_ships_the_privacy_notice():
+    """F-05: the contact page's privacy notice is read from docs/privacy-notice.md at build time. The worker image
+    must contain it, or every published site silently ships without the notice and without the footer link target."""
+    dockerfile = (ROOT / "deploy/worker/Dockerfile").read_text()
+    ignore = (ROOT / "deploy/worker/Dockerfile.dockerignore").read_text().splitlines()
+    assert "!docs/privacy-notice.md" in ignore
+    assert "COPY docs/privacy-notice.md /srv/docs/privacy-notice.md" in dockerfile
+    assert "ENV PRIVACY_NOTICE_PATH=/srv/docs/privacy-notice.md" in dockerfile
+    assert (ROOT / "docs/privacy-notice.md").is_file()
+
+
 # ---- Anthropic outbound ranges for the mcp. WAF rule (platform.claude.com/docs/en/api/ip-addresses, 19 Nov 2026) ---
 ANTHROPIC_OUTBOUND = ("160.79.104.0/21", "153.61.208.0/20")
 WAF_EXPRESSION = "not ip.src in {160.79.104.0/21 153.61.208.0/20}"

@@ -2,6 +2,7 @@
 *
 !backend
 !frontend
+!docs/privacy-notice.md
 !deploy/worker/build-site.sh
 backend/venv
 backend/.env
