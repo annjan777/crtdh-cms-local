@@ -83,11 +83,7 @@ Nothing else, so every page looks the same.
 1. Open **Home** and click the big photo at the top (section **Hero**).
 2. On the right, pick the slide you want to change.
 3. Under **Photo**, click **Replace photo** or drop a photo onto the box.
-4. Fill in **Photo description**. Say in a few words what the photo shows, for example "Health workers testing
-   blood samples at a village camp". People who can't see the photo hear this text. You can't save a photo
-   without it.
-5. Set the **Focus point**: click the part of the photo that must always stay in view. Check the two small
-   previews, **Desktop · 16:9** and **Phone · 4:5**. Nothing important should be cut off.
+4. Click **Save photo** (or **Cancel** to keep the old one). That's all: the photo is centred automatically.
 
 **Photo size rules**
 
@@ -119,7 +115,7 @@ Nothing else, so every page looks the same.
 1. Open **Media** → section **Events and camps**.
 2. Click **Add event**.
 3. Fill in **Title**, **Date**, **Type** (Health camp, Visit, Workshop, Event) and **Description**.
-4. Under **Photos**, click **Add first photo**. Choose a photo, give it a **Photo description**, and add a
+4. Under **Photos**, click **Add first photo**. Choose a photo and add a
    **Caption** if you like. Add more photos the same way.
 5. **Turn on "Shown on site"** for the event.
 

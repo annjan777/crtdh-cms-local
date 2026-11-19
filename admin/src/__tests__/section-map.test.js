@@ -49,3 +49,13 @@ describe('section map', () => {
     }
   });
 });
+
+import { autoDescription } from '../editor/fields/ImageField.jsx';
+
+describe('photo description is filled in automatically', () => {
+  it('uses the section title, else a readable file name', () => {
+    expect(autoDescription({ values: { title: '  Health camp at Salboni ' } }, { name: 'IMG_1.jpg' })).toBe('Health camp at Salboni');
+    expect(autoDescription({ values: {} }, { name: 'IIT-Kharagpur_at_Golden Hour.png' })).toBe('IIT Kharagpur at Golden Hour');
+    expect(autoDescription({ values: {} }, null)).toBe('Photo');
+  });
+});
