@@ -7,7 +7,6 @@ from __future__ import annotations
 import io
 import os
 import posixpath
-import shlex
 import stat
 import tarfile
 import time
@@ -80,13 +79,13 @@ def discover(cfg: Config, remote: Remote, http_get: Callable[[str], str] | None 
         remote.rmtree(wprobe)
 
     # --- shell access (often disabled on SFTP-only accounts)
-    res = remote.exec("echo crtdh-shell-ok")
+    res = remote.exec("probe")
     r["shell"] = bool(res and "crtdh-shell-ok" in res[1])
     if r["shell"]:
         try:
-            with open(DISCOVER_SH, encoding="utf-8") as fh:
+            with open(DISCOVER_SH, "rb") as fh:
                 script = fh.read()
-            out = remote.exec(f"WEB_ROOT={shlex.quote(web_root)} sh -s <<'CRTDH_EOF'\n{script}\nCRTDH_EOF", timeout=60)
+            out = remote.exec("discover", stdin=script, timeout=60, web_root=web_root)
             r["discover_sh"] = out[1] if out else ""
         except OSError:
             r["discover_sh"] = ""

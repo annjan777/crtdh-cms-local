@@ -6,6 +6,7 @@ import getpass
 import json
 import os
 import posixpath
+import shlex
 import socket
 import stat
 import uuid
@@ -16,6 +17,18 @@ from .config import Config
 from .logutil import LOG, register_secret
 
 KEYRING_SERVICE = "crtdh-publish-agent"
+
+# The only shell commands the agent ever runs on the server. Arguments are filled in quoted, never raw;
+# scripts are sent on stdin, not on the command line.
+SHELL_COMMANDS = {
+    "probe": "echo crtdh-shell-ok",
+    "discover": "WEB_ROOT={web_root} sh -s",
+}
+
+
+def shell_command(name: str, **args: str) -> str:
+    template = SHELL_COMMANDS[name]
+    return template.format(**{k: shlex.quote(str(v)) for k, v in args.items()})
 
 
 class RemoteError(Exception):
@@ -115,12 +128,17 @@ class Remote:
             if self.client:
                 self.client.close()
 
-    def exec(self, command: str, timeout: int = 30) -> tuple[int, str] | None:
-        """Run a shell command if the account allows it; None if shell access is disabled."""
+    def exec(self, name: str, stdin: bytes = b"", timeout: int = 30, **args: str) -> tuple[int, str] | None:
+        """Run one of the fixed SHELL_COMMANDS if the account allows a shell; None if shell access is disabled."""
         if not self.client:
             return None
+        command = shell_command(name, **args)
         try:
-            _in, out, err = self.client.exec_command(command, timeout=timeout)
+            # nosec B601: the command is a fixed template from SHELL_COMMANDS and every argument is shlex.quote'd
+            _in, out, err = self.client.exec_command(command, timeout=timeout)  # nosec B601
+            if stdin:
+                _in.write(stdin)
+            _in.channel.shutdown_write()
             text = out.read().decode("utf-8", "replace") + err.read().decode("utf-8", "replace")
             return out.channel.recv_exit_status(), text
         except (paramiko.SSHException, OSError, socket.timeout):
