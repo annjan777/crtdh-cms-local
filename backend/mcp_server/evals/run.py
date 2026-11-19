@@ -118,6 +118,7 @@ async def run_prompt(spec, user, app, model, key):
     cms.fetch_image_bytes = lambda url, **kw: (png_bytes(2000, 1300), url.split("//", 1)[-1][:300])
     token = await sync_to_async(issue_token)(user, app)
     calls = []
+    # nosemgrep: tests.security.crtdh-requests-without-timeout -- httpx client has timeout=120
     async with mcp_client(build_app(), token) as client, httpx.AsyncClient(timeout=120) as api:
         tools = [{"name": t.name, "description": t.description or "", "input_schema": t.input_schema}
                  for t in (await client.list_tools()).tools]

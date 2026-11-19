@@ -153,5 +153,6 @@ class UserResetPasswordView(_AdminView):
         user.save(update_fields=["password"])
         UserSecurity.objects.update_or_create(user=user, defaults={"must_change_password": True})
         sessions.revoke_all(user)
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs usernames only; the temporary password is never logged
         logger.info("password reset username=%s by=%s", user.username, request.user.username)
         return Response(dict(user_payload(user), temporary_password=temp))

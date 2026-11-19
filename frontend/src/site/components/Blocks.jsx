@@ -50,7 +50,7 @@ export function RichText({ html, className = '' }) {
   if (!hasMarkup(html)) return <Prose text={html} className={className} />
   const clean = sanitizeRichText(html)
   if (!clean.trim()) return null
-  // nosemgrep: crtdh-no-dangerously-set-inner-html -- rebuilt from an allow-list by sanitizeRichText (src/site/richtext.js); backend clean_richtext on write
+  // nosemgrep: crtdh-no-dangerously-set-inner-html, typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml -- rebuilt from an allow-list by sanitizeRichText (src/site/richtext.js); backend clean_richtext on write
   return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: clean }} />
 }
 

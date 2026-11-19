@@ -3,6 +3,7 @@ pytest>=9,<10
 pytest-django>=4.9
 pytest-cov>=6
 pytest-timeout>=2.3
+pytest-asyncio>=1.0
 factory_boy>=3.3
 freezegun>=1.5
 pytest-playwright>=0.6

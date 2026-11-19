@@ -331,7 +331,9 @@ def upload_page(request, token):
     except CMSError as e:
         if wants_json:
             return JsonResponse(e.body, status=e.status_code)
+        # nosemgrep: python.django.security.injection.raw-html-format.raw-html-format -- the only interpolated value is escape()d
         return _page(f"<p>{escape(e.body['message'])}</p><p><a href=''>Try again</a></p>", status=e.status_code)
     if wants_json:
         return JsonResponse({"media_id": asset.pk, "width": asset.width, "height": asset.height}, status=201)
+    # nosemgrep: python.django.security.injection.raw-html-format.raw-html-format -- integers from the processed image only
     return _page(f"<p>Photo received ({asset.width}×{asset.height}). You can close this page.</p>", status=201)

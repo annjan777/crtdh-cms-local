@@ -119,5 +119,6 @@ def mark_session_verified(session, user):
 def is_verified(request):
     """True if this Django request has an active user whose session completed password + MFA."""
     user = getattr(request, "user", None)
-    return bool(user and user.is_authenticated and user.is_active
-                and request.session.get(SESSION_FLAG) == user.pk)
+    if user is None or not user.is_authenticated or not user.is_active:
+        return False
+    return request.session.get(SESSION_FLAG) == user.pk

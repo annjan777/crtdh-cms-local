@@ -25,6 +25,7 @@ def revoke_all_for_user(user, *, reason: str) -> int:
     grants, _ = Grant.objects.filter(user=user).delete()
     GrantFamily.objects.filter(user=user).delete()
     total = refresh + access + grants
+    # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs a count and a user id, no token values
     log.info("Revoked %s Claude connector credentials for user %s (%s)", total, user.pk, reason)
     return total
 
