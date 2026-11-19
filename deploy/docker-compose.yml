@@ -198,11 +198,14 @@ services:
 
 networks:
   # No route to the internet. Fixed subnet so TRUSTED_PROXY_IPS can name gateway and cloudflared.
+  # Dynamic addresses come only from ip_range (.128-.255), so no container started earlier (after a reboot, or a
+  # `docker compose run` one-off) can take the gateway's .10 or cloudflared's .11 and stop them starting.
   internal:
     internal: true
     ipam:
       config:
         - subnet: 172.30.80.0/24
+          ip_range: 172.30.80.128/25
   # Outbound only (cloudflared to the Cloudflare edge; cms Turnstile/SMTP; mcp URL fetch; worker SMTP).
   # Nothing is published on the host. db, migrate, housekeeping and gateway are not on it.
   egress:

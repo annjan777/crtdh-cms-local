@@ -91,5 +91,5 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
 - **"the site did not show the new build"**: the agent rolled back on its own. Check that
   https://crtdh.annjan.in/ reaches the `site` container (route 1).
 - **The address pool 172.30.80.0/24 or 172.30.81.0/24 clashes with your home network**: change both subnets,
-  the two fixed addresses and `TRUSTED_PROXY_IPS` together, as `deploy/README.md` "Network" describes. For
-  staging, also change the `ip_range` in `docker-compose.staging.yml`.
+  the two fixed addresses and `TRUSTED_PROXY_IPS` together, as `deploy/README.md` "Network" describes. Keep each
+  `ip_range` inside its subnet and the fixed addresses outside it.

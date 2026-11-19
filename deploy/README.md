@@ -27,8 +27,9 @@ Nothing publishes a host port. All traffic arrives through one Cloudflare Tunnel
   (Cloudflare edge), `cms` (Turnstile siteverify, SMTP), `mcp` (`upload_image_from_url`, SSRF-guarded),
   `worker` (SMTP). `db`, `migrate`, `housekeeping` and `gateway` have no internet. If the lab requires
   it, restrict `egress` further on the host firewall to 443 and the SMTP port.
-- If 172.30.80.0/24 or 172.30.81.0/24 clash with a lab network, change the subnets, the two
-  `ipv4_address` values and `TRUSTED_PROXY_IPS` together.
+- If 172.30.80.0/24 or 172.30.81.0/24 clash with a lab network, change the subnets, the `ip_range`, the two
+  `ipv4_address` values and `TRUSTED_PROXY_IPS` together. Dynamic addresses come only from `ip_range`
+  (172.30.80.128/25), so the fixed .10 and .11 are never handed to another container first.
 - The gateway runs with a read-only root, all capabilities dropped except those nginx's master needs
   to bind :80 and switch to the `nginx` user, and serves Django's collected static files at `/static/`
   (the `migrate` job runs `collectstatic` into the `static_data` volume).

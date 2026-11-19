@@ -90,6 +90,25 @@ def test_only_gateway_and_cloudflared_are_trusted_proxies():
     assert "--no-proxy-headers" in mcp_cmd and '"*"' not in mcp_cmd and "--proxy-headers " not in mcp_cmd
 
 
+def test_fixed_addresses_are_outside_the_dynamic_range():
+    """A container started first (reboot order, `docker compose run`) must never be given .10/.11."""
+    import ipaddress
+    c = _compose()
+    for net_name, net in c["networks"].items():
+        fixed = [s["networks"][net_name]["ipv4_address"] for s in c["services"].values()
+                 if isinstance(s.get("networks"), dict) and isinstance(s["networks"].get(net_name), dict)
+                 and s["networks"][net_name].get("ipv4_address")]
+        if not fixed:
+            continue
+        cfg = net["ipam"]["config"][0]
+        assert "ip_range" in cfg, f"network {net_name} has fixed addresses but no ip_range"
+        subnet, pool = ipaddress.ip_network(cfg["subnet"]), ipaddress.ip_network(cfg["ip_range"])
+        assert pool.subnet_of(subnet)
+        for ip in fixed:
+            addr = ipaddress.ip_address(ip)
+            assert addr in subnet and addr not in pool, (net_name, ip)
+
+
 def test_internet_egress_is_minimal():
     c = _compose()
     on_egress = {n for n, s in c["services"].items() if "egress" in _nets(s)}

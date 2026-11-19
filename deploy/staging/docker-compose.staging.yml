@@ -14,8 +14,6 @@
 #   - sftp + site: stand-ins for the CIC server. `sftp` is a chrooted key-only SFTP account; `site` is Apache 2.4
 #     serving that account's web root read-only with AllowOverride FileInfo, so the real built .htaccess is tested.
 #   - publish-agent: the real publish_agent, polling https://<CMS host> through the tunnel like the campus PC.
-#   - internal network: dynamic addresses come only from .128/25, so no container (or `docker compose run`
-#     one-off) can take the gateway's .10 or cloudflared's .11 before they start.
 # Nothing publishes a host port here either.
 
 name: crtdh-staging
@@ -87,13 +85,6 @@ services:
     cap_drop: [ALL]
     depends_on: [sftp]
     networks: [internal, egress]
-
-networks:
-  internal:
-    ipam: !override
-      config:
-        - subnet: 172.30.80.0/24
-          ip_range: 172.30.80.128/25   # dynamic addresses; .10 (gateway) and .11 (cloudflared) stay free
 
 volumes:
   site_www:   # the SFTP account's web folder: public_html + crtdh-releases/ (what the CIC server holds)
