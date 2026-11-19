@@ -101,7 +101,7 @@ def cmd_check(cfg: Config, args) -> int:
             LOG.debug("discover.sh output:\n%s", report["discover_sh"])
         if cfg.cms_url:
             try:
-                CMSClient(cfg.cms_url, cfg.secret(), cfg.http_timeout).next_job()
+                CMSClient(cfg.cms_url, cfg.secret(), cfg.http_timeout, cfg.access_headers()).next_job()
                 print("CMS connection         : ok (agent secret accepted)")
             except (CMSError, ConfigError, Exception) as exc:  # noqa: BLE001
                 print(f"CMS connection         : FAILED - {exc}")
@@ -123,7 +123,7 @@ def cmd_backup(cfg: Config, args) -> int:
 
 
 def cmd_run(cfg: Config, args) -> int:
-    cms = CMSClient(cfg.cms_url, cfg.secret(), cfg.http_timeout)
+    cms = CMSClient(cfg.cms_url, cfg.secret(), cfg.http_timeout, cfg.access_headers())
     pub = Publisher(cfg, cms=cms, connect=_connector(cfg), dry_run=args.dry_run)
     if args.once:
         try:

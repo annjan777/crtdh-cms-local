@@ -22,6 +22,11 @@ class Config:
     max_backoff_seconds: int = 600
     http_timeout: int = 60
     max_download_errors: int = 5  # consecutive failed downloads of one build before reporting it failed
+    # Cloudflare Access service token (cms.<domain> is behind Access). The id is not secret; the secret is read
+    # like the agent secret: from access_secret_file, else the access_secret_env variable. Empty id = not sent.
+    access_client_id: str = ""
+    access_secret_env: str = "CRTDH_CF_ACCESS_SECRET"
+    access_secret_file: str = ""
 
     sftp_host: str = ""
     sftp_port: int = 22
@@ -75,6 +80,26 @@ class Config:
         return value
 
 
+    def access_headers(self) -> dict:
+        """CF-Access-Client-Id / CF-Access-Client-Secret for every CMS request, or {} when no token is set up."""
+        if not self.access_client_id:
+            return {}
+        value = ""
+        if self.access_secret_file:
+            try:
+                with open(self.access_secret_file, encoding="utf-8") as fh:
+                    value = fh.read().strip()
+            except OSError as exc:
+                raise ConfigError(f"cannot read access_secret_file {self.access_secret_file}: {exc.strerror}") from None
+        if not value and self.access_secret_env:
+            value = os.environ.get(self.access_secret_env, "").strip()
+        if not value:
+            raise ConfigError(
+                f"access_client_id is set but the Cloudflare Access client secret is missing: set environment "
+                f"variable {self.access_secret_env} or put it in the file named by access_secret_file")
+        return {"CF-Access-Client-Id": self.access_client_id, "CF-Access-Client-Secret": value}
+
+
 def _resolve(base: str, path: str) -> str:
     if not path:
         return path
@@ -98,7 +123,7 @@ def load(path: str) -> Config:
         except ValueError:
             raise ConfigError(f"[{section}] {key} must be a whole number") from None
 
-    for key in ("password", "pass", "secret"):
+    for key in ("password", "pass", "secret", "access_client_secret", "access_secret", "client_secret"):
         for section in cp.sections():
             if cp.has_option(section, key) and cp.get(section, key).strip():
                 raise ConfigError(
@@ -113,6 +138,9 @@ def load(path: str) -> Config:
         max_backoff_seconds=getint("cms", "max_backoff_seconds", 600),
         http_timeout=getint("cms", "http_timeout", 60),
         max_download_errors=getint("cms", "max_download_errors", 5),
+        access_client_id=get("cms", "access_client_id"),
+        access_secret_env=get("cms", "access_secret_env", "CRTDH_CF_ACCESS_SECRET"),
+        access_secret_file=_resolve(base, get("cms", "access_secret_file")),
         sftp_host=get("sftp", "host"),
         sftp_port=getint("sftp", "port", 22),
         sftp_user=get("sftp", "user"),

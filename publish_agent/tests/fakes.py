@@ -331,11 +331,23 @@ class FakeCMS:
         self.statuses: list[dict] = []
         self.bad_auth = 0
         self.redirects: dict[str, str] = {}
+        self.requests: list[tuple[str, str, dict]] = []  # (method, path, headers) of every request
+        self.require_access: dict[str, str] | None = None  # like Cloudflare Access: 302 to its login without these
         cms = self
 
         class H(BaseHTTPRequestHandler):
             def log_message(self, *a):
                 pass
+
+            def _access_ok(self) -> bool:
+                cms.requests.append((self.command, self.path, dict(self.headers)))
+                need = cms.require_access
+                if need and any(self.headers.get(k) != v for k, v in need.items()):
+                    self.send_response(302)
+                    self.send_header("Location", "https://crtdh.cloudflareaccess.com/cdn-cgi/access/login/cms")
+                    self.end_headers()
+                    return False
+                return True
 
             def _auth(self, body: bytes) -> bool:
                 ts = self.headers.get("X-Agent-Timestamp", "")
@@ -349,6 +361,8 @@ class FakeCMS:
                 return ok
 
             def do_GET(self):
+                if not self._access_ok():
+                    return
                 if not self._auth(b""):
                     self.send_response(401); self.end_headers(); return
                 if self.path in cms.redirects:
@@ -378,6 +392,8 @@ class FakeCMS:
 
             def do_POST(self):
                 body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+                if not self._access_ok():
+                    return
                 if not self._auth(body):
                     self.send_response(401); self.end_headers(); return
                 if self.path == "/api/v1/agent/status/":

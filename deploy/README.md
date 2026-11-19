@@ -61,6 +61,27 @@ Then, in the Cloudflare dashboard, do the four items listed at the top of `confi
 (Access app for `cms.`, WAF IP rule for `mcp.`, rate-limit rule for `contact.`, TLS settings).
 The MCP hostname being outside Access is a deliberate, documented exception (PLAN WS4.2).
 
+### Publish agent and Cloudflare Access
+
+The campus publish agent calls `https://cms.<domain>/api/v1/agent/*` and can't do an Access sign-in. Give it an
+Access **service token** (preferred over an IP bypass: campus egress IPs change and are shared):
+
+1. Zero Trust → Access → Service auth → **Create service token**, name `crtdh-publish-agent`, duration 1 year (put
+   the expiry date in the handover calendar). Copy the **Client ID** and **Client Secret** now; the secret is shown
+   once.
+2. Access → Applications → Add → Self-hosted: name `CRTDH publish agent`, domain `cms.<domain>`, path
+   `api/v1/agent/`. Policy: Action **Service Auth**, Include **Service Token** = `crtdh-publish-agent`. Nothing
+   else. Access uses the most specific path, so the rest of `cms.` keeps the SSO policy.
+3. On the campus PC: in `config.ini` set `[cms] access_client_id = <Client ID>`, and put the Client Secret on one
+   line in `access-secret.txt` next to `config.ini` with `access_secret_file = access-secret.txt` (or in the
+   `CRTDH_CF_ACCESS_SECRET` environment variable). The agent refuses a secret written into `config.ini`, sends both
+   as `CF-Access-Client-Id` / `CF-Access-Client-Secret` on every CMS request, and masks the secret in its logs.
+
+The agent's HMAC signature still protects every endpoint behind the token. Check from the campus PC:
+`python -m publish_agent check` reports `CMS connection : ok`; without the token the agent says "Cloudflare Access
+sent the agent to its sign-in page". Rotate by creating a new token, updating `access-secret.txt`, then deleting
+the old token.
+
 ## 3. Start
 
 ```bash

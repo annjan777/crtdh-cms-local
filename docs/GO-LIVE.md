@@ -15,10 +15,9 @@ Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.`,
 >    work on the named volume `publish_data` (`/data/publish`; the `cms` mounts it read-only to serve tarballs). The
 >    build command and output folder are set in `docker-compose.yml`, not in `.env`. Not yet built under Docker
 >    (see item 3): if step 6 fails, check `docker compose logs worker` first.
-> 2. **The publish agent can't get past Cloudflare Access (BLOCKER for step 5.4 unless you add the bypass in step 2.5).**
->    The agent calls `https://cms.<domain>/api/v1/agent/...`. It signs each request with the agent secret, but it
->    sends no Cloudflare Access headers. Step 2.5 adds a path-scoped Access *Bypass* for `/api/v1/agent/` that only
->    allows the campus PC's public IP. The HMAC (keyed hash) signature still protects those endpoints.
+> 2. **Fixed (publish agent vs Cloudflare Access).** The agent now sends a Cloudflare Access service token
+>    (`CF-Access-Client-Id` / `CF-Access-Client-Secret`). Step 2.5 creates the token and an Access policy for
+>    `/api/v1/agent/` that allows only that token; step 5.3 puts it in the agent's config.
 > 3. **Nothing in `deploy/` has been run under Docker yet.** The sandbox had no Docker daemon (`docs/testing.md`).
 >    The production settings were tested in the rehearsal instead. Expect to fix small issues on the day, and keep
 >    this runbook open to note them.
@@ -229,20 +228,21 @@ Zero Trust dashboard → Access → Applications → **Add an application** → 
 Verify (after step 4): open `https://cms.<domain>` in a private window. You get the Cloudflare Access email-code
 page first, then the CMS sign-in.
 
-### 2.5 Access bypass for the publish agent (required, not in deploy/README)
+### 2.5 Access service token for the publish agent (required)
 
-The agent on the campus PC can't do an Access login (see blocker 2 at the top).
+The agent on the campus PC can't do an Access sign-in, so it uses a service token. Full steps: `deploy/README.md`
+→ "Publish agent and Cloudflare Access". In short:
 
-1. Find the campus network's public IP. **From the campus PC**, run:
-   `curl -s https://www.cloudflare.com/cdn-cgi/trace | grep ^ip=`. Record: `campus egress IP ____`.
-   It may change, or campus may use several IPs. Ask the institute network team whether there's a fixed range.
+1. Zero Trust → Access → Service auth → **Create service token** `crtdh-publish-agent` (1 year). Record the
+   **Client ID** here and keep the **Client Secret** for step 5.3 (shown once; don't paste it anywhere else).
+   Record: `token expires on ____` (add it to the handover calendar).
 2. Access → Applications → Add → Self-hosted: name `CRTDH publish agent`, domain `cms.<domain>`, path
-   `api/v1/agent/`. Policy: Action **Bypass**, Include **IP ranges** = the campus egress IP (`/32`) or range.
-   Access applies the most specific path, so only `/api/v1/agent/` is opened, and only to that IP.
+   `api/v1/agent/`. Policy: Action **Service Auth**, Include **Service Token** = `crtdh-publish-agent`, nothing else.
 
-Verify: from the campus PC, `curl -s -o /dev/null -w '%{http_code}\n' https://cms.<domain>/api/v1/agent/next/`
-returns `401` or `403` from the CMS (unsigned request), **not** a `302` redirect to the Access login. From any
-other network, it returns `302`.
+Verify: from any machine, `curl -s -o /dev/null -w '%{http_code}\n' https://cms.<domain>/api/v1/agent/next/`
+returns `302` or `403` from Access (no token). With the token,
+`curl -s -o /dev/null -w '%{http_code}\n' -H "CF-Access-Client-Id: <id>" -H "CF-Access-Client-Secret: <secret>" https://cms.<domain>/api/v1/agent/next/`
+returns `401` from the CMS (unsigned request). Clear your shell history afterwards if you typed the secret.
 
 ### 2.6 WAF rule for `mcp.`
 
@@ -406,6 +406,8 @@ If keys are refused, use the keyring password option ("Password instead of a key
 
 - Paste `AGENT_HMAC_SECRET` from `deploy/.env` into `agent-secret.txt` (one line).
 - In `config.ini`, set `[sftp] user = <USER>` and `[cms] url = https://cms.<domain>`.
+- Access token from step 2.5: set `[cms] access_client_id = <Client ID>` and `access_secret_file = access-secret.txt`,
+  and put the Client Secret on one line in `access-secret.txt` next to `config.ini`.
 - Run (Windows `.\.venv\Scripts\python.exe`, Linux `.venv/bin/python`):
 
   ```
@@ -416,7 +418,8 @@ Expect the server fingerprint, then a report that includes `Web root`, `Symlinks
 `.htaccess honoured`, `Free space (KB)`, `RECOMMENDED STRATEGY` and `CMS connection : ok (agent secret accepted)`.
 
 - If the `Web root` is wrong, set `web_root` to one of the listed "Other web-root folders" and run it again.
-- If `CMS connection` fails with a `302` or an HTML page, the Access bypass (step 2.5) is missing or the IP is wrong.
+- If `CMS connection` says "Cloudflare Access sent the agent to its sign-in page" or `403`, the service token or
+  its Access policy (step 2.5) is missing or wrong.
 - **Paste the whole report into HANDOVER.md → "Server facts"**, including the fingerprint. Also run
   `ssh <USER>@academicweb.iitkgp.ac.in 'sh -s' < publish_agent/discover.sh` if SSH commands are allowed (PHP or
   Python on the server, quota).

@@ -32,6 +32,11 @@ class _SameOriginRedirects(urllib.request.HTTPRedirectHandler):
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         if urllib.parse.urlsplit(newurl)[:2] != self.origin:
+            host = urllib.parse.urlsplit(newurl).hostname or ""
+            if host.endswith(".cloudflareaccess.com"):
+                raise CMSError("Cloudflare Access sent the agent to its sign-in page: set [cms] access_client_id and "
+                               "the service token secret, and allow that token in the Access policy for "
+                               "/api/v1/agent/ (deploy/README.md)")
             raise BuildRejected("CMS redirected the agent to another host; refusing to follow it")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
@@ -76,11 +81,14 @@ def verify_job(secret: str, job: Job) -> None:
 
 
 class CMSClient:
-    def __init__(self, base_url: str, secret: str, timeout: int = 60):
+    def __init__(self, base_url: str, secret: str, timeout: int = 60, access_headers: dict | None = None):
         self.base_url = base_url.rstrip("/")
         self.secret = secret
         self.timeout = timeout
         register_secret(secret)
+        # Cloudflare Access service token, sent on every request (same origin only, like the signature).
+        self._access = dict(access_headers or {})
+        register_secret(self._access.get("CF-Access-Client-Secret"))
         self._origin = urllib.parse.urlsplit(self.base_url)[:2]
         self._last_signed = None
         self._opener = urllib.request.build_opener(_SameOriginRedirects(self._origin))
@@ -104,6 +112,7 @@ class CMSClient:
             key = (ts,) + key[1:]
         self._last_signed = key
         headers = sign_request(self.secret, method, path, body, ts)
+        headers.update(self._access)
         headers["User-Agent"] = f"crtdh-publish-agent/{__version__}"
         if content_type:
             headers["Content-Type"] = content_type
@@ -117,7 +126,8 @@ class CMSClient:
             except Exception:  # noqa: BLE001
                 pass
             if exc.code in (401, 403):
-                raise CMSError(f"CMS refused the agent ({exc.code}); check the agent secret and the PC clock. {detail}") from None
+                raise CMSError(f"CMS refused the agent ({exc.code}); check the agent secret, the PC clock and (behind "
+                               f"Cloudflare Access) the service token. {detail}") from None
             raise CMSError(f"CMS returned HTTP {exc.code} for {path}. {detail}".strip()) from None
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             reason = getattr(exc, "reason", exc)

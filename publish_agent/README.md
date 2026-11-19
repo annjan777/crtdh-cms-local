@@ -48,6 +48,9 @@ Don't write the password down anywhere on this PC.
 ## 3. Configure (once)
 
 1. Paste the agent secret (one line) into `agent-secret.txt`. Don't put it in `config.ini`.
+   The CMS is behind Cloudflare Access: also set `[cms] access_client_id` and put the service token's Client
+   Secret (one line) in `access-secret.txt` with `access_secret_file = access-secret.txt` (deploy/README.md,
+   "Publish agent and Cloudflare Access"). Never in `config.ini`.
 2. Edit `config.ini`: set `[sftp] user`, `[cms] url`. Leave the rest at the defaults for now.
 3. Run the check. The first time, add `--trust-host-key`:
 
@@ -149,6 +152,7 @@ For a one-off check you can also type it: `python -m publish_agent check --passw
 | `server host key not trusted yet` | Run `check --trust-host-key` once and compare the fingerprint with the runbook. |
 | `host key CHANGED` | **Stop.** Ask whoever manages the server whether it was reinstalled. Don't trust the new key until they confirm. |
 | `CMS refused the agent (401)` | Wrong secret in `agent-secret.txt`, or the PC clock is off by more than 5 minutes. |
+| `Cloudflare Access sent the agent to its sign-in page` / `403` | The Access service token is missing, wrong, expired, or not allowed by the `/api/v1/agent/` policy. |
 | `cannot reach the CMS` | PC offline, or the CMS is down. The agent keeps retrying (up to every 10 min). |
 | `disk quota is probably full` | `check` shows free space. Lower `keep_releases`, or delete old `crtdh-releases/releases/legacy-*` (after confirming you have its backup). |
 | `the site did not show the new build` | Already rolled back. Check that the build includes the `crtdh-build` meta tag and that no cache is serving old pages. |

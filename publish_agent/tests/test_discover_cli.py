@@ -191,3 +191,70 @@ def test_example_config_loads(tmp_path, monkeypatch):
     assert cfg.strategy == "auto" and cfg.keep_releases == 3
     assert cfg.state_dir == str(tmp_path / "state")
     del shutil
+
+
+# ---------------------------------------------------------------- Cloudflare Access service token (GO-LIVE blocker 2)
+ACCESS_ID = "0123456789abcdef0123456789abcdef.access"
+ACCESS_SECRET = "cf-access-test-secret-0123456789abcdef0123456789"
+
+
+def test_config_refuses_an_inline_access_secret(tmp_path, server, cms, client_key):
+    path = write_config(tmp_path, server, cms, client_key)
+    _add_to_cms_section(path, f"access_client_id = {ACCESS_ID}\naccess_client_secret = {ACCESS_SECRET}")
+    with pytest.raises(ConfigError, match="Do not store passwords or secrets"):
+        load(path)
+
+
+def _add_to_cms_section(path, line):
+    text = open(path).read().replace("[cms]\n", f"[cms]\n{line}\n")
+    with open(path, "w") as fh:
+        fh.write(text)
+
+
+def test_access_secret_from_file_or_env_and_missing_secret_is_an_error(tmp_path, server, cms, client_key, monkeypatch):
+    path = write_config(tmp_path, server, cms, client_key)
+    _add_to_cms_section(path, f"access_client_id = {ACCESS_ID}")
+    monkeypatch.delenv("CRTDH_CF_ACCESS_SECRET", raising=False)
+    with pytest.raises(ConfigError, match="CRTDH_CF_ACCESS_SECRET"):
+        load(path).access_headers()
+    monkeypatch.setenv("CRTDH_CF_ACCESS_SECRET", ACCESS_SECRET)
+    assert load(path).access_headers() == {"CF-Access-Client-Id": ACCESS_ID, "CF-Access-Client-Secret": ACCESS_SECRET}
+    (tmp_path / "access-secret.txt").write_text("from-file\n")
+    _add_to_cms_section(path, "access_secret_file = access-secret.txt")
+    assert load(path).access_headers()["CF-Access-Client-Secret"] == "from-file"
+    # no id configured: nothing is sent (installations without Access keep working)
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    assert load(write_config(plain, server, cms, client_key)).access_headers() == {}
+
+
+def test_access_headers_on_every_cms_request_and_never_logged(make_cfg, cms, server):
+    from publish_agent.cmsclient import CMSClient
+    from publish_agent.deploy import Publisher
+    from publish_agent.remote import Remote
+
+    from .conftest import SECRET
+    cms.require_access = {"CF-Access-Client-Id": ACCESS_ID, "CF-Access-Client-Secret": ACCESS_SECRET}
+    cfg = make_cfg()
+    pub = Publisher(cfg, cms=CMSClient(cfg.cms_url, SECRET, access_headers=dict(cms.require_access)),
+                    connect=lambda: Remote.connect(cfg), http_get=FakeWeb(server), sleep=lambda s: None)
+    cms.queue(S1, "p1", make_build(S1, "p1"))
+    assert pub.run_once() == "live"
+    methods = {(m, p.split("?")[0].rsplit("/", 1)[0]) for m, p, _ in cms.requests}
+    assert ("GET", "/api/v1/agent/next") in methods and ("POST", "/api/v1/agent/status") in methods
+    assert any("/builds/" in p for _, p, _ in cms.requests)
+    for _, _, headers in cms.requests:
+        headers = {k.lower(): v for k, v in headers.items()}
+        assert headers.get("cf-access-client-id") == ACCESS_ID and headers.get("cf-access-client-secret") == ACCESS_SECRET
+    with open(cfg.log_file, encoding="utf-8") as fh:
+        assert ACCESS_SECRET not in fh.read()
+
+
+def test_missing_access_token_gets_a_clear_message(make_cfg, cms):
+    from publish_agent.cmsclient import CMSClient, CMSError
+
+    from .conftest import SECRET
+    cms.require_access = {"CF-Access-Client-Id": ACCESS_ID, "CF-Access-Client-Secret": ACCESS_SECRET}
+    cfg = make_cfg()
+    with pytest.raises(CMSError, match="Cloudflare Access sent the agent to its sign-in page"):
+        CMSClient(cfg.cms_url, SECRET).next_job()

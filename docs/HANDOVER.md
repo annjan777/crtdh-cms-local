@@ -24,7 +24,7 @@ handover meeting. To deploy from nothing, use [GO-LIVE.md](GO-LIVE.md). The staf
    │ keys/crtdh_publish_ed25519         │  checks its SHA-256 + signature, uploads, switches, verifies
    │ agent-secret.txt                   │  <meta name="crtdh-build">, reports live/failed
    └────────────▲──────────────────────┘
-                │ HTTPS to cms.<domain>/api/v1/agent/  (Access bypass for the campus IP only)
+                │ HTTPS to cms.<domain>/api/v1/agent/  (Access: service token only)
                 │
    ═════════════╪═════════════ CLOUDFLARE (TLS, Access, WAF, Tunnel) ═══════════════════════════════
      cms.<domain>      Access (email code) ──┐
@@ -74,7 +74,7 @@ Key ideas:
 | Free space at go-live | |
 | PHP/Python on the server | |
 | HTTPS on crtdh.iitkgp.ac.in | |
-| Campus egress IP (Access bypass) | |
+| Access service token for the agent: name, expiry date | |
 | Lab server OS / path | `/srv/crtdh/app` (GO-LIVE default) |
 | Institute web rules (GIGW etc.) | |
 | `<domain>` and registrar | |
@@ -200,7 +200,7 @@ and `nginx:1.27-alpine` when they reach end of life. Pin `CLOUDFLARED_IMAGE` to 
 |---|---|---|---|
 | 1 | CMS shows "Waiting for upload machine (last seen …)" for a long time | campus PC off, asleep or off the network; task stopped | Switch it on and sign in; `python -m publish_agent status`; restart the scheduled task. The publish fails as "timeout" after `PUBLISH_STALE_UPLOAD_AFTER` (30 min); publish again |
 | 2 | Agent log: `CMS refused the agent (401)` | `agent-secret.txt` ≠ `AGENT_HMAC_SECRET`, or the PC clock is off by more than 5 min | fix the secret; sync the clock (Windows: Settings → Time → Sync now) |
-| 3 | Agent log: `cannot reach the CMS` or an HTML/302 response | lab server down, tunnel down, or the campus IP changed so the Access bypass no longer matches | `docker compose ps` on the server; re-check the campus IP (GO-LIVE 2.5) and update the Access bypass |
+| 3 | Agent log: `cannot reach the CMS` or an HTML/302 response | lab server down, tunnel down, or the agent's Access service token expired or was deleted ("Cloudflare Access sent the agent to its sign-in page") | `docker compose ps` on the server; check the token in Zero Trust → Service auth and renew it (deploy/README.md, "Publish agent and Cloudflare Access") |
 | 4 | Publish failed at a build step | build guard (missing list, or a collection shrank >30% without confirmation), a media file missing, frontend build error | The review screen shows the step and message. Fix the content, or confirm the shrink, and publish again. Build log: `/data/publish/builds/<publish id>/build.log` in the worker. The live site doesn't change |
 | 5 | Publish failed at `check_live`, or "the site did not show the new build" | Apache or a proxy cache served old pages; the marker is missing | The agent has already rolled back. Check `.htaccess` is honoured, wait, and publish again. Compare `curl -s https://crtdh.iitkgp.ac.in/ \| grep crtdh-build` with `status` |
 | 6 | Agent: `disk quota is probably full` | CIC quota | `check` shows free space; lower `keep_releases`; delete old `crtdh-releases/releases/legacy-*` only after confirming you have its backup |
@@ -251,7 +251,8 @@ Signed: outgoing ____________ incoming ____________ centre head ____________ dat
 
 ## 6. Known gaps at the time of writing (19 Nov 2026)
 
-- The publish agent sends no Cloudflare Access headers, so it needs the path bypass (GO-LIVE 2.5).
+- The publish agent's Cloudflare Access service token expires (1 year by default): renew it before then
+  (deploy/README.md, "Publish agent and Cloudflare Access").
 - `docs/connect-claude.md` and `docs/mcp.md` say "CMS → your profile → Disconnect Claude". The admin app has no
   such screen yet (the user menu has only Sign out / Sign out on all devices). The API
   `POST /api/v1/cms/claude-access/revoke/` exists.
