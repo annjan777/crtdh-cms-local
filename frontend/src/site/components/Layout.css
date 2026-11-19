@@ -312,25 +312,22 @@
 }
 
 /* --- Footer --- */
+/* Light sky blue, the same family as the header bar, so the page is framed
+   by matching top and bottom bands. All text pairs pass WCAG AA on #e0f2fe. */
 .site-footer {
   position: relative;
-  background: var(--color-ink-900);
-  color: var(--text-on-inverse-muted);
+  background: #e0f2fe;
+  color: var(--color-ink-700);
+  border-top: 1px solid rgba(15, 76, 117, 0.12);
   margin-top: var(--space-9);
-  overflow: hidden;
 }
 
 .site-footer__glow {
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-mesh);
-  opacity: 0.5;
-  pointer-events: none;
+  display: none;
 }
 
 .site-footer__grid {
   position: relative;
-  z-index: 1;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: var(--space-7);
@@ -338,7 +335,7 @@
 }
 
 .site-footer h4 {
-  color: var(--color-white);
+  color: var(--color-brand-900);
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -347,26 +344,40 @@
 
 .site-footer p {
   font-size: 0.92rem;
-  max-width: 40ch;
+  max-width: 44ch;
+  text-align: left;
 }
 
-.brand--footer .brand__mark {
-  display: block;
-  margin-bottom: var(--space-3);
+.brand--footer {
+  margin-bottom: var(--space-4);
 }
 
 .site-footer__col ul,
 .footer-contact {
   list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   font-size: 0.92rem;
 }
 
+.site-footer a {
+  color: var(--color-ink-800);
+  text-decoration: none;
+}
+
 .site-footer__col a:hover,
 .footer-contact a:hover {
-  color: var(--color-white);
+  color: var(--color-brand-900);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer__col a.active {
+  color: var(--color-brand-900);
+  font-weight: 600;
 }
 
 .footer-contact li {
@@ -378,11 +389,12 @@
 .footer-contact svg {
   flex: none;
   margin-top: 0.2rem;
-  color: var(--color-teal-400);
+  color: var(--color-brand-800);
 }
 
 .social-links {
   list-style: none;
+  padding: 0;
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-5);
@@ -394,15 +406,16 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  color: var(--color-white);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--color-brand-900);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 76, 117, 0.2);
   border-radius: 999px;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .social-links a:hover {
-  background: var(--brand-primary);
-  border-color: var(--brand-primary);
+  background: var(--color-white);
+  border-color: var(--color-brand-700);
   transform: translateY(-2px);
 }
 
@@ -413,10 +426,23 @@
 
 .site-footer__bottom {
   position: relative;
-  z-index: 1;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #cde8fb;
+  border-top: 1px solid rgba(15, 76, 117, 0.12);
   padding-block: var(--space-4);
   font-size: 0.82rem;
+  color: var(--color-ink-700);
+}
+
+.site-footer__bottom-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+}
+
+.site-footer__legal a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 800px) {

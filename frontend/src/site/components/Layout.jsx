@@ -7,6 +7,7 @@ import { PageDataProvider, usePageData } from '../api/data.jsx'
 import { PAGES } from '../registry.js'
 import { safeHref } from '../util.js'
 import { SiteDataContext } from './SiteDataContext'
+import SiteLink from '../link.jsx'
 import './Layout.css'
 
 // Fallback nav used only while nav-items are loading/unreachable, so the
@@ -75,7 +76,12 @@ function LayoutView({ children }) {
         <main id="main-content" className="app-main">
           <PageTransition location={location}>{children}</PageTransition>
         </main>
-        <SiteFooter siteSettings={siteSettings} navItems={navToRender} />
+        <SiteFooter
+          siteSettings={siteSettings}
+          navItems={navToRender}
+          publishedAt={data?.meta?.published_at}
+          privacyNotice={Boolean(data?.meta?.privacy_notice)}
+        />
       </div>
     </SiteDataContext.Provider>
   )
@@ -283,8 +289,9 @@ function isActivePath(pathname, route) {
   return pathname.startsWith(route)
 }
 
-function SiteFooter({ siteSettings, navItems }) {
-  const year = new Date().getFullYear()
+function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
+  // From the published snapshot, so the prerendered page and the browser agree.
+  const year = (publishedAt ? new Date(publishedAt) : new Date()).getUTCFullYear()
   const socialLinks = siteSettings
     ? [
         { key: 'facebook', label: 'Facebook', href: siteSettings.facebook_url, Icon: FacebookIcon },
@@ -300,7 +307,13 @@ function SiteFooter({ siteSettings, navItems }) {
       <div className="container site-footer__grid">
         <div className="site-footer__about">
           <span className="brand brand--footer">
-            <span className="brand__mark">CRTDH</span>
+            {siteSettings?.site_logo && (
+              <img className="brand__logo" src={siteSettings.site_logo} alt="" aria-hidden="true" />
+            )}
+            <span className="brand__text">
+              <span className="brand__mark">CRTDH</span>
+              <span className="brand__sub">IIT Kharagpur</span>
+            </span>
           </span>
           <p>
             Common Research and Technology Development Hub on Affordable Healthcare — an initiative sponsored by
@@ -365,8 +378,12 @@ function SiteFooter({ siteSettings, navItems }) {
       </div>
 
       <div className="site-footer__bottom">
-        <div className="container">
-          &copy; {year} CRTDH, IIT Kharagpur. All rights reserved.
+        <div className="container site-footer__bottom-row">
+          <span>&copy; {year} CRTDH, IIT Kharagpur. All rights reserved.</span>
+          <span className="site-footer__legal">
+            <SiteLink to={privacyNotice ? '/contact/#privacy' : '/contact/#contact-notice'}>How we use contact messages</SiteLink>
+            {publishedAt && <span> · Last updated {formatDate(publishedAt)}</span>}
+          </span>
         </div>
       </div>
     </footer>
@@ -384,6 +401,11 @@ function toRoute(url) {
   if (slug === 'home' || slug === '/' || slug === 'index.html' || slug === '#') return '/'
   slug = slug.replace(/^\//, '').replace(/\.html?$/, '')
   return `/${slug}`
+}
+
+function formatDate(iso) {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
 }
 
 /**

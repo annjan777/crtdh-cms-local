@@ -82,7 +82,17 @@ h4 {
 
 p {
   margin: 0 0 var(--space-4);
-  text-align: justify;
+  text-align: left;
+}
+
+/* Justified body text (the original site's look) only where lines are long
+   enough not to open wide gaps; hyphenation keeps the spacing even. */
+@media (min-width: 768px) {
+  p {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
 }
 
 :focus-visible {
