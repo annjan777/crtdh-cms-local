@@ -9,9 +9,10 @@ from django.conf import settings
 from django.db import models, transaction
 
 from . import audit, registry
+from .content import stale_as_409
 from .errors import CMSError
 from .models import AuditEntry, Snapshot
-from .snapshot import _MediaRewriter, collect, queryset_for
+from .snapshot import _MediaRewriter, collect, queryset_for, safe_media_path
 
 LABEL_FIELDS = ("title", "name", "heading", "label", "text", "caption", "task", "year")
 IGNORED = {"id", "version"}
@@ -158,6 +159,7 @@ def pending_changes(author=None, session_id=None):
             qs = qs.filter(connector_session=session_id)
         scope = {(r, p) for r, p in qs.values_list("resource", "pk_value")}
 
+    history = _audit_history(items, since)
     page_of = {s["id"]: page_id for page_id, s in registry.all_sections()}
     top_label = {s["id"]: s["label"] for _p, s in registry.all_sections()}
     grouped = {}
@@ -170,7 +172,7 @@ def pending_changes(author=None, session_id=None):
         if scope is not None and (item["resource"], str(item["pk"])) not in scope:
             continue
         fields = [f["name"] for f in item["fields"]] if registry.RESOURCES[item["resource"]].kind == "singleton" else None
-        entry = audit.last_entry(item["resource"], item["pk"], fields=fields, since=since)
+        entry = _last(history.get((item["resource"], str(item["pk"])), []), fields)
         item.update(author=(entry.actor_name or None) if entry else None, channel=entry.channel if entry else None,
                     at=entry.at if entry else None, connector_session=entry.connector_session if entry else None,
                     session_id=entry.connector_session if entry else None)
@@ -195,6 +197,37 @@ def open_review_request():
     return {"id": rr.id, "by": by, "at": rr.created_at, "note": rr.note}
 
 
+def _audit_history(items, since):
+    """{(resource, pk): [entries newest first]} for all changed rows, in one query."""
+    if not items:
+        return {}
+    from django.db.models import Q
+
+    cond = Q()
+    by_resource = {}
+    for item in items:
+        by_resource.setdefault(item["resource"], set()).add(str(item["pk"]))
+    for resource, pks in by_resource.items():
+        cond |= Q(resource=resource, pk_value__in=pks)
+    qs = AuditEntry.objects.filter(cond)
+    if since:
+        qs = qs.filter(at__gt=since)
+    out = {}
+    for e in qs.order_by("-at", "-id"):
+        out.setdefault((e.resource, e.pk_value), []).append(e)
+    return out
+
+
+def _last(entries, fields=None):
+    for e in entries:
+        if not fields:
+            return e
+        b, a = e.before or {}, e.after or {}
+        if any(b.get(n) != a.get(n) for n in fields):
+            return e
+    return None
+
+
 def pages_with_changes():
     return {p["page"] for p in pending_changes()["pages"]}
 
@@ -215,7 +248,10 @@ def _apply_row(obj, row, media_map, only=None):
             current = getattr(obj, name)
             if not value and current and not current.storage.exists(current.name):
                 continue  # missing on disk: published as "no file" already; keep the reference
-            setattr(obj, name, (media_map.get(value, {}) or {}).get("source", "") if value else "")
+            source = (media_map.get(value, {}) or {}).get("source", "") if value else ""
+            if source and safe_media_path(source) is None:
+                raise CMSError("CMS_VALIDATION", "A snapshot media entry points outside the media folder.", field=name)
+            setattr(obj, name, source)
         else:
             setattr(obj, name, field.to_python(value) if value is not None else None)
     if hasattr(obj, "is_published") and (only is None or "is_published" in only):
@@ -235,7 +271,7 @@ def _restore_row(resource, row, data, ctx, action, item_id_value, done=None):
                     raise CMSError("CMS_VALIDATION", f"Cannot restore {item_id_value}: its {field.name} no longer exists.")
                 _restore_row(parent_res, parent_row, data, ctx, action,
                              registry.item_id(parent_res, parent_row["id"], parent_row, _lookup_factory(data)), done)
-    obj = model.objects.filter(pk=row["id"]).first()
+    obj = model.objects.select_for_update().filter(pk=row["id"]).first()  # caller holds the transaction
     before = audit.row_values(obj)
     if obj is None:
         obj = model(pk=row["id"])
@@ -263,10 +299,11 @@ def discard_item(item_id_value, *, ctx):
     res = registry.RESOURCES[resource]
     model = res.model_class
     section = registry.section_view(section_id, resource)
-    with transaction.atomic():
+    with stale_as_409(resource), transaction.atomic():
         if res.kind == "singleton":
             prev_row = (prev.get("singletons") or {}).get(resource) or {}
-            obj = model.load()
+            model.load()
+            obj = model.objects.select_for_update().get(pk=1)
             before = audit.row_values(obj)
             _apply_row(obj, prev_row, prev.get("media") or {}, only=set(_section_field_order(section)))
             if audit.row_values(obj) == before:
@@ -276,7 +313,7 @@ def discard_item(item_id_value, *, ctx):
             return True
         prev_row = _rows_by_id((prev.get("collections") or {}).get(resource)).get(pk)
         if prev_row is None:
-            obj = model.objects.filter(pk=pk).first()
+            obj = model.objects.select_for_update().filter(pk=pk).first()
             if obj is None:
                 raise CMSError("CMS_NOT_FOUND", f"{item_id_value} does not exist.")
             before = audit.row_values(obj)
@@ -311,14 +348,15 @@ def restore_snapshot(snapshot, *, ctx):
     data = snapshot.data
     count = 0
     lookup = _lookup_factory(data)
-    with transaction.atomic():
+    with stale_as_409(), transaction.atomic():
         for resource, res in registry.RESOURCES.items():
             model = res.model_class
             if res.kind == "singleton":
                 row = (data.get("singletons") or {}).get(resource)
                 if not row:
                     continue
-                obj = model.load()
+                model.load()
+                obj = model.objects.select_for_update().get(pk=1)
                 before = audit.row_values(obj)
                 _apply_row(obj, row, data.get("media") or {})
                 if audit.row_values(obj) != before:
@@ -333,7 +371,7 @@ def restore_snapshot(snapshot, *, ctx):
                     count += 1
             keep = {r["id"] for r in rows}
             if res.has_visibility:
-                for obj in model.objects.filter(is_published=True).exclude(pk__in=keep):
+                for obj in model.objects.select_for_update().filter(is_published=True).exclude(pk__in=keep):
                     before = audit.row_values(obj)
                     obj.is_published = False
                     obj.save()

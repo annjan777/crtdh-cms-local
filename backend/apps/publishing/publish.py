@@ -12,6 +12,7 @@ import io
 import json
 import logging
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -32,6 +33,7 @@ from .snapshot import (
     avif_supported,
     build_snapshot,
     canonical_json,
+    safe_media_path,
 )
 
 log = logging.getLogger(__name__)
@@ -89,11 +91,17 @@ def start_publish(user, confirm_shrink=False):
 
 
 def cancel_publish(p):
-    if p.status not in (Publish.QUEUED, Publish.READY):
-        raise CMSError("CMS_VALIDATION", f"A publish that is {p.status} cannot be cancelled.")
-    Publish.objects.filter(pk=p.pk, status=p.status).update(status=Publish.CANCELLED, message="Cancelled; the live site is unchanged.",
-                                                            updated_at=timezone.now())
+    """Cancel a publish the upload machine has not fetched yet (queued, or built and never downloaded)."""
+    if p.status not in (Publish.QUEUED, Publish.READY) or p.fetched_at is not None:
+        what = "already being uploaded" if p.fetched_at is not None else p.status
+        raise CMSError("CMS_VALIDATION", f"This publish is {what} and cannot be cancelled.",
+                       fix="Wait for it to finish; publish again afterwards if needed.")
+    done = Publish.objects.filter(pk=p.pk, status=p.status, fetched_at__isnull=True).update(
+        status=Publish.CANCELLED, message="Cancelled; the live site is unchanged.", updated_at=timezone.now())
     p.refresh_from_db()
+    if not done:
+        raise CMSError("CMS_VALIDATION", "The upload machine picked this publish up just now; it can no longer be "
+                       "cancelled.", fix="Wait for it to finish.")
     return p
 
 
@@ -161,7 +169,7 @@ def build(p):
     uploaded = (Snapshot.objects.filter(publishes__status=Publish.LIVE).exclude(pk=snap.pk)
                 .order_by("-published_at", "-id").first())
     prev_files = set(_media_files(uploaded.data)) if uploaded else set()
-    tar_path = publish_root() / "tarballs" / f"crtdh-site-{data['snapshot_id']}.tar.gz"
+    tar_path = publish_root() / "tarballs" / str(p.id) / f"crtdh-site-{data['snapshot_id']}.tar.gz"
     sha = pack_tarball(tar_path, site_dir=out_dir, media_dir=media_store(), media_all=files,
                        media_new=[f for f in files if f not in prev_files], snapshot_id=data["snapshot_id"],
                        publish_id=str(p.id), mtime=_epoch(data["published_at"]))
@@ -197,10 +205,13 @@ def materialize_media(data, store):
     """Copy originals into the content-addressed store and render missing variants. Returns all file names."""
     from PIL import Image
 
-    media_root = Path(settings.MEDIA_ROOT)
     for key, entry in (data.get("media") or {}).items():
-        src = media_root / entry["source"]
+        src = safe_media_path(entry.get("source"))
+        if src is None:
+            raise CMSError("CMS_BUILD_GUARD", "A media entry points outside the media folder; publish again.")
         name = key.rsplit("/", 1)[1]
+        if not re.fullmatch(r"[0-9a-f]{16}\.[a-z0-9]+", name):
+            raise CMSError("CMS_BUILD_GUARD", "A media entry has an unexpected name; publish again.")
         dst = store / name
         if not dst.exists():
             if not src.is_file():

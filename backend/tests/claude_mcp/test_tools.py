@@ -181,7 +181,7 @@ async def test_update_section_singleton_and_richtext(asgi_app, token):
     from apps.innovations.models import Innovation
     assert (await sync_to_async(HomePage.load)()).objective_text == "New objective"
     body = (await sync_to_async(Innovation.objects.get)(pk=pk)).body
-    assert body == ('<h3>What it does</h3><p><strong>Screens &lt;eyes&gt;</strong><a href="https://example.org"> more</a>'
+    assert body == ('<h3>What it does</h3><p><strong>Screens &lt;eyes&gt;</strong><a href="https://example.org" rel="noopener"> more</a>'
                     '</p><ul><li>fast</li><li><em>cheap</em></li></ul>')
 
 

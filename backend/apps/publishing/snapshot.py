@@ -77,16 +77,59 @@ def media_entry(source, sha, width, height):
     return f"/_media/{h16}{ext}", {"source": source, "width": width, "height": height, "variants": variants}
 
 
+def stored_file_names():
+    """Every name currently stored in a FileField/ImageField of a content model (one query per model)."""
+    from django.db.models import FileField
+
+    names = set()
+    seen = set()
+    for res in registry.RESOURCES.values():
+        model = res.model_class
+        if model in seen:
+            continue
+        seen.add(model)
+        fields = [f.attname for f in model._meta.concrete_fields if isinstance(f, FileField)]
+        if fields:
+            for row in model.objects.values_list(*fields):
+                names.update(v for v in row if v)
+    return names
+
+
+def safe_media_path(source):
+    """MEDIA_ROOT/<source> if `source` is a plain relative name that stays inside MEDIA_ROOT, else None."""
+    if not isinstance(source, str) or not source or "\\" in source or "\x00" in source or "%" in source:
+        return None
+    parts = source.split("/")
+    if source.startswith("/") or any(p in ("", ".", "..") for p in parts):
+        return None
+    root = Path(settings.MEDIA_ROOT).resolve()
+    path = (root / source).resolve()
+    if not path.is_relative_to(root) or path == root:
+        return None
+    return path
+
+
 class _MediaRewriter:
-    def __init__(self, hashed=True):
+    """Rewrites file-field URLs to content-hashed /_media/ paths. Only values naming a file that a content model's
+    FileField/ImageField actually stores are touched (free-text links such as nav URLs never are), and the file
+    must resolve inside MEDIA_ROOT."""
+
+    def __init__(self, hashed=True, stored=None):
         self.hashed = hashed
         self.media = {}
         self.warnings = []
         self.prefix = settings.MEDIA_URL if settings.MEDIA_URL.startswith("/") else "/" + settings.MEDIA_URL
+        self.stored = stored if stored is not None else stored_file_names()
 
     def source_of(self, value):
-        if isinstance(value, str) and value.startswith(self.prefix) and len(value) > len(self.prefix):
-            return value[len(self.prefix):]
+        if not (isinstance(value, str) and value.startswith(self.prefix) and len(value) > len(self.prefix)):
+            return None
+        from urllib.parse import unquote
+
+        raw = value[len(self.prefix):]
+        for candidate in (raw, unquote(raw)):  # FileField.url percent-encodes spaces etc.
+            if candidate in self.stored and safe_media_path(candidate) is not None:
+                return candidate
         return None
 
     def __call__(self, value):
@@ -97,8 +140,8 @@ class _MediaRewriter:
         source = self.source_of(value)
         if source is None or not self.hashed:
             return value
-        path = Path(settings.MEDIA_ROOT) / source
-        if not path.is_file():
+        path = safe_media_path(source)
+        if path is None or not path.is_file():
             self.warnings.append(f"missing media file {source}")
             return None  # same as an empty file field, so the public page simply omits the image
         sha, w, h = _file_info(path)
@@ -133,6 +176,9 @@ def queryset_for(resource, include_hidden=False):
             if any(f.name == "is_published" for f in parent_model._meta.concrete_fields):
                 qs = qs.filter(**{f"{parent}__is_published": True})
     order = ["order", "id"] if any(f.name == "order" for f in model._meta.concrete_fields) else ["id"]
+    fks = [f.name for f in model._meta.concrete_fields if f.many_to_one]
+    if fks:
+        qs = qs.select_related(*fks)  # serializers read parent names (e.g. a member's category); no N+1
     return qs.prefetch_related(*_nested_prefetches(res.serializer_class, include_hidden)).order_by(*order)
 
 

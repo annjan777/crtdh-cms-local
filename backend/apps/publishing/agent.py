@@ -97,9 +97,13 @@ def next_build(request):
 @agent_view
 @require_GET
 def download_build(request, publish_id):
-    p = Publish.objects.filter(pk=publish_id, status__in=[Publish.READY, Publish.UPLOADING]).first()
-    if p is None or not p.tarball_path:
-        return _err("CMS_NOT_FOUND", "No downloadable build with that id.")
+    with transaction.atomic():
+        p = (Publish.objects.select_for_update().filter(pk=publish_id, status__in=[Publish.READY, Publish.UPLOADING])
+             .select_related("snapshot").first())
+        if p is None or not p.tarball_path:
+            return _err("CMS_NOT_FOUND", "No downloadable build with that id.")
+        if p.fetched_at is None:
+            Publish.objects.filter(pk=p.pk).update(fetched_at=timezone.now())
     try:
         fh = open(p.tarball_path, "rb")
     except OSError:
@@ -113,6 +117,8 @@ ALLOWED = {
     Publish.UPLOADING: {Publish.UPLOADING, Publish.LIVE, Publish.FAILED},
     Publish.LIVE: {Publish.LIVE},
     Publish.FAILED: {Publish.FAILED},
+    # A cancel can race an agent that already holds the tarball: record what really happened on the server.
+    Publish.CANCELLED: {Publish.UPLOADING, Publish.LIVE, Publish.FAILED},
 }
 
 
