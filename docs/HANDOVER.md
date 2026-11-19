@@ -253,12 +253,6 @@ Signed: outgoing ____________ incoming ____________ centre head ____________ dat
 
 - The publish agent's Cloudflare Access service token expires (1 year by default): renew it before then
   (deploy/README.md, "Publish agent and Cloudflare Access").
-- `docs/connect-claude.md` and `docs/mcp.md` say "CMS → your profile → Disconnect Claude". The admin app has no
-  such screen yet (the user menu has only Sign out / Sign out on all devices). The API
-  `POST /api/v1/cms/claude-access/revoke/` exists.
-- With the real API, `GET /api/v1/cms/pages/` returns the site-wide sections under `globals`, not as a page with
-  id `site`. So the admin's **Header & footer** nav entry (`AppShell.jsx`, which looks for `id === 'site'`) only
-  appears with the mock. Staff can still reach those sections by clicking the header or footer on the canvas.
 - `docs/privacy-notice.md` calls the retention job the `purge` service; in compose it is `housekeeping`.
   `deploy/.env.example` calls the agent config `config.toml`; it is `config.ini`.
 - No uptime monitor or `make dev` in the repo. No sandbox page for first Claude tries (PLAN WS4.8).

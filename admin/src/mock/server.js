@@ -82,6 +82,8 @@ function buildSeed() {
   const published = clone(rows);
   const db = {
     users: clone(USERS),
+    // Live Claude connections by user id (GET /cms/claude-access/; revoke clears them).
+    claude: { 1: [{ client: 'Claude', connected_at: '2026-11-18T09:15:00Z' }], 2: [{ client: 'Claude', connected_at: '2026-11-17T14:02:00Z' }] },
     rows,
     published,
     meta: {},
@@ -702,6 +704,27 @@ async function route(method, path, body) {
   }
 
   // ---- contact messages (publisher/admin; stored HTML-escaped)
+  // Claude connector access (backend apps/oauth ClaudeAccessView / ClaudeAccessRevokeView).
+  if (path === '/cms/claude-access/' && method === 'GET') {
+    db.claude ||= {};
+    const own = db.claude[user.id] || [];
+    const out = { connected: own.length > 0, connections: own };
+    if (can(user, 'admin'))
+      out.users = db.users
+        .filter((u) => (db.claude[u.id] || []).length)
+        .map((u) => ({ user_id: u.id, username: u.username, name: u.name, connections: db.claude[u.id] }));
+    return json(200, out);
+  }
+  if (path === '/cms/claude-access/revoke/' && method === 'POST') {
+    db.claude ||= {};
+    const target = body.data?.user_id ?? user.id;
+    if (target !== user.id && !can(user, 'admin'))
+      return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only an Admin can disconnect Claude for another person.', 'Ask an Admin, or omit user_id to disconnect your own access.');
+    const revoked = (db.claude[target] || []).length * 2;
+    delete db.claude[target];
+    save();
+    return json(200, { revoked, user_id: target });
+  }
   if (path.startsWith('/contact-messages/')) {
     if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only Publishers and Admins can read messages.', 'Ask a Publisher.');
     db.messages ||= clone(SEED_MESSAGES);

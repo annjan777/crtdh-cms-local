@@ -327,6 +327,12 @@ a {
   padding: 8px 10px;
 }
 .menu-item {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
   width: 100%;
   text-align: left;
   min-height: 44px;
@@ -2027,6 +2033,18 @@ tr.is-inactive td {
 .facts dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+.plain-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 14px;
+}
+.plain-list li + li {
+  margin-top: 4px;
+}
+.page-main section + section {
+  margin-top: 32px;
 }
 .message-body {
   white-space: pre-wrap;

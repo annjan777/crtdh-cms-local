@@ -173,17 +173,32 @@ def _error(code, message, fix, http_status):
     )
 
 
+def _connection_rows(tokens):
+    return [{"client": rt.application.name, "connected_at": rt.created.isoformat()} for rt in tokens]
+
+
 class ClaudeAccessView(APIView):
-    """GET /api/v1/cms/claude-access/ — the signed-in user's live Claude connections."""
+    """GET /api/v1/cms/claude-access/ — the signed-in user's live Claude connections.
+    Admins also get `users`: everyone with a live connection ({user_id, username, name, connections}), for the
+    admin's Claude access screen (revoke with POST .../revoke/ {"user_id": n})."""
 
     permission_classes = [IsEditor]
 
     def get(self, request):
-        rows = [
-            {"client": rt.application.name, "connected_at": rt.created.isoformat()}
-            for rt in active_connections(request.user)
-        ]
-        return Response({"connected": bool(rows), "connections": rows})
+        rows = _connection_rows(active_connections(request.user))
+        body = {"connected": bool(rows), "connections": rows}
+        if has_role(request.user, ADMIN):
+            from oauth2_provider.models import get_refresh_token_model
+
+            by_user = {}
+            live = (get_refresh_token_model().objects.filter(revoked__isnull=True, user__isnull=False)
+                    .select_related("application", "user").order_by("user__username", "-created"))
+            for rt in live:
+                by_user.setdefault(rt.user, []).append(rt)
+            body["users"] = [{"user_id": u.pk, "username": u.get_username(),
+                              "name": u.get_full_name() or u.get_username(), "connections": _connection_rows(rts)}
+                             for u, rts in by_user.items()]
+        return Response(body)
 
 
 class ClaudeAccessRevokeView(APIView):

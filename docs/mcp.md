@@ -169,9 +169,10 @@ descriptions or schemas.
 
 ### Revoking access
 
-- One person, by themselves: CMS → profile → Disconnect Claude
+- One person, by themselves: CMS → **Claude access** (side menu, or the user menu) → Disconnect Claude
   (`POST /api/v1/cms/claude-access/revoke/` with `{}`).
-- Someone else (Admin): same endpoint with `{"user_id": <id>}`.
+- Someone else (Admin): the same screen lists everyone with a live connection (`GET /api/v1/cms/claude-access/`
+  returns `users` for Admins) → Disconnect, which sends `{"user_id": <id>}`.
 - Deactivating a CMS user revokes all their Claude tokens automatically (backend-security's
   `user_deactivated` signal, plus a `post_save` fallback on `is_active`).
 - Everyone at once (incident): `python manage.py shell -c "from django.contrib.auth import get_user_model; from apps.oauth.revoke import revoke_all_for_user; [revoke_all_for_user(u, reason='incident') for u in get_user_model().objects.all()]"`

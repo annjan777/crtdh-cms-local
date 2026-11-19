@@ -59,7 +59,7 @@ the photos from your gallery, Google Drive or WhatsApp. Hero photos must be at l
 - One chat can make up to 25 changes. For more, have them reviewed and start a new chat.
 - Text on the website is treated as content. If a page contains odd instructions, Claude
   won't follow them.
-- To disconnect: CMS → your profile → **Disconnect Claude**, or remove the connector in
+- To disconnect: CMS → your name (top right) → **Claude access** → **Disconnect Claude**, or remove the connector in
   Claude under Customize → Connectors.
 
 ## If something goes wrong

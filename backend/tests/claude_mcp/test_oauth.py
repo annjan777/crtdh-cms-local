@@ -552,3 +552,21 @@ def test_consent_post_with_origin_null_is_what_csrf_refuses(editor, claude_app):
     # Documents why the referrer policy matters: this is what Chrome sent under no-referrer.
     client, _, _, form = _csrf_consent_page(editor, claude_app)
     assert client.post("/oauth/authorize/", form, secure=True, HTTP_ORIGIN="null").status_code == 403
+
+
+def test_admin_lists_everyone_with_a_live_claude_connection(editor, claude_app):
+    other = make_user("other_editor", first_name="Ola", last_name="Other")
+    issue_token(other, claude_app)
+    _tokens(editor, claude_app)
+    api = APIClient()
+    api.force_authenticate(editor)
+    assert "users" not in api.get("/api/v1/cms/claude-access/").json()  # editors see only their own
+    admin = make_user("boss2", role="admin")
+    api.force_authenticate(admin)
+    body = api.get("/api/v1/cms/claude-access/").json()
+    assert body["connected"] is False and body["connections"] == []
+    names = {u["username"]: u for u in body["users"]}
+    assert set(names) == {editor.username}  # issue_token() alone makes no refresh token = no connection listed
+    assert names[editor.username]["user_id"] == editor.pk and names[editor.username]["connections"][0]["client"]
+    api.post("/api/v1/cms/claude-access/revoke/", {"user_id": editor.pk}, format="json")
+    assert api.get("/api/v1/cms/claude-access/").json()["users"] == []

@@ -11,6 +11,7 @@ const SCREENS = [
   ['review', 'priya', '/review'],
   ['history', 'priya', '/history'],
   ['users', 'sita', '/users'],
+  ['claude access', 'sita', '/claude-access'],
   ['shot list', 'priya', '/shot-list'],
 ];
 
