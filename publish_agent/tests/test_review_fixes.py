@@ -13,7 +13,7 @@ from publish_agent.cmsclient import Job, build_signature
 from publish_agent.config import ConfigError, validate
 
 from .conftest import SECRET
-from .fakes import make_build, media_name
+from .fakes import F1, F2, S1, S2, S3, make_build, media_name
 
 
 def live(pub, path=""):
@@ -52,37 +52,37 @@ def _hook_rename_of_web_root(monkeypatch, action):
 # ------------------------------------------------------------------ HIGH 1: swap window
 def test_swap_connection_drop_inside_window_recovers_same_run(make_pub, cms, server, monkeypatch):
     pub = make_pub(strategy="swap")
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
 
     def drop(sftp):
         sftp.get_channel().get_transport().close()
         raise EOFError("connection lost")
     fired = _hook_rename_of_web_root(monkeypatch, drop)
-    assert publish(cms, pub, "s2", "p2") == "live"
+    assert publish(cms, pub, S2, "p2") == "live"
     assert fired["n"] == 1
-    assert "home s2" in live(pub)
+    assert f"home {S2}" in live(pub)
     assert cms.last("p2")["status"] == "live"
     state = json.load(open(server.home_path("crtdh-releases", "state.json")))
-    assert state["current"] == "s2" and "switching" not in state
+    assert state["current"] == F2 and "switching" not in state
 
 
 def test_swap_pc_crash_inside_window_next_run_restores_site(make_pub, cms, server, monkeypatch):
     pub = make_pub(strategy="swap")
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
 
     def crash(_sftp):
         raise SystemExit("power cut")
     _hook_rename_of_web_root(monkeypatch, crash)
-    cms.queue("s2", "p2", make_build("s2", "p2"))
+    cms.queue(S2, "p2", make_build(S2, "p2"))
     with pytest.raises(SystemExit):
         pub.run_once()
     assert not os.path.exists(server.home_path("public_html"))  # site is down right now
     monkeypatch.undo()
     st = pub.status()  # any command that connects repairs it first
-    assert st["current"] == "s1"
-    assert "home s1" in live(pub)
+    assert st["current"] == F1
+    assert f"home {S1}" in live(pub)
     assert pub.run_once() == "live"  # and the pending publish then completes
-    assert "home s2" in live(pub)
+    assert f"home {S2}" in live(pub)
 
 
 def test_symlink_crash_during_takeover_restores_link(make_pub, cms, server, monkeypatch):
@@ -96,13 +96,13 @@ def test_symlink_crash_during_takeover_restores_link(make_pub, cms, server, monk
             raise SystemExit("power cut")
         return real_symlink(self, src, dst)
     monkeypatch.setattr(paramiko.SFTPClient, "symlink", symlink)
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     with pytest.raises(SystemExit):
         pub.run_once()
     assert not os.path.lexists(server.home_path("public_html"))
     monkeypatch.undo()
     assert pub.run_once() == "live"
-    assert "home s1" in live(pub)
+    assert f"home {S1}" in live(pub)
     assert pub.rollback().startswith("legacy-")
     assert "old site" in live(pub)
 
@@ -115,7 +115,7 @@ def test_symlink_crash_during_takeover_restores_link(make_pub, cms, server, monk
 def test_unsafe_names_rejected(make_pub, cms, server, bad):
     pub = make_pub()
     data = raw_tar([("manifest.json", b"{}"), ("site/index.html", b"x"), (bad, b"evil")])
-    cms.queue("s1", "p1", data)
+    cms.queue(S1, "p1", data)
     assert pub.run_once() == "failed"
     msg = cms.last("p1")["message"]
     assert "unsafe path" in msg or "reserved" in msg
@@ -140,7 +140,7 @@ def test_symlink_in_work_dir_cannot_escape(tmp_path):
     b.os.makedirs = makedirs
     try:
         with pytest.raises(BuildRejected, match="unsafe path"):
-            open_bundle(str(tar_path), str(dest), "s1", "p1")
+            open_bundle(str(tar_path), str(dest), S1, "p1")
     finally:
         b.os.makedirs = real
 
@@ -149,7 +149,7 @@ def test_symlink_in_work_dir_cannot_escape(tmp_path):
 def test_file_then_dir_with_same_name_reported_failed(make_pub, cms, server):
     pub = make_pub()
     data = raw_tar([("manifest.json", b"{}"), ("site/index.html", b"x"), ("site/x", b"file"), ("site/x/y", b"z")])
-    cms.queue("s1", "p1", data)
+    cms.queue(S1, "p1", data)
     assert pub.run_once() == "failed"
     assert "cannot be unpacked" in cms.last("p1")["message"]
     assert not cms.jobs  # the queue is not blocked
@@ -157,7 +157,7 @@ def test_file_then_dir_with_same_name_reported_failed(make_pub, cms, server):
 
 def test_non_hex_signature_reported_failed(make_pub, cms, server):
     pub = make_pub()
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     cms.jobs[0]["signature"] = "\u00e9" * 64
     assert pub.run_once() == "failed"
     st = cms.last("p1")
@@ -170,7 +170,7 @@ def test_unexpected_exception_reported_failed(make_pub, cms, server, monkeypatch
     def boom(*a, **k):
         raise RuntimeError("local disk exploded")
     monkeypatch.setattr(pub, "publish_bundle", boom)
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     assert pub.run_once() == "failed"
     st = cms.last("p1")
     assert st["status"] == "failed" and "RuntimeError" in st["message"]
@@ -195,20 +195,20 @@ def test_cms_url_must_be_https(make_cfg, url, ok):
 @pytest.mark.parametrize("wipe_local", [False, True])
 def test_replayed_old_job_is_refused(make_pub, cms, server, wipe_local):
     pub = make_pub()
-    old = make_build("s1", "p1")
-    cms.queue("s1", "p1", old)
+    old = make_build(S1, "p1")
+    cms.queue(S1, "p1", old)
     assert pub.run_once() == "live"
-    assert publish(cms, pub, "s2", "p2") == "live"
+    assert publish(cms, pub, S2, "p2") == "live"
     if wipe_local:  # a new PC: the server-side record still refuses it
         os.remove(pub.cfg.local_state_file)
-    cms.queue("s1", "p1", old)
+    cms.queue(S1, "p1", old)
     assert pub.run_once() == "failed"
     assert "already published" in cms.last("p1")["message"]
-    assert "home s2" in live(pub)
+    assert f"home {S2}" in live(pub)
     # same old snapshot under a new publish id is refused too
-    cms.queue("s1", "p9", make_build("s1", "p9"))
+    cms.queue(S1, "p9", make_build(S1, "p9"))
     assert pub.run_once() == "failed"
-    assert "home s2" in live(pub)
+    assert f"home {S2}" in live(pub)
 
 
 # ------------------------------------------------------------------ MED: symlinked web root takeover
@@ -219,7 +219,7 @@ def test_symlinked_web_root_is_recorded_not_moved(make_pub, cms, server):
     shutil.move(wr, server.home_path("sites", "crtdh"))
     os.symlink("sites/crtdh", wr)
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     assert os.path.isdir(server.home_path("sites", "crtdh"))  # untouched
     state = json.load(open(server.home_path("crtdh-releases", "state.json")))
     legacy = [r for r in state["history"] if r.startswith("legacy-")][0]
@@ -235,15 +235,15 @@ def test_htaccess_keeps_rules_outside_block(make_pub, cms, server):
     with open(ht, "w") as fh:
         fh.write("# owner rules\nErrorDocument 404 /404.html\nHeader set X-Test yes\n")
     pub = make_pub(strategy="htaccess")
-    assert publish(cms, pub, "s1", "p1") == "live"
-    assert publish(cms, pub, "s2", "p2") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
+    assert publish(cms, pub, S2, "p2") == "live"
     text = open(ht).read()
-    assert text.count("# BEGIN crtdh-publish-agent") == 1 and "# Live release: s2." in text
+    assert text.count("# BEGIN crtdh-publish-agent") == 1 and f"# Live release: {F2}." in text
     assert "ErrorDocument 404 /404.html" in text and "Header set X-Test yes" in text
     # owner adds a rule later; it survives the next publish and a rollback to the pre-agent site
     with open(ht, "a") as fh:
         fh.write("Header set X-Later yes\n")
-    assert publish(cms, pub, "s3", "p3") == "live"
+    assert publish(cms, pub, S3, "p3") == "live"
     assert "X-Later" in open(ht).read()
     while not pub.rollback().startswith("legacy-"):
         pass
@@ -269,7 +269,7 @@ def test_cross_origin_redirect_refused(make_pub, cms, server):
     threading.Thread(target=other.serve_forever, daemon=True).start()
     try:
         pub = make_pub()
-        cms.queue("s1", "p1", make_build("s1", "p1"))
+        cms.queue(S1, "p1", make_build(S1, "p1"))
         cms.redirects["/api/v1/agent/builds/p1.tar.gz"] = f"http://127.0.0.1:{other.server_address[1]}/x"
         assert pub.run_once() == "failed"
         assert "another host" in cms.last("p1")["message"]
@@ -280,10 +280,10 @@ def test_cross_origin_redirect_refused(make_pub, cms, server):
 
 def test_already_live_but_check_fails_is_not_reported_live(make_pub, cms, server):
     pub = make_pub()
-    data = make_build("s1", "p1")
-    cms.queue("s1", "p1", data)
+    data = make_build(S1, "p1")
+    cms.queue(S1, "p1", data)
     assert pub.run_once() == "live"
-    cms.queue("s1", "p1", data)
+    cms.queue(S1, "p1", data)
     pub.web.override = lambda url: "<html>cached old page</html>"
     assert pub.run_once() == "failed"
     st = cms.last("p1")
@@ -296,24 +296,24 @@ def test_media_page_is_site_content_and_hashes_go_to_underscore_media(make_pub, 
     img = b"P" * 64
     m = media_name(img, "avif")
     variant = m.replace(".avif", "-800.webp")
-    pages = {"media/index.html": '<meta name="crtdh-build" content="s1">gallery'}
-    assert publish(cms, pub, "s1", "p1", pages=pages, media={m: img, variant: b"V"}) == "live"
+    pages = {"media/index.html": f'<meta name="crtdh-build" content="{S1}">gallery'}
+    assert publish(cms, pub, S1, "p1", pages=pages, media={m: img, variant: b"V"}) == "live"
     assert "gallery" in live(pub, "media")
     root = server.home_path("public_html")
     assert os.path.exists(os.path.join(root, "_media", variant))
     mdir = server.home_path("crtdh-releases", "_media")
     with open(os.path.join(mdir, "0123456789abcdef.txt.bak"), "w") as fh:
         fh.write("does not match the GC pattern")
-    pages2 = {"media/index.html": '<meta name="crtdh-build" content="s2">gallery 2'}
-    assert publish(cms, pub, "s2", "p2", pages=pages2, media={}, media_all=[]) == "live"
-    assert publish(cms, pub, "s3", "p3", pages={"media/index.html": "gallery 3"}, media={}, media_all=[]) == "live"
+    pages2 = {"media/index.html": f'<meta name="crtdh-build" content="{S2}">gallery 2'}
+    assert publish(cms, pub, S2, "p2", pages=pages2, media={}, media_all=[]) == "live"
+    assert publish(cms, pub, S3, "p3", pages={"media/index.html": "gallery 3"}, media={}, media_all=[]) == "live"
     assert sorted(os.listdir(mdir)) == ["0123456789abcdef.txt.bak", "index.html"]  # hashes GC'd, other names kept
     assert "gallery 3" in live(pub, "media")
 
 
 def test_media_name_must_match_contract(make_pub, cms, server):
     pub = make_pub()
-    cms.queue("s1", "p1", make_build("s1", "p1", media={"banner.jpg": b"x"}))
+    cms.queue(S1, "p1", make_build(S1, "p1", media={"banner.jpg": b"x"}))
     assert pub.run_once() == "failed"
     assert "bad media file name" in cms.last("p1")["message"]
 
@@ -322,10 +322,10 @@ def test_copy_strategy_keeps_shared_media(make_pub, cms, server):
     pub = make_pub(strategy="copy")
     img = b"C" * 40
     m = media_name(img)
-    assert publish(cms, pub, "s1", "p1", media={m: img}) == "live"
-    assert publish(cms, pub, "s2", "p2", media={}, media_all=[m]) == "live"
+    assert publish(cms, pub, S1, "p1", media={m: img}) == "live"
+    assert publish(cms, pub, S2, "p2", media={}, media_all=[m]) == "live"
     assert os.path.exists(server.home_path("public_html", "_media", m))
-    assert "home s2" in live(pub)
+    assert f"home {S2}" in live(pub)
 
 
 def test_verify_job_unit():
@@ -409,7 +409,7 @@ def test_media_folder_gets_an_empty_index_page(make_pub, cms, server, strategy):
     pub = make_pub(strategy=strategy)
     img = b"I" * 48
     m = media_name(img)
-    assert publish(cms, pub, "s1", "p1", media={m: img}) == "live"
+    assert publish(cms, pub, S1, "p1", media={m: img}) == "live"
     found = [os.path.join(d, "index.html") for d, _dirs, files in os.walk(server.home_path())
              if os.path.basename(d) == "_media" and m in files]
     assert len(found) == 1, found  # the one shared media folder of this layout
@@ -420,6 +420,6 @@ def test_media_folder_gets_an_empty_index_page(make_pub, cms, server, strategy):
     # kept through later publishes and media clean-up; rewritten if someone changes it
     with open(index, "wb") as fh:
         fh.write(b"tampered listing")
-    assert publish(cms, pub, "s2", "p2", media={}, media_all=[]) == "live"
+    assert publish(cms, pub, S2, "p2", media={}, media_all=[]) == "live"
     with open(index, "rb") as fh:
         assert fh.read() == MEDIA_INDEX

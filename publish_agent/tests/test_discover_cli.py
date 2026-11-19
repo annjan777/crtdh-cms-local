@@ -9,7 +9,7 @@ from publish_agent.discover import backup_live_site, discover, format_report
 from publish_agent.remote import Remote, RemoteError
 
 from .conftest import SECRET
-from .fakes import FakeWeb, make_build
+from .fakes import F1, F2, FakeWeb, S1, S2, make_build
 
 
 def test_discovery_on_fake_host(make_cfg, server):
@@ -129,19 +129,19 @@ def test_cli_check_run_status_rollback(tmp_path, server, cms, client_key, monkey
     out = capsys.readouterr().out
     assert "RECOMMENDED STRATEGY   : symlink" in out and "CMS connection         : ok" in out
 
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     assert agent.main(["-c", path, "--dry-run", "run", "--once"]) == 0
     assert not os.path.islink(server.home_path("public_html"))
     assert agent.main(["-c", path, "run", "--once"]) == 0
     assert agent.main(["-c", path, "run", "--once"]) == 0  # idle
-    cms.queue("s2", "p2", make_build("s2", "p2"))
+    cms.queue(S2, "p2", make_build(S2, "p2"))
     assert agent.main(["-c", path, "run", "--once"]) == 0
     capsys.readouterr()
     assert agent.main(["-c", path, "status"]) == 0
-    assert '"current": "s2"' in capsys.readouterr().out
+    assert f'"current": "{F2}"' in capsys.readouterr().out
     assert agent.main(["-c", path, "rollback"]) == 0
-    assert "live release is now: s1" in capsys.readouterr().out
-    assert os.readlink(server.home_path("public_html")).endswith("/s1")
+    assert f"live release is now: {F1}" in capsys.readouterr().out
+    assert os.readlink(server.home_path("public_html")).endswith("/" + F1)
     log = open(tmp_path / "st" / "logs" / "agent.log").read()
     assert SECRET not in log
 

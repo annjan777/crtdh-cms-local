@@ -9,7 +9,7 @@ from publish_agent.deploy import Publisher
 from publish_agent.remote import Remote
 
 from .conftest import SECRET
-from .fakes import make_build, media_name
+from .fakes import F1, F2, F3, S1, S2, S3, make_build, media_name
 
 OLD = "old site"
 
@@ -33,19 +33,19 @@ def read_log(pub):
 def test_each_strategy_publish_and_rollback(make_pub, cms, server, strategy):
     pub = make_pub(strategy=strategy)
     img = b"A" * 500
-    assert publish(cms, pub, "s1", "p1", media={media_name(img): img}) == "live"
+    assert publish(cms, pub, S1, "p1", media={media_name(img): img}) == "live"
     assert cms.last("p1")["status"] == "live"
-    assert "home s1" in live_html(pub)
-    assert "about s1" in live_html(pub, "about")
-    assert publish(cms, pub, "s2", "p2") == "live"
-    assert "home s2" in live_html(pub)
+    assert f"home {S1}" in live_html(pub)
+    assert f"about {S1}" in live_html(pub, "about")
+    assert publish(cms, pub, S2, "p2") == "live"
+    assert f"home {S2}" in live_html(pub)
     steps = [s["step"] for s in cms.statuses if s["publish_id"] == "p2"]
     assert steps == ["download", "upload", "switch", "check_live"]
 
-    assert pub.rollback() == "s1"
-    assert "home s1" in live_html(pub)
+    assert pub.rollback() == F1
+    assert f"home {S1}" in live_html(pub)
     st = pub.status()
-    assert st["current"] == "s1" and st["strategy"] == strategy
+    assert st["current"] == F1 and st["strategy"] == strategy
     # A local backup of the pre-agent site was taken before the first switch.
     backups = os.listdir(os.path.join(pub.cfg.state_dir, "backups"))
     assert len(backups) == 1 and backups[0].endswith(".tar.gz")
@@ -54,7 +54,7 @@ def test_each_strategy_publish_and_rollback(make_pub, cms, server, strategy):
 @pytest.mark.parametrize("strategy", ["symlink", "htaccess", "swap"])
 def test_rollback_to_pre_agent_site(make_pub, cms, server, strategy):
     pub = make_pub(strategy=strategy)
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     target = pub.rollback()
     assert target.startswith("legacy-")
     assert OLD in live_html(pub)
@@ -64,10 +64,10 @@ def test_symlink_layout_and_media_link(make_pub, cms, server):
     pub = make_pub()
     img = b"IMG" * 50
     m = media_name(img)
-    assert publish(cms, pub, "s1", "p1", media={m: img}) == "live"
+    assert publish(cms, pub, S1, "p1", media={m: img}) == "live"
     root = server.home_path("public_html")
     assert os.path.islink(root)
-    assert os.readlink(root) == "crtdh-releases/releases/s1"  # relative: survives chroot
+    assert os.readlink(root) == f"crtdh-releases/releases/{F1}"  # relative: survives chroot
     assert os.path.islink(os.path.join(root, "_media"))
     assert open(os.path.join(root, "_media", m), "rb").read() == img
     legacy = [n for n in os.listdir(server.home_path("crtdh-releases", "releases")) if n.startswith("legacy-")]
@@ -76,11 +76,11 @@ def test_symlink_layout_and_media_link(make_pub, cms, server):
 
 def test_htaccess_rules_shape(make_pub, cms, server):
     pub = make_pub(strategy="htaccess")
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     text = open(server.home_path("public_html", ".htaccess")).read()
-    assert "# Live release: s1." in text
+    assert f"# Live release: {F1}." in text
     assert "RewriteRule ^_media/(.+)$ _crtdh/_media/$1 [L]" in text
-    assert "RewriteRule ^(about)/?$ _crtdh/releases/s1/$1/index.html [L]" in text
+    assert f"RewriteRule ^(about)/?$ _crtdh/releases/{F1}/$1/index.html [L]" in text
     # the old .htaccess (none here) is restorable and the old files are untouched
     assert os.path.exists(server.home_path("public_html", "images", "logo.png"))
 
@@ -88,13 +88,13 @@ def test_htaccess_rules_shape(make_pub, cms, server):
 # ------------------------------------------------------------------ chaos
 def test_resume_after_connection_drop_mid_upload(make_pub, cms, server):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     pages = {f"p{i}/index.html": f"page {i}" for i in range(12)}
-    cms.queue("s2", "p2", make_build("s2", "p2", pages=pages))
+    cms.queue(S2, "p2", make_build(S2, "p2", pages=pages))
     server.faults.files_opened = 0
     server.faults.drop_after_files = 6  # connection dies part-way through the site files
     assert pub.run_once() == "live"
-    assert "home s2" in live_html(pub)
+    assert f"home {S2}" in live_html(pub)
     log = read_log(pub)
     assert "connection problem" in log
     assert "already there" in log  # second attempt resumed instead of starting over
@@ -104,44 +104,44 @@ def test_resume_after_connection_drop_mid_upload(make_pub, cms, server):
 
 def test_quota_full_fails_and_leaves_live_site(make_pub, cms, server):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     server.faults.written = 0
     server.faults.quota_bytes = 200  # disk full shortly after the upload starts
     big = {"big/index.html": "x" * 5000}
-    assert publish(cms, pub, "s2", "p2", pages=big) == "failed"
+    assert publish(cms, pub, S2, "p2", pages=big) == "failed"
     st = cms.last("p2")
     assert st["status"] == "failed" and st["step"] == "upload"
     assert "quota" in st["message"].lower()
     server.faults.quota_bytes = None
-    assert "home s1" in live_html(pub)
+    assert f"home {S1}" in live_html(pub)
     releases = os.listdir(server.home_path("crtdh-releases", "releases"))
-    assert "s2.partial" not in releases and "s2" not in releases  # space freed again
+    assert f"{F2}.partial" not in releases and F2 not in releases  # space freed again
 
 
 def test_crash_between_upload_and_switch_then_same_publish_resumes(make_pub, cms, server, monkeypatch):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     real_switch = strategies.switch
 
     def crash(*a, **k):
         raise SystemExit("power cut")
     monkeypatch.setattr(strategies, "switch", crash)
-    cms.queue("s2", "p2", make_build("s2", "p2"))
+    cms.queue(S2, "p2", make_build(S2, "p2"))
     with pytest.raises(SystemExit):
         pub.run_once()
-    assert "home s1" in live_html(pub)
-    assert os.path.isdir(server.home_path("crtdh-releases", "releases", "s2"))
+    assert f"home {S1}" in live_html(pub)
+    assert os.path.isdir(server.home_path("crtdh-releases", "releases", F2))
 
     monkeypatch.setattr(strategies, "switch", real_switch)
     server.faults.files_opened = 0
     assert pub.run_once() == "live"  # CMS re-offers p2: no re-upload, just the switch
-    assert "home s2" in live_html(pub)
+    assert f"home {S2}" in live_html(pub)
     assert "already fully uploaded" in read_log(pub)
 
 
 def test_crash_mid_upload_then_new_publish_cleans_staging(make_pub, cms, server, monkeypatch):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     calls = {"n": 0}
     real_put = Remote.put_file
 
@@ -151,25 +151,25 @@ def test_crash_mid_upload_then_new_publish_cleans_staging(make_pub, cms, server,
             raise SystemExit("agent killed")
         return real_put(self, local, remote)
     monkeypatch.setattr(Remote, "put_file", dying_put)
-    cms.queue("s2", "p2", make_build("s2", "p2"))
+    cms.queue(S2, "p2", make_build(S2, "p2"))
     with pytest.raises(SystemExit):
         pub.run_once()
     monkeypatch.setattr(Remote, "put_file", real_put)
     rel = server.home_path("crtdh-releases", "releases")
-    assert "s2.partial" in os.listdir(rel)
+    assert f"{F2}.partial" in os.listdir(rel)
     cms.jobs.clear()  # the CMS gave up on p2 and a newer publish arrives
-    assert publish(cms, pub, "s3", "p3") == "live"
+    assert publish(cms, pub, S3, "p3") == "live"
     names = os.listdir(rel)
-    assert "s2.partial" not in names and "s2" not in names
-    assert "home s3" in live_html(pub)
+    assert f"{F2}.partial" not in names and F2 not in names
+    assert f"home {S3}" in live_html(pub)
 
 
 def test_retry_same_publish_id_is_idempotent(make_pub, cms, server):
     pub = make_pub()
-    data = make_build("s1", "p1")
-    cms.queue("s1", "p1", data)
+    data = make_build(S1, "p1")
+    cms.queue(S1, "p1", data)
     assert pub.run_once() == "live"
-    cms.queue("s1", "p1", data)  # e.g. our "live" report was lost and the CMS asks again
+    cms.queue(S1, "p1", data)  # e.g. our "live" report was lost and the CMS asks again
     server.faults.files_opened = 0
     assert pub.run_once() == "live"
     assert server.faults.files_opened == 0  # nothing written on the server
@@ -178,7 +178,7 @@ def test_retry_same_publish_id_is_idempotent(make_pub, cms, server):
 
 def test_bad_signature_rejected(make_pub, cms, server):
     pub = make_pub()
-    cms.queue("s1", "p1", make_build("s1", "p1"), tamper_sig=True)
+    cms.queue(S1, "p1", make_build(S1, "p1"), tamper_sig=True)
     assert pub.run_once() == "failed"
     st = cms.last("p1")
     assert st["step"] == "verify" and "signature" in st["message"]
@@ -188,7 +188,7 @@ def test_bad_signature_rejected(make_pub, cms, server):
 
 def test_sha_mismatch_rejected(make_pub, cms, server):
     pub = make_pub()
-    cms.queue("s1", "p1", make_build("s1", "p1"), tamper_sha=True)
+    cms.queue(S1, "p1", make_build(S1, "p1"), tamper_sha=True)
     assert pub.run_once() == "failed"
     assert "sha256" in cms.last("p1")["message"]
     assert OLD in live_html(pub)
@@ -203,45 +203,45 @@ def test_unsafe_tarball_rejected(make_pub, cms, server):
         info.size = 1
         tar.addfile(info, io.BytesIO(b"x"))
     pub = make_pub()
-    cms.queue("s1", "p1", buf.getvalue())
+    cms.queue(S1, "p1", buf.getvalue())
     assert pub.run_once() == "failed"
     assert "unsafe path" in cms.last("p1")["message"]
 
 
 def test_missing_referenced_media_fails_before_switch(make_pub, cms, server):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
-    assert publish(cms, pub, "s2", "p2", media_all=["0123456789abcdef.jpg"]) == "failed"
+    assert publish(cms, pub, S1, "p1") == "live"
+    assert publish(cms, pub, S2, "p2", media_all=["0123456789abcdef.jpg"]) == "failed"
     assert "media" in cms.last("p2")["message"]
-    assert "home s1" in live_html(pub)
+    assert f"home {S1}" in live_html(pub)
 
 
 def test_live_check_failure_rolls_back(make_pub, cms, server):
     pub = make_pub()
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     pub.web.override = lambda url: '<meta name="crtdh-build" content="stale-cache">'
-    assert publish(cms, pub, "s2", "p2") == "failed"
+    assert publish(cms, pub, S2, "p2") == "failed"
     st = cms.last("p2")
-    assert st["step"] == "check_live" and "rolled back to s1" in st["message"]
+    assert st["step"] == "check_live" and f"rolled back to {F1}" in st["message"]
     pub.web.override = None
-    assert "home s1" in live_html(pub)
+    assert f"home {S1}" in live_html(pub)
 
 
 def test_retention_and_media_gc(make_pub, cms, server):
     pub = make_pub(keep_releases=1)
     a, b, c = b"A" * 10, b"B" * 20, b"C" * 30
     ma, mb, mc = media_name(a), media_name(b), media_name(c)
-    assert publish(cms, pub, "s1", "p1", media={ma: a, mb: b}) == "live"
+    assert publish(cms, pub, S1, "p1", media={ma: a, mb: b}) == "live"
     media_dir = server.home_path("crtdh-releases", "_media")
     with open(os.path.join(media_dir, "keep-me.txt"), "w") as fh:
         fh.write("not ours")  # names that are not content hashes are never touched
-    assert publish(cms, pub, "s2", "p2", media={mc: c}, media_all=[mb, mc]) == "live"
+    assert publish(cms, pub, S2, "p2", media={mc: c}, media_all=[mb, mc]) == "live"
     assert sorted(os.listdir(media_dir)) == sorted([ma, mb, mc, "keep-me.txt", "index.html"])  # s1 still kept
-    assert publish(cms, pub, "s3", "p3", media={}, media_all=[mc]) == "live"
+    assert publish(cms, pub, S3, "p3", media={}, media_all=[mc]) == "live"
     # kept: s3 (current) + s2 (1 previous) -> b and c referenced, a is garbage
     assert sorted(os.listdir(media_dir)) == sorted([mb, mc, "keep-me.txt", "index.html"])
     rel = os.listdir(server.home_path("crtdh-releases", "releases"))
-    assert "s1" not in rel and "s2" in rel and "s3" in rel
+    assert F1 not in rel and F2 in rel and F3 in rel
     assert any(n.startswith("legacy-") for n in rel)  # pre-agent site is never auto-deleted
 
 
@@ -250,7 +250,7 @@ def test_dry_run_changes_nothing(make_cfg, cms, server):
     from .fakes import FakeWeb
     pub = Publisher(cfg, cms=CMSClient(cfg.cms_url, SECRET), connect=lambda: Remote.connect(cfg),
                     http_get=FakeWeb(server), sleep=lambda s: None, dry_run=True)
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     before = sorted(os.listdir(server.home_path()))
     assert pub.run_once() == "dry-run"
     assert sorted(os.listdir(server.home_path())) == before
@@ -260,15 +260,15 @@ def test_dry_run_changes_nothing(make_cfg, cms, server):
 
 def test_strategy_mismatch_is_refused(make_pub, make_cfg, cms, server):
     pub = make_pub(strategy="symlink")
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     pub2 = make_pub(cfg=make_cfg(strategy="swap"))
-    assert publish(cms, pub2, "s2", "p2") == "failed"
+    assert publish(cms, pub2, S2, "p2") == "failed"
     assert "set up for strategy 'symlink'" in cms.last("p2")["message"]
 
 
 def test_auto_strategy_uses_discovery(make_pub, cms, server):
     pub = make_pub(strategy="auto")
-    assert publish(cms, pub, "s1", "p1") == "live"
+    assert publish(cms, pub, S1, "p1") == "live"
     assert pub.local_state()["discovery"]["recommended"] == "symlink"
     assert os.path.islink(server.home_path("public_html"))
 
@@ -285,8 +285,8 @@ def test_secrets_never_logged(make_pub, cms, server):
     pub = make_pub()
     pw = "hunter2-sftp-password"
     register_secret(pw)
-    assert publish(cms, pub, "s1", "p1") == "live"
-    cms.queue("s2", "p2", make_build("s2", "p2"), tamper_sig=True)
+    assert publish(cms, pub, S1, "p1") == "live"
+    cms.queue(S2, "p2", make_build(S2, "p2"), tamper_sig=True)
     pub.run_once()
     LOG.info("connecting with password=%s and secret %s", pw, SECRET)
     LOG.info("url https://user:%s@host/", pw)
@@ -322,7 +322,7 @@ def test_identical_requests_never_share_a_signature(make_cfg, cms, monkeypatch):
 # ------------------------------------------------------------------ QA wave 2 D2: a build that never downloads
 def test_failing_download_is_reported_failed_after_the_limit(make_pub, cms):
     pub = make_pub(max_download_errors=3)
-    cms.queue("s1", "p1", make_build("s1", "p1"))
+    cms.queue(S1, "p1", make_build(S1, "p1"))
     del cms.builds["p1"]  # the CMS answers 404 for the tarball, every time
     for _ in range(2):
         with pytest.raises(CMSError):
@@ -336,15 +336,26 @@ def test_failing_download_is_reported_failed_after_the_limit(make_pub, cms):
 
 def test_download_error_count_resets_on_success_and_per_publish(make_pub, cms):
     pub = make_pub(max_download_errors=2)
-    data = make_build("s1", "p1")
-    cms.queue("s1", "p1", data)
+    data = make_build(S1, "p1")
+    cms.queue(S1, "p1", data)
     del cms.builds["p1"]
     with pytest.raises(CMSError):
         pub.run_once()
     cms.builds["p1"] = data
     assert pub.run_once() == "live"
-    cms.queue("s2", "p2", make_build("s2", "p2"))
+    cms.queue(S2, "p2", make_build(S2, "p2"))
     del cms.builds["p2"]
     with pytest.raises(CMSError):
         pub.run_once()  # first error for p2: p1's count does not carry over
     assert cms.last("p2")["status"] == "uploading"
+
+
+# ------------------------------------------------------------------ QA wave 2 D4: ids with ':' (real ISO snapshot ids)
+def test_real_snapshot_id_goes_live_and_rollback_confirms_it(make_pub, cms, server):
+    assert ":" in S1 and F1 != S1  # the case that rolled every real publish back
+    pub = make_pub()
+    assert publish(cms, pub, S1, "p1") == "live"
+    assert cms.last("p1")["status"] == "live"
+    assert publish(cms, pub, S2, "p2") == "live"
+    assert pub.rollback() == F1
+    assert "live check did not confirm" not in read_log(pub)

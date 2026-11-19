@@ -323,7 +323,7 @@ class Publisher:
             meta = remote.read_json(posixpath.join(layout.live_path(state, sid), MARKER)) or {}
             if meta.get("tarball_sha256") == job.sha256 and meta.get("publish_id") == job.publish_id:
                 LOG.info("snapshot %s is already live; confirming", sid)
-                ok, detail = self._check_live(sid)
+                ok, detail = self._check_live(job.snapshot_id)
                 if not ok:
                     raise PublishFailed("check_live", f"release {sid} is switched in on the server, but the "
                                                       f"site does not show it ({detail})")
@@ -357,7 +357,7 @@ class Publisher:
         state.setdefault("live_at", {})[sid] = _now()
         save_state(remote, layout, state)
 
-        ok, detail = self._check_live(sid)
+        ok, detail = self._check_live(job.snapshot_id)
         if not ok:
             msg = f"the site did not show the new build after switching ({detail})"
             if previous:
@@ -464,7 +464,8 @@ class Publisher:
         index_dirs = sorted({posixpath.dirname(r) for r, _ in bundle.site_files
                              if r.endswith("/index.html")} - {""})
         remote.write_json(posixpath.join(staging, MARKER), {
-            "publish_id": job.publish_id, "snapshot_id": sid, "tarball_sha256": job.sha256,
+            # snapshot_id is the folder-safe id; build_id is the raw id the pages' crtdh-build meta carries.
+            "publish_id": job.publish_id, "snapshot_id": sid, "build_id": job.snapshot_id, "tarball_sha256": job.sha256,
             "files": bundle.site_files, "index_dirs": index_dirs,
             "media": sorted(bundle.media_referenced) if bundle.media_referenced is not None else None,
             "uploaded_at": _now()})
@@ -483,7 +484,9 @@ class Publisher:
                 pass
             raise
 
-    def _check_live(self, sid: str) -> tuple[bool, str]:
+    def _check_live(self, snapshot_id: str) -> tuple[bool, str]:
+        """The page's <meta crtdh-build> carries the raw snapshot id (e.g. 2026-11-19T02:07:47Z-36dc5b), not the
+        folder-safe form safe_id() makes of it."""
         if not self.cfg.verify_url:
             LOG.warning("verify_url not set; not checking the live site")
             return True, "not checked"
@@ -494,10 +497,10 @@ class Publisher:
             try:
                 html = self.http_get(url)
                 found = find_marker(html, self.cfg.verify_marker)
-                if found == sid:
-                    LOG.info("live site shows build %s", sid)
+                if found == snapshot_id:
+                    LOG.info("live site shows build %s", snapshot_id)
                     return True, "ok"
-                detail = f"found build marker {found!r}, expected {sid!r}"
+                detail = f"found build marker {found!r}, expected {snapshot_id!r}"
             except Exception as exc:  # noqa: BLE001
                 detail = f"could not load {self.cfg.verify_url}: {exc}"
             if attempt < self.cfg.verify_attempts:
@@ -611,7 +614,8 @@ class Publisher:
             state["current"] = target
             save_state(remote, layout, state)
             if state["kinds"].get(target) != "legacy":
-                ok, detail = self._check_live(target)
+                meta = remote.read_json(posixpath.join(layout.live_path(state, target), MARKER)) or {}
+                ok, detail = self._check_live(meta.get("build_id") or target)
                 if not ok:
                     LOG.warning("rolled back, but the live check did not confirm it: %s", detail)
             self.save_local_state(last_result="rolled back", last_live=target, last_result_at=_now())

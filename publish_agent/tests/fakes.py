@@ -277,6 +277,21 @@ class FakeSFTPServer:
 
 
 # ------------------------------------------------------------------------------ builds
+# Real snapshot ids are ISO timestamps with ':' (e.g. 2026-11-19T02:07:47Z-36dc5b); the agent uses the folder-safe
+# form (bundle.safe_id: ':' -> '-') only for paths. Tests use these so the two can never be confused again.
+def real_snapshot_id(n: int) -> str:
+    return f"2026-11-19T0{n}:07:47Z-{n}6dc5b"
+
+
+def folder_id(snapshot_id: str) -> str:
+    from publish_agent.bundle import safe_id
+    return safe_id(snapshot_id)
+
+
+S1, S2, S3, S4, S5 = (real_snapshot_id(n) for n in range(1, 6))
+F1, F2, F3, F4, F5 = (folder_id(x) for x in (S1, S2, S3, S4, S5))
+
+
 def make_build(snapshot_id: str, publish_id: str, pages: dict[str, str] | None = None,
                media: dict[str, bytes] | None = None, media_all: list[str] | None = None,
                marker: bool = True) -> bytes:

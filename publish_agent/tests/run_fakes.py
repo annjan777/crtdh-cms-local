@@ -13,7 +13,7 @@ import time
 import paramiko
 
 from .conftest import SECRET
-from .fakes import FakeCMS, FakeSFTPServer, make_build, media_name
+from .fakes import S1, S2, FakeCMS, FakeSFTPServer, make_build, media_name
 
 
 def main(base: str) -> None:
@@ -27,8 +27,8 @@ def main(base: str) -> None:
         fh.write("old site")
     cms = FakeCMS(SECRET, port=8500)
     img = b"demo-image" * 100
-    cms.queue("snap-1", "pub-1", make_build("snap-1", "pub-1", media={media_name(img): img}))
-    cms.queue("snap-2", "pub-2", make_build("snap-2", "pub-2", media_all=[media_name(img)]))
+    cms.queue(S1, "pub-1", make_build(S1, "pub-1", media={media_name(img): img}))
+    cms.queue(S2, "pub-2", make_build(S2, "pub-2", media_all=[media_name(img)]))
     with open(os.path.join(base, "known_hosts"), "w") as fh:
         fh.write(srv.known_hosts_line())
     with open(os.path.join(base, "config.ini"), "w") as fh:
