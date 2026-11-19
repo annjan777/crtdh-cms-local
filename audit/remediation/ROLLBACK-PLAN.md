@@ -21,7 +21,10 @@ when you choose. Production: the same with `docker compose`. The public site cha
 | e84189a | Agent image USER nobody; Trivy CI job; digest script (R-11) | staging agent image, CI | revert; rebuild `publish-agent` | None (compose already sets the user). |
 | ea9edc7 | axe-playwright-python in dev requirements | tests | revert | Accessibility E2E cannot run. |
 | f50879b | CSP: `style-src-elem 'self'`, `style-src-attr 'unsafe-inline'` (R-15) | public site `.htaccess` (worker) | revert; rebuild `worker`; publish | Back to `style-src 'self' 'unsafe-inline'` only. If a page ever needs an inline `<style>`, this is the commit to look at. |
-| a791575 | Backup and restore-check scripts (R-3) | new files only | revert, or simply remove the cron line | Nothing runs unless you installed the cron line. Existing backup sets stay where they are. |
+| a791575 | Server backup scripts (later removed in c18f02c) | none | — | — |
+| c18f02c | Backup page: download / upload backup | backend, admin, gateway | revert; rebuild `cms` and `admin`; redeploy gateway | Backup page disappears; downloaded backup files stay usable once the feature is back. No data changes. |
+| 6876ca6 | Item headings on Facilities/Services/Social impact | worker image | revert; rebuild `worker`; publish | Fewer headings for screen readers; look unchanged either way. |
+| 7f6cc2c | Cleanup | frontend, admin, backend | revert | None functionally (dead code only). |
 | be95d37 | E2E fixes; rehearsal MFA on; golden re-baselined; Home hides photo-less slides | tests, `scripts/preprod.sh`, worker image | revert; rebuild `worker`; publish | A slide without a photo shows an empty image again. Old golden kept in `tests/e2e/golden/public_content.v2-v3design.json`. |
 | 40ff3c6 → 2d7f87d | PIB link in the seed: added, then reverted | none (net zero) | nothing to undo | None. |
 | 2453bdc | Golden `/media` heading | tests only | revert | Golden test fails on correct content. |
@@ -31,6 +34,6 @@ when you choose. Production: the same with `docker compose`. The public site cha
 |---|---|
 | `MFA_ENABLED=True` | Set it to False and restart `cms`/`mcp`. Enrolments are kept and reused if it goes back on. Everyone signs in again. |
 | Credential rotation | Not reversible by design. Keep the new values in the password manager before the old ones stop working. |
-| Backup cron | Remove the line (`crontab -e`). Delete sets only on purpose. |
+| Uploading a backup | Discard its changes on Review & publish before publishing, or upload a newer backup. |
 | Cloudflare: Email Obfuscation / Web Analytics off | Toggle back on in the zone settings. |
 | Digest pinning (`scripts/pin-image-digests.sh --write`) | `git checkout -- '*Dockerfile'` before committing, or revert the commit. |

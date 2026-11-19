@@ -1,6 +1,6 @@
 # Code changes: `v3/remediation` (base `1f29d21`, the audited release candidate)
 
-18 commits (one of them a revert), no database migrations. Not pushed, not deployed. Every behaviour change has a test that
+22 commits (one of them a revert), no database migrations. Not pushed, not deployed. Every behaviour change has a test that
 fails on the old code (checked for R-1, R-7, F-07) or pins the new behaviour.
 
 ## R-7 / F-07: false "Leave before your change is saved?" (f5acd2c)
@@ -81,11 +81,18 @@ fails on the old code (checked for R-1, R-7, F-07) or pins the new behaviour.
 - `frontend/tests/e2e/csp.spec.js` (new, 14 tests): every page under the built CSP has 0 violations; an injected
   `<style>` is blocked.
 
-## R-3 / F-03: backups (a791575)
-- `deploy/backup/crtdh-backup.sh`, `crtdh-restore-check.sh`, `backup.conf.example`, `README.md` (new).
-- `tests/tools/test_backup_scripts.sh` (new, 13 checks). `docs/HANDOVER.md`, `deploy/README.md` point to them.
-- Security: AES-256 GPG, files mode 600, passphrase file must be 600, plaintext only in a temp folder during
-  verification, removed after. Read-only against the running stack.
+## R-3 / F-03: backups (a791575, replaced by c18f02c)
+- Server cron scripts (a791575) were removed after the owner chose CMS-side backups.
+- `backend/apps/publishing/backup.py` (new): `write_backup` (zip: manifest with checksums, `snapshot.json`, optional
+  `media/`), `read_backup` (all checks first: zip, size/entry limits, unsafe names/links, expected files and photo
+  types, format/version/schema, content and photo checksums), `restore_backup` (writes only missing photos, never
+  overwrites, then `changes.restore_snapshot` = unpublished changes).
+- `views.py`/`urls.py`: `GET /api/v1/cms/backup/[?photos=1]`, `POST /api/v1/cms/backup/restore/` (Admins only).
+- `gateway.conf.template`: 1 GB body limit on the restore endpoint only.
+- `admin/src/backup/BackupPage.jsx`, `api/cms.js`, `App.jsx`, `AppShell.jsx`: Backup page and nav link (Admins).
+- Tests: `apps/publishing/tests/test_backup.py` (18), RBAC matrix, `admin/e2e/backup.spec.js` (5),
+  `tests/e2e/test_backup.py` (real stack). `docs/HANDOVER.md` and `deploy/README.md` updated.
+- Security: Admin role required; uploads cannot write outside MEDIA_ROOT or overwrite files; restore is reviewable.
 
 ## R-6 / F-08: E2E (be95d37, ea9edc7)
 - `tests/e2e/test_cms_editor.py`: the restore spec creates its own published version
@@ -108,3 +115,14 @@ fails on the old code (checked for R-1, R-7, F-07) or pins the new behaviour.
 ## Golden fix (2453bdc)
 - `tests/e2e/golden/public_content.json`: `/media` keeps "Media coverage". The first re-capture ran on a
   rehearsal whose coverage links an earlier E2E run had emptied.
+
+## F-18: headings (6876ca6)
+- `ImageGrid.jsx` `headingLevel`: caption becomes an `h3` styled exactly like the caption (alt empty, since the
+  heading names it); Facilities and Services use it; Social impact's gallery gets a visually hidden `h2`.
+- Pixel comparison of the three sections at 1440 and 390 px: identical. Golden headings updated for these pages.
+
+## Cleanup (7f6cc2c)
+- Removed: `SiteDataContext` (no consumer), `PRIMARY_SLUGS`, unused imports, ImageField's unused `onChange`.
+- `apps/oauth/mfa.py`, `apps/oauth/signals.py`, `mcp_server/proxy_guard.py`: direct imports instead of
+  `except ImportError` fallbacks, so a broken import fails at start-up instead of silently weakening security.
+- `docs/test-evidence/2026-11-19/e2e*.txt|xml`: removed (test-user TOTP seeds).
