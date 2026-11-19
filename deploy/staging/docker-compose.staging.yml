@@ -9,6 +9,7 @@
 #
 # What this adds or changes:
 #   - env: every backend service reads staging/.env.staging instead of deploy/.env (made by setup.sh).
+#   - images: built images are tagged :staging (crtdh-backend, crtdh-worker, crtdh-gateway), never :prod.
 #   - cloudflared: token mode (remotely managed tunnel; routes are set in the Cloudflare dashboard, TUNNEL.md),
 #     token from staging/secrets/tunnel.env. Still 172.30.80.11 on `internal`, so TRUSTED_PROXY_IPS is unchanged.
 #   - sftp + site: stand-ins for the CIC server. `sftp` is a chrooted key-only SFTP account; `site` is Apache 2.4
@@ -19,16 +20,25 @@
 name: crtdh-staging
 
 services:
+  # Own image tags (:staging), so a staging build never replaces the production images (:prod) on a machine
+  # that has both.
   migrate:
+    image: crtdh-backend:staging
     env_file: !override [staging/.env.staging]
   cms:
+    image: crtdh-backend:staging
     env_file: !override [staging/.env.staging]
   mcp:
+    image: crtdh-backend:staging
     env_file: !override [staging/.env.staging]
   worker:
+    image: crtdh-worker:staging
     env_file: !override [staging/.env.staging]
   housekeeping:
+    image: crtdh-backend:staging
     env_file: !override [staging/.env.staging]
+  gateway:
+    image: crtdh-gateway:staging
 
   # Remotely managed tunnel: no config.yml or credentials.json; the dashboard holds the routes (TUNNEL.md).
   cloudflared:
@@ -41,7 +51,7 @@ services:
   sftp:
     build:
       context: staging/sftp
-    image: crtdh-staging-sftp:local
+    image: crtdh-staging-sftp:staging
     restart: unless-stopped
     volumes:
       - site_www:/home/crtdh/www
@@ -71,7 +81,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/staging/agent/Dockerfile
-    image: crtdh-staging-agent:local
+    image: crtdh-staging-agent:staging
     restart: unless-stopped
     user: "${STAGING_UID:?run staging/setup.sh}:${STAGING_GID:?run staging/setup.sh}"
     command: ["run"]
