@@ -3,6 +3,12 @@ import { ClosingBand, PageBanner } from '../components/Blocks.jsx'
 import { Img } from '../media.jsx'
 import { visible } from '../util.js'
 
+// Owner content from the old Team page (decision D13, 19 Nov 2026): kept word for word.
+export const PI_LINE = { title: 'Research Leadership', text: "Guiding CRTDH's vision for affordable healthcare technologies." }
+export const TEAM_TAGLINE = 'Research. Innovation. Collaboration. Impact.'
+// The Principal Investigator's card says what the role is when the CMS has no description (as the old page did).
+export const isPrincipal = (name = '') => /principal/i.test(name) && !/co-principal/i.test(name)
+
 /** Team (listing pattern): one section per category, 4:5 portraits, real people only. */
 export default function Team({ data }) {
   const c = data.collections || {}
@@ -31,7 +37,11 @@ export default function Team({ data }) {
                       <h3 className="person__name">{m.name}</h3>
                       {m.designation && <p className="person__role">{m.designation}</p>}
                       {m.institution && <p className="person__inst soft">{m.institution}</p>}
-                      {m.description && <p className="person__desc">{m.description}</p>}
+                      {m.description ? (
+                        <p className="person__desc">{m.description}</p>
+                      ) : isPrincipal(g.name) ? (
+                        <p className="person__desc"><span className="person__lead">{PI_LINE.title}</span> — {PI_LINE.text}</p>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -44,8 +54,8 @@ export default function Team({ data }) {
         id="team-cta"
         surface
         title="A multidisciplinary team working towards innovative healthcare solutions"
-        text="Researchers, clinicians and enterprises can reach the centre through the contact page."
-        action="Contact CRTDH"
+        text={TEAM_TAGLINE}
+        action="Get in Touch"
       />
     </PageShell>
   )

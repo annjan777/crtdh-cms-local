@@ -115,16 +115,48 @@ describe('utilities', () => {
 
 describe('Home figures strip (owner decision D10)', async () => {
   const { homeFigures, DSIR_YEARS } = await import('../../src/site/pages/Home.jsx')
-  it('counts the published innovations and enterprises like the old Home did, plus the DSIR years', () => {
-    const c = { innovations: [{ id: 1 }, { id: 2, is_published: false }, { id: 3 }], enterprises: [{ id: 1 }] }
+  it('counts published innovations, enterprises and team members like the old Home did, plus the DSIR years', () => {
+    const c = { innovations: [{ id: 1 }, { id: 2, is_published: false }, { id: 3 }], enterprises: [{ id: 1 }],
+      'team-members': [{ id: 1 }, { id: 2 }, { id: 3, is_published: false }] }
     expect(homeFigures(c)).toEqual([
       { value: 2, label: 'Innovations developed' },
       { value: 1, label: 'Enterprises incubated' },
+      { value: 2, label: 'Researchers & staff' },
       { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
     ])
     expect(DSIR_YEARS).toBe(8)
   })
   it('drops a figure that would read 0+', () => {
     expect(homeFigures({ innovations: [], enterprises: [] }).map((f) => f.label)).toEqual(['Years sponsored by DSIR'])
+  })
+})
+
+describe('owner content kept from the old site (decision D13)', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { default: Home, EXPLORE, CAPTIONS } = await import('../../src/site/pages/Home.jsx')
+  const { default: Team, PI_LINE, TEAM_TAGLINE, isPrincipal } = await import('../../src/site/pages/Team.jsx')
+  const data = (page) => selectData(structuredClone(stub), { singletons: [...PAGE_NEEDS[page].singletons, 'site-settings'], collections: [...PAGE_NEEDS[page].collections, 'nav-items'] })
+  const text = (html) => html.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ')
+
+  it('Home: four figures, the three Explore lines with their links, the four photo captions', () => {
+    const html = renderToStaticMarkup(React.createElement(Home, { data: data('home') }))
+    const t = text(html)
+    for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers & staff', 'Years sponsored by DSIR']) expect(t).toContain(label)
+    for (const e of EXPLORE) {
+      expect(t).toContain(e.text)
+      expect(html).toContain(`href="${e.to}"`)
+    }
+    expect(EXPLORE.map((e) => e.title)).toEqual(['Innovations', 'Enterprises', 'Social Impact'])
+    for (const caption of Object.values(CAPTIONS)) expect(html).toContain(`<figcaption>${caption}</figcaption>`)
+  })
+  it('Team: the PI line, the heading, the tagline and Get in Touch to the contact page', () => {
+    const t = text(renderToStaticMarkup(React.createElement(Team, { data: data('team') })))
+    expect(t).toContain(`${PI_LINE.title} — ${PI_LINE.text}`)
+    expect(PI_LINE.text).toBe("Guiding CRTDH's vision for affordable healthcare technologies.")
+    expect(t).toContain('A multidisciplinary team working towards innovative healthcare solutions')
+    expect(t).toContain(TEAM_TAGLINE)
+    expect(t).toContain('Get in Touch')
+    expect(isPrincipal('Principal Investigator') && !isPrincipal('Co-Principal Investigator')).toBe(true)
   })
 })

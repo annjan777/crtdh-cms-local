@@ -35,6 +35,7 @@ export default function Home({ data }) {
         </div>
       </section>
 
+      <Explore />
       <Proof enterprises={c.enterprises} products={c.products} />
       <Work innovations={c.innovations} />
       <Manufacturing home={home} equipment={c.equipment} />
@@ -49,11 +50,44 @@ export default function Home({ data }) {
 // A fixed figure, not computed: change it here when the centre's sponsorship statement changes.
 export const DSIR_YEARS = 8
 
+// Owner content from the old Home (decision D13, 19 Nov 2026): kept word for word.
+export const CAPTIONS = {
+  enterprises_image_1: 'Skill development and prototype manufacturing',
+  enterprises_image_2: 'Pilot plant for medical device development',
+  women_image_1: 'Community healthcare and maternal support',
+  women_image_2: 'Awareness and outreach in rural communities',
+}
+export const EXPLORE = [
+  { title: 'Innovations', to: '/innovations/', text: 'Devices and diagnostics developed in-house, ready for translation.' },
+  { title: 'Enterprises', to: '/enterprises/', text: 'MSMEs and startups incubated at CRTDH with mentorship and support.' },
+  { title: 'Social Impact', to: '/social-impact/', text: 'Camps, clinics and outreach programmes bringing technology to communities.' },
+]
+
+/** Three ways in, as linked names with a line each under a hairline: no cards, no icons (DESIGN.md). */
+function Explore() {
+  return (
+    <section className="section explore" aria-labelledby="explore-title">
+      <div className="wrap">
+        <h2 id="explore-title" className="visually-hidden">Explore CRTDH</h2>
+        <ul className="explore__list">
+          {EXPLORE.map((e) => (
+            <li key={e.to} className="explore__item">
+              <SiteLink to={e.to} className="text-link explore__link">{e.title}</SiteLink>
+              <p>{e.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
 /** The figures strip from the old Home, computed from the published content like the old page did. */
 export function homeFigures(c) {
   return [
     { value: visible(c.innovations).length, label: 'Innovations developed' },
     { value: visible(c.enterprises).length, label: 'Enterprises incubated' },
+    { value: visible(c['team-members']).length, label: 'Researchers & staff' },
     { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
   ].filter((f) => f.value > 0)
 }
@@ -183,11 +217,13 @@ function Manufacturing({ home, equipment = [] }) {
         {home.enterprises_image_1 && (
           <figure className="manufacture__a">
             <Img src={home.enterprises_image_1} alt={home.enterprises_image_1_alt || ''} ratio="4x5" sizes="(min-width: 768px) 25vw, 60vw" />
+            <figcaption>{CAPTIONS.enterprises_image_1}</figcaption>
           </figure>
         )}
         {home.enterprises_image_2 && (
           <figure className="manufacture__b">
             <Img src={home.enterprises_image_2} alt={home.enterprises_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 18vw, 40vw" />
+            <figcaption>{CAPTIONS.enterprises_image_2}</figcaption>
           </figure>
         )}
       </div>
@@ -245,6 +281,7 @@ function Community({ home }) {
         {home.women_image_1 && (
           <figure className="community__a">
             <Img src={home.women_image_1} alt={home.women_image_1_alt || ''} ratio="3x2" sizes="(min-width: 768px) 42vw, 100vw" />
+            <figcaption>{CAPTIONS.women_image_1}</figcaption>
           </figure>
         )}
         <div className="community__text">
@@ -257,6 +294,7 @@ function Community({ home }) {
         {home.women_image_2 && (
           <figure className="community__b">
             <Img src={home.women_image_2} alt={home.women_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 20vw, 50vw" />
+            <figcaption>{CAPTIONS.women_image_2}</figcaption>
           </figure>
         )}
       </div>
