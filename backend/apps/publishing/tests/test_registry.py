@@ -9,11 +9,16 @@ from django.core.management import call_command
 from apps.publishing import registry
 from apps.publishing.pages import PAGE_IDS
 
-APP_JSX = Path(__file__).resolve().parents[4] / "frontend" / "src" / "App.jsx"
+# The public site's routes (React Router 7 config, v3/frontend): index('...') is "/", route('x', ...) is "/x".
+ROUTES_JS = Path(__file__).resolve().parents[4] / "frontend" / "app" / "routes.js"
 
 
 def frontend_routes():
-    return {p for p in re.findall(r'<Route\s+path="([^"]+)"', APP_JSX.read_text()) if p != "*"}
+    text = ROUTES_JS.read_text()
+    paths = {"/" + p for p in re.findall(r"\broute\(\s*'([^']+)'", text) if p != "*"}
+    if re.search(r"\bindex\(", text):
+        paths.add("/")
+    return paths
 
 
 @pytest.mark.contract
