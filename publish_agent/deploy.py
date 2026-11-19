@@ -101,6 +101,7 @@ class Publisher:
         self.sleep = sleep
         self.dry_run = dry_run
         self.upload_attempts = upload_attempts
+        self._download_errors: tuple[str, int] = ("", 0)  # (publish_id, consecutive failed downloads)
         os.makedirs(cfg.work_dir, exist_ok=True)
 
     # ------------------------------------------------------------------ local state
@@ -226,7 +227,11 @@ class Publisher:
                 seen = seen[:-1]
             self._refuse_replay(job, sid, seen, None)
             self.report(job, "uploading", "download", "Downloading the build")
-            bundle = self.fetch_bundle(job, sid)
+            try:
+                bundle = self.fetch_bundle(job, sid)
+            except CMSError as exc:
+                return self._download_failed(job, exc)  # re-raises (retry with backoff) until the limit
+            self._download_errors = ("", 0)
             step = "upload"
             self.report(job, "uploading", "upload", f"Uploading {len(bundle.site_files)} files")
             result = self.publish_bundle(job, bundle, sid)
@@ -246,6 +251,17 @@ class Publisher:
                 if name.endswith(".tar.gz") and not name.startswith(sid):
                     os.remove(os.path.join(self.cfg.work_dir, name))
         return result
+
+    def _download_failed(self, job: Job, exc: CMSError) -> str:
+        pid, n = self._download_errors
+        n = n + 1 if pid == job.publish_id else 1
+        self._download_errors = (job.publish_id, n)
+        limit = max(1, self.cfg.max_download_errors)
+        if n < limit:
+            LOG.warning("download %s/%s of publish %s failed", n, limit, job.publish_id)
+            raise exc
+        self._download_errors = ("", 0)
+        return self._fail(job, "download", f"could not download the build after {n} attempts: {exc}")
 
     def _fail(self, job: Job, step: str, message: str) -> str:
         LOG.error("publish %s failed at %s: %s", job.publish_id, step, message)

@@ -317,3 +317,34 @@ def test_identical_requests_never_share_a_signature(make_cfg, cms, monkeypatch):
     client.next_job()
     client.next_job()
     assert len(set(seen)) == 2
+
+
+# ------------------------------------------------------------------ QA wave 2 D2: a build that never downloads
+def test_failing_download_is_reported_failed_after_the_limit(make_pub, cms):
+    pub = make_pub(max_download_errors=3)
+    cms.queue("s1", "p1", make_build("s1", "p1"))
+    del cms.builds["p1"]  # the CMS answers 404 for the tarball, every time
+    for _ in range(2):
+        with pytest.raises(CMSError):
+            pub.run_once()
+        assert cms.last("p1")["status"] == "uploading"
+    assert pub.run_once() == "failed"
+    last = cms.last("p1")
+    assert last["status"] == "failed" and last["step"] == "download" and "after 3 attempts" in last["message"]
+    assert pub.run_once() == "idle"  # no longer offered
+
+
+def test_download_error_count_resets_on_success_and_per_publish(make_pub, cms):
+    pub = make_pub(max_download_errors=2)
+    data = make_build("s1", "p1")
+    cms.queue("s1", "p1", data)
+    del cms.builds["p1"]
+    with pytest.raises(CMSError):
+        pub.run_once()
+    cms.builds["p1"] = data
+    assert pub.run_once() == "live"
+    cms.queue("s2", "p2", make_build("s2", "p2"))
+    del cms.builds["p2"]
+    with pytest.raises(CMSError):
+        pub.run_once()  # first error for p2: p1's count does not carry over
+    assert cms.last("p2")["status"] == "uploading"

@@ -21,6 +21,7 @@ class Config:
     poll_seconds: int = 30
     max_backoff_seconds: int = 600
     http_timeout: int = 60
+    max_download_errors: int = 5  # consecutive failed downloads of one build before reporting it failed
 
     sftp_host: str = ""
     sftp_port: int = 22
@@ -111,6 +112,7 @@ def load(path: str) -> Config:
         poll_seconds=getint("cms", "poll_seconds", 30),
         max_backoff_seconds=getint("cms", "max_backoff_seconds", 600),
         http_timeout=getint("cms", "http_timeout", 60),
+        max_download_errors=getint("cms", "max_download_errors", 5),
         sftp_host=get("sftp", "host"),
         sftp_port=getint("sftp", "port", 22),
         sftp_user=get("sftp", "user"),
