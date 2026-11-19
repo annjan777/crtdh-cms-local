@@ -218,6 +218,25 @@ class PublishCancelView(PublisherView):
         return Response(publish_payload(publish.cancel_publish(p), AgentState.load().last_seen))
 
 
+def change_summary(prev, current, limit=6):
+    """What a publish changed, by page and section, e.g. "Home: Hero, Membership · Header & footer: Logos"."""
+    titles = {p["id"]: p["title"] for p in registry.export_registry()["pages"]}
+    titles["site"] = "Header & footer"
+    by_page = {}
+    for ch in changes.diff(prev, current):
+        sec = ch.get("_section") or {}
+        page_id = str(sec.get("id", "")).split(".")[0] or "site"
+        page_id = page_id if page_id in titles else "site"
+        labels = by_page.setdefault(page_id, [])
+        if sec.get("label") and sec["label"] not in labels:
+            labels.append(sec["label"])
+    parts = [f"{titles[pid]}: {', '.join(labels)}" if labels else titles[pid] for pid, labels in by_page.items()]
+    if not parts:
+        return "No content changes"
+    more = len(parts) - limit
+    return " · ".join(parts[:limit]) + (f" · and {more} more page{'s' if more > 1 else ''}" if more > 0 else "")
+
+
 # ---- snapshots --------------------------------------------------------------------------------------------------
 class SnapshotsView(EditorView):
     """Addendum A8: {snapshots:[{id, snapshot_id, published_at, published_by, note, is_live}]}, newest first.
@@ -226,11 +245,14 @@ class SnapshotsView(EditorView):
     def get(self, request):
         live = publish.last_live_snapshot()
         out = []
-        qs = Snapshot.objects.filter(published_at__isnull=False).select_related("created_by").order_by("-published_at", "-id")
-        for s in qs[:50]:
+        qs = list(Snapshot.objects.filter(published_at__isnull=False).select_related("created_by")
+                  .order_by("-published_at", "-id")[:51])
+        for i, s in enumerate(qs[:50]):
             by = s.created_by.get_username() if s.created_by else (s.data or {}).get("published_by")
+            prev = qs[i + 1].data if i + 1 < len(qs) else None
             out.append({"id": s.id, "snapshot_id": s.snapshot_id, "published_at": s.published_at,
-                        "published_by": by, "note": s.note, "is_live": live is not None and s.pk == live.pk,
+                        "published_by": by, "note": s.note, "summary": change_summary(prev, s.data) if prev else "",
+                        "is_live": live is not None and s.pk == live.pk,
                         "counts": {k: len(v) for k, v in ((s.data or {}).get("collections") or {}).items()}})
         return Response({"snapshots": out})
 

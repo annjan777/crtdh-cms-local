@@ -105,7 +105,7 @@ export default function HistoryPage() {
                       <time dateTime={s.published_at}>{fmtDateTime(s.published_at)}</time>
                     </td>
                     <td>{s.published_by}</td>
-                    <td className="muted">{s.note || '—'}</td>
+                    <td className={s.note || s.summary ? undefined : 'muted'}>{s.note || s.summary || '—'}</td>
                     <td className="actions-cell">
                       {canPublish ? (
                         <button type="button" className="btn btn-small" onClick={() => setConfirm(s)}>

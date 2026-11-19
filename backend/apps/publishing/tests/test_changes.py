@@ -177,3 +177,23 @@ def test_snapshot_restore_endpoint_is_publisher_only(api_as, baseline):
     listing = api_as("editor").get("/api/v1/cms/snapshots/").json()["snapshots"]
     assert listing[0]["snapshot_id"] == baseline.snapshot_id and listing[0]["counts"]["hero-slides"] == 3
     assert listing[0]["is_live"] is True and set(listing[0]) >= {"id", "published_at", "published_by", "note"}
+
+
+def test_publish_history_says_what_each_version_changed(api_as, baseline):
+    from django.utils import timezone
+
+    import copy
+
+    from apps.publishing.models import Snapshot
+    from apps.publishing.views import change_summary
+
+    data = copy.deepcopy(baseline.data)
+    data["collections"]["hero-slides"][0]["heading"] = "A new headline"
+    data["singletons"]["site-settings"]["phone_primary"] = "+91 00000 00000"
+    Snapshot.objects.create(snapshot_id="s-2", data=data, sha256="x", published_at=timezone.now())
+    listing = api_as("editor").get("/api/v1/cms/snapshots/").json()["snapshots"]
+    newest, oldest = listing[0], listing[-1]
+    assert newest["summary"] == "Contact: Office details · Home: Hero"
+    assert "Team" not in newest["summary"]
+    assert oldest["summary"] == ""  # the first version has nothing to compare with
+    assert change_summary(data, data) == "No content changes"
