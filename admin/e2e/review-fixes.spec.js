@@ -75,7 +75,6 @@ test('a photo saved right after typing waits for the text autosave (no false con
   await page.evaluate(() => (window.__crtdhMockLatency = 700));
   await panel.getByRole('textbox', { name: 'Headline', exact: true }).fill('Typed just before the photo');
   await panel.locator('input[type=file]').first().setInputFiles(new URL('./fixtures/photo-2400.jpg', import.meta.url).pathname);
-  await panel.getByLabel('Photo description').fill('The Bioscience Building in daylight');
   await panel.getByRole('button', { name: 'Save photo' }).click();
   await expect(panel.getByText('Saved · not live yet')).toBeVisible({ timeout: 15_000 });
   await expect(panel.getByRole('alert').filter({ hasText: 'changed this' })).toHaveCount(0);

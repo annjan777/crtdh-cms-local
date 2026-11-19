@@ -30,8 +30,9 @@ test('every page renders the real public site with clickable sections', async ({
 });
 
 test('a section shown on another page opens where it is edited', async ({ page }) => {
-  await signIn(page, 'priya', '/pages/home');
-  await canvas(page).locator('[data-cms-section="enterprises.list"]').first().click();
-  await expect(page).toHaveURL(/\/pages\/enterprises\?section=enterprises\.list/);
+  // In the restored design the Social impact page shows the "Rural women" story, which is edited on Home.
+  await signIn(page, 'priya', '/pages/social-impact');
+  await canvas(page).locator('[data-cms-section="home.rural"]').first().click();
+  await expect(page).toHaveURL(/\/pages\/home\?section=home\.rural/);
   await expect(panel(page).getByRole('heading', { level: 2 }).first()).toBeVisible();
 });

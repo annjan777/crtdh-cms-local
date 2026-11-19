@@ -59,39 +59,37 @@ test('stale version: a save based on an old version shows who changed it and nev
 
 test('upload rejection: a hero photo under 1600 px is refused and the old photo kept', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
-  const before = await panel(page).locator('.crop-169 img').getAttribute('src');
+  const before = await panel(page).locator('.image-preview img').getAttribute('src');
   await panel(page).locator('input[type=file]').first().setInputFiles(path.join(fixtures, 'photo-1200.png'));
   await expect(panel(page).getByText('This photo is 1200 px wide. Photos in this section need at least 1600 px')).toBeVisible();
   await expect(panel(page).getByRole('link', { name: 'See the shot list' }).first()).toBeVisible();
-  expect(await panel(page).locator('.crop-169 img').getAttribute('src')).toBe(before);
+  expect(await panel(page).locator('.image-preview img').getAttribute('src')).toBe(before);
   await expect(panel(page).getByRole('button', { name: 'Save photo' })).toHaveCount(0);
 });
 
-test('alt text required: a new photo cannot be saved without a description', async ({ page }) => {
+// The photo field was simplified on 2026-11-19 (owner request): no description box and no focus-point
+// picker. The rule these tests guard is unchanged: a photo is never saved without a description for screen
+// readers. It is now written automatically from the section's own text.
+test('a new photo is saved with an automatic description, never without one', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
+  const heading = await panel(page).getByRole('textbox', { name: 'Headline', exact: true }).inputValue();
+  expect(heading.trim()).not.toBe('');
   await panel(page).locator('input[type=file]').first().setInputFiles(path.join(fixtures, 'photo-2400.jpg'));
-  await expect(panel(page).getByText('photo-2400.jpg · 2400 × 1350 · not saved yet')).toBeVisible();
-  // The 16:9 and 4:5 crops preview the new photo.
-  await expect(panel(page).getByText('Desktop · 16:9')).toBeVisible();
-  await expect(panel(page).getByText('Phone · 4:5')).toBeVisible();
-  await panel(page).getByLabel('Photo description').fill('');
-  await panel(page).getByRole('button', { name: 'Save photo' }).click();
-  await expect(panel(page).getByText('Describe this photo before it can be saved.')).toBeVisible();
+  await expect(panel(page).getByText('New photo, not saved yet.')).toBeVisible();
+  await expect(panel(page).getByLabel('Photo description')).toHaveCount(0);
   let db = await mock(page, 'state');
-  expect(db.rows['hero-slides']['18'].image).toContain('/api/v1/media/');
-  await panel(page).getByLabel('Photo description').fill('The Bioscience Building at IIT Kharagpur in daylight');
+  expect(db.rows['hero-slides']['18'].image).toContain('/api/v1/media/'); // nothing saved before Save photo
   await panel(page).getByRole('button', { name: 'Save photo' }).click();
   await expect(panel(page).getByText('Saved · not live yet')).toBeVisible();
   db = await mock(page, 'state');
   expect(db.rows['hero-slides']['18'].image).toMatch(/^data:image/);
-  expect(db.rows['hero-slides']['18'].alt_text).toBe('The Bioscience Building at IIT Kharagpur in daylight');
+  expect(db.rows['hero-slides']['18'].alt_text).toBe(heading.trim());
 });
 
-test('focus point previews both crops and saves', async ({ page }) => {
+test('photos stay centred: no focus-point picker is offered', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
-  await panel(page).getByLabel('Focus point').selectOption('center top');
-  await expect(panel(page).locator('.crop-45 img')).toHaveCSS('object-position', '50% 0%');
-  await expect(panel(page).getByText('Saved · not live yet')).toBeVisible();
+  await expect(panel(page).locator('.image-preview img')).toBeVisible();
+  await expect(panel(page).getByLabel('Focus point')).toHaveCount(0);
 });
 
 test('collections: add, hide and reorder with the keyboard', async ({ page }) => {
@@ -167,6 +165,7 @@ test('below 1024 px: section list and fields, preview full screen', async ({ pag
   await page.getByRole('dialog').getByRole('link', { name: 'Team' }).click();
   await expect(page.getByRole('heading', { name: 'Team', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Preview page' }).click();
-  await expect(page.frameLocator('iframe[title="Preview of the Team page"]').locator('h1')).toContainText('Our team');
+  // The restored design titles the Team page from its CMS banner ("PI, Co-PIs and Research Team").
+  await expect(page.frameLocator('iframe[title="Preview of the Team page"]').locator('h1')).toContainText(/Team/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
