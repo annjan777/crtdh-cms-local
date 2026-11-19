@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useMatch } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { ROLE_LABEL, topRole } from '../auth/roles.js';
-import { useChanges } from './ChangesContext.jsx';
+import { SITE_PAGE_ID, useChanges } from './ChangesContext.jsx';
 import DraftBar from './DraftBar.jsx';
 import { USE_MOCK } from '../api/client.js';
 
@@ -59,7 +59,7 @@ export function PageNav({ sections, selectedSection, onSelectSection, onNavigate
   const openId = match?.params.pageId;
   const list = pages || [];
   const sitePages = list.filter((p) => p.path);
-  const settings = list.find((p) => p.id === 'site');
+  const settings = list.find((p) => p.id === SITE_PAGE_ID);
   const item = (p) => (
     <li key={p.id}>
       <NavLink to={`/pages/${p.id}`} className="nav-link" onClick={onNavigate} aria-current={openId === p.id ? 'page' : undefined}>

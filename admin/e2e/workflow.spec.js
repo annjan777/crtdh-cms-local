@@ -229,3 +229,12 @@ test('messages are hidden from editors', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Only Publishers and Admins can read messages' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Website' }).getByRole('link', { name: 'Messages' })).toHaveCount(0);
 });
+
+test('header & footer is listed from the API globals and opens the site-wide sections', async ({ page }) => {
+  await signIn(page, 'priya', '/pages/home');
+  const link = page.getByRole('link', { name: 'Header & footer' });
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(/\/pages\/site$/);
+  await expect(page.getByRole('button', { name: /Menu links/ })).toBeVisible();
+});

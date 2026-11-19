@@ -596,7 +596,13 @@ async function route(method, path, body) {
   // ---- cms
   if (path === '/cms/pages/') {
     const changed = new Set(computeChanges().pages.map((p) => p.page));
-    return json(200, { pages: PAGES.map((p) => ({ id: p.id, path: p.path, title: p.title, has_changes: changed.has(p.id), sections: p.sections.map((x) => ({ id: x.id, label: x.label, kind: x.kind })) })) });
+    // Same shape as the real API (backend PagesView): site-wide sections under `globals`, not as a page.
+    const summary = (x) => ({ id: x.id, label: x.label, kind: x.kind, resource: x.resource });
+    const site = PAGES.find((p) => p.id === 'site');
+    return json(200, {
+      pages: PAGES.filter((p) => p.id !== 'site').map((p) => ({ id: p.id, path: p.path, title: p.title, has_changes: changed.has(p.id), sections: p.sections.map(summary) })),
+      globals: { has_changes: changed.has('site'), sections: site ? site.sections.map(summary) : [] },
+    });
   }
   let m = path.match(/^\/cms\/pages\/([\w-]+)\/$/);
   if (m) {

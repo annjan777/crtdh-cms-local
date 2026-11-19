@@ -9,6 +9,16 @@ export const TERMINAL = new Set(['live', 'failed', 'cancelled']);
 export const CANCELLABLE = new Set(['queued', 'ready_for_upload']);
 const MAX_POLL_ERRORS = 6;
 
+// GET /cms/pages/ returns the site-wide sections (menu, footer) under `globals`, not as a page. The admin edits
+// them as the page "site" (GET /cms/pages/site/), so add that entry for the nav.
+export const SITE_PAGE_ID = 'site';
+export function navPages(resp) {
+  const pages = (resp?.pages || []).filter((p) => p.id !== SITE_PAGE_ID);
+  const g = resp?.globals;
+  if (!g) return pages;
+  return [...pages, { id: SITE_PAGE_ID, path: null, title: 'Header & footer', has_changes: !!g.has_changes, sections: g.sections || [] }];
+}
+
 export function ChangesProvider({ children }) {
   const [changes, setChanges] = useState(null);
   const [pages, setPages] = useState(null);
@@ -20,7 +30,7 @@ export function ChangesProvider({ children }) {
     try {
       const [c, p] = await Promise.all([cms.changes(), cms.pages()]);
       setChanges(c);
-      setPages(p.pages);
+      setPages(navPages(p));
       setError(null);
     } catch (err) {
       setError(err);
