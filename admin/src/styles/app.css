@@ -2078,3 +2078,43 @@ tr.is-inactive td {
     display: inline-flex;
   }
 }
+
+/* ---------------------------------------------------- Claude access -- */
+.connect-steps {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 8px 0 32px;
+  max-width: 760px;
+}
+.connect-steps > li {
+  display: list-item;
+  margin-bottom: 16px;
+  line-height: 1.55;
+}
+.connect-steps .field-hint {
+  display: block;
+  margin-top: 4px;
+}
+.connect-steps .banner {
+  margin-top: 10px;
+}
+.connect-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.connect-value__label {
+  font-size: 13px;
+  color: var(--mute);
+  min-width: 88px;
+}
+.connect-value__text {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 13px;
+  word-break: break-all;
+}

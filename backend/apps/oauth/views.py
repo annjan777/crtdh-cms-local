@@ -1,5 +1,6 @@
 """OAuth endpoints for the Claude connector and the CMS endpoints that manage it."""
 
+import logging
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -15,9 +16,12 @@ from rest_framework.views import APIView
 
 from apps.accounts.roles import ADMIN, IsEditor, has_role, user_roles
 
+from .claude_client import get_claude_client, issue_secret, server_url
 from .mfa import must_change_password, session_has_mfa
 from .revoke import active_connections, revoke_all_for_user
 from .validators import user_may_connect
+
+logger = logging.getLogger(__name__)
 
 ROLE_LABELS = {"editor": "Editor", "publisher": "Publisher", "admin": "Admin"}
 
@@ -186,7 +190,11 @@ class ClaudeAccessView(APIView):
 
     def get(self, request):
         rows = _connection_rows(active_connections(request.user))
-        body = {"connected": bool(rows), "connections": rows}
+        app = get_claude_client()
+        # What to paste into Claude's "Add custom connector" dialog. The client id is not a secret; the
+        # secret is stored hashed, so an Admin issues a new one (POST .../new-secret/) and shares it privately.
+        setup = {"server_url": server_url(), "client_id": app.client_id if app else None}
+        body = {"connected": bool(rows), "connections": rows, "setup": setup}
         if has_role(request.user, ADMIN):
             from oauth2_provider.models import get_refresh_token_model
 
@@ -230,3 +238,18 @@ class ClaudeAccessRevokeView(APIView):
                                   status.HTTP_404_NOT_FOUND)
         revoked = revoke_all_for_user(target, reason=f"revoked from CMS by user {request.user.pk}")
         return Response({"revoked": revoked, "user_id": target.pk})
+
+
+class ClaudeClientSecretView(APIView):
+    """POST /api/v1/cms/claude-access/new-secret/ (Admins) — create the Claude client or give it a new secret.
+    Returns {server_url, client_id, client_secret}; the secret is shown this once."""
+
+    permission_classes = [IsEditor]
+
+    def post(self, request):
+        if not has_role(request.user, ADMIN):
+            return _error("CMS_FORBIDDEN_ROLE", "Only an Admin can create the Claude client secret.",
+                          "Ask an Admin for the client ID and secret.", status.HTTP_403_FORBIDDEN)
+        app, secret = issue_secret()
+        logger.info("claude client secret issued by user %s", request.user.pk)  # never the secret itself
+        return Response({"server_url": server_url(), "client_id": app.client_id, "client_secret": secret})

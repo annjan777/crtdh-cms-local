@@ -714,12 +714,17 @@ async function route(method, path, body) {
   if (path === '/cms/claude-access/' && method === 'GET') {
     db.claude ||= {};
     const own = db.claude[user.id] || [];
-    const out = { connected: own.length > 0, connections: own };
+    const out = { connected: own.length > 0, connections: own, setup: { server_url: 'https://mcp.crtdh.test/mcp', client_id: db.claudeClientId || null } };
     if (can(user, 'admin'))
       out.users = db.users
         .filter((u) => (db.claude[u.id] || []).length)
         .map((u) => ({ user_id: u.id, username: u.username, name: u.name, connections: db.claude[u.id] }));
     return json(200, out);
+  }
+  if (path === '/cms/claude-access/new-secret/' && method === 'POST') {
+    if (!can(user, 'admin')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only an Admin can create the Claude client secret.', 'Ask an Admin.');
+    db.claudeClientId = db.claudeClientId || 'mock-client-id-4f2a9c';
+    return json(200, { server_url: 'https://mcp.crtdh.test/mcp', client_id: db.claudeClientId, client_secret: `mock-secret-${Date.now().toString(36)}` });
   }
   if (path === '/cms/claude-access/revoke/' && method === 'POST') {
     db.claude ||= {};
