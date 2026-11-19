@@ -166,7 +166,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: admin/package-lock.json
+          cache-dependency-path: |
+            admin/package-lock.json
+            frontend/package-lock.json
       - run: npm ci --no-fund
       - name: unit tests (vitest)
         run: npx vitest run
@@ -178,6 +180,11 @@ jobs:
         run: npm run size
       - name: npm audit (high+)
         run: npm audit --audit-level=high
+      - name: built canvas renders the real site next to frontend/node_modules (Playwright, mock mode)
+        run: |
+          (cd ../frontend && npm ci --no-fund)
+          npx playwright install --with-deps chromium
+          npm run e2e:build
       - uses: actions/upload-artifact@v4
         with:
           name: admin-dist

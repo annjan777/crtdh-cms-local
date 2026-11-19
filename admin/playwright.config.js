@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: ['built/**'], // production-build checks: playwright.build.config.js
   timeout: 45_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,

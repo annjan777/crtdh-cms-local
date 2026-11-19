@@ -1,0 +1,11 @@
+# Used by BuildKit for admin/Dockerfile, whose context is the repository root: send only what the build needs.
+*
+!admin
+!frontend/src/site
+admin/node_modules
+admin/dist
+admin/dist-e2e
+admin/test-results
+admin/playwright-report
+**/.env
+**/*.local
