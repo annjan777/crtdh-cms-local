@@ -118,6 +118,7 @@ def test_every_route_enforces_roles(role, api_as, baseline, publish_env, publish
     # Claude connector access (apps.oauth): any editor manages their own connection
     go("get", "claude-access", 1)
     go("post", "claude-access-revoke", 1, {})
+    go("post", "claude-access-new-secret", 3, {})
 
     # user administration (backend-security): admin only
     from django.contrib.auth import get_user_model

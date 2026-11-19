@@ -5,7 +5,59 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { claudeAccess } from '../api/cms.js';
 import AppShell, { PageNav } from '../shell/AppShell.jsx';
-import { Banner, Dialog, ErrorPanel, Spinner, fmtDateTime } from '../ui/index.jsx';
+import { Banner, CopyButton, Dialog, ErrorPanel, Spinner, fmtDateTime } from '../ui/index.jsx';
+
+function Value({ label, value }) {
+  return (
+    <div className="connect-value">
+      <span className="connect-value__label">{label}</span>
+      <code className="connect-value__text">{value}</code>
+      <CopyButton text={value} label={`Copy ${label.toLowerCase()}`} className="btn btn-small" />
+    </div>
+  );
+}
+
+/** Steps to add the connector in Claude (docs/connect-claude.md), with the values to paste. */
+function ConnectSteps({ setup, isAdmin, issued, onIssue }) {
+  const clientId = issued?.client_id || setup.client_id;
+  return (
+    <section aria-labelledby="connect-claude">
+      <h2 id="connect-claude">Connect Claude</h2>
+      <ol className="connect-steps">
+        <li>
+          In Claude, open <strong>Customize → Connectors</strong> and click <strong>Add custom connector</strong>.
+          <span className="field-hint"> On a Team or Enterprise plan only an Owner can add it (Organization settings → Connectors); everyone else just clicks Connect.</span>
+        </li>
+        <li>
+          Name it <strong>CRTDH CMS</strong> and paste this server URL:
+          <Value label="Server URL" value={setup.server_url} />
+        </li>
+        <li>
+          Open <strong>Advanced settings</strong> and paste the OAuth client ID and secret.
+          {clientId ? <Value label="Client ID" value={clientId} /> : null}
+          {issued ? (
+            <>
+              <Value label="Client secret" value={issued.client_secret} />
+              <Banner tone="warn">Copy the secret now: it is shown only this once. Share it privately (not by email or chat). Anyone who already connected keeps working until their connection expires, then needs this new secret.</Banner>
+            </>
+          ) : isAdmin ? (
+            <p className="field-hint">
+              {clientId ? 'The secret is stored scrambled and can’t be shown again. ' : 'The Claude client isn’t set up yet. '}
+              <br />
+              <button type="button" className="btn btn-small" onClick={onIssue}>
+                {clientId ? 'Create a new client secret' : 'Set up the Claude client'}
+              </button>
+            </p>
+          ) : (
+            <p className="field-hint">Ask an Admin for the client {clientId ? 'secret' : 'ID and secret'}.</p>
+          )}
+        </li>
+        <li>Click <strong>Add</strong>, then <strong>Connect</strong>. Sign in to the CMS on the page that opens and click <strong>Allow</strong>.</li>
+        <li>In a new chat, switch on CRTDH CMS under <strong>+ → Connectors</strong> and ask, for example, “Add Saturday’s eye camp to Media”. Claude saves drafts; a Publisher publishes them.</li>
+      </ol>
+    </section>
+  );
+}
 
 function Connections({ rows }) {
   return (
@@ -27,6 +79,22 @@ export default function ClaudeAccessPage() {
   const [busy, setBusy] = useState(false);
   const [actionErr, setActionErr] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [issued, setIssued] = useState(null); // {client_id, client_secret, server_url}, shown once
+  const [askIssue, setAskIssue] = useState(false);
+  const [issueErr, setIssueErr] = useState(null);
+
+  async function issueSecret() {
+    setBusy(true);
+    setIssueErr(null);
+    try {
+      setIssued(await claudeAccess.newSecret());
+      setAskIssue(false);
+    } catch (err) {
+      setIssueErr(err);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const load = useCallback(() => {
     setError(null);
@@ -61,11 +129,12 @@ export default function ClaudeAccessPage() {
         <main id="main" className="page-main" tabIndex={-1}>
           <header className="page-head">
             <h1>Claude access</h1>
-            <p className="lead">Claude can edit drafts for you after you connect it in Claude (Customize › Connectors). It can’t publish. Disconnecting stops it on its next request.</p>
+            <p className="lead">Claude can edit drafts for you once you connect it. It can’t publish. Disconnecting stops it on its next request.</p>
           </header>
           {notice ? <Banner tone="ok">{notice}</Banner> : null}
           {error ? <ErrorPanel error={error} onRetry={load} title="Claude access couldn’t be loaded" /> : null}
           {!data && !error ? <p className="muted" role="status"><Spinner /> Loading</p> : null}
+          {data?.setup ? <ConnectSteps setup={data.setup} isAdmin={isAdmin} issued={issued} onIssue={() => setAskIssue(true)} /> : null}
           {data ? (
             <section aria-labelledby="own-claude">
               <h2 id="own-claude">Your account</h2>
@@ -145,6 +214,29 @@ export default function ClaudeAccessPage() {
         {actionErr ? <Banner tone="danger">{actionErr.message} {actionErr.fix}</Banner> : null}
         <p>
           {confirm?.userId == null ? 'Claude stops working with your account on its next request. Drafts it made stay as they are. To use it again, connect it again in Claude.' : `${confirm?.name}’s Claude stops working on its next request. Drafts it made stay as they are. They can connect it again later.`}
+        </p>
+      </Dialog>
+      <Dialog
+        open={askIssue}
+        onClose={() => setAskIssue(false)}
+        title={data?.setup?.client_id ? 'Create a new client secret?' : 'Set up the Claude client?'}
+        actions={
+          <>
+            <button type="button" className="btn" data-autofocus="cancel" onClick={() => setAskIssue(false)}>
+              Cancel
+            </button>
+            <button type="button" className="btn btn-primary" aria-busy={busy || undefined} onClick={issueSecret}>
+              {busy ? <Spinner /> : null}
+              {data?.setup?.client_id ? 'Create new secret' : 'Set up'}
+            </button>
+          </>
+        }
+      >
+        {issueErr ? <Banner tone="danger">{issueErr.message} {issueErr.fix}</Banner> : null}
+        <p>
+          {data?.setup?.client_id
+            ? 'The old secret stops working for new connections. People already connected keep working until their connection expires (up to 30 days), then need the new secret in their connector.'
+            : 'This creates the client Claude signs in with and shows its secret once.'}
         </p>
       </Dialog>
     </AppShell>

@@ -36,4 +36,5 @@ wellknown_urlpatterns = [
 cms_api_urlpatterns = [
     path("claude-access/", views.ClaudeAccessView.as_view(), name="claude-access"),
     path("claude-access/revoke/", views.ClaudeAccessRevokeView.as_view(), name="claude-access-revoke"),
+    path("claude-access/new-secret/", views.ClaudeClientSecretView.as_view(), name="claude-access-new-secret"),
 ]

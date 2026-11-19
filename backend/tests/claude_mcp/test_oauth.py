@@ -582,3 +582,23 @@ def test_cleartokens_removes_expired_and_revoked_tokens_only(editor, claude_app)
     call_command("cleartokens")
     assert not AccessToken.objects.filter(pk=old.pk).exists()
     assert AccessToken.objects.filter(user=editor).count() == before and live
+
+
+def test_claude_access_shows_connection_setup_and_admin_issues_a_secret(editor):
+    from oauth2_provider.models import get_application_model
+
+    api = APIClient()
+    api.force_authenticate(editor)
+    setup = api.get("/api/v1/cms/claude-access/").json()["setup"]
+    assert setup["server_url"].endswith("/mcp") and setup["client_id"] is None  # no client yet
+    resp = api.post("/api/v1/cms/claude-access/new-secret/", {}, format="json")
+    assert resp.status_code == 403 and resp.json()["code"] == "CMS_FORBIDDEN_ROLE"
+
+    api.force_authenticate(make_user("boss3", role="admin"))
+    first = api.post("/api/v1/cms/claude-access/new-secret/", {}, format="json").json()
+    assert first["client_id"] and len(first["client_secret"]) > 20 and first["server_url"] == setup["server_url"]
+    app = get_application_model().objects.get(client_id=first["client_id"])
+    assert app.client_secret != first["client_secret"]  # stored hashed
+    again = api.post("/api/v1/cms/claude-access/new-secret/", {}, format="json").json()
+    assert again["client_id"] == first["client_id"] and again["client_secret"] != first["client_secret"]
+    assert api.get("/api/v1/cms/claude-access/").json()["setup"]["client_id"] == first["client_id"]
