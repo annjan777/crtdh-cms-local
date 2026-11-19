@@ -3666,8 +3666,8 @@
   "model": "media_gallery.mediacoveragelink",
   "pk": 16,
   "fields": {
-    "title": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
-    "url": "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
+    "title": "https://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
+    "url": "https://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
     "order": 7
   }
 },
