@@ -199,7 +199,7 @@ def test_preview_document_is_framed_same_origin_only():
     preview = _gateway_cms_locations()["= /preview.html"]
     csp = _csp(preview["Content-Security-Policy"])
     assert csp["frame-ancestors"] == ["'self'"] and preview["X-Frame-Options"] == "SAMEORIGIN"
-    # the public site's own embeds (Blocks.jsx: map, youtube-nocookie player) and nothing broader
+    # the public site's own embeds (Google map, youtube-nocookie players) and nothing broader
     assert set(csp["frame-src"]) == {"https://www.youtube-nocookie.com", "https://www.google.com"}
     for directive in ("script-src", "object-src", "base-uri"):
         assert directive in csp

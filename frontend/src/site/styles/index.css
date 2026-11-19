@@ -1,6 +1,10 @@
-@import './fonts.css';
-@import './tokens.css';
-@import './base.css';
-@import './layout.css';
-@import './components.css';
-@import './pages.css';
+/* Site stylesheet entry (the public app's root and the CMS canvas both load this file).
+   Fonts are self-hosted (the site CSP allows fonts only from its own origin): Montserrat for
+   headings, Open Sans for body text, the same faces and weights the previous site used. */
+@import '@fontsource/montserrat/latin-500.css';
+@import '@fontsource/montserrat/latin-600.css';
+@import '@fontsource/montserrat/latin-700.css';
+@import '@fontsource/open-sans/latin-400.css';
+@import '@fontsource/open-sans/latin-500.css';
+@import '@fontsource/open-sans/latin-600.css';
+@import './global.css';

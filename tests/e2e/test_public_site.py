@@ -165,5 +165,5 @@ def test_home_js_budget(page, site):
     page.on("response", lambda r: sizes.append(int(r.headers.get("content-length", 0) or 0))
             if r.request.resource_type == "script" else None)
     page.goto(site + "/", wait_until="networkidle")
-    # transfer size proxy; the real gzip budget (150 KB) is enforced by scripts/check-bundle-size.sh in CI
+    # transfer size proxy; the real gzip budget (175 KB) is enforced by scripts/check-bundle-size.sh in CI
     assert sum(sizes) < 600_000, sum(sizes)

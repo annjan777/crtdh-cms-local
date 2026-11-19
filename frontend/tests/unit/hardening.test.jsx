@@ -9,10 +9,8 @@ import { safeColor, safeHref, toRoute, withSlash } from '../../src/site/util.js'
 import { sanitizeRichText } from '../../src/site/richtext.js'
 import SiteLink, { PlainLink } from '../../src/site/link.jsx'
 import { MediaProvider, Img } from '../../src/site/media.jsx'
-import { RichText, VideoPoster, eventPhotoFor } from '../../src/site/components/Blocks.jsx'
+import RichText from '../../src/site/components/RichText.jsx'
 import ContactForm from '../../src/site/components/ContactForm.jsx'
-import Layout, { footerLabel, groupNav } from '../../src/site/components/Layout.jsx'
-import { facilityPhoto } from '../../src/site/pages/Home.jsx'
 
 const snap = JSON.parse(fs.readFileSync(process.env.SNAPSHOT_PATH || 'snapshot.json', 'utf8'))
 const html = (el) => renderToStaticMarkup(el)
@@ -99,43 +97,16 @@ describe('rich text', () => {
     expect(sanitizeRichText('<p>x</em></p>')).toBe('<p>x</p>')
   })
   it('RichText shows plain text as paragraphs and markup through the sanitiser', () => {
-    expect(html(<RichText html={'R&D first.\n\nSecond <3'} />)).toBe('<div class="prose "><p>R&amp;D first.</p><p>Second &lt;3</p></div>')
-    expect(html(<RichText html="<p>One <b>bold</b></p><script>x()</script>" />)).toBe('<div class="prose "><p>One <b>bold</b></p></div>')
+    expect(html(<RichText html={'R&D first.\n\nSecond <3'} className="prose-block" />)).toBe('<div class="prose-block"><p>R&amp;D first.</p><p>Second &lt;3</p></div>')
+    expect(html(<RichText html="<p>One <b>bold</b></p><script>x()</script>" />)).toBe('<div class=""><p>One <b>bold</b></p></div>')
   })
   it('the About page renders every registry richtext field through RichText', () => {
     const src = fs.readFileSync('src/site/pages/About.jsx', 'utf8')
-    for (const f of ['intro', 'mission_vision', 'dsir_about', 'iitkgp_about']) expect(src).toContain(`<RichText html={about.${f}}`)
-    expect(src).not.toMatch(/<Prose\b/)
-  })
-})
-
-describe('Home design fixes', () => {
-  it('a video poster is never an empty box: event photograph or a typographic poster', () => {
-    const events = snap.collections['media-events']
-    const photo = eventPhotoFor('Chintan Shivir', events)
-    expect(photo?.image).toBeTruthy()
-    expect(eventPhotoFor('Viksit Bharat Abhiyan', events)).toBeNull()
-    const withPhoto = html(<VideoPoster url="https://youtu.be/abcdefgh" title="Chintan Shivir" image={photo.image} />)
-    expect(withPhoto).toContain('video__poster--photo')
-    expect(withPhoto).toContain(`src="${photo.image}"`)
-    const type = html(<VideoPoster url="https://youtu.be/abcdefgh" title="Viksit Bharat Abhiyan" />)
-    expect(type).toContain('video__poster--type')
-    expect(type).toContain('Viksit Bharat Abhiyan')
-    expect(type).not.toMatch(/<img/)
-  })
-  it('facility cards take the matching equipment photograph', () => {
-    const eq = snap.collections.equipment
-    expect(facilityPhoto('CRTDH Sterile Room', eq)?.name).toMatch(/Sterile/)
-    expect(facilityPhoto('Pilot Plant and Manufacturing Units', eq)?.name).toMatch(/pilot plant/i)
-    expect(facilityPhoto('CRTDH Conference Room & Office', eq)).toBeNull()
-  })
-  it('footer column headings never repeat a link label in their column', () => {
-    const { groups } = groupNav(snap.collections['nav-items'])
-    for (const g of groups) {
-      const h = footerLabel(g).toLowerCase()
-      expect(g.items.map((i) => String(i.label).toLowerCase())).not.toContain(h)
+    for (const f of ['intro', 'mission_vision', 'dsir_about', 'iitkgp_about']) expect(src).toContain(`<ProseBlock text={about.${f}}`)
+    expect(src).toMatch(/function ProseBlock\(\{ text \}\) \{\n  return <RichText html=\{text\}/)
+    expect(fs.readFileSync('src/site/pages/Innovations.jsx', 'utf8')).toContain('<RichText html={innovation.body}')
+    for (const f of fs.readdirSync('src/site/pages')) {
+      if (f.endsWith('.jsx')) expect(fs.readFileSync(`src/site/pages/${f}`, 'utf8')).not.toContain('dangerouslySetInnerHTML')
     }
-    const out = html(<Layout data={{ singletons: snap.singletons, collections: snap.collections }}>x</Layout>)
-    expect(out).not.toMatch(/<h2 class="site-footer__h">About<\/h2>/)
   })
 })

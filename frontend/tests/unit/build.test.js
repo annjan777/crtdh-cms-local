@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { SnapshotGuardError, parsePrivacyNotice, validateSnapshot } from '../../app/snapshot.server.js'
 import { PAGES, PAGE_NEEDS, REQUIRED, selectData } from '../../src/site/registry.js'
-import { groupNav } from '../../src/site/components/Layout.jsx'
 import { validateField, mailtoHref } from '../../src/site/components/ContactForm.jsx'
 import { toRoute, uniqueItems, youtubeId, blocksFor } from '../../src/site/util.js'
 
@@ -38,24 +37,14 @@ describe('registry', () => {
     expect(PAGES.map((p) => p.id)).toEqual(['home', 'about', 'team', 'innovations', 'facilities', 'services', 'product', 'enterprises', 'social-impact', 'covid-19', 'media', 'contact'])
     for (const p of PAGES) expect(PAGE_NEEDS[p.id]).toBeTruthy()
   })
+  it('selectData drops unpublished rows', () => {
+    const d = selectData({ singletons: {}, collections: { 'team-members': [{ id: 1, name: 'A' }, { id: 2, name: 'Hidden', is_published: false }] } }, { singletons: [], collections: ['team-members'] })
+    expect(d.collections['team-members'].map((m) => m.name)).toEqual(['A'])
+  })
   it('selectData keeps the snapshot shape and only referenced media', () => {
     const d = selectData(stub, PAGE_NEEDS.team)
     expect(Object.keys(d.collections)).toEqual(['team-categories', 'team-members'])
     for (const url of Object.keys(d.media)) expect(JSON.stringify(d.collections)).toContain(url)
-  })
-})
-
-describe('navigation grouping', () => {
-  it('groups the CMS nav items as About · Our work · Impact · News and keeps every item', () => {
-    const { groups, contact } = groupNav(stub.collections['nav-items'])
-    expect(groups.map((g) => g.label)).toEqual(['About', 'Our work', 'Impact', 'News'])
-    const routes = groups.flatMap((g) => g.items.map((i) => i.route))
-    expect(routes.length + 1).toBe(stub.collections['nav-items'].length - 1) // all but Home, plus Contact
-    expect(contact.route).toBe('/contact/')
-  })
-  it('an unknown CMS item still appears (under About)', () => {
-    const { groups } = groupNav([...stub.collections['nav-items'], { id: 99, label: 'Careers', url: '/careers' }])
-    expect(groups.find((g) => g.id === 'about').items.map((i) => i.label)).toContain('Careers')
   })
 })
 
@@ -113,50 +102,52 @@ describe('utilities', () => {
   })
 })
 
-describe('Home figures strip (owner decision D10)', async () => {
-  const { homeFigures, DSIR_YEARS } = await import('../../src/site/pages/Home.jsx')
-  it('counts published innovations, enterprises and team members like the old Home did, plus the DSIR years', () => {
-    const c = { innovations: [{ id: 1 }, { id: 2, is_published: false }, { id: 3 }], enterprises: [{ id: 1 }],
-      'team-members': [{ id: 1 }, { id: 2 }, { id: 3, is_published: false }] }
-    expect(homeFigures(c)).toEqual([
-      { value: 2, label: 'Innovations developed' },
-      { value: 1, label: 'Enterprises incubated' },
-      { value: 2, label: 'Researchers & staff' },
-      { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
-    ])
-    expect(DSIR_YEARS).toBe(8)
-  })
-  it('drops a figure that would read 0+', () => {
-    expect(homeFigures({ innovations: [], enterprises: [] }).map((f) => f.label)).toEqual(['Years sponsored by DSIR'])
-  })
-})
-
-describe('owner content kept from the old site (decision D13)', async () => {
+describe('previous design, built from the snapshot', async () => {
   const React = await import('react')
   const { renderToStaticMarkup } = await import('react-dom/server')
-  const { default: Home, EXPLORE, CAPTIONS } = await import('../../src/site/pages/Home.jsx')
-  const { default: Team, PI_LINE, TEAM_TAGLINE, isPrincipal } = await import('../../src/site/pages/Team.jsx')
+  const { pages, Layout } = await import('../../src/site/index.js')
   const data = (page) => selectData(structuredClone(stub), { singletons: [...PAGE_NEEDS[page].singletons, 'site-settings'], collections: [...PAGE_NEEDS[page].collections, 'nav-items'] })
-  const text = (html) => html.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, ' ').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ')
+  const render = (id) => renderToStaticMarkup(React.createElement(Layout, { data: data(id), currentPath: PAGES.find((p) => p.id === id).path },
+    React.createElement(pages[id], { data: data(id) })))
 
-  it('Home: four figures, the three Explore lines with their links, the four photo captions', () => {
-    const html = renderToStaticMarkup(React.createElement(Home, { data: data('home') }))
-    const t = text(html)
-    for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers & staff', 'Years sponsored by DSIR']) expect(t).toContain(label)
-    for (const e of EXPLORE) {
-      expect(t).toContain(e.text)
-      expect(html).toContain(`href="${e.to}"`)
+  it.each(PAGES.map((p) => p.id))('%s renders complete HTML with no loading state and no network call', (id) => {
+    const calls = []
+    const realFetch = globalThis.fetch
+    globalThis.fetch = (...a) => { calls.push(a); return Promise.reject(new Error('no network in a pre-built page')) }
+    try {
+      const html = render(id)
+      expect(html).toContain('site-header')
+      expect(html).toContain('site-footer')
+      expect(html).not.toContain('class="spinner"')
+      expect(html).not.toMatch(/Couldn.t load this content/)
+      expect(calls).toHaveLength(0)
+    } finally {
+      globalThis.fetch = realFetch
     }
-    expect(EXPLORE.map((e) => e.title)).toEqual(['Innovations', 'Enterprises', 'Social Impact'])
-    for (const caption of Object.values(CAPTIONS)) expect(html).toContain(`<figcaption>${caption}</figcaption>`)
   })
-  it('Team: the PI line, the heading, the tagline and Get in Touch to the contact page', () => {
-    const t = text(renderToStaticMarkup(React.createElement(Team, { data: data('team') })))
-    expect(t).toContain(`${PI_LINE.title} — ${PI_LINE.text}`)
-    expect(PI_LINE.text).toBe("Guiding CRTDH's vision for affordable healthcare technologies.")
-    expect(t).toContain('A multidisciplinary team working towards innovative healthcare solutions')
-    expect(t).toContain(TEAM_TAGLINE)
-    expect(t).toContain('Get in Touch')
-    expect(isPrincipal('Principal Investigator') && !isPrincipal('Co-Principal Investigator')).toBe(true)
+  it('Home shows the hero, the four figures and the membership and visit sections', () => {
+    const html = render('home')
+    for (const s of ['home.hero', 'home.membership', 'home.objective', 'home.visit']) expect(html).toContain(`data-block="${s}"`)
+    for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers &amp; staff', 'Years sponsored by DSIR']) expect(html).toContain(label)
+  })
+  it('the menu marks the current page and links carry the trailing slash', () => {
+    const html = render('team')
+    expect(html).toMatch(/<a[^>]*href="\/team\/"[^>]*aria-current="page"|<a[^>]*aria-current="page"[^>]*href="\/team\/"/)
+  })
+  it('frames only Google Maps and YouTube (the CSP frame-src lists only what pages use)', () => {
+    const snap = structuredClone(stub)
+    snap.singletons['site-settings'].map_embed_url = 'https://evil.example/frame'
+    snap.collections['video-blocks'] = [{ id: 1, page: 'enterprises', title: 'v', youtube_url: 'https://evil.example/x', is_published: true }]
+    const d = selectData(snap, { singletons: ['site-settings', 'home-page'], collections: ['enterprises', 'image-grid-blocks', 'video-blocks', 'nav-items'] })
+    const html = renderToStaticMarkup(React.createElement(Layout, { data: d }, React.createElement(pages.enterprises, { data: d })))
+    expect(html).not.toContain('evil.example')
+    const contact = renderToStaticMarkup(React.createElement(pages.contact, { data: d }))
+    expect(contact).not.toContain('<iframe')
+  })
+  it('unsafe links from content render as text', () => {
+    const snap = structuredClone(stub)
+    snap.singletons['site-settings'].facebook_url = 'javascript:alert(1)'
+    const d = selectData(snap, { singletons: ['site-settings'], collections: ['nav-items'] })
+    expect(renderToStaticMarkup(React.createElement(Layout, { data: d }, 'x'))).not.toContain('javascript:')
   })
 })

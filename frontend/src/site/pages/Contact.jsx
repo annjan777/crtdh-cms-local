@@ -1,97 +1,107 @@
-import PageShell from '../components/PageShell.jsx'
-import SiteLink from '../link.jsx'
+import { PageDataProvider } from '../api/data.jsx'
+import { mapEmbedUrl } from '../util.js'
+import { Mail, MapPin, Phone } from 'lucide-react'
+import { useApi } from '../hooks/useApi'
+import { fetchOne } from '../api/client'
+import { usePageData } from '../api/data.jsx'
 import ContactForm from '../components/ContactForm.jsx'
-import { MapEmbed, PageBanner } from '../components/Blocks.jsx'
+import { FullNotice, ShortNotice } from '../components/PrivacyNotice.jsx'
+import PageHero from '../components/PageHero'
+import { Spinner } from '../components/StateBlock'
+import Reveal from '../components/Reveal'
+import './Contact.css'
 
-/** Contact (form pattern): the form, then address and map. */
-export default function Contact({ data, settings: settingsProp }) {
-  // Site settings come from the layout data; the admin preview may pass them directly.
-  const settings = settingsProp || data.singletons?.['site-settings'] || data.layout?.singletons?.['site-settings'] || {}
-  const privacy = data.extra?.privacy
-  const phones = [settings.phone_primary, settings.phone_secondary].filter(Boolean)
-  const emails = [settings.email_primary, settings.email_secondary].filter(Boolean)
+function ContactView() {
+  const { data: siteSettings, loading: settingsLoading } = useApi(
+    () => fetchOne('/site-settings/'),
+    [],
+    null,
+  )
+  const privacy = usePageData()?.extra?.privacy
+
   return (
-    <PageShell data={data} className="contact">
-      <PageBanner
-        title="Contact CRTDH"
-        intro="Questions about our research, facilities or services, or about working with the centre: write to us and the team will reply by email."
+    <div>
+      <PageHero
+        eyebrow="Contact"
+        title="Get in touch"
+        description="Questions about our research, facilities, or partnering with CRTDH? Send us a message."
       />
-      <section className="section">
-        <div className="wrap contact__grid">
-          <ContactForm email={settings.email_primary} phone={settings.phone_primary} notice={<ShortNotice privacy={privacy} />} />
-          <aside className="contact__details" aria-labelledby="contact-office">
-            <h2 id="contact-office">The office</h2>
-            <dl className="facts">
-              {settings.address && (
-                <>
-                  <dt>Address</dt>
-                  <dd><address>{settings.address}</address></dd>
-                </>
-              )}
-              {phones.length > 0 && (
-                <>
-                  <dt>Phone</dt>
-                  <dd>
-                    {phones.map((p) => (
-                      <a key={p} href={`tel:${p.replace(/[^\d+]/g, '')}`} className="facts__link">{p}</a>
-                    ))}
-                  </dd>
-                </>
-              )}
-              {emails.length > 0 && (
-                <>
-                  <dt>Email</dt>
-                  <dd>
-                    {emails.map((e) => (
-                      <a key={e} href={`mailto:${e}`} className="facts__link">{e}</a>
-                    ))}
-                  </dd>
-                </>
-              )}
-            </dl>
-            <MapEmbed src={settings.map_embed_url} address={settings.address} />
-          </aside>
+
+      <section data-block="contact.details" className="section">
+        <div className="container contact-layout">
+          <Reveal direction="left" className="card contact-form-wrap">
+            <ContactForm
+              email={siteSettings?.email_primary}
+              phone={siteSettings?.phone_primary}
+              notice={<ShortNotice privacy={privacy} />}
+            />
+          </Reveal>
+
+          <Reveal direction="right" delay={0.1} className="contact-details">
+            <h2>Our office</h2>
+            {settingsLoading ? (
+              <Spinner />
+            ) : siteSettings ? (
+              <ul className="contact-details__list">
+                {siteSettings.address && (
+                  <li>
+                    <MapPin size={18} aria-hidden="true" />
+                    <div>
+                      <strong>Address</strong>
+                      <span>{siteSettings.address}</span>
+                    </div>
+                  </li>
+                )}
+                {(siteSettings.phone_primary || siteSettings.phone_secondary) && (
+                  <li>
+                    <Phone size={18} aria-hidden="true" />
+                    <div>
+                      <strong>Phone</strong>
+                      <span>
+                        {[siteSettings.phone_primary, siteSettings.phone_secondary].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  </li>
+                )}
+                {(siteSettings.email_primary || siteSettings.email_secondary) && (
+                  <li>
+                    <Mail size={18} aria-hidden="true" />
+                    <div>
+                      <strong>Email</strong>
+                      <span>
+                        {[siteSettings.email_primary, siteSettings.email_secondary].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            ) : (
+              <p className="contact-details__empty">Contact details are being updated. Please use the form.</p>
+            )}
+
+            {mapEmbedUrl(siteSettings?.map_embed_url) && (
+              <div className="map-embed card contact-map">
+                <iframe
+                  src={mapEmbedUrl(siteSettings.map_embed_url)}
+                  title="CRTDH location map"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            )}
+          </Reveal>
         </div>
       </section>
       <FullNotice privacy={privacy} />
-    </PageShell>
+    </div>
   )
 }
 
-/** Short notice, shown directly above Send (docs/privacy-notice.md). */
-function ShortNotice({ privacy }) {
-  const text = privacy?.short || 'What you send here goes to the CRTDH office at IIT Kharagpur and is used only to reply to you.'
-  return <p className="privacy small soft" id="contact-notice">{inlineLinks(text)}</p>
-}
-
-/** Full notice: "How we use your message" at /contact#privacy. Hidden until the document exists. */
-function FullNotice({ privacy }) {
-  if (!privacy?.paragraphs?.length) return null
+/** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
+export default function Contact({ data }) {
   return (
-    <section className="section section--surface" id="privacy" aria-labelledby="privacy-title">
-      <div className="wrap">
-        <h2 id="privacy-title">{privacy.title}</h2>
-        <div className="prose mt-6">
-          {privacy.paragraphs.map((p, i) => (
-            <p key={i}>{inlineLinks(p)}</p>
-          ))}
-        </div>
-      </div>
-    </section>
+    <PageDataProvider data={data}>
+      <ContactView />
+    </PageDataProvider>
   )
-}
-
-function inlineLinks(text) {
-  const out = []
-  const re = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*/g
-  let last = 0
-  let m
-  while ((m = re.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index))
-    if (m[1]) out.push(<SiteLink key={m.index} to={m[2]}>{m[1]}</SiteLink>)
-    else out.push(<strong key={m.index}>{m[3]}</strong>)
-    last = re.lastIndex
-  }
-  out.push(text.slice(last))
-  return out
 }

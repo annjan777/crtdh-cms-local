@@ -1,91 +1,97 @@
-import PageShell from '../components/PageShell.jsx'
-import { GridBlock, PageBanner, VideoPoster } from '../components/Blocks.jsx'
-import { Img } from '../media.jsx'
-import { blocksFor } from '../util.js'
+import { PageDataProvider } from '../api/data.jsx'
+import { Factory } from 'lucide-react'
+import { useApi } from '../hooks/useApi'
+import { fetchList } from '../api/client'
+import PageHero from '../components/PageHero'
+import ImageGridBlockSection from '../components/ImageGridBlockSection'
+import VideoBlock from '../components/VideoBlock'
+import { DataState } from '../components/StateBlock'
+import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
+import './Enterprises.css'
 
-/** Enterprises (listing): the cluster directory, the engagement story and the training gallery. */
-export default function Enterprises({ data }) {
-  const c = data.collections || {}
-  const home = data.singletons?.['home-page'] || {}
-  const enterprises = c.enterprises || []
-  const blocks = blocksFor(c['image-grid-blocks'], 'enterprises')
-  const videos = (c['video-blocks'] || []).filter((v) => v.page === 'enterprises')
+function EnterprisesView() {
+  const { data: enterprises, loading, error } = useApi(() => fetchList('/enterprises/'), [], [])
+  const { data: blocks, loading: blocksLoading } = useApi(
+    () => fetchList('/image-grid-blocks/', { params: { page: 'enterprises' } }),
+    [],
+    [],
+  )
+  const { data: videoBlocks, loading: videoLoading } = useApi(
+    () => fetchList('/video-blocks/', { params: { page: 'enterprises' } }),
+    [],
+    [],
+  )
+  const enterpriseBlocks = (blocks || []).filter((b) => !b.page || b.page === 'enterprises')
+  const enterpriseVideos = (videoBlocks || []).filter((v) => !v.page || v.page === 'enterprises')
+
   return (
-    <PageShell data={data} className="enterprises">
-      <PageBanner
-        title="Enterprises"
-        intro="MSMEs and startups engaged with CRTDH, from medtech startups scaling manufacturing to rural livelihood ventures."
+    <div>
+      <PageHero
+        eyebrow="Enterprises"
+        title="MSMEs &amp; startups engaged with CRTDH"
+        description="The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing."
       />
-      {(home.enterprises_text || home.msme_map_image) && (
-        <section className="section" aria-labelledby="ent-engagement">
-          <div className="wrap split">
-            <div className="split__main">
-              <h2 id="ent-engagement">Enterprise engagement</h2>
-              {home.enterprises_text && <p className="mt-6 prose">{home.enterprises_text}</p>}
-            </div>
-            {home.msme_map_image && (
-              <figure className="split__side">
-                <Img src={home.msme_map_image} alt={home.msme_map_image_alt || home.msme_caption || 'Map of the MSME cluster'} ratio={null} contain sizes="(min-width: 768px) 32vw, 100vw" />
-                {home.msme_caption && <figcaption>{home.msme_caption}</figcaption>}
-              </figure>
+
+      <section data-block="enterprises.list" className="section">
+        <div className="container">
+          <Reveal className="section-head">
+            <span className="eyebrow">Cluster</span>
+            <h2 className="section-title">Enterprises engagement</h2>
+          </Reveal>
+          <DataState loading={loading} error={error} data={enterprises} emptyProps={{ title: 'Enterprise directory coming soon' }}>
+            {(items) => (
+              <Stagger className="grid grid--4">
+                {items.map((ent) => (
+                  <StaggerItem key={ent.id}>
+                    <div className="card enterprise-card">
+                      <div className="enterprise-card__logo">
+                        {ent.logo ? <img src={ent.logo} alt={ent.name} loading="lazy" /> : <Factory size={26} aria-hidden="true" />}
+                      </div>
+                      <p className="enterprise-card__name">{ent.name}</p>
+                      {ent.subtitle && <p className="enterprise-card__subtitle">{ent.subtitle}</p>}
+                    </div>
+                  </StaggerItem>
+                ))}
+              </Stagger>
             )}
-          </div>
-        </section>
-      )}
-      {enterprises.length > 0 && (
-        <section className="section section--surface" aria-labelledby="ent-directory">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="ent-directory">The enterprise cluster</h2>
-              <p>{enterprises.length} enterprises work with the centre.</p>
-            </div>
-            <ul className="logos">
-              {enterprises.map((e) => (
-                <li key={e.id} className="logo-card card">
-                  <div className="logo-card__mark">
-                    {e.logo ? <img src={e.logo} alt="" loading="lazy" /> : <span aria-hidden="true">{initials(e.name)}</span>}
-                  </div>
-                  <p className="logo-card__name">{e.name}</p>
-                  {e.subtitle && <p className="logo-card__sub soft">{e.subtitle.replace(/^\((.*)\)$/, '$1')}</p>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-      {blocks.length > 0 && (
-        <section className="section" aria-label="Demonstration and training">
-          <div className="wrap">
-            {blocks.map((b) => (
-              <GridBlock key={b.id} block={b} />
+          </DataState>
+        </div>
+      </section>
+
+      {!blocksLoading && enterpriseBlocks.length > 0 && (
+        <section data-block="enterprises.photo-sections" className="section section--alt">
+          <div className="container">
+            {enterpriseBlocks.map((block) => (
+              <ImageGridBlockSection block={block} key={block.id} columns={4} />
             ))}
           </div>
         </section>
       )}
-      {videos.length > 0 && (
-        <section className="section section--surface" aria-labelledby="ent-videos">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="ent-videos">Enterprise stories</h2>
-            </div>
-            <div className="videos">
-              {videos.map((v) => (
-                <VideoPoster key={v.id} url={v.youtube_url} title={v.title} />
+
+      {!videoLoading && enterpriseVideos.length > 0 && (
+        <section data-block="enterprises.videos" className="section">
+          <div className="container">
+            <Reveal className="section-head">
+              <span className="eyebrow">In focus</span>
+              <h2 className="section-title">Enterprise stories</h2>
+            </Reveal>
+            <div className="grid grid--2">
+              {enterpriseVideos.map((block) => (
+                <VideoBlock block={block} key={block.id} />
               ))}
             </div>
           </div>
         </section>
       )}
-    </PageShell>
+    </div>
   )
 }
 
-function initials(name) {
-  return String(name || '')
-    .replace(/^M\/s\.?\s*/i, '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('')
+/** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
+export default function Enterprises({ data }) {
+  return (
+    <PageDataProvider data={data}>
+      <EnterprisesView />
+    </PageDataProvider>
+  )
 }

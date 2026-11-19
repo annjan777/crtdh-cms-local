@@ -1,54 +1,66 @@
-import PageShell from '../components/PageShell.jsx'
-import { ClosingBand, GridBlock, PageBanner } from '../components/Blocks.jsx'
-import { Img } from '../media.jsx'
-import { blocksFor } from '../util.js'
+import { PageDataProvider } from '../api/data.jsx'
+import { useApi } from '../hooks/useApi'
+import { fetchList } from '../api/client'
+import PageHero from '../components/PageHero'
+import ImageGrid from '../components/ImageGrid'
+import ImageGridBlockSection from '../components/ImageGridBlockSection'
+import { DataState } from '../components/StateBlock'
+import Reveal from '../components/Reveal'
 
-/** Facilities (listing): equipment grid, then the manufacturing and demonstration units. */
-export default function Facilities({ data }) {
-  const c = data.collections || {}
-  const equipment = c.equipment || []
-  const blocks = blocksFor(c['image-grid-blocks'], 'facilities')
+function FacilitiesView() {
+  const { data: equipment, loading, error } = useApi(() => fetchList('/equipment/'), [], [])
+  const { data: blocks, loading: blocksLoading, error: blocksError } = useApi(
+    () => fetchList('/image-grid-blocks/', { params: { page: 'facilities' } }),
+    [],
+    [],
+  )
+  const facilityBlocks = (blocks || []).filter((b) => !b.page || b.page === 'facilities')
+
   return (
-    <PageShell data={data} className="facilities">
-      <PageBanner
-        title="Facilities"
-        intro="Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises."
+    <div>
+      <PageHero
+        eyebrow="Facilities"
+        title="Equipment &amp; manufacturing infrastructure"
+        description="Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises."
       />
-      {equipment.length > 0 && (
-        <section className="section" aria-labelledby="equipment">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="equipment">Laboratory and testing equipment</h2>
-            </div>
-            <ul className="tiles">
-              {equipment.map((e) => (
-                <li key={e.id} className="tile card">
-                  {e.image ? (
-                    <Img src={e.image} alt={e.image_alt || e.name} ratio="3x2" sizes="(min-width: 1024px) 23vw, (min-width: 768px) 30vw, 100vw" />
-                  ) : null}
-                  <h3 className="tile__title">{e.name}</h3>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-      {blocks.length > 0 && (
-        <section className="section section--surface" aria-label="Manufacturing">
-          <div className="wrap">
-            {blocks.map((b) => (
-              // Home links to #manufacturing-plants; the CMS anchor is "manufacturingplants". Keep both working.
-              <GridBlock key={b.id} block={b} extraAnchor={b.anchor_slug === 'manufacturingplants' ? 'manufacturing-plants' : undefined} />
-            ))}
-          </div>
-        </section>
-      )}
-      <ClosingBand
-        id="facilities-cta"
-        title="Book a facility"
-        text="MSMEs, startups and researchers can use the laboratories and pilot plant. Tell us what you want to make or test."
-        action="Ask about a facility"
-      />
-    </PageShell>
+
+      <section data-block="facilities.equipment" id="equipment" className="section">
+        <div className="container">
+          <Reveal className="section-head">
+            <span className="eyebrow">Equipment</span>
+            <h2 className="section-title">Lab &amp; testing equipment</h2>
+          </Reveal>
+          <DataState loading={loading} error={error} data={equipment} emptyProps={{ title: 'Equipment list coming soon' }}>
+            {(items) => <ImageGrid items={items} labelKey="name" />}
+          </DataState>
+        </div>
+      </section>
+
+      <section data-block="facilities.photo-sections" id="manufacturing-plants" className="section section--alt">
+        <div className="container">
+          <Reveal className="section-head">
+            <span className="eyebrow">Manufacturing</span>
+            <h2 className="section-title">Pilot plant &amp; manufacturing units</h2>
+          </Reveal>
+          <DataState
+            loading={blocksLoading}
+            error={blocksError}
+            data={facilityBlocks}
+            emptyProps={{ title: 'Facility gallery coming soon' }}
+          >
+            {(items) => items.map((block) => <ImageGridBlockSection block={block} key={block.id} columns={3} />)}
+          </DataState>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
+export default function Facilities({ data }) {
+  return (
+    <PageDataProvider data={data}>
+      <FacilitiesView />
+    </PageDataProvider>
   )
 }

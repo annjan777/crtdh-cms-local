@@ -56,7 +56,7 @@ for (const route of ROUTES) {
     test('landmarks, skip link and one h1', async ({ page }) => {
       await page.goto(route)
       await expect(page.locator('header.site-header')).toHaveCount(1)
-      await expect(page.locator('main#main')).toHaveCount(1)
+      await expect(page.locator('main#main-content')).toHaveCount(1)
       await expect(page.locator('footer.site-footer')).toHaveCount(1)
       await expect(page.locator('h1')).toHaveCount(1)
       await page.keyboard.press('Tab')
@@ -69,21 +69,20 @@ test('font families are limited to the approved set', async ({ page }) => {
   const used = new Set()
   for (const route of ROUTES) {
     await page.goto(route)
-    const fams = await page.evaluate(() => [...document.querySelectorAll('body *')].map((el) => getComputedStyle(el).fontFamily.split(',')[0].replace(/["']/g, '').trim()))
+    const fams = await page.evaluate(() => [...document.querySelectorAll('body *:not(source):not(track):not(script):not(style)')].map((el) => getComputedStyle(el).fontFamily.split(',')[0].replace(/["']/g, '').trim()))
     fams.forEach((f) => used.add(f))
   }
-  expect([...used].filter((f) => !['Fraunces', 'Open Sans', 'Montserrat'].includes(f))).toEqual([])
+  // The previous design's faces, self-hosted. 'Caveat' is the Team page quote's decorative face (falls back to cursive).
+  expect([...used].filter((f) => !['Open Sans', 'Montserrat', 'Caveat'].includes(f))).toEqual([])
 })
 
-test('unknown paths get the designed 404 (status 404) and it hydrates without errors', async ({ page }) => {
+test('unknown paths get the 404 page (status 404) and it hydrates without errors', async ({ page }) => {
   const errors = []
   page.on('pageerror', (e) => errors.push(String(e)))
   const res = await page.goto('/no/such/page', { waitUntil: 'networkidle' })
   expect(res.status()).toBe(404)
-  await expect(page.locator('h1')).toHaveText('This page is not on the site')
-  await page.getByLabel('Search the site’s pages').fill('anemia')
-  await expect(page.locator('.notfound__links .rows li')).not.toHaveCount(12)
-  await page.getByRole('link', { name: 'Go to the home page' }).click()
+  await expect(page.locator('h1')).toHaveText('Page not found')
+  await page.getByRole('link', { name: 'Back to home' }).click()
   await expect(page).toHaveURL(/\/$/)
   expect(errors).toEqual([])
 })
@@ -112,62 +111,10 @@ test('client-side navigation loads static .data files only', async ({ page, base
   })
   await page.goto('/')
   await page.locator('footer').getByRole('link', { name: 'Team' }).click()
-  await expect(page.locator('h1')).toHaveText('Our team')
+  await expect(page.locator('h1')).toHaveText('PI, Co-PIs and Research Team')
   await page.locator('footer').getByRole('link', { name: 'Innovations' }).click()
-  await expect(page.locator('h1')).toHaveText('Innovations')
+  await expect(page.locator('h1')).toHaveText('Devices & diagnostics from the lab bench to the clinic')
   expect(bad).toEqual([])
-})
-
-test('hero: at most 4 slides, first is eager LCP image, pause control; reduced motion does not autoplay', async ({ browser }) => {
-  const ctx = await browser.newContext({ reducedMotion: 'reduce' })
-  const page = await ctx.newPage()
-  await page.goto('/')
-  const slides = page.locator('.hero__slide')
-  expect(await slides.count()).toBeLessThanOrEqual(4)
-  await expect(slides.first().locator('img')).toHaveAttribute('fetchpriority', 'high')
-  await expect(slides.first().locator('img')).toHaveAttribute('loading', 'eager')
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible() // not playing under reduced motion
-  await page.waitForTimeout(8500)
-  await expect(page.locator('.hero__count')).toHaveText(/Photograph 1 of/)
-  await page.getByRole('button', { name: 'Next photograph' }).click()
-  await expect(page.locator('.hero__count')).toHaveText(/Photograph 2 of/)
-  await ctx.close()
-})
-
-test('hero autoplay holds at least 7 s and can be paused', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible()
-  await page.mouse.move(5, 600) // away from the hero
-  await page.waitForTimeout(6500)
-  await expect(page.locator('.hero__count')).toHaveText(/Photograph 1 of/)
-  await page.getByRole('button', { name: 'Pause' }).click()
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible()
-})
-
-test('mobile menu opens full screen with 48px rows and closes on navigation', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 800 })
-  await page.goto('/')
-  await page.locator('.mnav__toggle').click()
-  const link = page.locator('.mnav__panel').getByRole('link', { name: 'Team' })
-  await expect(link).toBeVisible()
-  expect((await link.boundingBox()).height).toBeGreaterThanOrEqual(48)
-  await link.click()
-  await expect(page.locator('h1')).toHaveText('Our team')
-  await expect(page.locator('.mnav__panel')).toBeHidden()
-})
-
-test('contact map and videos load third-party frames only when pressed', async ({ page }) => {
-  await page.route('https://www.google.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>map</p>' }))
-  await page.goto('/contact/')
-  await expect(page.locator('iframe')).toHaveCount(0)
-  const show = page.getByRole('button', { name: 'Show the map' })
-  if (await show.count()) {
-    await show.click()
-    await expect(page.locator('.map iframe')).toHaveAttribute('src', /^https:\/\/www\.google\.com\/maps\/embed/)
-  }
-  await page.goto('/')
-  await expect(page.locator('iframe')).toHaveCount(0)
-  await expect(page.locator('img[src^="http"]')).toHaveCount(0)
 })
 
 test('every sitemap URL ends with "/" and is the canonical and og:url of the page it serves', async ({ request }) => {
@@ -218,35 +165,21 @@ test('.htaccess needs only AllowOverride FileInfo and guards every module block'
   expect(fs.existsSync(path.resolve('build/client/assets/index.html'))).toBe(true)
 })
 
-test('home video posters and facility tiles are never empty boxes', async ({ page }) => {
+test('mobile menu opens from the header and closes on navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 })
   await page.goto('/')
-  const posters = page.locator('.news__videos .video__poster')
-  for (let i = 0; i < (await posters.count()); i++) {
-    const p = posters.nth(i)
-    const cls = await p.getAttribute('class')
-    expect(cls).toMatch(/video__poster--(photo|type)/)
-    if (cls.includes('--photo')) await expect(p.locator('img')).toHaveCount(1)
-    await expect(p.locator('.video__title')).not.toBeEmpty()
-  }
-  const tiles = page.locator('.facility-list__item')
-  expect(await tiles.count()).toBeGreaterThan(0)
-  for (let i = 0; i < (await tiles.count()); i++) {
-    const t = tiles.nth(i)
-    const cls = await t.getAttribute('class')
-    if (cls.includes('--photo')) {
-      await t.scrollIntoViewIfNeeded()
-      await expect(t.locator('img')).toBeVisible()
-      await expect.poll(() => t.locator('img').evaluate((img) => img.complete && img.naturalWidth)).toBeGreaterThan(0)
-    } else expect(cls).toContain('--type')
-  }
+  await page.getByRole('button', { name: 'Toggle navigation menu' }).click()
+  const link = page.locator('#mobile-nav').getByRole('link', { name: 'Team' })
+  await expect(link).toBeVisible()
+  await link.click()
+  await expect(page.locator('h1')).toHaveText('PI, Co-PIs and Research Team')
+  await expect(page.locator('#mobile-nav')).toHaveCount(0)
 })
 
-test('footer column headings never repeat a link label in their column', async ({ page }) => {
-  await page.goto('/')
-  const cols = page.locator('.site-footer__nav > div')
-  for (let i = 0; i < (await cols.count()); i++) {
-    const h = (await cols.nth(i).locator('h2').innerText()).trim().toLowerCase()
-    const labels = (await cols.nth(i).locator('a').allInnerTexts()).map((s) => s.trim().toLowerCase())
-    expect(labels).not.toContain(h)
+test('frames come only from Google Maps and youtube-nocookie (what the CSP frame-src allows)', async ({ page }) => {
+  for (const route of ['/', '/contact/', '/innovations/', '/enterprises/', '/covid-19/', '/social-impact/']) {
+    await page.goto(route)
+    const srcs = await page.locator('iframe').evaluateAll((els) => els.map((e) => e.getAttribute('src')))
+    for (const src of srcs) expect(src).toMatch(/^https:\/\/(www\.google\.com\/maps\/embed|www\.youtube-nocookie\.com\/embed\/)/)
   }
 })

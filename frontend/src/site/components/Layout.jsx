@@ -1,265 +1,402 @@
-import { useEffect, useRef } from 'react'
-import SiteLink, { PlainLink } from '../link.jsx'
-import { toRoute, formatDate, safeHref } from '../util.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { CurrentPathProvider, NavLink, useLocation } from '../router.jsx'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronDown, Mail, Menu, MapPin, Phone, X } from 'lucide-react'
+import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon } from './SocialIcons'
+import { PageDataProvider, usePageData } from '../api/data.jsx'
+import { PAGES } from '../registry.js'
+import { safeHref } from '../util.js'
+import { SiteDataContext } from './SiteDataContext'
+import './Layout.css'
 
-// Grouped navigation (PLAN WS2.2): About · Our work · Impact · News · Contact.
-// Labels and order come from the CMS nav items; the group is chosen by route.
-const GROUPS = [
-  { id: 'about', label: 'About', routes: ['/about/', '/team/'] },
-  { id: 'work', label: 'Our work', routes: ['/innovations/', '/facilities/', '/services/', '/product/', '/enterprises/'] },
-  { id: 'impact', label: 'Impact', routes: ['/social-impact/', '/covid-19/'] },
-  { id: 'news', label: 'News', routes: ['/media/'] },
+// Fallback nav used only while nav-items are loading/unreachable, so the
+// header never renders completely empty (and the site stays navigable
+// even if the backend is briefly down).
+const FALLBACK_NAV = [
+  { id: 'home', label: 'Home', url: '/', in_more: false },
+  { id: 'about', label: 'About', url: '/about', in_more: false },
+  { id: 'team', label: 'Team', url: '/team', in_more: false },
+  { id: 'innovations', label: 'Innovations', url: '/innovations', in_more: false },
+  { id: 'facilities', label: 'Facilities', url: '/facilities', in_more: false },
+  { id: 'services', label: 'Services', url: '/services', in_more: false },
+  { id: 'enterprises', label: 'Enterprises', url: '/enterprises', in_more: false },
+  { id: 'product', label: 'Product', url: '/product', in_more: false },
+  { id: 'media', label: 'Media & Gallery', url: '/media', in_more: false },
+  { id: 'social-impact', label: 'Social Outreach', url: '/social-impact', in_more: true },
+  { id: 'covid-19', label: 'Covid-19', url: '/covid-19', in_more: true },
+  { id: 'contact', label: 'Contact Us', url: '/contact', in_more: false },
 ]
-const CONTACT = '/contact/'
-// Footer column headings. The header's "About" menu opens onto an "About" page, which is fine in a menu but
-// reads as a duplicate when the heading sits directly over the link, so the footer names the columns itself.
-const FOOTER_LABELS = { about: 'The centre', work: 'Our work', impact: 'Impact', news: 'Keep in touch' }
-export const footerLabel = (g) => {
-  const label = FOOTER_LABELS[g.id] || g.label
-  return g.items.some((i) => String(i.label || '').trim().toLowerCase() === label.toLowerCase()) ? `${label} at CRTDH` : label
+
+// The 12 real nav items are too many for one row at laptop widths. We keep
+// the essentials always visible and tuck secondary destinations behind an
+// animated "More" menu — this is the fix for the "messy multi-row navbar"
+// complaint. Matching is by route slug so it stays correct even if the CMS
+// relabels an item, and any unrecognised item safely falls into "More"
+// rather than disappearing.
+const PRIMARY_SLUGS = new Set([
+  '/',
+  'about',
+  'team',
+  'innovations',
+  'facilities',
+  'services',
+  'enterprises',
+  'product',
+  'media',
+])
+const CONTACT_SLUG = 'contact'
+
+function slugOf(url) {
+  const route = toRoute(url)
+  return route === '/' ? '/' : route.replace(/^\//, '').replace(/\/$/, '')
 }
 
-export function groupNav(navItems) {
-  const items = (navItems || []).map((n) => ({ ...n, route: toRoute(n.url) })).filter((n) => n.route !== '/')
-  const used = new Set()
-  const groups = GROUPS.map((g) => {
-    const members = items.filter((n) => g.routes.includes(n.route))
-    members.forEach((m) => used.add(m))
-    return { ...g, items: members }
-  }).filter((g) => g.items.length)
-  const contact = items.find((n) => n.route === CONTACT)
-  if (contact) used.add(contact)
-  // Anything the CMS adds that we do not know yet still appears, under About.
-  const rest = items.filter((n) => !used.has(n))
-  if (rest.length) {
-    const about = groups.find((g) => g.id === 'about')
-    if (about) about.items.push(...rest)
-    else groups.unshift({ id: 'about', label: 'About', routes: [], items: rest })
-  }
-  return { groups, contact }
-}
+function LayoutView({ children }) {
+  const data = usePageData()
+  const navItems = (data?.collections?.['nav-items'] || []).filter((n) => n && n.is_published !== false)
+  const siteSettings = data?.singletons?.['site-settings'] || null
+  const [menuOpen, setMenuOpen] = useState(false)
+  const location = useLocation()
 
-const trim = (p) => String(p || '/').replace(/(.)\/+$/, '$1')
-const isActive = (current, route) => {
-  const c = trim(current)
-  const r = trim(route)
-  return r === '/' ? c === '/' : c === r || c.startsWith(`${r}/`)
-}
+  // Close the mobile menu whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
 
-/** Site chrome: skip link, header with grouped nav, main landmark, footer. Props only. */
-export default function Layout({ data, currentPath = '/', children }) {
-  const settings = data?.singletons?.['site-settings'] || {}
-  const navItems = data?.collections?.['nav-items'] || []
-  const { groups, contact } = groupNav(navItems)
+  const navToRender = navItems.length > 0 ? navItems : FALLBACK_NAV
+
   return (
-    <>
-      <a className="skip-link" href="#main">Skip to content</a>
-      <Header settings={settings} groups={groups} contact={contact} currentPath={currentPath} />
-      <main id="main" tabIndex={-1}>
-        {children}
-      </main>
-      <Footer settings={settings} groups={groups} contact={contact} publishedAt={data?.meta?.published_at} privacyNotice={Boolean(data?.meta?.privacy_notice)} />
-    </>
+    <SiteDataContext.Provider value={{ navItems: navToRender, siteSettings, navLoading: false, settingsLoading: false }}>
+      <div className="app-shell">
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
+        <SiteHeader navItems={navToRender} siteSettings={siteSettings} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        <main id="main-content" className="app-main">
+          <PageTransition location={location}>{children}</PageTransition>
+        </main>
+        <SiteFooter siteSettings={siteSettings} navItems={navToRender} />
+      </div>
+    </SiteDataContext.Provider>
   )
 }
 
-function useCloseOnOutside(ref) {
-  useEffect(() => {
-    function onDoc(e) {
-      ref.current?.querySelectorAll('details[open]').forEach((d) => {
-        if (!d.contains(e.target)) d.removeAttribute('open')
-      })
-    }
-    function onKey(e) {
-      if (e.key !== 'Escape') return
-      const open = ref.current?.querySelector('details[open]')
-      if (open) {
-        open.removeAttribute('open')
-        open.querySelector('summary')?.focus()
-      }
-    }
-    document.addEventListener('click', onDoc)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('click', onDoc)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [ref])
+function PageTransition({ location, children }) {
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  )
 }
 
-function Header({ settings, groups, contact, currentPath }) {
-  const ref = useRef(null)
-  useCloseOnOutside(ref)
-  return (
-    <header className="site-header" ref={ref}>
-      <div className="wrap site-header__bar">
-        <SiteLink to="/" className="wordmark">
-          {settings.site_logo && <img src={settings.site_logo} alt="" width="40" height="40" className="wordmark__logo" />}
-          <span className="wordmark__text">
-            <span className="wordmark__name">CRTDH</span>{' '}
-            <span className="wordmark__sub">IIT Kharagpur</span>
-            <span className="visually-hidden">, home</span>
-          </span>
-        </SiteLink>
+function SiteHeader({ navItems, siteSettings, menuOpen, setMenuOpen }) {
+  const [scrolled, setScrolled] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef(null)
+  const location = useLocation()
 
-        <nav className="nav" aria-label="Main">
-          <ul className="nav__list">
-            {groups.map((g) =>
-              g.items.length === 1 ? (
-                <li key={g.id}>
-                  <SiteLink
-                    to={g.items[0].route}
-                    className="nav__link"
-                    aria-current={isActive(currentPath, g.items[0].route) ? 'page' : undefined}
-                  >
-                    {g.label}
-                  </SiteLink>
-                </li>
-              ) : (
-                <li key={`${g.id}-${currentPath}`}>
-                  <details className="nav__group">
-                    <summary
-                      className={`nav__link${g.items.some((i) => isActive(currentPath, i.route)) ? ' is-current' : ''}`}
+  useEffect(() => {
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 8)
+        ticking = false
+      })
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setMoreOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!moreOpen) return undefined
+    function onDocClick(e) {
+      if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false)
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        setMoreOpen(false)
+        moreRef.current?.querySelector('button')?.focus()
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [moreOpen])
+
+  const { primary, more, contact } = useMemo(() => {
+    const primary = []
+    const more = []
+    let contact = null
+    navItems.forEach((item) => {
+      const slug = slugOf(item.url)
+      if (slug === CONTACT_SLUG) {
+        contact = item
+      } else if (item.in_more) {
+        more.push(item)
+      } else {
+        primary.push(item)
+      }
+    })
+    return { primary, more, contact }
+  }, [navItems])
+
+  const moreActive = more.some((item) => isActivePath(location.pathname, toRoute(item.url)))
+
+  return (
+    <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
+      <div className="container site-header__bar">
+        {siteSettings?.logo_left && (
+          <img className="site-header__crest" src={siteSettings.logo_left} alt="IIT Kharagpur" />
+        )}
+
+        <NavLink to="/" className="brand" end>
+          {siteSettings?.site_logo && (
+            <img className="brand__logo" src={siteSettings.site_logo} alt="" aria-hidden="true" />
+          )}
+          <span className="brand__text">
+            <span className="brand__mark">CRTDH</span>
+            <span className="brand__sub">IIT Kharagpur</span>
+          </span>
+        </NavLink>
+
+        <nav className="site-nav" aria-label="Primary">
+          <ul>
+            {primary.map((item) => (
+              <li key={item.id ?? item.label}>
+                <NavLink to={toRoute(item.url)} end={toRoute(item.url) === '/'}>
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+            {more.length > 0 && (
+              <li className="nav-more" ref={moreRef}>
+                <button
+                  type="button"
+                  className={`nav-more__trigger ${moreActive ? 'active' : ''}`}
+                  aria-haspopup="menu"
+                  aria-expanded={moreOpen}
+                  onClick={() => setMoreOpen((v) => !v)}
+                >
+                  More
+                  <ChevronDown className={`nav-more__chevron ${moreOpen ? 'is-open' : ''}`} size={15} aria-hidden="true" />
+                </button>
+                <AnimatePresence>
+                  {moreOpen && (
+                    <motion.div
+                      className="nav-more__panel"
+                      role="menu"
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      {g.label}
-                      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
-                    </summary>
-                    <ul className="nav__menu">
-                      {g.items.map((i) => (
-                        <li key={i.id ?? i.route}>
-                          <SiteLink to={i.route} aria-current={isActive(currentPath, i.route) ? 'page' : undefined}>
-                            {i.label}
-                          </SiteLink>
-                        </li>
+                      {more.map((item) => (
+                        <NavLink key={item.id ?? item.label} role="menuitem" to={toRoute(item.url)}>
+                          {item.label}
+                        </NavLink>
                       ))}
-                    </ul>
-                  </details>
-                </li>
-              ),
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </li>
             )}
           </ul>
         </nav>
 
-        {contact && (
-          <SiteLink to={contact.route} className="btn btn--primary site-header__action">
-            {contact.label}
-          </SiteLink>
-        )}
+        <div className="site-header__actions">
+          {contact && (
+            <NavLink to={toRoute(contact.url)} className="btn btn--accent btn--sm site-header__cta">
+              {contact.label}
+            </NavLink>
+          )}
+          <button
+            type="button"
+            className="nav-toggle"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label="Toggle navigation menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+          </button>
+        </div>
 
-        <details className="mnav" key={`m-${currentPath}`}>
-          <summary className="mnav__toggle">
-            <span className="mnav__open">Menu</span>
-            <span className="mnav__close">Close</span>
-          </summary>
-          <nav className="mnav__panel" aria-label="Main (mobile)">
-            {groups.map((g) => (
-              <div className="mnav__group" key={g.id}>
-                <p className="mnav__label">{g.label}</p>
-                <ul>
-                  {g.items.map((i) => (
-                    <li key={i.id ?? i.route}>
-                      <SiteLink to={i.route} aria-current={isActive(currentPath, i.route) ? 'page' : undefined}>
-                        {i.label}
-                      </SiteLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            {contact && (
-              <SiteLink to={contact.route} className="btn btn--primary mnav__action">
-                {contact.label}
-              </SiteLink>
-            )}
-          </nav>
-        </details>
+        {siteSettings?.logo_right && (
+          <img className="site-header__crest site-header__crest--right" src={siteSettings.logo_right} alt="DSIR, Government of India" />
+        )}
       </div>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            id="mobile-nav"
+            className="mobile-nav"
+            aria-label="Mobile"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.ul
+              initial="hidden"
+              animate="show"
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } } }}
+            >
+              {navItems.map((item) => (
+                <motion.li
+                  key={item.id ?? item.label}
+                  variants={{ hidden: { opacity: 0, x: -12 }, show: { opacity: 1, x: 0 } }}
+                >
+                  <NavLink to={toRoute(item.url)} end={toRoute(item.url) === '/'}>
+                    {item.label}
+                  </NavLink>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
 
-function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
-  const year = (publishedAt ? new Date(publishedAt) : new Date()).getUTCFullYear()
-  const phones = [settings.phone_primary, settings.phone_secondary].filter(Boolean)
-  const emails = [settings.email_primary, settings.email_secondary].filter(Boolean)
-  const social = [
-    ['Facebook', settings.facebook_url],
-    ['LinkedIn', settings.linkedin_url],
-    ['Instagram', settings.instagram_url],
-    ['X (Twitter)', settings.twitter_url],
-  ].filter(([, href]) => safeHref(href))
+function isActivePath(pathname, route) {
+  if (route === '/') return pathname === '/'
+  return pathname.startsWith(route)
+}
+
+function SiteFooter({ siteSettings, navItems }) {
+  const year = new Date().getFullYear()
+  const socialLinks = siteSettings
+    ? [
+        { key: 'facebook', label: 'Facebook', href: siteSettings.facebook_url, Icon: FacebookIcon },
+        { key: 'linkedin', label: 'LinkedIn', href: siteSettings.linkedin_url, Icon: LinkedinIcon },
+        { key: 'instagram', label: 'Instagram', href: siteSettings.instagram_url, Icon: InstagramIcon },
+        { key: 'twitter', label: 'Twitter', href: siteSettings.twitter_url, Icon: TwitterIcon },
+      ].map((link) => ({ ...link, href: safeHref(link.href) })).filter((link) => link.href)
+    : []
+
   return (
-    <footer className="site-footer on-navy">
-      <div className="wrap">
-        <p className="site-footer__name">
-          Common Research and Technology Development Hub on Affordable Healthcare
-        </p>
-        <div className="site-footer__grid">
-          <div className="site-footer__contact">
-            <h2 className="site-footer__h">Visit</h2>
-            {settings.address && <address>{settings.address}</address>}
-            {phones.length > 0 && (
-              <p>
-                {phones.map((p, i) => (
-                  <span key={p}>
-                    {i > 0 && ', '}
-                    <a href={`tel:${p.replace(/[^\d+]/g, '')}`}>{p}</a>
-                  </span>
-                ))}
-              </p>
-            )}
-            {emails.length > 0 && (
-              <p>
-                {emails.map((e, i) => (
-                  <span key={e}>
-                    {i > 0 && <br />}
-                    <a href={`mailto:${e}`}>{e}</a>
-                  </span>
-                ))}
-              </p>
-            )}
-            {social.length > 0 && (
-              <ul className="site-footer__social">
-                {social.map(([label, href]) => (
-                  <li key={label}>
-                    <PlainLink href={href} target="_blank" rel="noopener noreferrer">{label}</PlainLink>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <nav className="site-footer__nav" aria-label="Footer">
-            {groups.map((g) => (
-              <div key={g.id}>
-                <h2 className="site-footer__h">{footerLabel(g)}</h2>
-                <ul>
-                  {g.items.map((i) => (
-                    <li key={i.id ?? i.route}>
-                      <SiteLink to={i.route}>{i.label}</SiteLink>
-                    </li>
-                  ))}
-                  {g.id === 'news' && contact && (
-                    <li>
-                      <SiteLink to={contact.route}>{contact.label}</SiteLink>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </div>
-        <div className="site-footer__base">
-          <div className="site-footer__logos">
-            {settings.logo_left && <img src={settings.logo_left} alt={settings.logo_left_alt || 'Indian Institute of Technology Kharagpur'} height="56" loading="lazy" />}
-            {settings.logo_right && <img src={settings.logo_right} alt={settings.logo_right_alt || 'Department of Scientific and Industrial Research, Government of India'} height="56" loading="lazy" />}
-          </div>
-          <p className="small">
-            A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.{' '}
-            <SiteLink to={privacyNotice ? '/contact/#privacy' : '/contact/#contact-notice'}>How we use contact messages</SiteLink>.
-            {publishedAt && <> Last updated {formatDate(publishedAt)}.</>}
+    <footer className="site-footer">
+      <div className="site-footer__glow" aria-hidden="true" />
+      <div className="container site-footer__grid">
+        <div className="site-footer__about">
+          <span className="brand brand--footer">
+            <span className="brand__mark">CRTDH</span>
+          </span>
+          <p>
+            Common Research and Technology Development Hub on Affordable Healthcare — an initiative sponsored by
+            DSIR, Government of India, hosted at IIT Kharagpur.
           </p>
+          {socialLinks.length > 0 && (
+            <ul className="social-links">
+              {socialLinks.map(({ key, label, href, Icon }) => (
+                <li key={key}>
+                  <a href={href} target="_blank" rel="noreferrer" aria-label={label}>
+                    <Icon size={16} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="site-footer__col">
+          <h4>Explore</h4>
+          <ul>
+            {navItems.slice(0, 6).map((item) => (
+              <li key={item.id ?? item.label}>
+                <NavLink to={toRoute(item.url)}>{item.label}</NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="site-footer__col">
+          <h4>Contact</h4>
+          {siteSettings ? (
+            <ul className="footer-contact">
+              {siteSettings.address && (
+                <li>
+                  <MapPin size={15} aria-hidden="true" />
+                  <span>{siteSettings.address}</span>
+                </li>
+              )}
+              {siteSettings.phone_primary && (
+                <li>
+                  <Phone size={15} aria-hidden="true" />
+                  <span>
+                    <a href={`tel:${siteSettings.phone_primary}`}>{siteSettings.phone_primary}</a>
+                    {siteSettings.phone_secondary ? `, ${siteSettings.phone_secondary}` : ''}
+                  </span>
+                </li>
+              )}
+              {siteSettings.email_primary && (
+                <li>
+                  <Mail size={15} aria-hidden="true" />
+                  <span>
+                    <a href={`mailto:${siteSettings.email_primary}`}>{siteSettings.email_primary}</a>
+                  </span>
+                </li>
+              )}
+            </ul>
+          ) : (
+            <p className="footer-contact__empty">Contact details coming soon.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="site-footer__bottom">
+        <div className="container">
+          &copy; {year} CRTDH, IIT Kharagpur. All rights reserved.
         </div>
       </div>
     </footer>
+  )
+}
+
+// Nav item `url` can be a bare page slug (e.g. "about"), already a path
+// (e.g. "/about"), or — for content seeded straight from the old static
+// site — a legacy filename (e.g. "about.html", "index.html"); normalize
+// any of those into a router-friendly path.
+function toRoute(url) {
+  if (!url) return '/'
+  if (url.startsWith('http')) return url
+  let slug = url.trim()
+  if (slug === 'home' || slug === '/' || slug === 'index.html' || slug === '#') return '/'
+  slug = slug.replace(/^\//, '').replace(/\.html?$/, '')
+  return `/${slug}`
+}
+
+/**
+ * Site chrome. `data` holds the header/footer data (site settings, menu); `currentPath` comes from the
+ * router on the public site, or from `pageId` in the CMS preview.
+ */
+export default function Layout({ data, currentPath, pageId, children }) {
+  const path = currentPath || PAGES.find((p) => p.id === pageId)?.path || '/'
+  return (
+    <CurrentPathProvider path={path}>
+      <PageDataProvider data={data}>
+        <LayoutView>{children}</LayoutView>
+      </PageDataProvider>
+    </CurrentPathProvider>
   )
 }

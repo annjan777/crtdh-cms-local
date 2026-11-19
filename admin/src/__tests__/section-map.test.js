@@ -3,13 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { SECTION_MAP, ownerPage, tagSections } from '../preview/section-map.js';
 
 const html = `
-<header class="site-header"></header>
+<header class="site-header"><img class="site-header__crest" alt=""></header>
 <main>
-  <section class="section hero"></section>
-  <section class="section proof"></section>
-  <section class="section manufacture"><ul class="facility-list"><li>x</li></ul></section>
+  <section data-block="home.hero" class="hero"></section>
+  <section data-block="home.enterprises" class="section"><div data-block="home.videos" class="home-split__right"></div></section>
 </main>
-<footer><div class="site-footer__social"></div></footer>`;
+<footer class="site-footer"><ul class="social-links"></ul></footer>`;
 
 describe('section map', () => {
   it('tags real public markup with section ids, nested entries, and the owning page', () => {
@@ -20,9 +19,17 @@ describe('section map', () => {
     expect(hero.dataset.cmsSection).toBe('home.hero');
     expect(hero.dataset.cmsTag).toBe('Hero');
     expect(hero.hasAttribute('data-cms-elsewhere')).toBe(false);
-    expect(document.querySelector('.proof').dataset.cmsElsewhere).toBe('enterprises');
-    expect(document.querySelector('.facility-list').dataset.cmsSection).toBe('home.facilities');
+    expect(document.querySelector('.home-split__right').dataset.cmsSection).toBe('home.videos');
+    expect(document.querySelector('.site-header__crest').dataset.cmsSection).toBe('site.logos');
     expect(document.querySelector('.site-header').dataset.cmsElsewhere).toBe('site');
+  });
+
+  it('marks a section shown on another page with the page that edits it', () => {
+    document.body.innerHTML = '<section data-block="social-impact.story"></section>';
+    tagSections(document.body, 'social-impact');
+    const el = document.querySelector('section');
+    expect(el.dataset.cmsSection).toBe('home.rural');
+    expect(el.dataset.cmsElsewhere).toBe('home');
   });
 
   it('re-tags cleanly and leaves markup that is already tagged alone', () => {
@@ -32,12 +39,6 @@ describe('section map', () => {
     expect(document.querySelectorAll('[data-cms-section="home.hero"]')).toHaveLength(1);
     document.body.innerHTML = '<section data-cms-section="home.hero" class="hero"></section>';
     expect(tagSections(document.body, 'home')).toBe(0);
-  });
-
-  it('reads item ids from aria-labelledby', () => {
-    document.body.innerHTML = '<section class="section event" aria-labelledby="event-7"></section>';
-    tagSections(document.body, 'media');
-    expect(document.querySelector('.event').dataset.cmsItem).toBe('7');
   });
 
   it('maps only real registry sections of known pages', () => {

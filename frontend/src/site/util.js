@@ -93,3 +93,8 @@ export function uniqueItems(items) {
     return true
   })
 }
+
+/** Only Google's map embed endpoint may be framed (the site CSP's frame-src lists only what pages use). */
+export function mapEmbedUrl(value) {
+  return typeof value === 'string' && value.startsWith('https://www.google.com/maps/embed') ? value : null
+}

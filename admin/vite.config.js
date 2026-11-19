@@ -16,7 +16,8 @@ const siteEntry = ['index.js', 'index.jsx', 'index.ts', 'index.tsx'].map((f) => 
 // The site components import react from wherever they live; next to a
 // frontend/node_modules that is a second React, and its hooks crash inside the
 // admin's (useRef of null). dedupe resolves these from admin/node_modules.
-const SHARED = ['react', 'react-dom', 'react-router'];
+// The site's own libraries (animation, icons, carousel) are installed here too, at the frontend's versions.
+const SHARED = ['react', 'react-dom', 'react-router', 'framer-motion', 'lucide-react', 'embla-carousel-react'];
 
 function sitePath() {
   if (!siteEntry)

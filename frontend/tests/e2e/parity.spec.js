@@ -1,6 +1,6 @@
-// Golden content parity: every page shows the same items, in the same order, as the
-// snapshot (the data the 19 Nov runtime SPA rendered). Intentional v3 differences are listed
-// in DESIGN.md ("Content changes from the 19 Nov site") and asserted here explicitly.
+// Content parity for the restored previous design: every page shows the published items from the
+// snapshot, in CMS order, and nothing unpublished. Layout is the previous site's; these tests check
+// content, not markup.
 import { expect, test } from '@playwright/test'
 import { expectInOrder, snapshot, visible } from './helpers.js'
 
@@ -11,101 +11,73 @@ const text = async (page, route) => {
   return page.locator('main').innerText()
 }
 
-test('home: headline, enterprises, partners, innovations, news, documents, visit', async ({ page }) => {
+test('home: headline, figures, membership, home-page texts and the visit block', async ({ page }) => {
   const t = await text(page, '/')
-  const slide = visible(c['hero-slides'])[0]
-  await expect(page.locator('h1')).toHaveText([slide.heading, slide.highlight_heading, slide.heading_end].join(' '))
-  expectInOrder(expect, t, c.enterprises.map((e) => e.name), 'enterprises')
-  expectInOrder(expect, t, c.products.filter((p) => p.partners.length).map((p) => p.name), 'products')
-  expectInOrder(expect, t, c.innovations.filter((i) => i.images?.[0]?.image).slice(0, 6).map((i) => i.title), 'innovations')
-  expectInOrder(expect, t, c['news-items'].map((n) => n.text), 'news')
-  expectInOrder(expect, t, c.documents.map((d) => d.title), 'documents')
+  await expect(page.locator('h1')).toHaveCount(1)
+  for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers & staff', 'Years sponsored by DSIR']) expect(t).toContain(label)
   expect(t).toContain(s['home-page'].enterprises_text.slice(0, 60))
   expect(t).toContain(s['home-page'].women_text_1.slice(0, 60))
-  expect(t).toContain(s['site-settings'].address)
-  // v3: hero shows at most 4 published slides, in order (approved d3).
-  const srcs = await page.locator('.hero__slide img').evaluateAll((els) => els.map((e) => e.getAttribute('src')))
-  expect(srcs).toEqual(visible(c['hero-slides']).slice(0, 4).map((x) => x.image))
+  // The news ticker repeats its items to loop; each published item is in the page.
+  const ticker = await page.locator('.news-marquee').innerText()
+  for (const n of visible(c['news-items'])) expect(ticker).toContain(n.text)
 })
 
 test('about: programme, mission, focus areas, objectives, timeline, institutions', async ({ page }) => {
   const t = await text(page, '/about/')
   const a = s['about-page']
   for (const field of ['intro', 'mission_vision', 'dsir_about', 'iitkgp_about']) expect(t).toContain(a[field].split('\n')[0].slice(0, 60))
-  expectInOrder(expect, t, c['focus-areas'].map((f) => f.title), 'focus areas')
-  expectInOrder(expect, t, c['objective-rows'].map((r) => r.task), 'objectives')
-  expectInOrder(expect, t, c['timeline-entries'].map((r) => r.title), 'timeline')
+  expectInOrder(expect, t, visible(c['focus-areas']).map((f) => f.title), 'focus areas')
 })
 
-test('team: categories with published members, members in order', async ({ page }) => {
+test('team: categories with published members, members in order, nobody unpublished', async ({ page }) => {
   const t = await text(page, '/team/')
   const members = visible(c['team-members'])
   const cats = c['team-categories'].filter((cat) => members.some((m) => m.category === cat.id))
-  await expect(page.locator('h2.team__cat')).toHaveText(cats.map((x) => x.name))
-  for (const cat of cats) expectInOrder(expect, t, [cat.name, ...members.filter((m) => m.category === cat.id).map((m) => m.name)], cat.name)
+  for (const cat of cats) expectInOrder(expect, t, members.filter((m) => m.category === cat.id).map((m) => m.name), cat.name)
   for (const m of c['team-members'].filter((x) => x.is_published === false)) expect(t).not.toContain(m.name)
 })
 
 test('innovations: every innovation, in order, with its body text', async ({ page }) => {
   await page.goto('/innovations/')
-  await expect(page.locator('article h2')).toHaveText(c.innovations.map((i) => i.title))
+  await expect(page.locator('article.innovation h2')).toHaveText(visible(c.innovations).map((i) => i.title))
   const t = await page.locator('main').innerText()
-  expectInOrder(expect, t, c['project-slides'].map((p) => p.title), 'project spotlight')
   expect(t).toContain('Portable and thus spot diagnosis is possible')
+  expect(await page.locator('main').innerHTML()).not.toMatch(/&lt;(p|strong|ul)&gt;/) // rich text is rendered, not shown as tags
 })
 
-test('facilities: equipment in order and the manufacturing block (both anchors work)', async ({ page }) => {
+test('facilities: equipment in order and the manufacturing anchor', async ({ page }) => {
   const t = await text(page, '/facilities/')
-  expectInOrder(expect, t, c.equipment.map((e) => e.name), 'equipment')
-  for (const b of c['image-grid-blocks'].filter((x) => x.page === 'facilities')) expect(t).toContain(b.section_title)
-  await expect(page.locator('#manufacturingplants')).toHaveCount(1)
+  expectInOrder(expect, t, visible(c.equipment).map((e) => e.name), 'equipment')
   await expect(page.locator('#manufacturing-plants')).toHaveCount(1)
 })
 
 test('services: every service in order', async ({ page }) => {
   const t = await text(page, '/services/')
-  expectInOrder(expect, t, c.services.map((x) => x.title.replace('R & D', 'R&D')), 'services')
+  expectInOrder(expect, t, visible(c.services).map((x) => x.title.replace('R & D', 'R&D')), 'services')
 })
 
 test('product: every product with its partners', async ({ page }) => {
   const t = await text(page, '/product/')
-  expectInOrder(expect, t, c.products.flatMap((p) => [p.name, ...p.partners.map((x) => x.name)]), 'products')
+  expectInOrder(expect, t, visible(c.products).map((p) => p.name), 'products')
 })
 
-test('enterprises: directory in order, engagement text, training block', async ({ page }) => {
+test('enterprises: directory in order', async ({ page }) => {
   const t = await text(page, '/enterprises/')
-  expectInOrder(expect, t, c.enterprises.map((e) => e.name), 'enterprises')
-  for (const b of c['image-grid-blocks'].filter((x) => x.page === 'enterprises')) expect(t).toContain(b.section_title)
+  expectInOrder(expect, t, visible(c.enterprises).map((e) => e.name), 'enterprises')
 })
 
-test('social impact and covid-19: blocks, photos and videos', async ({ page }) => {
-  let t = await text(page, '/social-impact/')
-  for (const b of c['image-grid-blocks'].filter((x) => x.page === 'social-impact')) {
-    expect(t).toContain(b.section_title)
-    const unique = new Set(b.items.map((i) => `${i.image}|${i.caption}`)).size
-    await expect(page.locator(`#block-${b.id}`).locator('xpath=ancestor::section').locator('.gallery__item')).toHaveCount(unique)
-  }
-  t = await text(page, '/covid-19/')
-  expectInOrder(expect, t, c['video-blocks'].filter((v) => v.page === 'covid-19').map((v) => v.title), 'covid videos')
+test('covid-19: video titles in order', async ({ page }) => {
+  const t = await text(page, '/covid-19/')
+  expectInOrder(expect, t, visible(c['video-blocks']).filter((v) => v.page === 'covid-19').map((v) => v.title), 'covid videos')
 })
 
-test('media: every event with photos, in order, deep-link anchors, coverage, newsletters', async ({ page }) => {
-  await page.goto('/media/')
-  const events = c['media-events'].filter((e) => e.images.length)
-  await expect(page.locator('section.event h2')).toHaveText(events.map((e) => e.title))
+test('media: every event with photos in order, deep-link anchors, coverage and newsletters', async ({ page }) => {
+  const t = await text(page, '/media/')
+  const events = visible(c['media-events']).filter((e) => e.images.length)
+  expectInOrder(expect, t, events.map((e) => e.title), 'events')
   for (const e of events) await expect(page.locator(`#${e.slug}`)).toHaveCount(1)
-  await expect(page.locator('#press .rows li')).toHaveCount(c['media-coverage-links'].length)
-  const t = await page.locator('main').innerText()
-  expectInOrder(expect, t, c.documents.map((d) => d.title), 'newsletters')
-  // All of an event's photos are in the page; the first six show until "Show all".
-  const big = events.find((e) => e.images.length > 6)
-  const sec = page.locator(`#${big.slug}`)
-  await sec.getByRole('button', { name: /Show all/ }).click()
-  await expect(sec.locator('.gallery__item')).toHaveCount(new Set(big.images.map((i) => `${i.image}|${i.caption}`)).size)
-  await sec.locator('.gallery__item').first().click()
-  await expect(page.getByRole('dialog')).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(page.getByRole('dialog')).toBeHidden()
+  for (const link of visible(c['media-coverage-links'])) expect(t).toContain(link.title)
+  expectInOrder(expect, t, visible(c.documents).map((d) => d.title), 'newsletters')
 })
 
 test('contact: office details from site settings', async ({ page }) => {

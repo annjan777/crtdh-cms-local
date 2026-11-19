@@ -1,67 +1,122 @@
-/* CRTDH v3 design tokens. The source of truth for values is frontend/DESIGN.md.
-   Removed in v3: --glass-*, gradient --fill-inverse / --gradient-*, --rule-gold, 4px side borders. */
 :root {
-  /* Colour: one ground, one ink, navy brand, one teal accent (two tones: on light / on navy) */
-  --paper: #f8f7f4;          /* page ground, warm off-white */
-  --surface: #eeece6;        /* one tone step: listing cards, alternate bands */
-  --surface-2: #e4e1d9;      /* image placeholder (LQIP fallback) */
-  --ink: #17232d;            /* running text and headings */
-  --ink-soft: #4b5763;       /* captions, secondary notes (6.9:1 on paper) */
-  --navy: #0f4c75;           /* brand */
-  --navy-deep: #0b3550;      /* hero and footer field */
-  --on-navy: #ffffff;
-  --on-navy-soft: #c3d3df;
-  --teal: #0a6b6a;           /* accent on light grounds: primary action, links on hover, focus */
-  --teal-hover: #085856;
-  --teal-light: #5cc8c4;     /* accent on navy grounds */
-  --rule: #d6d2c8;           /* table hairlines and form borders only */
-  --danger: #a4262c;
-  --success: #1d6b3a;
+  /* --- Brand palette: Clean, light, professional lab/institution --- */
+  --color-paper: #ffffff;
+  --color-paper-dim: #f5f7fa;
+  --color-paper-deep: #e4e7eb;
 
-  /* Type: Fraunces display (H1/H2), Open Sans body, Montserrat UI labels and navigation */
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-body: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-ui: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-ink-900: #1a202c;
+  --color-ink-800: #2d3748;
+  --color-ink-700: #4a5568;
+  --color-ink-600: #718096;
 
-  /* Scale 14 / 16 / 18 / 22 / 28 / 36 / 48 px, body 17 px */
-  --fs-14: 0.875rem;
-  --fs-16: 1rem;
-  --fs-body: 1.0625rem;
-  --fs-18: 1.125rem;
-  --fs-22: 1.375rem;
-  --fs-28: 1.75rem;
-  --fs-36: 2.25rem;
-  --fs-48: 3rem;
-  --lh-body: 1.6;
-  --lh-heading: 1.12;
+  --color-brand-900: #0f4c75;
+  --color-brand-800: #1a6b9c;
+  --color-brand-700: #3282b8;
+  --color-brand-600: #479ed3;
+  --color-brand-500: #bbe1fa;
+  --color-brand-300: #d6ecfc;
+  --color-brand-100: #eaf5ff;
+  --color-brand-50: #f4fafe;
 
-  /* Space: 4 / 8 pt */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-6: 24px;
-  --s-8: 32px;
-  --s-12: 48px;
-  --s-16: 64px;
-  --s-24: 96px;
-  --s-32: 128px;
-  --section-gap: clamp(64px, 9vw, 128px);
+  --color-accent-700: #2d6a4f;
+  --color-accent-600: #40916c;
+  --color-accent-500: #52b788;
+  --color-accent-300: #74c69d;
+  --color-accent-100: #d8f3dc;
 
-  /* Frame: one pair of margins, content max 72rem */
-  --content-max: 72rem;
-  --margin: clamp(20px, 5vw, 64px);
-  --measure: 68ch;
+  --color-white: #ffffff;
+  --color-gray-50: #f7fafc;
+  --color-gray-100: #edf2f7;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e0;
+  --color-gray-400: #a0aec0;
+  --color-gray-500: #718096;
+  --color-gray-600: #4a5568;
+  --color-gray-700: #2d3748;
+  --color-gray-800: #1a202c;
 
-  --radius: 2px;            /* buttons, inputs, cards: one shape everywhere */
-  --target: 44px;           /* minimum hit target */
+  --color-success: #38a169;
+  --color-error: #e53e3e;
 
-  /* Motion: 150 / 200 / 300 ms; the hero entrance is the one authored moment (400 ms) */
+  /* Semantic tokens */
+  --bg-page: var(--color-paper);
+  --bg-surface: var(--color-white);
+  --bg-surface-alt: var(--color-paper-dim);
+  --bg-inverse: var(--color-brand-900);
+  --text-primary: var(--color-ink-800);
+  --text-secondary: var(--color-gray-600);
+  --text-on-inverse: #ffffff;
+  --text-on-inverse-muted: var(--color-brand-100);
+  --border-subtle: var(--color-gray-200);
+  --border-strong: var(--color-gray-300);
+  --brand-primary: var(--color-brand-700);
+  --brand-primary-dark: var(--color-brand-900);
+  --brand-accent: var(--color-accent-600);
+
+  /* Flat brand fills */
+  --fill-inverse: linear-gradient(135deg, var(--color-brand-900) 0%, var(--color-brand-800) 100%);
+  --fill-brand: var(--color-brand-700);
+  --rule-gold: linear-gradient(90deg, var(--color-accent-600), var(--color-brand-600));
+
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(203, 213, 224, 0.5);
+  --glass-bg-light: rgba(255, 255, 255, 0.96);
+  --glass-border-light: rgba(226, 232, 240, 0.8);
+
+  /* Typography */
+  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Spacing scale - Compacted */
+  --space-1: 0.15rem;
+  --space-2: 0.35rem;
+  --space-3: 0.5rem;
+  --space-4: 0.75rem;
+  --space-5: 1.1rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.75rem;
+  --space-9: 3.5rem;
+  --space-10: 5rem;
+
+  /* Radii / shadows */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  --shadow-glow: 0 0 0 1px rgba(50, 130, 184, 0.1), 0 10px 25px rgba(50, 130, 184, 0.2);
+
+  --content-max: 1240px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --t-fast: 150ms;
-  --t-base: 200ms;
-  --t-slow: 300ms;
-
   color-scheme: light;
+
+  /* Back-compat aliases */
+  --color-teal-900: var(--color-brand-900);
+  --color-teal-800: var(--color-brand-800);
+  --color-teal-700: var(--color-brand-700);
+  --color-teal-600: var(--color-brand-600);
+  --color-teal-500: var(--color-brand-500);
+  --color-teal-400: var(--color-brand-300);
+  --color-teal-200: var(--color-brand-100);
+  --color-teal-100: var(--color-brand-50);
+  --color-teal-50: var(--color-white);
+
+  --color-amber-700: var(--color-accent-700);
+  --color-amber-600: var(--color-accent-600);
+  --color-amber-500: var(--color-accent-500);
+  --color-amber-400: var(--color-accent-500);
+  --color-amber-300: var(--color-accent-300);
+  --color-amber-100: var(--color-accent-100);
+
+  --color-violet-500: var(--color-brand-600);
+  --color-cyan-400: var(--color-brand-500);
+
+  --gradient-hero: var(--fill-inverse);
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-800) 0%, var(--color-brand-700) 100%);
+  --gradient-accent: linear-gradient(120deg, var(--color-accent-600) 0%, var(--color-brand-600) 100%);
+  --gradient-mesh: none;
+  --gradient-text: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 100%);
 }

@@ -62,7 +62,8 @@ export const REQUIRED = (() => {
 export function selectData(snapshot, needs) {
   const out = { singletons: {}, collections: {}, media: {} }
   for (const k of needs.singletons) out.singletons[k] = snapshot.singletons?.[k] ?? null
-  for (const k of needs.collections) out.collections[k] = snapshot.collections?.[k] ?? []
+  // Unpublished rows never reach a page's data (the published snapshot has none; this guards any other input).
+  for (const k of needs.collections) out.collections[k] = (snapshot.collections?.[k] ?? []).filter((r) => !r || r.is_published !== false)
   // Only the media entries the selected rows reference, to keep each page's HTML small.
   const media = snapshot.media || {}
   if (Object.keys(media).length) {

@@ -4,8 +4,8 @@
 // follow the registry's section order: one public block can show several sections, and a
 // section can show on another page than its own. The canvas therefore tags the rendered
 // page itself: each entry is [CSS selector, section id, optional item-id regex on
-// aria-labelledby]. Selectors use the landmarks the public components already have
-// (aria-labelledby / aria-label / BEM classes). Nested entries win on click because the
+// aria-labelledby]. Page blocks are found by their data-block attribute; the header and footer by
+// their class names. Nested entries win on click because the
 // canvas uses closest('[data-cms-section]').
 //
 // A section shown outside its own page is tagged with data-cms-elsewhere=<its page>, so a
@@ -13,69 +13,41 @@
 // from the panel. Markup that already carries data-cms-section is left alone.
 
 const LAYOUT = [
+  ['.site-header__crest', 'site.logos', 'Logos'],
+  ['.brand__logo', 'site.logos', 'Logos'],
   ['.site-header', 'site.nav', 'Menu links'],
-  ['.site-footer__contact', 'contact.details', 'Contact details'],
-  ['.site-footer__social', 'site.social', 'Social links'],
-  ['.site-footer__logos', 'site.logos', 'Logos'],
+  ['.site-footer .social-links', 'site.social', 'Social links'],
+  ['.site-footer__col:last-of-type', 'contact.details', 'Contact details'],
 ];
+
+// Page blocks carry a neutral data-block="<section id>" attribute (frontend/src/site/pages/*).
+const block = (id, label) => [`[data-block="${id}"]`, id, label];
 
 export const SECTION_MAP = {
   home: [
-    ['section.hero', 'home.hero'],
-    ['section.proof', 'enterprises.list', 'Enterprises'],
-    ['section.work', 'innovations.list', 'Innovations'],
-    ['section.manufacture', 'home.enterprises'],
-    ['section.manufacture .facility-list', 'home.facilities'],
-    ['section.community', 'home.rural'],
-    ['section.news', 'home.news'],
-    ['section.news .news__videos', 'home.videos'],
-    ['section.visit', 'home.visit'],
+    block('home.hero'), block('home.news'), block('home.membership'), block('home.objective'),
+    block('home.enterprises'), block('home.rural'), block('home.facilities'), block('home.videos'), block('home.visit'),
   ],
   about: [
-    ['section[aria-labelledby="about-programme"]', 'about.intro'],
-    ['section[aria-labelledby="about-programme"] .split__side', 'about.ecosystem'],
-    ['section[aria-labelledby="about-mission"]', 'about.intro'],
-    ['section[aria-labelledby="about-focus"]', 'about.focus'],
-    ['section[aria-labelledby="about-mission"] :has(> #about-focus)', 'about.focus'],
-    ['section[aria-labelledby="about-objectives"]', 'about.support'],
-    ['section[aria-labelledby="about-timeline"]', 'about.timeline'],
-    ['section[aria-labelledby="about-pi"]', 'about.pi-note'],
-    ['section[aria-labelledby="about-orgs"]', 'about.partners'],
+    block('about.intro'), block('about.focus'), block('about.support'), block('about.ecosystem'),
+    block('about.timeline'), block('about.pi-note'), block('about.partners'),
   ],
-  team: [['section[aria-label="Team members"]', 'team.members']],
-  innovations: [
-    ['section[aria-labelledby="spotlight"]', 'innovations.spotlight'],
-    ['section[aria-label="All innovations"]', 'innovations.list'],
-  ],
-  facilities: [
-    ['section[aria-labelledby="equipment"]', 'facilities.equipment'],
-    ['section[aria-label="Manufacturing"]', 'facilities.photo-sections'],
-  ],
-  services: [['section[aria-labelledby="services-list"]', 'services.list']],
-  product: [['section[aria-label="Products"]', 'product.list']],
-  enterprises: [
-    ['section[aria-labelledby="ent-engagement"]', 'home.enterprises', 'Enterprise engagement (Home page)'],
-    ['section[aria-labelledby="ent-engagement"] .split__side', 'home.msme', 'MSME map (Home page)'],
-    ['section[aria-labelledby="ent-directory"]', 'enterprises.list'],
-    ['section[aria-label="Demonstration and training"]', 'enterprises.photo-sections'],
-    ['section[aria-labelledby="ent-videos"]', 'enterprises.videos'],
-  ],
+  team: [block('team.members')],
+  innovations: [block('innovations.spotlight'), block('innovations.list')],
+  facilities: [block('facilities.equipment'), block('facilities.photo-sections')],
+  services: [block('services.list')],
+  product: [block('product.list')],
+  enterprises: [block('enterprises.list'), block('enterprises.photo-sections'), block('enterprises.videos')],
   'social-impact': [
-    ['section[aria-labelledby="impact-story"]', 'home.rural', 'Rural women (Home page)'],
-    ['section[aria-labelledby^="block-"]', 'social-impact.photo-sections', null, /^block-(\d+)$/],
-    ['section[aria-labelledby="impact-videos"]', 'social-impact.videos'],
+    ['[data-block="social-impact.story"]', 'home.rural', 'Rural women (Home page)'],
+    block('social-impact.photo-sections'), block('social-impact.videos'),
   ],
   'covid-19': [
-    ['section[aria-labelledby="covid-story"]', 'covid-19.photo-sections'],
-    ['section[aria-labelledby="covid-photos"]', 'covid-19.photo-sections'],
-    ['section[aria-labelledby="covid-videos"]', 'covid-19.videos'],
+    ['[data-block="covid-19.story"]', 'covid-19.photo-sections'],
+    block('covid-19.photo-sections'), block('covid-19.videos'),
   ],
-  media: [
-    ['section.event', 'media.events', null, /^event-(\d+)$/],
-    ['section[aria-labelledby="more-photos"]', 'media.gallery'],
-    ['section[aria-label="Press and newsletters"]', 'media.coverage'],
-  ],
-  contact: [['section:has(.contact__details)', 'contact.details']],
+  media: [block('media.events'), block('media.gallery'), block('media.coverage'), block('media.documents')],
+  contact: [block('contact.details')],
 };
 
 /** The page that edits a section: "site" for site-wide sections, else the id's first part. */

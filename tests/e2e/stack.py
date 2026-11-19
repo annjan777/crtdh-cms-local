@@ -116,6 +116,7 @@ class Stack:
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.trust_cert()
         self.manage("migrate", "--noinput", "-v0")
+        self.manage("createcachetable")  # throttles and lockout use the database cache, as in production
         seed = os.environ.get("E2E_SEED", "sample")  # sample | full | none | /path/to/snapshot.json
         if seed != "none":
             path = {"sample": "SAMPLE_SNAPSHOT_PATH", "full": "FULL_SNAPSHOT_PATH"}.get(seed, repr(seed))

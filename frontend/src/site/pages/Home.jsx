@@ -1,422 +1,472 @@
-import PageShell from '../components/PageShell.jsx'
-import HeroPrints from '../components/HeroPrints.jsx'
-import { VideoPoster, eventPhotoFor } from '../components/Blocks.jsx'
-import SiteLink, { PlainLink } from '../link.jsx'
-import { Img } from '../media.jsx'
-import { visible } from '../util.js'
+import { PageDataProvider } from '../api/data.jsx'
+import { mapEmbedUrl, safeHref } from '../util.js'
+import SiteLink from '../link.jsx'
+import { Link } from '../router.jsx'
+import { ArrowRight, FlaskConical, HeartPulse, Users2, Activity, Map, Microscope, Users, Lightbulb, Building2, Calendar } from 'lucide-react'
+import { useApi } from '../hooks/useApi'
+import { fetchList, fetchOne } from '../api/client'
+import Carousel from '../components/Carousel'
+import VideoBlock from '../components/VideoBlock'
+import { Spinner } from '../components/StateBlock'
+import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
+import TiltCard from '../components/TiltCard'
+import Counter from '../components/Counter'
+import './Home.css'
 
-/**
- * Home (persuasive mode). Wireframe PLAN WS2.2: hero → proof → our work → news → visit.
- * Audience: industry partners, clinicians and health programmes; primary action "Work with CRTDH".
- */
-export default function Home({ data }) {
-  const s = data.singletons || {}
-  const c = data.collections || {}
-  const home = s['home-page'] || {}
-  const settings = s['site-settings'] || {}
-  const slides = visible(c['hero-slides'])
-  const lead = slides[0] || {}
-  const headline = [lead.heading, lead.highlight_heading, lead.heading_end].filter(Boolean).join(' ')
+const MEMBERSHIP_TIERS = [
+  { label: 'Platinum', bg: '#e5e4e2' },
+  { label: 'Gold', bg: '#ffd700' },
+  { label: 'Silver', bg: '#c0c0c0' },
+]
+
+function HomeView() {
+  const { data: slides, loading: slidesLoading } = useApi(() => fetchList('/hero-slides/'), [], [])
+  const { data: newsItems, loading: newsLoading } = useApi(() => fetchList('/news-items/'), [], [])
+  const { data: home, loading: homeLoading } = useApi(() => fetchOne('/home-page/'), [], null)
+  const { data: siteSettings } = useApi(() => fetchOne('/site-settings/'), [], null)
+  const { data: team } = useApi(() => fetchList('/team-members/'), [], [])
+  const { data: innovations } = useApi(() => fetchList('/innovations/'), [], [])
+  const { data: enterprises } = useApi(() => fetchList('/enterprises/'), [], [])
+
+  const stats = [
+    { label: 'Innovations developed', value: innovations?.length ?? 0, suffix: '+', icon: Lightbulb },
+    { label: 'Enterprises incubated', value: enterprises?.length ?? 0, suffix: '+', icon: Building2 },
+    { label: 'Researchers & staff', value: team?.length ?? 0, suffix: '+', icon: Users },
+    { label: 'Years sponsored by DSIR', value: 8, suffix: '+', icon: Calendar },
+  ]
 
   return (
-    <PageShell data={data} className="home">
-      <section className="hero on-navy" aria-labelledby="hero-title">
-        <div className="wrap hero__grid">
-          <div className="hero__text">
-            <h1 id="hero-title">{headline || 'Common Research and Technology Development Hub'}</h1>
-            {lead.description && <p className="hero__line">{lead.description}</p>}
-            <div className="actions">
-              <SiteLink to="/services/" className="btn btn--primary">Work with CRTDH</SiteLink>
-              <SiteLink to="/innovations/" className="btn btn--secondary">See our innovations</SiteLink>
-            </div>
-            <Figures items={homeFigures(c)} />
+    <div className="home-page">
+      <section data-block="home.hero" className="hero">
+        <div className="hero__grid" aria-hidden="true" />
+
+        {slidesLoading ? (
+          <div className="hero__fallback">
+            <Spinner label="Loading…" />
           </div>
-          {slides.length > 0 && <HeroPrints slides={slides} />}
+        ) : slides && slides.length > 0 ? (
+          <Carousel
+            items={slides}
+            ariaLabel="Hero image carousel"
+            renderItem={(slide) => (
+              <div className="hero__slide">
+                <img src={slide.image} alt="" />
+              </div>
+            )}
+          />
+        ) : (
+          <div className="hero__fallback hero__fallback--static" />
+        )}
+
+        <div className="hero__caption container">
+          <div className="hero__caption-inner">
+            <span className="eyebrow eyebrow--on-dark">
+              {slides && slides[0]?.eyebrow ? slides[0].eyebrow : 'DSIR · Government of India'}
+            </span>
+            <h1>
+              {slides && slides[0]?.heading ? slides[0].heading : 'Common Research &'}{' '}
+              <span className="gradient-text">
+                {slides && slides[0]?.highlight_heading ? slides[0].highlight_heading : 'Technology Development'}
+              </span>{' '}
+              {slides && slides[0]?.heading_end !== undefined ? slides[0].heading_end : 'Hub'}
+            </h1>
+            <p>
+              {slides && slides[0]?.description
+                ? slides[0].description
+                : 'Building affordable healthcare technology for a billion people, at IIT Kharagpur.'}
+            </p>
+            <div className="hero__actions">
+              <Link
+                className="btn btn--accent"
+                to={slides && slides[0]?.primary_button_link ? slides[0].primary_button_link : '/innovations'}
+              >
+                {slides && slides[0]?.primary_button_label ? slides[0].primary_button_label : 'Explore Innovations'}
+                <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+              <Link
+                className="btn btn--ghost"
+                to={slides && slides[0]?.secondary_button_link ? slides[0].secondary_button_link : '/about'}
+              >
+                {slides && slides[0]?.secondary_button_label ? slides[0].secondary_button_label : 'About CRTDH'}
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="hero__scroll-cue" aria-hidden="true">
+          <span />
         </div>
       </section>
 
-      <Explore />
-      <Proof enterprises={c.enterprises} products={c.products} />
-      <Work innovations={c.innovations} />
-      <Manufacturing home={home} equipment={c.equipment} />
-      <Community home={home} />
-      <News items={c['news-items']} documents={c.documents} events={c['media-events']} home={home} />
-      <Visit home={home} settings={settings} />
-    </PageShell>
-  )
-}
+      <NewsMarquee items={newsItems} loading={newsLoading} />
 
-// Years the centre has been sponsored by DSIR, as the old site stated it (owner decision D10, 19 Nov 2026).
-// A fixed figure, not computed: change it here when the centre's sponsorship statement changes.
-export const DSIR_YEARS = 8
-
-// Owner content from the old Home (decision D13, 19 Nov 2026): kept word for word.
-export const CAPTIONS = {
-  enterprises_image_1: 'Skill development and prototype manufacturing',
-  enterprises_image_2: 'Pilot plant for medical device development',
-  women_image_1: 'Community healthcare and maternal support',
-  women_image_2: 'Awareness and outreach in rural communities',
-}
-export const EXPLORE = [
-  { title: 'Innovations', to: '/innovations/', text: 'Devices and diagnostics developed in-house, ready for translation.' },
-  { title: 'Enterprises', to: '/enterprises/', text: 'MSMEs and startups incubated at CRTDH with mentorship and support.' },
-  { title: 'Social Impact', to: '/social-impact/', text: 'Camps, clinics and outreach programmes bringing technology to communities.' },
-]
-
-/** Three ways in, as linked names with a line each under a hairline: no cards, no icons (DESIGN.md). */
-function Explore() {
-  return (
-    <section className="section explore" aria-labelledby="explore-title">
-      <div className="wrap">
-        <h2 id="explore-title" className="visually-hidden">Explore CRTDH</h2>
-        <ul className="explore__list">
-          {EXPLORE.map((e) => (
-            <li key={e.to} className="explore__item">
-              <SiteLink to={e.to} className="text-link explore__link">{e.title}</SiteLink>
-              <p>{e.text}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-/** The figures strip from the old Home, computed from the published content like the old page did. */
-export function homeFigures(c) {
-  return [
-    { value: visible(c.innovations).length, label: 'Innovations developed' },
-    { value: visible(c.enterprises).length, label: 'Enterprises incubated' },
-    { value: visible(c['team-members']).length, label: 'Researchers & staff' },
-    { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
-  ].filter((f) => f.value > 0)
-}
-
-/** A quiet typographic row (DESIGN.md: display figures in Fraunces; no cards, icons or counters). */
-function Figures({ items }) {
-  if (!items.length) return null
-  return (
-    <dl className="hero__figures" aria-label="CRTDH in figures">
-      {items.map((f) => (
-        <div key={f.label} className="hero__figure">
-          <dt>{f.label}</dt>
-          <dd>{f.value}+</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-/** Proof: the enterprises and commercial partners the centre works with, as plain names. */
-function Proof({ enterprises = [], products = [] }) {
-  const partners = []
-  for (const p of products) {
-    for (const pt of p.partners || []) partners.push({ key: `${p.id}-${pt.id}`, name: pt.name, product: p.name })
-  }
-  if (!enterprises.length && !partners.length) return null
-  return (
-    <section className="section proof" aria-labelledby="proof-title">
-      <div className="wrap grid12">
-        <div className="proof__head">
-          <h2 id="proof-title">Who builds with us</h2>
-          <p className="soft">
-            {enterprises.length} enterprises engaged with the centre
-            {partners.length > 0 && `, and the partners taking ${products.length} of its products to market`}.
-          </p>
-          <SiteLink to="/enterprises/" className="text-link proof__all">All enterprises</SiteLink>
-          {partners.length > 0 && (
-            <dl className="names names--partners">
-              <dt className="soft">Products and their partners</dt>
-              {products
-                .filter((p) => (p.partners || []).length)
-                .map((p) => (
-                  <dd key={p.id}>
-                    <strong>{p.name}</strong>
-                    <span className="soft"> with {p.partners.map((pt) => pt.name).join(', ')}</span>
-                  </dd>
-                ))}
-            </dl>
-          )}
-        </div>
-        <div className="proof__names">
-          {enterprises.length > 0 && (
-            <ul className="names" aria-label="Enterprises engaged">
-              {enterprises.map((e) => (
-                <li key={e.id}>{e.name}</li>
-              ))}
-            </ul>
-          )}
-          {enterprises.length > 8 && (
-            <SiteLink to="/enterprises/" className="text-link proof__more">All {enterprises.length} enterprises</SiteLink>
-          )}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/** Our work: heading cell, one wide print and one upright, then a row of four (layout in pages.css). */
-function Work({ innovations = [] }) {
-  const withImages = innovations.filter((i) => (i.images || [])[0]?.image)
-  const shown = withImages.slice(0, 6)
-  if (!shown.length) return null
-  const shapes = ['wide', 'single', 'single', 'single', 'single', 'single']
-  return (
-    <section className="section section--surface work" aria-labelledby="work-title">
-      <div className="wrap">
-        <ul className="work__grid">
-          <li className="work__head">
-            <h2 id="work-title">Devices from the lab bench</h2>
-            <p className="soft">Diagnostics, devices and digital tools developed at the centre for low-resource settings.</p>
-            <SiteLink to="/innovations/" className="text-link">All {innovations.length} innovations</SiteLink>
-          </li>
-          {shown.map((inv, i) => {
-            const img = inv.images[0]
-            const shape = shapes[i % shapes.length]
-            return (
-              <li key={inv.id} className={`work__tile work__tile--${shape} work__tile--${i + 1}`}>
-                <SiteLink to={`/innovations/#innovation-${inv.id}`} className="work__link">
-                  <Img
-                    src={img.image}
-                    alt={img.image_alt || img.caption || ''}
-                    figure
-                    ratio="3x2"
-                    sizes={shape === 'wide' ? '(min-width: 768px) 48vw, 100vw' : '(min-width: 768px) 24vw, 50vw'}
-                  />
-                  <span className="work__title">{inv.title}</span>
-                </SiteLink>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-/** From lab to manufacturing: the enterprise engagement text with its pictures and the facilities band. */
-function Manufacturing({ home, equipment = [] }) {
-  // The CMS facility-card images are clipart icons (docs/content-gaps.md), so each card shows the photograph of
-  // the matching equipment row instead; a card with no matching photograph is set as a typographic tile.
-  const panels = [1, 2, 3]
-    .map((n) => ({ title: home[`facility_card_${n}_title`], link: home[`facility_card_${n}_link`] || '/facilities/' }))
-    .filter((p) => p.title)
-    .map((p) => ({ ...p, photo: facilityPhoto(p.title, equipment) }))
-  if (!home.enterprises_text && !panels.length) return null
-  return (
-    <section className="section manufacture" aria-labelledby="manufacture-title">
-      <div className="wrap grid12 manufacture__intro">
-        <div className="manufacture__text">
-          <h2 id="manufacture-title">From prototype to production</h2>
-          {home.enterprises_text && <p>{home.enterprises_text}</p>}
-          <div className="actions">
-            <SiteLink to="/facilities/" className="btn btn--secondary">See the facilities</SiteLink>
-            <SiteLink to="/enterprises/" className="text-link">Enterprise engagement</SiteLink>
-          </div>
-        </div>
-        {home.enterprises_image_1 && (
-          <figure className="manufacture__a">
-            <Img src={home.enterprises_image_1} alt={home.enterprises_image_1_alt || ''} ratio="4x5" sizes="(min-width: 768px) 25vw, 60vw" />
-            <figcaption>{CAPTIONS.enterprises_image_1}</figcaption>
-          </figure>
-        )}
-        {home.enterprises_image_2 && (
-          <figure className="manufacture__b">
-            <Img src={home.enterprises_image_2} alt={home.enterprises_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 18vw, 40vw" />
-            <figcaption>{CAPTIONS.enterprises_image_2}</figcaption>
-          </figure>
-        )}
-      </div>
-      {panels.length > 0 && (
-        <div className="wrap">
-          <h3 className="facility-list__title">Facilities at the centre</h3>
-          <ul className="facility-list">
-            {panels.map((p, i) => (
-              <li key={p.title || i}>
-                <SiteLink to={p.link} className={`facility-list__item${p.photo ? ' facility-list__item--photo' : ' facility-list__item--type'}`}>
-                  {p.photo && <Img src={p.photo.image} alt={p.photo.image_alt || p.photo.name || ''} ratio="3x2" sizes="(min-width: 768px) 30vw, 40vw" />}
-                  <span className="facility-list__name">{p.title}</span>
-                  {!p.photo && <span className="facility-list__more">At the centre in IIT Kharagpur</span>}
-                </SiteLink>
-              </li>
+      <section className="section stats-strip">
+        <div className="container">
+          <Stagger className="stats-strip__grid">
+            {stats.map((stat) => (
+              <StaggerItem as="div" className="stat-card" key={stat.label}>
+                <div className="stat-card__icon"><stat.icon size={28} /></div>
+                <div>
+                  <Counter value={stat.value} suffix={stat.suffix} className="stat-card__value" />
+                  <span className="stat-card__label">{stat.label}</span>
+                </div>
+              </StaggerItem>
             ))}
-          </ul>
+          </Stagger>
         </div>
-      )}
-    </section>
-  )
-}
+      </section>
 
-const FACILITY_STOP = new Set(['crtdh', 'and', 'the', 'of', 'for', 'room', 'rooms', 'unit', 'units', 'facility', 'facilities'])
-const facilityWords = (text) =>
-  String(text || '')
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .map((w) => w.replace(/s$/, ''))
-    .filter((w) => w.length > 2 && !FACILITY_STOP.has(w) && !FACILITY_STOP.has(`${w}s`))
+      <section className="section">
+        <div className="container home-split-1-3">
+          <div className="home-split__left pr-6">
+            <Reveal className="section-head">
+              <span className="eyebrow">Who we are</span>
+              <h2 className="section-title mt-4">Affordable healthcare for a billion people</h2>
+              <p className="section-subtitle mt-4">
+                CRTDH brings together research, engineering and enterprise to translate biomedical science into
+                deployable, low-cost healthcare technology — from diagnostics and devices to sensors and digital
+                health systems.
+              </p>
+              <br />
+              <Link className="btn btn--primary" to="/about">
+                Learn more <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            </Reveal>
+          </div>
 
-/** The equipment row (with a photograph) that shares the most significant words with a facility card title. */
-export function facilityPhoto(title, equipment) {
-  const want = new Set(facilityWords(title))
-  if (!want.size) return null
-  let best = null
-  let score = 0
-  for (const e of equipment || []) {
-    if (!e?.image) continue
-    const s = facilityWords(e.name).filter((w) => want.has(w)).length
-    if (s > score) {
-      best = e
-      score = s
-    }
-  }
-  return best
-}
-
-/** In the community: the livelihood story with its two pictures, linking to Social Impact. */
-function Community({ home }) {
-  if (!home.women_text_1) return null
-  return (
-    <section className="section section--navy community on-navy" aria-labelledby="community-title">
-      <div className="wrap grid12">
-        {home.women_image_1 && (
-          <figure className="community__a">
-            <Img src={home.women_image_1} alt={home.women_image_1_alt || ''} ratio="3x2" sizes="(min-width: 768px) 42vw, 100vw" />
-            <figcaption>{CAPTIONS.women_image_1}</figcaption>
-          </figure>
-        )}
-        <div className="community__text">
-          <h2 id="community-title">Healthcare that reaches the village</h2>
-          <p>{home.women_text_1}</p>
-          <div className="actions">
-            <SiteLink to="/social-impact/" className="btn btn--secondary">Read about our social impact</SiteLink>
+          <div className="home-split__right">
+            <Stagger className="grid grid--3 gap-4 h-100">
+              <StaggerItem>
+                <HighlightCard Icon={FlaskConical} title="Innovations" to="/innovations" text="Devices and diagnostics developed in-house, ready for translation." />
+              </StaggerItem>
+              <StaggerItem>
+                <HighlightCard Icon={Building2} title="Enterprises" to="/enterprises" text="MSMEs and startups incubated at CRTDH with mentorship and support." />
+              </StaggerItem>
+              <StaggerItem>
+                <HighlightCard Icon={Users2} title="Social Impact" to="/social-impact" text="Camps, clinics and outreach programmes bringing technology to communities." />
+              </StaggerItem>
+            </Stagger>
           </div>
         </div>
-        {home.women_image_2 && (
-          <figure className="community__b">
-            <Img src={home.women_image_2} alt={home.women_image_2_alt || ''} ratio="1x1" sizes="(min-width: 768px) 20vw, 50vw" />
-            <figcaption>{CAPTIONS.women_image_2}</figcaption>
-          </figure>
-        )}
-      </div>
-    </section>
-  )
-}
+      </section>
 
-/** News: the latest items as a plain list pushed right, documents grouped below. */
-function News({ items = [], documents = [], events = [], home }) {
-  const videos = [
-    { id: home.chintan_shivir_youtube_id, title: 'Chintan Shivir' },
-    { id: home.viksit_bharat_youtube_id, title: 'Viksit Bharat Abhiyan' },
-  ].filter((v) => v.id)
-  if (!items.length && !documents.length && !videos.length) return null
-  const photo = events.flatMap((e) => e.images || []).find((im) => im.image)
-  return (
-    <section className="section news" aria-labelledby="news-title">
-      <div className="wrap">
-        <h2 id="news-title" className="news__title">News from the centre</h2>
-        <div className="grid12 news__body">
-          {photo && (
-            <figure className="news__photo">
-              <Img src={photo.image} alt={photo.image_alt || photo.caption || ''} ratio="4x5" sizes="(min-width: 768px) 28vw, 60vw" />
-            </figure>
-          )}
-          <div className="news__list">
-            {items.length > 0 && (
-              <ul className="rows" aria-label="Latest news">
-                {items.map((n) => (
-                  <li key={n.id}>
-                    {n.link_url ? (
-                      <SiteLink to={n.link_url} className="rows__link">
-                        <span>{n.text}</span>
-                        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
-                      </SiteLink>
-                    ) : (
-                      <span className="rows__text">{n.text}</span>
+      {homeLoading ? (
+        <div className="section">
+          <div className="container">
+            <Spinner />
+          </div>
+        </div>
+      ) : (
+        home && (
+          <>
+            {(home.membership_pdf || home.membership_heading) && (
+              <section data-block="home.membership" className="section section--alt membership-section">
+                <div className="container text-center">
+                  <h2 className="section-title">{home.membership_heading || 'Annual Membership for MSME / Startup'}</h2>
+                  <div className="membership-tiers">
+                    {MEMBERSHIP_TIERS.map((tier) =>
+                      home.membership_pdf ? (
+                        <a
+                          key={tier.label}
+                          className="membership-tier"
+                          style={{ background: tier.bg }}
+                          href={safeHref(home.membership_pdf)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {tier.label}
+                        </a>
+                      ) : (
+                        <span key={tier.label} className="membership-tier" style={{ background: tier.bg }}>
+                          {tier.label}
+                        </span>
+                      ),
                     )}
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                </div>
+              </section>
             )}
-            {documents.length > 0 && (
-              <>
-                <h3 className="rows__group">Newsletters and brochures</h3>
-                <ul className="rows">
-                  {documents.map((d) => (
-                    <li key={d.id}>
-                      <PlainLink href={d.file} className="rows__link" download>
-                        <span>{d.title}</span>
-                        <span className="soft small">PDF</span>
-                      </PlainLink>
-                    </li>
-                  ))}
-                </ul>
-              </>
+
+            {home.objective_text && (
+              <section data-block="home.objective" className="section objective-section">
+                <div className="container home-split align-center">
+                  <div className="home-split__left pr-6">
+                    <Reveal className="section-head">
+                      <span className="eyebrow">Objective</span>
+                      <h2 className="section-title mt-4">Healthcare shouldn't depend on geography.</h2>
+                      <p className="section-subtitle mt-4">
+                        {home.objective_text}
+                      </p>
+                      <br />
+                      <Link className="btn btn--primary" to="/about">
+                        Read more <ArrowRight size={17} aria-hidden="true" />
+                      </Link>
+                    </Reveal>
+                  </div>
+                  <div className="home-split__right">
+                    <Stagger className="grid grid--4 objective-impact-grid">
+                      <StaggerItem className="impact-point">
+                        <div className="impact-icon"><Activity size={24} /></div>
+                        <h4>Accessible Healthcare</h4>
+                      </StaggerItem>
+                      <StaggerItem className="impact-point">
+                        <div className="impact-icon"><Map size={24} /></div>
+                        <h4>Rural Innovation</h4>
+                      </StaggerItem>
+                      <StaggerItem className="impact-point">
+                        <div className="impact-icon"><Microscope size={24} /></div>
+                        <h4>Medical Technology</h4>
+                      </StaggerItem>
+                      <StaggerItem className="impact-point">
+                        <div className="impact-icon"><Users size={24} /></div>
+                        <h4>Stronger Communities</h4>
+                      </StaggerItem>
+                    </Stagger>
+                  </div>
+                </div>
+              </section>
             )}
-            <div className="actions">
-              <SiteLink to="/media/" className="text-link">Photographs and press coverage</SiteLink>
+
+            {home.enterprises_text && (
+              <section data-block="home.enterprises" className="section section--alt">
+                <div className="container home-split align-center">
+                  <div className="home-split__left">
+                    <Reveal className="section-head">
+                      <span className="eyebrow">Enterprises Engagement</span>
+                      <h2 className="section-title">From innovation to impact</h2>
+                      <p className="section-subtitle">
+                        {home.enterprises_text}
+                      </p>
+                      <br />
+                      <Link to="/enterprises" className="btn btn--primary">
+                        Read more <ArrowRight size={17} aria-hidden="true" />
+                      </Link>
+                    </Reveal>
+                  </div>
+                  <div className="home-split__right">
+                    {(home.enterprises_image_1 || home.enterprises_image_2) && (
+                      <div className="grid grid--2 gap-4">
+                        {home.enterprises_image_1 && (
+                          <div className="image-card">
+                            <img src={home.enterprises_image_1} alt="" className="rounded-lg shadow-sm" />
+                            <p className="image-caption">Skill development and prototype manufacturing</p>
+                          </div>
+                        )}
+                        {home.enterprises_image_2 && (
+                          <div className="image-card">
+                            <img src={home.enterprises_image_2} alt="" className="rounded-lg shadow-sm" />
+                            <p className="image-caption">Pilot plant for medical device development</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {home.women_text_1 && (
+              <section data-block="home.rural" className="section">
+                <div className="container home-split align-center">
+                  <div className="home-split__left">
+                    <Reveal className="section-head">
+                      <span className="eyebrow">Contribution to rural livelihood</span>
+                      <h2 className="section-title">Technology reaching rural communities</h2>
+                      <p className="section-subtitle">
+                        {home.women_text_1}
+                      </p>
+                      <br />
+                      <Link to="/social-impact" className="btn btn--primary">
+                        Read more <ArrowRight size={17} aria-hidden="true" />
+                      </Link>
+                    </Reveal>
+                  </div>
+                  <div className="home-split__right">
+                    {(home.women_image_1 || home.women_image_2) && (
+                      <div className="grid grid--2 gap-4">
+                        {home.women_image_1 && (
+                          <div className="image-card">
+                            <img src={home.women_image_1} alt="" className="rounded-lg shadow-sm" />
+                            <p className="image-caption">Community healthcare and maternal support</p>
+                          </div>
+                        )}
+                        {home.women_image_2 && (
+                          <div className="image-card">
+                            <img src={home.women_image_2} alt="" className="rounded-lg shadow-sm" />
+                            <p className="image-caption">Awareness and outreach in rural communities</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section data-block="home.facilities" className="section section--alt section--dotted">
+              <div className="container home-split-2-1">
+                {/* Left Side: Facilities (2/3 width) */}
+                <div className="home-split__left">
+                  <div className="grid grid--2 gap-4">
+                    <div>
+                      <Reveal className="section-head">
+                        <span className="eyebrow">Location &amp; Facility</span>
+                        <h2 className="section-title mt-4">{home.location_address || 'Second Floor, Diamond Jubilee Building, IIT Kharagpur'}</h2>
+                        <p className="section-subtitle mt-4">{home.location_description}</p>
+                        <br />
+                        <Link to="/facilities" className="btn btn--primary">
+                          Explore Facilities <ArrowRight size={17} aria-hidden="true" />
+                        </Link>
+                      </Reveal>
+                    </div>
+                    <div>
+                      <Stagger className="grid grid--3 facility-cards h-100">
+                        {[
+                          { title: home.facility_card_1_title, image: home.facility_card_1_image, link: home.facility_card_1_link },
+                          { title: home.facility_card_2_title, image: home.facility_card_2_image, link: home.facility_card_2_link },
+                          { title: home.facility_card_3_title, image: home.facility_card_3_image, link: home.facility_card_3_link },
+                        ]
+                          .filter((c) => c.title || c.image)
+                          .map((card) => {
+                            const inner = (
+                              <>
+                                <div className="facility-card__img">
+                                  {card.image ? <img src={card.image} alt="" /> : <div className="facility-card__img--empty" />}
+                                </div>
+                                <h3>{card.title}</h3>
+                              </>
+                            )
+                            return (
+                              <StaggerItem as="div" className="facility-card" key={card.title}>
+                                {card.link ? (
+                                  card.link.startsWith('/') ? (
+                                    <Link to={card.link}>{inner}</Link>
+                                  ) : (
+                                    <a href={safeHref(card.link)}>{inner}</a>
+                                  )
+                                ) : (
+                                  inner
+                                )}
+                              </StaggerItem>
+                            )
+                          })}
+                      </Stagger>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Videos (1/3 width) */}
+                {(home.chintan_shivir_youtube_id || home.viksit_bharat_youtube_id) && (
+                  <div data-block="home.videos" className="home-split__right">
+                    <Reveal className="section-head">
+                      <h2 className="section-title text-base font-bold">See CRTDH in action</h2>
+                    </Reveal>
+                    <div className="grid grid--2 home-videos mt-4">
+                      {home.chintan_shivir_youtube_id && (
+                        <VideoBlock
+                          block={{ title: 'Chintan Shivir', youtube_url: `https://www.youtube.com/watch?v=${home.chintan_shivir_youtube_id}` }}
+                        />
+                      )}
+                      {home.viksit_bharat_youtube_id && (
+                        <VideoBlock
+                          block={{ title: 'Viksit Bharat Abhiyan', youtube_url: `https://www.youtube.com/watch?v=${home.viksit_bharat_youtube_id}` }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </>
+        )
+      )}
+
+      {siteSettings?.map_embed_url && (
+        <section data-block="home.visit" className="section">
+          <div className="container grid grid--3 gap-4 align-start">
+            <div>
+              <Reveal className="section-head">
+                <span className="eyebrow">Find us</span>
+                <h2 className="section-title">Visit CRTDH</h2>
+                <p className="section-subtitle mt-4">
+                  {home?.location_address || 'Diamond Jubilee Building, IIT Kharagpur'}
+                </p>
+                <br />
+                <a href={safeHref(siteSettings.map_embed_url)} target="_blank" rel="noreferrer" className="btn btn--primary">
+                  Get Directions <ArrowRight size={17} aria-hidden="true" />
+                </a>
+              </Reveal>
+            </div>
+            <div>
+              <Reveal delay={0.1} className="map-embed card shadow-sm" style={{ height: '100%', minHeight: '250px' }}>
+                {mapEmbedUrl(siteSettings.map_embed_url) && <iframe
+                  src={mapEmbedUrl(siteSettings.map_embed_url)}
+                  title="CRTDH location map"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  style={{ width: '100%', height: '100%', border: 0 }}
+                />}
+              </Reveal>
+            </div>
+            <div>
+              <Reveal delay={0.2} className="quote-block shadow-sm">
+                <h3>"Innovation for Inclusive Healthcare"</h3>
+              </Reveal>
             </div>
           </div>
-        </div>
-        {videos.length > 0 && (
-          <div className="news__videos">
-            {videos.map((v) => {
-              const photo = eventPhotoFor(v.title, events)
-              return (
-                <VideoPoster
-                  key={v.id}
-                  url={`https://www.youtube.com/watch?v=${v.id}`}
-                  title={v.title}
-                  image={photo?.image}
-                />
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </section>
+        </section>
+      )}
+    </div>
   )
 }
 
-/** Visit: where the centre is, how to reach it, and the MSME membership brochure. */
-function Visit({ home, settings }) {
-  const address = settings.address || home.location_address
-  if (!address && !settings.email_primary) return null
-  const maps = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null
+function HighlightCard({ title, text, to, Icon }) {
   return (
-    <section className="section section--surface visit" aria-labelledby="visit-title">
-      <div className="wrap grid12">
-        <div className="visit__text">
-          <h2 id="visit-title">Visit the centre</h2>
-          {home.location_description && <p className="lead">{home.location_description}.</p>}
-          {address && <address>{address}</address>}
-        </div>
-        {home.office_image && (
-          <figure className="visit__photo">
-            <Img src={home.office_image} alt={home.office_image_alt || ''} ratio="1x1" sizes="200px" />
-          </figure>
-        )}
-        <div className="visit__links">
-          <p className="visit__q">Planning a visit or a partnership?</p>
-          <ul>
-            {settings.email_primary && (
-              <li><a href={`mailto:${settings.email_primary}`}>{settings.email_primary}</a></li>
-            )}
-            {settings.phone_primary && (
-              <li><a href={`tel:${settings.phone_primary.replace(/[^\d+]/g, '')}`}>{settings.phone_primary}</a></li>
-            )}
-            {maps && (
-              <li><a href={maps} target="_blank" rel="noopener noreferrer">Directions in Google Maps</a></li>
-            )}
-          </ul>
-          {home.membership_pdf && (
-            <p className="visit__membership">
-              <PlainLink href={home.membership_pdf} className="btn btn--primary" download>
-                {home.membership_heading ? `${home.membership_heading} (PDF)` : 'MSME and startup membership (PDF)'}
-              </PlainLink>
-            </p>
-          )}
+    <TiltCard max={6} className="highlight-card-wrap">
+      <Link to={to} className="card highlight-card">
+        <span className="highlight-card__icon">
+          <Icon size={24} aria-hidden="true" />
+        </span>
+        <h3>{title}</h3>
+        <p>{text}</p>
+        <span className="highlight-card__cta">
+          Explore <ArrowRight size={15} aria-hidden="true" />
+        </span>
+      </Link>
+    </TiltCard>
+  )
+}
+
+function NewsMarquee({ items, loading }) {
+  if (loading) return null
+  if (!items || items.length === 0) return null
+  // Duplicate the list once so the CSS scroll animation can loop seamlessly.
+  const looped = [...items, ...items]
+  return (
+    <div data-block="home.news" className="news-marquee">
+      <span className="news-marquee__label">News &amp; Events</span>
+      <div className="news-marquee__track-wrap">
+        <div className="news-marquee__track">
+          {looped.map((item, i) => (
+            <span className="news-marquee__item" key={`${item.id ?? i}-${i}`}>
+              {item.link_url ? (
+                <SiteLink to={item.link_url}>{item.text}</SiteLink>
+              ) : (
+                item.text
+              )}
+            </span>
+          ))}
         </div>
       </div>
-    </section>
+    </div>
+  )
+}
+
+/** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
+export default function Home({ data }) {
+  return (
+    <PageDataProvider data={data}>
+      <HomeView />
+    </PageDataProvider>
   )
 }

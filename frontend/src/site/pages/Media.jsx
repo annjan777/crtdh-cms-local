@@ -1,127 +1,185 @@
-import PageShell from '../components/PageShell.jsx'
-import { Gallery, PageBanner } from '../components/Blocks.jsx'
+import { PageDataProvider } from '../api/data.jsx'
 import { PlainLink } from '../link.jsx'
-import { formatDate, uniqueItems } from '../util.js'
+import { safeHref } from '../util.js'
+import { useEffect, useState } from 'react'
+import { useLocation } from '../router.jsx'
+import { useApi } from '../hooks/useApi'
+import { fetchList } from '../api/client'
+import PageHero from '../components/PageHero'
+import GallerySection from '../components/GallerySection'
+import Lightbox from '../components/Lightbox'
+import { ExternalLink, FileText } from 'lucide-react'
+import { DataState } from '../components/StateBlock'
+import Reveal from '../components/Reveal'
+import './Media.css'
 
-/** Media (listing): events as galleries with an index, more photographs, press, newsletters. */
-export default function Media({ data }) {
-  const c = data.collections || {}
-  const events = (c['media-events'] || []).filter((e) => (e.images || []).length)
-  const gallery = c['gallery-images'] || []
-  const coverage = c['media-coverage-links'] || []
-  const documents = c.documents || []
+function MediaView() {
+  const { data: events, loading, error } = useApi(() => fetchList('/media-events/'), [], [])
+  const { data: coverageLinks, loading: coverageLoading } = useApi(
+    () => fetchList('/media-coverage-links/'),
+    [],
+    [],
+  )
+  const { data: documents } = useApi(() => fetchList('/documents/'), [], [])
+  const { data: galleryImages, loading: galleryLoading } = useApi(
+    () => fetchList('/gallery-images/'),
+    [],
+    [],
+  )
+  const location = useLocation()
+
+  // Lightbox state
+  const [lightboxState, setLightboxState] = useState({
+    isOpen: false,
+    images: [],
+    currentIndex: 0
+  })
+
+  const openLightbox = (images, startIndex) => {
+    setLightboxState({
+      isOpen: true,
+      images,
+      currentIndex: startIndex
+    })
+  }
+
+  const closeLightbox = () => setLightboxState(prev => ({ ...prev, isOpen: false }))
+  
+  const nextImage = () => setLightboxState(prev => ({ 
+    ...prev, 
+    currentIndex: (prev.currentIndex + 1) % prev.images.length 
+  }))
+  
+  const prevImage = () => setLightboxState(prev => ({ 
+    ...prev, 
+    currentIndex: (prev.currentIndex - 1 + prev.images.length) % prev.images.length 
+  }))
+
+  // Deep links like /media#pathologyandeyeclinic must keep working: once the
+  // event sections have rendered, scroll the matching anchor into view.
+  useEffect(() => {
+    if (!location.hash || loading) return
+    const id = decodeURIComponent(location.hash.replace('#', ''))
+    const el = document.getElementById(id)
+    if (el) {
+      // Defer to next paint so layout has settled.
+      requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    }
+  }, [location.hash, loading])
+
   return (
-    <PageShell data={data} className="media">
-      <PageBanner
-        title="Media and gallery"
-        intro="Photographs from CRTDH events, health camps and outreach programmes, with press coverage and newsletters."
-      >
-        {events.length > 0 && (
-          <nav className="jump" aria-label="Events on this page">
-            <ul>
-              {events.map((e) => (
-                <li key={e.id}>
-                  <a href={`#${e.slug}`}>{e.title}</a>
+    <div>
+      <PageHero
+        eyebrow="Media"
+        title="Events, camps &amp; coverage"
+        description="Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage."
+      />
+
+      <section data-block="media.events" className="section">
+        <div className="container">
+          <DataState
+            loading={loading}
+            error={error}
+            data={events}
+            emptyProps={{ title: 'Media galleries coming soon' }}
+          >
+            {(items) => (
+              <div className="media-events">
+                {items.map((event, i) => (
+                  <Reveal as="div" className="media-event" id={event.slug} key={event.id} delay={Math.min(i, 4) * 0.05}>
+                    <GallerySection 
+                      title={event.title} 
+                      description={event.description}
+                      images={event.images} 
+                      onImageClick={(index) => openLightbox(event.images, index)} 
+                    />
+                  </Reveal>
+                ))}
+              </div>
+            )}
+          </DataState>
+        </div>
+      </section>
+
+      {!galleryLoading && galleryImages && galleryImages.length > 0 && (
+        <section data-block="media.gallery" className="section section--alt">
+          <div className="container">
+            <Reveal>
+              <GallerySection 
+                title="More from CRTDH" 
+                description="Additional photos from our campus, team, and facility."
+                images={galleryImages} 
+                onImageClick={(index) => openLightbox(galleryImages, index)} 
+              />
+            </Reveal>
+          </div>
+        </section>
+      )}
+
+      {!coverageLoading && coverageLinks && coverageLinks.length > 0 && (
+        <section data-block="media.coverage" className="section">
+          <div className="container">
+            <Reveal className="section-head">
+              <span className="eyebrow">Press</span>
+              <h2 className="section-title">Media coverage</h2>
+            </Reveal>
+            <ul className="coverage-list">
+              {coverageLinks.map((link) => (
+                <li key={link.id}>
+                  <a href={safeHref(link.url)} target="_blank" rel="noreferrer" className="card coverage-list__item">
+                    <span>{link.title}</span>
+                    <span className="coverage-list__arrow" aria-hidden="true">
+                      <ExternalLink size={16} aria-hidden="true" />
+                    </span>
+                  </a>
                 </li>
               ))}
-              {coverage.length > 0 && <li><a href="#press">Press coverage</a></li>}
-              {documents.length > 0 && <li><a href="#newsletters">Newsletters</a></li>}
             </ul>
-          </nav>
-        )}
-      </PageBanner>
-
-      {events.map((e, i) => (
-        <section key={e.id} id={e.slug} className={`section event${i % 2 ? ' section--surface' : ''}`} aria-labelledby={`event-${e.id}`}>
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id={`event-${e.id}`}>{e.title}</h2>
-              {(e.event_date || e.description) && (
-                <p>
-                  {e.event_date && <time dateTime={e.event_date}>{formatDate(e.event_date)}</time>}
-                  {e.event_date && e.description && '. '}
-                  {e.description}
-                </p>
-              )}
-            </div>
-            <Gallery items={uniqueItems(e.images)} title={e.title} limit={6} />
-          </div>
-        </section>
-      ))}
-
-      {gallery.length > 0 && (
-        <section className="section section--surface" aria-labelledby="more-photos">
-          <div className="wrap">
-            <div className="section-head">
-              <h2 id="more-photos">More from CRTDH</h2>
-            </div>
-            <Gallery items={gallery} title="More from CRTDH" />
           </div>
         </section>
       )}
 
-      {(coverage.length > 0 || documents.length > 0) && (
-        <section className="section" aria-label="Press and newsletters">
-          <div className="wrap two-col">
-            {coverage.length > 0 && (
-              <div id="press">
-                <h2>Press coverage</h2>
-                <ul className="rows mt-6">
-                  {coverage.map((l) => (
-                    <li key={l.id}>
-                      <PlainLink href={l.url} className="rows__link" target="_blank" rel="noopener noreferrer">
-                        <span>{pressLabel(l)}</span>
-                        <span className="soft small">{host(l.url)}</span>
-                      </PlainLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {documents.length > 0 && (
-              <div id="newsletters">
-                <h2>Newsletters</h2>
-                <ul className="rows mt-6">
-                  {documents.map((d) => (
-                    <li key={d.id}>
-                      <PlainLink href={d.file} className="rows__link" download>
-                        <span>{d.title}</span>
-                        <span className="soft small">PDF</span>
-                      </PlainLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      {documents.length > 0 && (
+        <section data-block="media.documents" id="newsletters" className="section section--alt">
+          <div className="container">
+            <Reveal className="section-head">
+              <span className="eyebrow">Newsletters</span>
+              <h2 className="section-title">Newsletters &amp; documents</h2>
+            </Reveal>
+            <ul className="coverage-list">
+              {documents.map((doc) => (
+                <li key={doc.id}>
+                  <PlainLink href={doc.file} className="card coverage-list__item">
+                    <span>{doc.title}</span>
+                    <span className="coverage-list__arrow" aria-hidden="true">
+                      <FileText size={16} aria-hidden="true" />
+                    </span>
+                  </PlainLink>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       )}
-    </PageShell>
+
+      {lightboxState.isOpen && (
+        <Lightbox 
+          images={lightboxState.images}
+          currentIndex={lightboxState.currentIndex}
+          onClose={closeLightbox}
+          onNext={nextImage}
+          onPrev={prevImage}
+        />
+      )}
+    </div>
   )
 }
 
-function host(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return ''
-  }
-}
-
-// Several coverage rows use the URL as their title; show a readable headline from the slug instead.
-function pressLabel(link) {
-  const t = (link.title || '').trim()
-  if (t && !/^https?:\/\//.test(t)) return t
-  try {
-    const u = new URL(link.url)
-    const seg = u.pathname.split('/').filter(Boolean).reverse().find((s) => /[a-z]-[a-z]/i.test(s)) || ''
-    const words = seg.replace(/\.[a-z]+$/i, '').replace(/-?(article)?\d{5,}.*$/i, '').split('-').filter(Boolean)
-    if (words.length >= 3) {
-      const s = words.join(' ')
-      return s.charAt(0).toUpperCase() + s.slice(1)
-    }
-    return host(link.url)
-  } catch {
-    return t
-  }
+/** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
+export default function Media({ data }) {
+  return (
+    <PageDataProvider data={data}>
+      <MediaView />
+    </PageDataProvider>
+  )
 }

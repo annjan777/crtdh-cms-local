@@ -37,9 +37,8 @@ export const pages = {
 }
 
 export { NotFound }
-export { default as Layout, groupNav } from './components/Layout.jsx'
+export { default as Layout } from './components/Layout.jsx'
 export { LinkProvider } from './link.jsx'
-export { MediaProvider } from './media.jsx'
 export { PAGES, PAGE_PATHS, PAGE_NEEDS, LAYOUT_NEEDS, REQUIRED, selectData } from './registry.js'
 export { SEO } from './seo.js'
 
