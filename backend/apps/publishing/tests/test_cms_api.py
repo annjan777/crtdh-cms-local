@@ -71,6 +71,14 @@ def test_preview_is_snapshot_shaped_for_the_page(api_as, content):
     assert_contract_error(api_as("editor").get("/api/v1/cms/preview/nope/"), "CMS_NOT_FOUND")
 
 
+def test_preview_for_header_and_footer_shows_home_with_site_settings(api_as, content):
+    # The "site" page (logos, menu, social links, contact details) previews on the Home page.
+    data = api_as("editor").get("/api/v1/cms/preview/site/").json()
+    assert data["page"] == "site"
+    assert {"nav-items", "hero-slides"} <= set(data["collections"])
+    assert {"site-settings", "home-page"} <= set(data["singletons"])
+
+
 # transaction=True: autocommit like production, so the on-commit email runs before the response is built.
 @pytest.mark.django_db(transaction=True)
 def test_review_request_emails_publishers(api_as, content, publisher, cms_admin, mail_outbox, editor):
