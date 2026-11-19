@@ -66,6 +66,8 @@ jobs:
         run: python -m pytest publish_agent/tests -p no:asyncio -q --junitxml=test-results/publish-agent.xml
       - name: import-linter (MCP writes only through apps.publishing)
         working-directory: backend
+        env:
+          PYTHONPATH: .  # mcp_server and apps are top-level packages of backend/, not installed
         run: lint-imports
       - name: views write only through apps.publishing
         run: python tests/tools/write_paths.py
