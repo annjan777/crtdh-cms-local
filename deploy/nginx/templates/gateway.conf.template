@@ -19,7 +19,11 @@ server {
     client_max_body_size 25m;
 
     # Django responses carry their own CSP/HSTS headers; these apply to the SPA files.
-    set $csp "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://www.google.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'";
+    # The SPA frames only its own /preview.html (the page editor's canvas, admin/src/editor/Canvas.jsx) and is
+    # never framed itself. /preview.html renders the public site, so it frames the site's map and video embeds
+    # and may be framed by the SPA (same origin) only.
+    set $csp "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'";
+    set $csp_preview "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://www.google.com; frame-ancestors 'self'; base-uri 'none'; form-action 'self'; object-src 'none'";
 
     location /api/ {
         proxy_pass http://cms:8000;
@@ -60,6 +64,18 @@ server {
         try_files $uri =404;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         add_header X-Content-Type-Options "nosniff" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+
+    location = /preview.html {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache" always;
+        add_header Content-Security-Policy $csp_preview always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+        add_header Cross-Origin-Opener-Policy "same-origin" always;
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     }
 

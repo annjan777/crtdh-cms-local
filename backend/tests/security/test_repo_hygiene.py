@@ -107,3 +107,44 @@ def test_gateway_container_is_hardened_and_serves_static():
     assert "collectstatic" in c["services"]["migrate"]["command"]
     conf = (ROOT / "deploy/nginx/templates/gateway.conf.template").read_text()
     assert "location /static/" in conf and "alias /srv/static/;" in conf
+
+
+# ---- gateway framing (QA wave 2 D3): the page editor frames its own /preview.html --------------------------------
+def _gateway_cms_locations():
+    import re
+
+    conf = (ROOT / "deploy/nginx/templates/gateway.conf.template").read_text()
+    cms = conf[conf.index("server_name ${CMS_HOST};"):conf.index("server_name ${CONTACT_HOST};")]
+    variables = dict(re.findall(r'set \$(\w+) "([^"]*)";', cms))
+    locations = {}
+    for m in re.finditer(r"location ([^{]+?) \{(.*?)\n    \}", cms, re.S):
+        headers = {}
+        for name, value in re.findall(r'add_header ([\w-]+) (\$\w+|"[^"]*") always;', m.group(2)):
+            headers[name] = variables[value[1:]] if value.startswith("$") else value.strip('"')
+        locations[m.group(1).strip()] = headers
+    return locations
+
+
+def _csp(header):
+    return {d.split()[0]: d.split()[1:] for d in (x.strip() for x in header.split(";")) if d}
+
+
+def test_admin_spa_may_frame_its_preview_but_is_never_framed():
+    spa = _gateway_cms_locations()["/"]
+    csp = _csp(spa["Content-Security-Policy"])
+    assert "'self'" in csp["frame-src"], "the editor canvas is <iframe src=/preview.html> on the same origin"
+    assert csp["frame-ancestors"] == ["'none'"] and spa["X-Frame-Options"] == "DENY"
+
+
+def test_preview_document_is_framed_same_origin_only():
+    canvas = (ROOT / "admin/src/editor/Canvas.jsx").read_text()
+    assert 'src="/preview.html"' in canvas  # what the location below is for
+    preview = _gateway_cms_locations()["= /preview.html"]
+    csp = _csp(preview["Content-Security-Policy"])
+    assert csp["frame-ancestors"] == ["'self'"] and preview["X-Frame-Options"] == "SAMEORIGIN"
+    # the public site's own embeds (Blocks.jsx: map, youtube-nocookie player) and nothing broader
+    assert set(csp["frame-src"]) == {"https://www.youtube-nocookie.com", "https://www.google.com"}
+    for directive in ("script-src", "object-src", "base-uri"):
+        assert directive in csp
+    assert "'unsafe-inline'" not in preview["Content-Security-Policy"]
+    assert {"X-Content-Type-Options", "Strict-Transport-Security", "Referrer-Policy"} <= set(preview)
