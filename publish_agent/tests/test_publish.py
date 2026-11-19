@@ -236,10 +236,10 @@ def test_retention_and_media_gc(make_pub, cms, server):
     with open(os.path.join(media_dir, "keep-me.txt"), "w") as fh:
         fh.write("not ours")  # names that are not content hashes are never touched
     assert publish(cms, pub, "s2", "p2", media={mc: c}, media_all=[mb, mc]) == "live"
-    assert sorted(os.listdir(media_dir)) == sorted([ma, mb, mc, "keep-me.txt"])  # s1 still kept
+    assert sorted(os.listdir(media_dir)) == sorted([ma, mb, mc, "keep-me.txt", "index.html"])  # s1 still kept
     assert publish(cms, pub, "s3", "p3", media={}, media_all=[mc]) == "live"
     # kept: s3 (current) + s2 (1 previous) -> b and c referenced, a is garbage
-    assert sorted(os.listdir(media_dir)) == sorted([mb, mc, "keep-me.txt"])
+    assert sorted(os.listdir(media_dir)) == sorted([mb, mc, "keep-me.txt", "index.html"])
     rel = os.listdir(server.home_path("crtdh-releases", "releases"))
     assert "s1" not in rel and "s2" in rel and "s3" in rel
     assert any(n.startswith("legacy-") for n in rel)  # pre-agent site is never auto-deleted

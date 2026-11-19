@@ -27,6 +27,8 @@ from .logutil import LOG
 from .remote import Remote, RemoteError
 
 CLEANUP_EVERY = 6 * 3600
+MEDIA_INDEX_NAME = "index.html"  # written into the shared _media/ folder so it never lists its files
+MEDIA_INDEX = b'<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title></title>\n'
 
 
 class PublishFailed(Exception):
@@ -425,6 +427,10 @@ class Publisher:
                 have[name] = size
                 new_media += 1
             LOG.info("media: %s new, %s already on the server", new_media, len(bundle.media_files) - new_media)
+            if have.get(MEDIA_INDEX_NAME) != len(MEDIA_INDEX):
+                # /_media/ answers with an empty page instead of a file listing (the .htaccess no longer
+                # turns listings off; frontend lane's request). Never a media name, so GC leaves it alone.
+                remote.write_bytes(posixpath.join(layout.media_dir, MEDIA_INDEX_NAME), MEDIA_INDEX)
         except Exception as exc:
             if not is_transient(exc, remote):
                 LOG.warning("removing the incomplete upload %s to free space", staging)

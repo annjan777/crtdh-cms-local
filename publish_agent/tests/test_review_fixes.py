@@ -307,7 +307,7 @@ def test_media_page_is_site_content_and_hashes_go_to_underscore_media(make_pub, 
     pages2 = {"media/index.html": '<meta name="crtdh-build" content="s2">gallery 2'}
     assert publish(cms, pub, "s2", "p2", pages=pages2, media={}, media_all=[]) == "live"
     assert publish(cms, pub, "s3", "p3", pages={"media/index.html": "gallery 3"}, media={}, media_all=[]) == "live"
-    assert sorted(os.listdir(mdir)) == ["0123456789abcdef.txt.bak"]  # hashes GC'd, other names kept
+    assert sorted(os.listdir(mdir)) == ["0123456789abcdef.txt.bak", "index.html"]  # hashes GC'd, other names kept
     assert "gallery 3" in live(pub, "media")
 
 
@@ -399,3 +399,27 @@ def test_verify_url_must_be_http(make_cfg, url, ok):
     else:
         with pytest.raises(ConfigError, match="verify_url"):
             validate(cfg)
+
+
+# ------------------------------------------------------------------ _media/ never lists its files
+@pytest.mark.parametrize("strategy", ["symlink", "htaccess", "copy"])
+def test_media_folder_gets_an_empty_index_page(make_pub, cms, server, strategy):
+    from publish_agent.deploy import MEDIA_INDEX
+
+    pub = make_pub(strategy=strategy)
+    img = b"I" * 48
+    m = media_name(img)
+    assert publish(cms, pub, "s1", "p1", media={m: img}) == "live"
+    found = [os.path.join(d, "index.html") for d, _dirs, files in os.walk(server.home_path())
+             if os.path.basename(d) == "_media" and m in files]
+    assert len(found) == 1, found  # the one shared media folder of this layout
+    index = found[0]
+    with open(index, "rb") as fh:
+        body = fh.read()
+    assert body == MEDIA_INDEX and m.encode() not in body and b"noindex" in body
+    # kept through later publishes and media clean-up; rewritten if someone changes it
+    with open(index, "wb") as fh:
+        fh.write(b"tampered listing")
+    assert publish(cms, pub, "s2", "p2", media={}, media_all=[]) == "live"
+    with open(index, "rb") as fh:
+        assert fh.read() == MEDIA_INDEX

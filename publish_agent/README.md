@@ -109,7 +109,7 @@ The PC must be on and on the campus network for publishing to work. While it is 
 2. Download the tarball. Check its SHA-256 and the CMS's signature. Unpack it safely (only files and folders, no `..`).
 3. Upload `site/` into `releases/<snapshot>.partial/`. Each file goes up under a temporary name and is then renamed, so a file is never left half written.
    If the connection drops, the agent reconnects and continues where it stopped (up to 3 tries). Files already there are skipped.
-4. Upload the tarball's new `media/` files into the shared `_media/` folder (served at `/_media/`; `/media/` is the Media & Gallery page). Files are named by content hash, so an image already on the server is never uploaded again.
+4. Upload the tarball's new `media/` files into the shared `_media/` folder (served at `/_media/`; `/media/` is the Media & Gallery page). Files are named by content hash, so an image already on the server is never uploaded again. The agent also keeps an empty `index.html` in `_media/`, so `/_media/` never shows a file listing (media clean-up leaves it alone).
 5. Rename `<snapshot>.partial` → `<snapshot>`, then **switch** (see below) and save `state.json` on the server.
 6. Load `verify_url` and look for `<meta name="crtdh-build" content="<snapshot>">`. If it's not there after 5 tries, the agent switches back to the previous release and reports "failed".
 7. Report "live". Delete releases older than `keep_releases`, any leftover `.partial` folders, and media files that no kept release uses.
@@ -164,6 +164,7 @@ Use this only in an emergency. The next agent publish replaces whatever you uplo
    `keys/crtdh_publish_ed25519`; in WinSCP convert it to .ppk when asked).
 3. Upload the `site/` contents into a **new** folder `crtdh-releases/releases/manual-<date>/`. With `htaccess`, use `public_html/_crtdh/releases/manual-<date>/` instead.
    Upload any new files from the tarball's `media/` into the shared `_media/` folder from the table above.
+   If `_media/index.html` is missing, add an empty one so the folder never lists its files.
    With `symlink`, also create a link `_media` → `../../_media` inside the new folder. WinSCP can do this from the context menu: *New → Link*.
 4. Switch:
    - `symlink`: create a link `public_html.new` → `crtdh-releases/releases/manual-<date>`, then rename it over `public_html`. If renaming over isn't allowed, delete the old `public_html` link first; the site is down for a moment.
