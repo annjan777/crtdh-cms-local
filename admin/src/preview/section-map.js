@@ -10,7 +10,7 @@
 //
 // A section shown outside its own page is tagged with data-cms-elsewhere=<its page>, so a
 // click opens it where it is edited. Sections with no visible block on a page stay editable
-// from the panel. The shim (site-shim) tags itself and is left alone.
+// from the panel. Markup that already carries data-cms-section is left alone.
 
 const LAYOUT = [
   ['.site-header', 'site.nav', 'Menu links'],
@@ -83,10 +83,10 @@ export const ownerPage = (sectionId) => sectionId.split('.')[0];
 
 /**
  * Tag the rendered public page in `root` for the canvas. Returns the number of tagged elements.
- * Leaves elements that already carry data-cms-section (the shim) untouched.
+ * Leaves elements that already carry data-cms-section untouched.
  */
 export function tagSections(root, pageId, labels = {}) {
-  if (root.querySelector('[data-cms-section]:not([data-cms-mapped])')) return 0; // shim markup
+  if (root.querySelector('[data-cms-section]:not([data-cms-mapped])')) return 0; // tagged by its author
   for (const el of root.querySelectorAll('[data-cms-mapped]')) {
     for (const a of ['data-cms-section', 'data-cms-tag', 'data-cms-elsewhere', 'data-cms-item', 'data-cms-mapped']) el.removeAttribute(a);
   }

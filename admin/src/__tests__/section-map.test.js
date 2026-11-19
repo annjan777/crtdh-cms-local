@@ -25,7 +25,7 @@ describe('section map', () => {
     expect(document.querySelector('.site-header').dataset.cmsElsewhere).toBe('site');
   });
 
-  it('re-tags cleanly and leaves the shim alone', () => {
+  it('re-tags cleanly and leaves markup that is already tagged alone', () => {
     document.body.innerHTML = html;
     tagSections(document.body, 'home');
     tagSections(document.body, 'home');

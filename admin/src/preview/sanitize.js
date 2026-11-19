@@ -1,7 +1,7 @@
 // Rich text is rendered as HTML in the canvas iframe, which is same-origin and
 // runs scripts (it renders React). So every rich-text value is cleaned before
-// it reaches the iframe, whichever page components render it (shim or the
-// frontend lane's @site). The backend also sanitises on write.
+// it reaches the iframe, before the frontend lane's @site components render it.
+// The backend also sanitises on write.
 import DOMPurify from 'dompurify';
 
 const ALLOWED_TAGS = ['b', 'strong', 'i', 'em', 'a', 'ul', 'ol', 'li', 'h3', 'p', 'br'];

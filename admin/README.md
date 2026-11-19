@@ -28,7 +28,7 @@ node scripts/tour.mjs [filter]   # screenshots of every screen at 1280/1024/390 
   `apps/publishing/registry.py`). Autosave per record with the record `version`; a stale save shows who changed
   it and never overwrites. Text typed offline or after a session expiry is kept in localStorage and saved later.
 - **Canvas** (`src/preview/`): `preview.html` renders the frontend lane's page components through the `@site`
-  alias (`../frontend/src/site`, shim fallback in `src/preview/site-shim`).
+  alias (`../frontend/src/site`; required in every mode, there is no stand-in).
 - **Review / History / Users / Messages**: publish with live status, discard (one, or all from a Claude session),
   restore a version as unpublished changes, user admin (A12), contact-form messages (publisher/admin).
 

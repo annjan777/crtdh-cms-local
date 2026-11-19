@@ -7,28 +7,22 @@ import { defineConfig } from 'vite';
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 // The canvas renders the real public page components from the frontend lane
-// (`frontend/src/site`, page components `({ data }) => JSX`) through `@site`.
-// A production build must use them: if they are missing, `vite build` fails
-// instead of silently shipping the shim (QA wave 2 D6). The shim is only for
-// dev/tests without the frontend checkout, or when CRTDH_SITE_SHIM=1 is set
-// explicitly for a dev server/test run (never honoured by `vite build`).
+// (`frontend/src/site`, page components `({ data }) => JSX`) through `@site`,
+// in every mode (dev, tests, build). If they are missing, Vite stops with a
+// clear error instead of silently using a stand-in (QA wave 2 D6/D7).
 const siteDir = path.resolve(here, '../frontend/src/site');
 const siteEntry = ['index.js', 'index.jsx', 'index.ts', 'index.tsx'].map((f) => path.join(siteDir, f)).find((f) => fs.existsSync(f));
-const shimEntry = path.resolve(here, 'src/preview/site-shim/index.jsx');
 
 // The site components import react from wherever they live; next to a
 // frontend/node_modules that is a second React, and its hooks crash inside the
 // admin's (useRef of null). dedupe resolves these from admin/node_modules.
 const SHARED = ['react', 'react-dom', 'react-router'];
 
-function sitePathFor(command) {
-  if (command === 'build') {
-    if (!siteEntry)
-      throw new Error(`admin build: the public site components are missing (${siteDir}/index.js). ` +
-        'Build with the repository root as context so frontend/src/site is included; the shim is never shipped.');
-    return siteEntry;
-  }
-  return process.env.CRTDH_SITE_SHIM === '1' || !siteEntry ? shimEntry : siteEntry;
+function sitePath() {
+  if (!siteEntry)
+    throw new Error(`admin: the public site components are missing (${siteDir}/index.js). ` +
+      'Check out the whole repository (Docker: build with the repository root as context).');
+  return siteEntry;
 }
 
 // In mock mode, seed images are served from the backend's media folder at the
@@ -51,10 +45,10 @@ function serveMedia() {
   };
 }
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   plugins: [react(), ...(process.env.VITE_USE_MOCK === '1' ? [serveMedia()] : [])],
   resolve: {
-    alias: { '@site': sitePathFor(command) },
+    alias: { '@site': sitePath() },
     dedupe: SHARED,
   },
   build: {

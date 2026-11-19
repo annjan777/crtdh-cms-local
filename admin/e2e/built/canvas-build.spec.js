@@ -16,8 +16,7 @@ test('built canvas renders the real public page', async ({ page }) => {
   page.on('pageerror', (e) => errors.push(e.message));
   await signIn(page, 'priya', '/pages/home');
   const frame = canvas(page);
-  await expect(frame.locator('.site-header')).toBeVisible(); // real Layout, not the shim
-  await expect(frame.locator('.s-root')).toHaveCount(0);
+  await expect(frame.locator('.site-header')).toBeVisible(); // the real public Layout
   await expect(frame.locator('#preview-root')).not.toBeEmpty();
   await expect(frame.locator('[data-cms-section="home.hero"]').first()).toBeVisible();
   expect((await frame.locator('body').innerText()).trim().length).toBeGreaterThan(200);

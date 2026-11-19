@@ -24,8 +24,7 @@ test('every page renders the real public site with clickable sections', async ({
   for (const [pageId, ids] of Object.entries(PAGES)) {
     await page.goto(`/pages/${pageId}`);
     const frame = canvas(page);
-    await expect(frame.locator('.site-header')).toBeVisible(); // real Layout, not the shim's .s-header
-    await expect(frame.locator('.s-root')).toHaveCount(0);
+    await expect(frame.locator('.site-header')).toBeVisible(); // the real public Layout
     for (const id of ids) await expect(frame.locator(`[data-cms-section="${id}"]`).first(), `${pageId}: ${id}`).toBeVisible();
   }
 });
