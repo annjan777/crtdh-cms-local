@@ -154,7 +154,7 @@ jobs:
           path: frontend/build/client/
 
   admin:
-    name: CMS admin (build, npm audit)
+    name: CMS admin (vitest, build, size budget, npm audit)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
@@ -168,10 +168,14 @@ jobs:
           cache: npm
           cache-dependency-path: admin/package-lock.json
       - run: npm ci --no-fund
+      - name: unit tests (vitest)
+        run: npx vitest run
       - name: build
         env:
           VITE_API_BASE_URL: /api/v1
         run: npm run build
+      - name: initial JS budget (entry < 300 kB, sign-in screen < 400 kB)
+        run: npm run size
       - name: npm audit (high+)
         run: npm audit --audit-level=high
       - uses: actions/upload-artifact@v4

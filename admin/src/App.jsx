@@ -2,12 +2,6 @@ import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext.jsx';
 import AuthScreens from './auth/AuthScreens.jsx';
 import { ChangesProvider } from './shell/ChangesContext.jsx';
-import EditorPage from './editor/EditorPage.jsx';
-import ReviewPage from './review/ReviewPage.jsx';
-import HistoryPage from './history/HistoryPage.jsx';
-import UsersPage from './users/UsersPage.jsx';
-import ShotListPage from './help/ShotListPage.jsx';
-import MessagesPage from './messages/MessagesPage.jsx';
 
 function Gate() {
   const { status } = useAuth();
@@ -28,17 +22,21 @@ function Gate() {
   );
 }
 
+// Route-level code splitting: each screen (the editor with Tiptap and dnd-kit above all) is its
+// own chunk, so the sign-in screen loads only the shell. The chunk is fetched on first visit.
+const page = (load) => () => load().then((m) => ({ Component: m.default }));
+
 export const router = createBrowserRouter([
   {
     element: <Gate />,
     children: [
       { path: '/', element: <Navigate to="/pages/home" replace /> },
-      { path: '/pages/:pageId', element: <EditorPage /> },
-      { path: '/review', element: <ReviewPage /> },
-      { path: '/history', element: <HistoryPage /> },
-      { path: '/users', element: <UsersPage /> },
-      { path: '/messages', element: <MessagesPage /> },
-      { path: '/shot-list', element: <ShotListPage /> },
+      { path: '/pages/:pageId', lazy: page(() => import('./editor/EditorPage.jsx')) },
+      { path: '/review', lazy: page(() => import('./review/ReviewPage.jsx')) },
+      { path: '/history', lazy: page(() => import('./history/HistoryPage.jsx')) },
+      { path: '/users', lazy: page(() => import('./users/UsersPage.jsx')) },
+      { path: '/messages', lazy: page(() => import('./messages/MessagesPage.jsx')) },
+      { path: '/shot-list', lazy: page(() => import('./help/ShotListPage.jsx')) },
       { path: '*', element: <Navigate to="/pages/home" replace /> },
     ],
   },
