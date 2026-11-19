@@ -225,7 +225,8 @@ preflight() {
         esac
     fi
     if [ "$DRY_RUN" = 0 ] && command -v git >/dev/null 2>&1; then
-        git -C "$REPO" check-ignore -q deploy/staging/.env.staging deploy/staging/secrets/x \
+        { git -C "$REPO" check-ignore -q deploy/staging/.env.staging \
+            && git -C "$REPO" check-ignore -q deploy/staging/secrets/x; } \
             || die ".gitignore does not cover deploy/staging/.env.staging and deploy/staging/secrets/; refusing to write secrets"
         ok ".env.staging and secrets/ are git-ignored"
     fi
