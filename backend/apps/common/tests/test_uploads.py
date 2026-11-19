@@ -247,3 +247,44 @@ def test_pdf_unparseable_rejected():
     with pytest.raises(CMSError):
         process_upload(f(b"%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF", "a.pdf", "application/pdf"),
                        kind="document")
+
+
+# ---- C2PA / XMP metadata: photo tools put XML (even an SVG icon) in metadata blocks; only pixels are kept ----
+
+def _png_with_chunk(kind, payload, after_iend=b""):
+    png = make_image_bytes(1800, 1000, fmt="PNG")
+    chunk = struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", zlib.crc32(kind + payload) & 0xFFFFFFFF)
+    ihdr_end = 8 + 12 + 13
+    return png[:ihdr_end] + chunk + png[ihdr_end:] + after_iend
+
+
+C2PA_WITH_SVG = b"jumb\x00image/svg+xml\x00<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"></svg>"
+
+
+def test_png_content_credentials_with_svg_icon_is_accepted_and_stripped():
+    out = process_upload(f(_png_with_chunk(b"caBX", C2PA_WITH_SVG), "photo.png", "image/png"))
+    assert (out.width, out.height) == (1800, 1000)
+    with open(out.path, "rb") as fh:
+        saved = fh.read()
+    assert b"<svg" not in saved and b"caBX" not in saved
+
+
+def test_png_xmp_text_chunk_is_accepted():
+    xmp = b"XML:com.adobe.xmp\x00\x00\x00\x00\x00<x:xmpmeta><rdf:RDF><svg/></rdf:RDF></x:xmpmeta>"
+    assert process_upload(f(_png_with_chunk(b"iTXt", xmp), "photo.png", "image/png")).width == 1800
+
+
+def test_jpeg_app11_content_credentials_is_accepted():
+    jpg = make_image_bytes(1800, 1000)
+    seg = b"\xff\xeb" + struct.pack(">H", 2 + len(C2PA_WITH_SVG)) + C2PA_WITH_SVG
+    out = process_upload(f(jpg[:2] + seg + jpg[2:]))
+    assert out.width == 1800
+
+
+def test_markup_outside_metadata_is_still_rejected():
+    # in an unknown chunk, and appended after the end of the image
+    for data in (_png_with_chunk(b"hTML", b"<html><script>x()</script>"),
+                 _png_with_chunk(b"caBX", C2PA_WITH_SVG, after_iend=b"<script>x()</script>")):
+        with pytest.raises(CMSError) as e:
+            process_upload(f(data, "photo.png", "image/png"))
+        assert code_of(e) == "CMS_VALIDATION"

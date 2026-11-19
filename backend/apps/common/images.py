@@ -96,6 +96,51 @@ def sniff_image(data):
     return None
 
 
+# Metadata containers that photo tools fill with XML, and that may legitimately hold markup: XMP, EXIF,
+# comments, and C2PA "Content Credentials" (caBX in PNG, APP11/JUMBF in JPEG), which can embed an SVG icon.
+# They are skipped by the markup scan below. That is safe because nothing from the original file is kept:
+# the image is decoded and re-encoded from its pixels, which drops every metadata block. The pixel data
+# and anything appended after the image's end marker are still scanned.
+PNG_METADATA_CHUNKS = {b"caBX", b"iTXt", b"tEXt", b"zTXt", b"eXIf"}
+JPEG_METADATA_MARKERS = {0xE1, 0xEB, 0xFE}  # APP1 (EXIF/XMP), APP11 (JUMBF/C2PA), COM
+
+
+def _without_metadata(data, fmt):
+    """`data` minus known metadata blocks, or `data` unchanged if the structure doesn't parse cleanly."""
+    try:
+        if fmt == "PNG":
+            out, pos = bytearray(data[:8]), 8
+            while pos + 12 <= len(data):
+                length = int.from_bytes(data[pos:pos + 4], "big")
+                kind = data[pos + 4:pos + 8]
+                end = pos + 12 + length
+                if end > len(data):
+                    return data
+                if kind not in PNG_METADATA_CHUNKS:
+                    out += data[pos:end]
+                pos = end
+                if kind == b"IEND":
+                    return bytes(out + data[pos:])  # bytes after IEND are kept and scanned
+            return data
+        if fmt == "JPEG":
+            out, pos = bytearray(data[:2]), 2
+            while pos + 4 <= len(data) and data[pos] == 0xFF:
+                marker = data[pos + 1]
+                if marker == 0xDA:  # start of scan: the rest is image data and trailer, all scanned
+                    return bytes(out + data[pos:])
+                length = int.from_bytes(data[pos + 2:pos + 4], "big")
+                end = pos + 2 + length
+                if length < 2 or end > len(data):
+                    return data
+                if marker not in JPEG_METADATA_MARKERS:
+                    out += data[pos:end]
+                pos = end
+            return data
+    except (IndexError, ValueError):
+        return data
+    return data
+
+
 def _tmp(suffix):
     fd, path = tempfile.mkstemp(suffix=suffix, prefix="crtdh-upload-", dir=settings.FILE_UPLOAD_TEMP_DIR)
     os.close(fd)
@@ -106,7 +151,8 @@ def _process_image(data, min_width):
     fmt = sniff_image(data)
     if fmt is None:
         _reject("That file is not a JPEG, PNG or WebP image (SVG and HTML are not accepted).")
-    if POLYGLOT_MARKERS.search(data) or ZIP_EOCD in data[-70000:]:
+    scanned = _without_metadata(data, fmt)
+    if POLYGLOT_MARKERS.search(scanned) or ZIP_EOCD in data[-70000:]:
         _reject("The image contains embedded markup or an archive and was rejected.",
                 fix="Re-export the photo from your camera or editor and upload that.")
     try:
