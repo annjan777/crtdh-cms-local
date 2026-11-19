@@ -14,12 +14,13 @@ if (-not (Test-Path keys\crtdh_publish_ed25519)) {
   & .\.venv\Scripts\python.exe -m publish_agent keygen keys\crtdh_publish_ed25519
 }
 if (-not (Test-Path agent-secret.txt)) { New-Item -ItemType File agent-secret.txt | Out-Null }
-# Only the current user may read the key and the secret.
-foreach ($f in @("keys\crtdh_publish_ed25519", "agent-secret.txt")) {
+if (-not (Test-Path access-secret.txt)) { New-Item -ItemType File access-secret.txt | Out-Null }
+# Only the current user may read the key and the secrets.
+foreach ($f in @("keys\crtdh_publish_ed25519", "agent-secret.txt", "access-secret.txt")) {
   icacls $f /inheritance:r /grant:r "$($env:USERNAME):(R,W)" | Out-Null
 }
 Write-Host ""
 Write-Host "Done. Next (see publish_agent\README.md):"
 Write-Host "  1. Put this public key on the server:  $(Get-Content keys\crtdh_publish_ed25519.pub)"
-Write-Host "  2. Paste the agent secret into agent-secret.txt (one line)."
+Write-Host "  2. Paste the agent secret into agent-secret.txt and the Cloudflare Access client secret into access-secret.txt (one line each)."
 Write-Host "  3. Edit config.ini (user, cms url), then:  .\.venv\Scripts\python.exe -m publish_agent check --trust-host-key"
