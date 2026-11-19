@@ -4,6 +4,12 @@
 .hero__text { grid-column: 1 / span 5; grid-row: 1; padding-bottom: var(--s-2); }
 .hero h1 { color: #fff; font-size: clamp(2.25rem, 3.6vw, 3rem); line-height: 1.06; font-weight: 450; letter-spacing: -0.02em; }
 .hero__line { margin-top: var(--s-6); font-size: var(--fs-18); line-height: 1.55; color: var(--on-navy-soft); max-width: 36ch; }
+/* Figures strip (D10): three figures in a row, label under a display figure, hairlines between; no cards, no icons. */
+.hero__figures { display: grid; grid-template-columns: repeat(3, minmax(0, max-content)); margin: var(--s-8) 0 0; padding-top: var(--s-6); border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.hero__figure { display: flex; flex-direction: column-reverse; justify-content: flex-end; padding: 0 var(--s-4); border-left: 1px solid rgba(255, 255, 255, 0.18); }
+.hero__figure:first-child { padding-left: 0; border-left: 0; }
+.hero__figure dd { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: var(--fs-28); line-height: 1.1; letter-spacing: -0.015em; font-variant-numeric: lining-nums tabular-nums; }
+.hero__figure dt { margin-top: var(--s-1); max-width: 12ch; font-family: var(--font-ui); font-weight: 500; font-size: var(--fs-14); line-height: 1.35; color: var(--on-navy-soft); }
 .hero__prints { grid-column: 6 / -1; grid-row: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: auto auto; column-gap: clamp(16px, 2vw, 32px); }
 .hero__print--large { grid-column: 1 / -1; position: relative; aspect-ratio: 16 / 9; background: #08283d; }
 .hero__slide { position: absolute; inset: 0; opacity: 0; transition: opacity 600ms var(--ease-out); }

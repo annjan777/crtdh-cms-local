@@ -29,6 +29,7 @@ export default function Home({ data }) {
               <SiteLink to="/services/" className="btn btn--primary">Work with CRTDH</SiteLink>
               <SiteLink to="/innovations/" className="btn btn--secondary">See our innovations</SiteLink>
             </div>
+            <Figures items={homeFigures(c)} />
           </div>
           {slides.length > 0 && <HeroPrints slides={slides} />}
         </div>
@@ -41,6 +42,34 @@ export default function Home({ data }) {
       <News items={c['news-items']} documents={c.documents} events={c['media-events']} home={home} />
       <Visit home={home} settings={settings} />
     </PageShell>
+  )
+}
+
+// Years the centre has been sponsored by DSIR, as the old site stated it (owner decision D10, 19 Nov 2026).
+// A fixed figure, not computed: change it here when the centre's sponsorship statement changes.
+export const DSIR_YEARS = 8
+
+/** The figures strip from the old Home, computed from the published content like the old page did. */
+export function homeFigures(c) {
+  return [
+    { value: visible(c.innovations).length, label: 'Innovations developed' },
+    { value: visible(c.enterprises).length, label: 'Enterprises incubated' },
+    { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
+  ].filter((f) => f.value > 0)
+}
+
+/** A quiet typographic row (DESIGN.md: display figures in Fraunces; no cards, icons or counters). */
+function Figures({ items }) {
+  if (!items.length) return null
+  return (
+    <dl className="hero__figures" aria-label="CRTDH in figures">
+      {items.map((f) => (
+        <div key={f.label} className="hero__figure">
+          <dt>{f.label}</dt>
+          <dd>{f.value}+</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 

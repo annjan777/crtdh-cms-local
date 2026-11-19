@@ -43,7 +43,7 @@ export default function Team({ data }) {
       <ClosingBand
         id="team-cta"
         surface
-        title="Work with the team"
+        title="A multidisciplinary team working towards innovative healthcare solutions"
         text="Researchers, clinicians and enterprises can reach the centre through the contact page."
         action="Contact CRTDH"
       />

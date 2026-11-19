@@ -112,3 +112,19 @@ describe('utilities', () => {
     expect(blocksFor([{ id: 1, page: 'x', section_title: 'A' }, { id: 2, page: 'x', section_title: 'a' }, { id: 3, page: 'y' }], 'x')).toHaveLength(1)
   })
 })
+
+describe('Home figures strip (owner decision D10)', async () => {
+  const { homeFigures, DSIR_YEARS } = await import('../../src/site/pages/Home.jsx')
+  it('counts the published innovations and enterprises like the old Home did, plus the DSIR years', () => {
+    const c = { innovations: [{ id: 1 }, { id: 2, is_published: false }, { id: 3 }], enterprises: [{ id: 1 }] }
+    expect(homeFigures(c)).toEqual([
+      { value: 2, label: 'Innovations developed' },
+      { value: 1, label: 'Enterprises incubated' },
+      { value: DSIR_YEARS, label: 'Years sponsored by DSIR' },
+    ])
+    expect(DSIR_YEARS).toBe(8)
+  })
+  it('drops a figure that would read 0+', () => {
+    expect(homeFigures({ innovations: [], enterprises: [] }).map((f) => f.label)).toEqual(['Years sponsored by DSIR'])
+  })
+})
