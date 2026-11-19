@@ -98,7 +98,10 @@ def next_build(request):
 @require_GET
 def download_build(request, publish_id):
     with transaction.atomic():
-        p = (Publish.objects.select_for_update().filter(pk=publish_id, status__in=[Publish.READY, Publish.UPLOADING])
+        # of=("self",): Publish.snapshot is nullable, so select_related is a LEFT JOIN and Postgres refuses
+        # FOR UPDATE on the nullable side of an outer join. Lock only the publish row.
+        p = (Publish.objects.select_for_update(of=("self",))
+             .filter(pk=publish_id, status__in=[Publish.READY, Publish.UPLOADING])
              .select_related("snapshot").first())
         if p is None or not p.tarball_path:
             return _err("CMS_NOT_FOUND", "No downloadable build with that id.")

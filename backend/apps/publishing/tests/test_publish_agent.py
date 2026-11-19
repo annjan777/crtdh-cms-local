@@ -328,8 +328,8 @@ def test_reorder_from_a_stale_read_is_409(content, editor, monkeypatch):
         def __init__(self, qs):
             self.qs = qs
 
-        def select_for_update(self):
-            rows = list(self.qs.select_for_update())
+        def select_for_update(self, **kw):
+            rows = list(self.qs.select_for_update(**kw))
             NewsItem.objects.filter(pk=ids[0]).update(version=F("version") + 1)  # someone else saves meanwhile
             return rows
 

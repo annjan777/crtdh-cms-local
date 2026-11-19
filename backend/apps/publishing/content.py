@@ -237,7 +237,8 @@ def reorder(resource, ids, *, ctx, queryset=None, field="order"):
     model = get_model(resource)
     queryset = queryset if queryset is not None else model.objects.all()
     with stale_as_409(resource), transaction.atomic():
-        rows = {o.pk: o for o in queryset.select_for_update()}
+        # Callers pass their own queryset (e.g. a view's select_related one): lock only this model's rows.
+        rows = {o.pk: o for o in queryset.select_for_update(of=("self",))}
         missing = [pk for pk in ids if pk not in rows]
         if missing:
             raise CMSError("CMS_VALIDATION", f"Unknown {resource} id(s): {', '.join(map(str, missing))}.", field="order")
