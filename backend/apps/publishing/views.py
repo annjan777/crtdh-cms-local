@@ -281,9 +281,20 @@ class UploadLinksView(EditorView):
 
 
 FORM = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Upload a photo — CRTDH CMS</title><style>body{{font:17px/1.6 system-ui,sans-serif;max-width:32rem;margin:3rem auto;padding:0 1rem;color:#1b2733}}
-h1{{font-size:1.4rem}}button{{font:inherit;padding:.6rem 1.2rem;background:#0f4c75;color:#fff;border:0;border-radius:4px;min-height:44px}}
-p.note{{color:#4a5a6a}}</style></head><body><h1>Upload a photo</h1>{body}</body></html>"""
+<title>Upload a photo — CRTDH CMS</title><link rel="stylesheet" href="{css}"></head><body><h1>Upload a photo</h1>{body}</body></html>"""
+
+
+def _page(body, status=200):
+    """The one-time upload page. Styles come from a static file: the CSP (style-src 'self') blocks inline CSS."""
+    from django.templatetags.static import static
+
+    return HttpResponse(FORM.format(css=escape(static("publishing/upload.css")), body=body), status=status)
+
+
+def _size_hint():
+    from django.conf import settings
+
+    return f"up to {settings.UPLOAD_LIMITS['image'] // (1024 * 1024)} MB"
 
 
 @csrf_exempt  # the one-time token in the URL is the credential; no session involved
@@ -294,16 +305,16 @@ def upload_page(request, token):
         msg = "This upload link has expired or was already used. Ask for a new one."
         if wants_json:
             return JsonResponse(error_body("CMS_NOT_FOUND", msg, fix="Ask for a new upload link."), status=404)
-        return HttpResponse(FORM.format(body=f"<p>{escape(msg)}</p>"), status=404)
+        return _page(f"<p>{escape(msg)}</p>", status=404)
     if request.method == "GET":
         if link.used_at is not None:
-            return HttpResponse(FORM.format(body="<p>Photo received. You can close this page.</p>"))
-        hint = f"<p class=note>At least {link.min_width} px wide. JPEG, PNG or WebP, up to 20 MB.</p>" if link.min_width \
-            else "<p class=note>JPEG, PNG or WebP, up to 20 MB.</p>"
+            return _page("<p>Photo received. You can close this page.</p>")
+        hint = f"<p class=note>At least {link.min_width} px wide. JPEG, PNG or WebP, {_size_hint()}.</p>" if link.min_width \
+            else f"<p class=note>JPEG, PNG or WebP, {_size_hint()}.</p>"
         form = ('<form method="post" enctype="multipart/form-data">'
                 '<label for="file">Photo</label><br><input id="file" name="file" type="file" accept="image/jpeg,image/png,image/webp" required>'
                 f'{hint}<button type="submit">Upload photo</button></form>')
-        return HttpResponse(FORM.format(body=form))
+        return _page(form)
     if request.method != "POST":
         return HttpResponse(status=405)
     file = request.FILES.get("file")
@@ -314,9 +325,7 @@ def upload_page(request, token):
     except CMSError as e:
         if wants_json:
             return JsonResponse(e.body, status=e.status_code)
-        return HttpResponse(FORM.format(body=f"<p>{escape(e.body['message'])}</p><p><a href=''>Try again</a></p>"),
-                            status=e.status_code)
+        return _page(f"<p>{escape(e.body['message'])}</p><p><a href=''>Try again</a></p>", status=e.status_code)
     if wants_json:
         return JsonResponse({"media_id": asset.pk, "width": asset.width, "height": asset.height}, status=201)
-    return HttpResponse(FORM.format(body=f"<p>Photo received ({asset.width}×{asset.height}). You can close this page.</p>"),
-                        status=201)
+    return _page(f"<p>Photo received ({asset.width}×{asset.height}). You can close this page.</p>", status=201)

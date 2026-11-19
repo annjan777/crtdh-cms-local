@@ -188,3 +188,21 @@ def test_admin_add_creates_empty_hidden_draft_then_requires_fields_to_show(api_a
     assert hero.status_code == 201
     grid = client.post("/api/v1/image-grid-blocks/", {"page": "covid-19", "is_published": False}, format="json")
     assert grid.status_code == 201 and grid.json()["page"] == "covid-19"
+
+
+def test_upload_page_styles_come_from_static_and_hint_shows_real_cap(client, editor, settings):
+    """CSP is style-src 'self': the page links a static stylesheet instead of inline CSS, and the size hint is the
+    real image cap (settings.UPLOAD_LIMITS["image"])."""
+    from django.contrib.staticfiles import finders
+
+    from apps.publishing.uploads import create_upload_link
+    settings.UPLOAD_LIMITS = {**settings.UPLOAD_LIMITS, "image": 15 * 1024 * 1024}
+    link = create_upload_link(editor, min_width=1600)
+    resp = client.get(f"/api/v1/cms/upload/{link['token']}/")
+    html = resp.content.decode()
+    assert resp.status_code == 200
+    assert "<style" not in html and 'style="' not in html
+    assert '<link rel="stylesheet" href="/static/publishing/upload.css">' in html
+    assert "up to 15 MB" in html and "20 MB" not in html and "At least 1600 px wide" in html
+    assert "style-src 'self'" in resp["Content-Security-Policy"]
+    assert finders.find("publishing/upload.css")
