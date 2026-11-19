@@ -45,9 +45,9 @@ function HomeView() {
           <div className="hero__fallback">
             <Spinner label="Loading…" />
           </div>
-        ) : slides && slides.length > 0 ? (
+        ) : slides && slides.some((s) => s.image) ? (
           <Carousel
-            items={slides}
+            items={slides.filter((s) => s.image) /* a slide without a photo would render an empty <img> */}
             ariaLabel="Hero image carousel"
             renderItem={(slide) => (
               <div className="hero__slide">

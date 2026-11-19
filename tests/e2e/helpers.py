@@ -99,3 +99,55 @@ def api_session(stack, username):
         call("POST", "/api/v1/auth/mfa/", {"code": totp_now(secret)})
     refresh_csrf()  # Django rotates the token on login
     return call
+
+
+# ---- publishing (shared by the publish flow and the restore spec) ---------------------------------------------
+def wait_status(call, publish_id, want, timeout=180):
+    seen = []
+    import time
+
+    end = time.time() + timeout
+    while time.time() < end:
+        _, st = call("GET", f"/api/v1/cms/publish/{publish_id}/")
+        if not seen or seen[-1] != st["status"]:
+            seen.append(st["status"])
+        if st["status"] in (want, "failed"):
+            return st, seen
+        time.sleep(1)
+    raise AssertionError(f"publish {publish_id} stuck; states seen {seen}")
+
+
+def change_and_publish(call):
+    """Make one draft change (so there is something to publish) and start a publish; guard-confirmed because
+    other specs empty a collection on purpose."""
+    import time
+
+    _, rows = call("GET", "/api/v1/hero-slides/")
+    rows = rows.get("results", rows) if isinstance(rows, dict) else rows
+    r = next(x for x in rows if x.get("is_published"))
+    call("PATCH", f"/api/v1/hero-slides/{r['id']}/", {"heading": f"API publish {time.time():.0f}",
+                                                       "expected_version": r["version"]})
+    return call("POST", "/api/v1/cms/publish/", {"confirm_shrink": True})
+
+
+def ensure_published_version(stack):
+    """At least one published version (History lists only publishes that went live). Publishes one through the
+    real pipeline when there is none, so a spec never depends on running after the publish-flow spec."""
+    import os
+
+    import pytest
+
+    call = api_session(stack, "priya")
+    status, body = call("GET", "/api/v1/cms/snapshots/")
+    assert status == 200, (status, body)
+    if body.get("snapshots"):
+        return body["snapshots"]
+    if os.environ.get("E2E_PUBLISH_STACK") != "1":
+        pytest.skip("no published version yet and no publish stack to make one (run against scripts/preprod.sh)")
+    s, started = change_and_publish(call)
+    assert s in (202, 409), (s, started)
+    st, seen = wait_status(call, started["publish_id"], "live")
+    assert st["status"] == "live", (st, seen)
+    status, body = call("GET", "/api/v1/cms/snapshots/")
+    assert body.get("snapshots"), body
+    return body["snapshots"]

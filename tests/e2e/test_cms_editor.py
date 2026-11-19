@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from helpers import api_session
+from helpers import api_session, ensure_published_version
 
 pytestmark = pytest.mark.needs_integration
 SAVED = re.compile(r"saved", re.I)
@@ -86,11 +86,9 @@ def test_stale_save_two_tabs(login, page, second_page, cms):
 
 def test_restore_version_confirmation_creates_draft(login, page, cms, stack):
     """Restore an earlier version from history -> confirmation names version and date -> draft created."""
-    call = api_session(stack, "priya")
-    status, snaps = call("GET", "/api/v1/cms/snapshots/")
-    assert status == 200
-    if not (snaps.get("results", snaps) if isinstance(snaps, dict) else snaps):
-        pytest.skip("needs at least one published snapshot (run after test_publish_flow)")
+    # The API answers {"snapshots": [...]}. The old check read "results" and never noticed an empty history, so on a
+    # fresh stack (this spec runs before the publish spec) there was no Restore button to press (R-6 / F-08).
+    ensure_published_version(stack)
     login("priya")
     page.goto(f"{cms}/history")
     page.get_by_role("button", name=re.compile("restore", re.I)).first.click()
@@ -101,24 +99,39 @@ def test_restore_version_confirmation_creates_draft(login, page, cms, stack):
     page.get_by_text(re.compile(r"unpublished change")).first.wait_for()
 
 
-def test_hero_upload_rules(login, page, cms, tmp_path):
-    """1599 px hero rejected with reason; missing alt text blocks save."""
+def test_hero_upload_rules(login, page, cms, tmp_path, stack):
+    """1599 px hero rejected with reason and the old photo kept; a good photo saves with a description.
+
+    The description box was removed on 2026-11-19 (owner request). The rule is unchanged: a photo is never saved
+    without a description for screen readers; it is now written automatically from the slide's own text."""
     import sys
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[2] / "backend"))
     from tests.support.images import make_image_bytes
     small = tmp_path / "small.jpg"
     small.write_bytes(make_image_bytes(1599, 900))
+    call = api_session(stack, "erin_editor")
+
+    def hero_rows():
+        _, rows = call("GET", "/api/v1/hero-slides/")
+        return {r["id"]: r for r in (rows.get("results", rows) if isinstance(rows, dict) else rows)}
+
+    images_before = {k: r.get("image") for k, r in hero_rows().items()}
     login("erin_editor")
     panel = open_hero(page, cms)
+    before = panel.locator(".image-preview img").first.get_attribute("src")
     panel.locator("input[type=file]").first.set_input_files(str(small))
-    page.get_by_text(re.compile(r"1600", re.I)).wait_for()
+    page.get_by_text(re.compile(r"1600", re.I)).first.wait_for()
+    assert panel.locator(".image-preview img").first.get_attribute("src") == before
+    assert panel.get_by_role("button", name="Save photo").count() == 0
     big = tmp_path / "big.jpg"
     big.write_bytes(make_image_bytes(2400, 1350))
     panel.locator("input[type=file]").first.set_input_files(str(big))
-    alt = panel.get_by_label(re.compile(r"photo description|alt|screen reader", re.I)).first
-    alt.fill("")
-    alt.blur()
-    page.get_by_text(re.compile(r"(photo )?description.*(required|needed|add)|add a (photo )?description|alt text.*required|describe the (image|photo)", re.I)).first.wait_for(timeout=10000)
+    assert panel.get_by_label(re.compile(r"photo description", re.I)).count() == 0
+    panel.get_by_role("button", name="Save photo").click()
+    page.get_by_text(re.compile(r"saved · not live", re.I)).first.wait_for(timeout=15000)
+    changed = [r for k, r in hero_rows().items() if r.get("image") != images_before.get(k)]
+    assert len(changed) == 1, "exactly the edited slide gets the new photo"
+    assert (changed[0].get("alt_text") or "").strip(), "a saved photo must carry a description"
 
 
 def test_empty_collection_shows_add_first(login, page, cms, stack):

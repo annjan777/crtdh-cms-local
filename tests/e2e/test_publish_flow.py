@@ -11,7 +11,7 @@ import urllib.request
 
 import pytest
 
-from helpers import api_session
+from helpers import api_session, change_and_publish as _change_and_publish, wait_status
 
 pytestmark = pytest.mark.needs_integration
 
@@ -20,19 +20,6 @@ pytestmark = pytest.mark.needs_integration
 def _requires_publish_stack(stack):
     if not (os.environ.get("E2E_PUBLISH_STACK") == "1"):
         pytest.skip("needs publish worker + SFTP + agent (scripts/preprod.sh then --external, or E2E_PUBLISH_STACK=1)")
-
-
-def wait_status(call, publish_id, want, timeout=180):
-    seen = []
-    end = time.time() + timeout
-    while time.time() < end:
-        _, st = call("GET", f"/api/v1/cms/publish/{publish_id}/")
-        if not seen or seen[-1] != st["status"]:
-            seen.append(st["status"])
-        if st["status"] in (want, "failed"):
-            return st, seen
-        time.sleep(1)
-    raise AssertionError(f"publish {publish_id} stuck; states seen {seen}")
 
 
 def test_edit_preview_publish_static_changed(login, page, cms, site, stack):
@@ -54,17 +41,6 @@ def test_edit_preview_publish_static_changed(login, page, cms, site, stack):
         guard.get_by_role("button").filter(has_text=re.compile("publish", re.I)).last.click()
     page.get_by_text(re.compile(r"live at \d{1,2}:\d{2}", re.I)).first.wait_for(timeout=300_000)
     assert marker in urllib.request.urlopen(site + "/").read().decode()
-
-
-def _change_and_publish(call):
-    """Make one draft change (so there is something to publish) and start a publish; guard-confirmed because
-    other specs empty a collection on purpose."""
-    _, rows = call("GET", "/api/v1/hero-slides/")
-    rows = rows.get("results", rows) if isinstance(rows, dict) else rows
-    r = next(x for x in rows if x.get("is_published"))
-    call("PATCH", f"/api/v1/hero-slides/{r['id']}/", {"heading": f"API publish {time.time():.0f}",
-                                                       "expected_version": r["version"]})
-    return call("POST", "/api/v1/cms/publish/", {"confirm_shrink": True})
 
 
 def test_publish_state_sequence_api(stack):
