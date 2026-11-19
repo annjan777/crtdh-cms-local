@@ -510,3 +510,45 @@ def test_must_change_password_reads_backend_security_flag(editor):
         return
     UserSecurity.objects.update_or_create(user=editor, defaults={"must_change_password": True})
     assert must_change_password(editor) is True
+
+
+# ---------------------------------------------------------------- QA wave 2 D5: consent POST from a real browser
+def _csrf_consent_page(user, claude_app):
+    import re
+
+    client = Client(enforce_csrf_checks=True, HTTP_HOST="cms.example.org")
+    client.force_login(user)
+    session = client.session
+    session[SESSION_FLAG] = user.pk
+    session.save()
+    _, challenge = pkce()
+    params = authorize_params(claude_app, challenge)
+    page = client.get("/oauth/authorize/", params, secure=True)
+    assert page.status_code == 200
+    html = page.content.decode()
+    token = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', html).group(1)
+    return client, page, html, {**params, "allow": "Authorize", "csrfmiddlewaretoken": token}
+
+
+def test_consent_page_referrer_policy_lets_the_browser_send_its_origin(editor, claude_app):
+    import re
+
+    _, page, html, _ = _csrf_consent_page(editor, claude_app)
+    metas = re.findall(r'<meta name="referrer" content="([^"]+)"', html)
+    # no-referrer / never make Chrome send "Origin: null" on the form POST -> Django CSRF 403
+    assert metas == ["same-origin"], metas
+    assert "Origin: null" not in html  # template comment must not render
+    assert page.get("Referrer-Policy", "same-origin") not in ("no-referrer", "never")
+
+
+def test_consent_post_with_the_cms_origin_passes_csrf(editor, claude_app):
+    client, _, _, form = _csrf_consent_page(editor, claude_app)
+    resp = client.post("/oauth/authorize/", form, secure=True, HTTP_ORIGIN="https://cms.example.org")
+    assert resp.status_code == 302, resp.content[:300]
+    assert resp["Location"].startswith(CALLBACK) and "code=" in resp["Location"]
+
+
+def test_consent_post_with_origin_null_is_what_csrf_refuses(editor, claude_app):
+    # Documents why the referrer policy matters: this is what Chrome sent under no-referrer.
+    client, _, _, form = _csrf_consent_page(editor, claude_app)
+    assert client.post("/oauth/authorize/", form, secure=True, HTTP_ORIGIN="null").status_code == 403

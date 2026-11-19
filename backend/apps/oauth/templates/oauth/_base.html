@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="referrer" content="no-referrer">
+{% comment %}same-origin, not no-referrer: under no-referrer browsers send "Origin: null" on the consent POST and
+Django CSRF refuses it (QA wave 2 D5). same-origin still keeps the code/state query string from other sites.{% endcomment %}
+<meta name="referrer" content="same-origin">
 <title>{% block title %}CRTDH CMS{% endblock %}</title>
 <link rel="stylesheet" href="{% static 'oauth/consent.css' %}">
 </head>
