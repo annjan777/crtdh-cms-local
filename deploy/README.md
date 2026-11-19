@@ -116,7 +116,7 @@ To import the bundled content once into an empty database (never on a database t
 - **Someone leaves**: "Deactivate" signs them out everywhere and revokes their MCP tokens.
 - **Rotate `SECRET_KEY`**: change it in `.env`, `docker compose up -d`. Everyone is signed out.
 - **Backups**: the `pgdata` and `media_data` volumes are the only state. Back them up encrypted, e.g.
-  `docker compose exec -T db pg_dump -U crtdh crtdh | gpg -c > crtdh-$(date +%F).sql.gpg` (`-T`: no TTY, or the dump is corrupted). Test a restore.
+  `deploy/backup/crtdh-backup.sh` nightly from cron, and `deploy/backup/crtdh-restore-check.sh latest` to prove a restore (deploy/backup/README.md).
 - **Contact messages** are deleted automatically after `CONTACT_RETENTION_DAYS` (default 365) by the
   `housekeeping` service (`docs/privacy-notice.md`).
 

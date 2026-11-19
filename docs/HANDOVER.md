@@ -109,6 +109,10 @@ All commands run on the lab server in `/srv/crtdh/app/deploy` unless stated othe
 
 ### Backups (state = the `pgdata` and `media_data` volumes; `deploy/.env` too)
 
+**Use `deploy/backup/crtdh-backup.sh` (nightly, from cron) and `deploy/backup/crtdh-restore-check.sh latest`** —
+set-up, cron line and full-restore steps in `deploy/backup/README.md`. They do what the recipe below does, plus
+verification, checksums, the off-host copy and safe pruning. The recipe is kept for reference.
+
 Daily, from cron (`crontab -e`). Keep 14 days locally and copy them off the server (lab NAS or drive):
 
 ```bash
