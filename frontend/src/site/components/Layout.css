@@ -195,9 +195,10 @@
   min-width: 180px;
   padding: 0.4rem;
   border-radius: var(--radius-md);
-  background: rgba(12, 34, 49, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-lg);
+  /* Same light sky blue as the header bar, so the dropdown reads as part of it. */
+  background: rgba(240, 249, 255, 0.98);
+  border: 1px solid rgba(15, 76, 117, 0.12);
+  box-shadow: 0 12px 32px rgba(14, 22, 38, 0.12);
   backdrop-filter: blur(18px);
 }
 
@@ -206,17 +207,18 @@
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-style: normal;
-  color: var(--text-on-inverse);
+  color: var(--color-ink-900);
 }
 
 .nav-more__panel a:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-white);
+  background: rgba(50, 130, 184, 0.1);
+  color: var(--color-ink-900);
 }
 
 .nav-more__panel a.active {
-  background: rgba(196, 154, 63, 0.28);
-  color: var(--color-white);
+  background: rgba(50, 130, 184, 0.16);
+  color: var(--color-brand-800);
+  font-weight: 600;
   font-style: normal;
 }
 
@@ -276,8 +278,10 @@
 /* --- Mobile nav panel --- */
 .mobile-nav {
   overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(14, 22, 38, 0.98);
+  /* Continues the light sky-blue header bar (it opens beneath it). */
+  border-top: 1px solid rgba(15, 76, 117, 0.1);
+  background: rgba(240, 249, 255, 0.98);
+  box-shadow: 0 16px 32px rgba(14, 22, 38, 0.12);
 }
 
 .mobile-nav ul {
@@ -294,16 +298,17 @@
   border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 500;
-  color: var(--text-on-inverse);
+  color: var(--color-ink-900);
 }
 
 .mobile-nav a:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(50, 130, 184, 0.1);
 }
 
 .mobile-nav a.active {
-  background: rgba(196, 154, 63, 0.28);
-  color: var(--color-white);
+  background: rgba(50, 130, 184, 0.16);
+  color: var(--color-brand-800);
+  font-weight: 600;
 }
 
 /* --- Footer --- */
