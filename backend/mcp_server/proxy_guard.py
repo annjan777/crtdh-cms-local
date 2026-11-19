@@ -11,7 +11,6 @@ real TCP peer.
 
 from __future__ import annotations
 
-import ipaddress
 import logging
 
 from django.conf import settings
@@ -23,23 +22,7 @@ FORWARDING_HEADERS = frozenset({
     b"cf-connecting-ip", b"x-forwarded-proto", b"x-forwarded-for", b"x-forwarded-host", b"x-real-ip", b"forwarded",
 })
 
-try:
-    from apps.common.middleware import peer_is_trusted  # type: ignore  (backend-security)
-except ImportError:  # TODO(integration, backend-security): always importable after their merge
-
-    def peer_is_trusted(ip):
-        try:
-            addr = ipaddress.ip_address((ip or "").strip())
-        except ValueError:
-            return False
-        nets = []
-        for spec in getattr(settings, "TRUSTED_PROXY_IPS", []):
-            try:
-                nets.append(ipaddress.ip_network(spec.strip(), strict=False))
-            except ValueError:
-                continue
-        return any(addr in net for net in nets)
-
+from apps.common.middleware import peer_is_trusted  # noqa: E402
 
 class TrustedProxyGuard:
     def __init__(self, app: ASGIApp):

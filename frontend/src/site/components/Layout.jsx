@@ -6,7 +6,6 @@ import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon } from './Social
 import { PageDataProvider, usePageData } from '../api/data.jsx'
 import { PAGES } from '../registry.js'
 import { safeHref } from '../util.js'
-import { SiteDataContext } from './SiteDataContext'
 import SiteLink from '../link.jsx'
 import './Layout.css'
 
@@ -28,23 +27,6 @@ const FALLBACK_NAV = [
   { id: 'contact', label: 'Contact Us', url: '/contact', in_more: false },
 ]
 
-// The 12 real nav items are too many for one row at laptop widths. We keep
-// the essentials always visible and tuck secondary destinations behind an
-// animated "More" menu — this is the fix for the "messy multi-row navbar"
-// complaint. Matching is by route slug so it stays correct even if the CMS
-// relabels an item, and any unrecognised item safely falls into "More"
-// rather than disappearing.
-const PRIMARY_SLUGS = new Set([
-  '/',
-  'about',
-  'team',
-  'innovations',
-  'facilities',
-  'services',
-  'enterprises',
-  'product',
-  'media',
-])
 const CONTACT_SLUG = 'contact'
 
 function slugOf(url) {
@@ -67,7 +49,7 @@ function LayoutView({ children }) {
   const navToRender = navItems.length > 0 ? navItems : FALLBACK_NAV
 
   return (
-    <SiteDataContext.Provider value={{ navItems: navToRender, siteSettings, navLoading: false, settingsLoading: false }}>
+    <>
       <div className="app-shell">
         <a className="skip-link" href="#main-content">
           Skip to content
@@ -83,7 +65,7 @@ function LayoutView({ children }) {
           privacyNotice={Boolean(data?.meta?.privacy_notice)}
         />
       </div>
-    </SiteDataContext.Provider>
+    </>
   )
 }
 

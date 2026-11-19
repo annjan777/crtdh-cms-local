@@ -25,7 +25,7 @@ export function autoDescription(record, file) {
   return (base || 'Photo').slice(0, 200);
 }
 
-export default function ImageField({ field, record, onChange, onUpload, id }) {
+export default function ImageField({ field, record, onUpload, id }) {
   const url = record.values[field.name];
   const media = record.media?.[field.name];
   const fileInput = useRef(null);

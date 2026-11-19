@@ -1,4 +1,4 @@
-import { Camera, Image as ImageIcon } from 'lucide-react'
+import { Camera } from 'lucide-react'
 import './GallerySection.css'
 
 export default function GallerySection({ title, description, images, onImageClick }) {

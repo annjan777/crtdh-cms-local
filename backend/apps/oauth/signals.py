@@ -37,12 +37,9 @@ def connect_account_signals(module) -> list[str]:
     return connected
 
 
-try:
-    from apps.accounts import signals as _account_signals  # type: ignore
-except ImportError:  # TODO(integration, backend-security): present after their merge
-    _account_signals = None
-if _account_signals is not None:
-    connect_account_signals(_account_signals)
+from apps.accounts import signals as _account_signals  # noqa: E402
+
+connect_account_signals(_account_signals)
 
 
 # Fallback that also covers deactivation through the Django admin, a shell or a bulk

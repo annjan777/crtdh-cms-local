@@ -1,4 +1,3 @@
-import { ImageOff } from 'lucide-react'
 import './ImageGrid.css'
 
 /**
