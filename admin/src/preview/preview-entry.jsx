@@ -8,17 +8,8 @@ import { createRoot } from 'react-dom/client';
 import SitePreview from './SitePreview.jsx';
 import { CmsPreviewContext } from './cms-context.js';
 import { tagSections } from './section-map.js';
+import './editor-overlay.css';
 
-const EDITOR_CSS = `
-html,body{margin:0}
-[data-cms-section]{position:relative;cursor:pointer;scroll-margin-top:24px}
-html.cms-interactive [data-cms-section]:hover,html.cms-interactive [data-cms-section]:focus-visible{outline:2px solid #2bb3b3;outline-offset:-2px}
-html.cms-interactive [data-cms-section]:focus-visible{outline:3px solid #137272}
-html.cms-interactive [data-cms-section][data-cms-selected]{outline:2px solid #1a8a8a;outline-offset:-2px}
-html.cms-interactive [data-cms-section][data-cms-selected]::before{content:attr(data-cms-tag);position:absolute;z-index:20;top:10px;left:10px;background:#1a8a8a;color:#fff;font:600 13px/1.2 "IBM Plex Sans",system-ui,sans-serif;padding:4px 8px;border-radius:4px;pointer-events:none}
-html.cms-interactive [data-cms-section]:hover:not([data-cms-selected])::before{content:attr(data-cms-tag);position:absolute;z-index:20;top:10px;left:10px;background:#fff;color:#0b3a5a;border:1px solid #2bb3b3;font:600 13px/1.2 "IBM Plex Sans",system-ui,sans-serif;padding:3px 7px;border-radius:4px;pointer-events:none}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
-`;
 
 const post = (msg) => window.parent?.postMessage(msg, window.location.origin);
 
@@ -106,9 +97,6 @@ function App() {
   );
 }
 
-const style = document.createElement('style');
-style.textContent = EDITOR_CSS;
-document.head.appendChild(style);
 document.documentElement.style.overflow = 'hidden';
 createRoot(document.getElementById('preview-root')).render(
   <StrictMode>
