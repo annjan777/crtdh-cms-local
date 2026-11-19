@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 from urllib.parse import urlparse
 
-from django.db import models
+from django.core.management.color import no_style
+from django.db import connection, models
 
 SAMPLE_SNAPSHOT_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "sample_snapshot.json"
 FULL_SNAPSHOT_PATH = SAMPLE_SNAPSHOT_PATH.with_name("full_snapshot.json")  # copy of team/stub-snapshot.json
@@ -63,11 +64,12 @@ ORDER_HINT = ["team-categories", "innovations", "products", "media-events", "ima
 def load_snapshot_into_db(path=SAMPLE_SNAPSHOT_PATH, exclude=()):
     data = json.loads(Path(path).read_text())
     mapping = resource_models()
-    counts = {}
+    counts, touched = {}, []
     for key, row in data.get("singletons", {}).items():
         model = mapping[key]
         model.objects.update_or_create(pk=row.get("id", 1), defaults=_kwargs(model, row))
         counts[key] = 1
+        touched.append(model)
     names = sorted(data["collections"], key=lambda k: (k not in ORDER_HINT, ORDER_HINT.index(k) if k in ORDER_HINT else 0))
     for key in names:
         if key in exclude or key not in mapping:
@@ -76,7 +78,19 @@ def load_snapshot_into_db(path=SAMPLE_SNAPSHOT_PATH, exclude=()):
         objs = [model(**_kwargs(model, row)) for row in data["collections"][key]]
         model.objects.bulk_create(objs)
         counts[key] = len(objs)
+        touched.append(model)
+    _reset_sequences(touched)
     return counts
+
+
+def _reset_sequences(models_):
+    """Rows were inserted with explicit ids, which Postgres sequences don't see: move each sequence past the
+    highest id (as loaddata does) so a later ORM create doesn't collide. No-op on SQLite."""
+    sql = connection.ops.sequence_reset_sql(no_style(), models_)
+    if sql:
+        with connection.cursor() as cur:
+            for stmt in sql:
+                cur.execute(stmt)
 
 
 def load_sample_content():
