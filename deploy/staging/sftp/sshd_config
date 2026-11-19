@@ -1,0 +1,21 @@
+# Staging SFTP stand-in: key-only, one chrooted SFTP-only user. See Dockerfile.
+Port 22
+HostKey /etc/ssh/keys/ssh_host_ed25519_key
+AuthorizedKeysFile /etc/ssh/authorized_keys/%u
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+UsePAM no
+AllowUsers crtdh
+AllowTcpForwarding no
+AllowAgentForwarding no
+X11Forwarding no
+PermitTTY no
+LogLevel INFO
+Subsystem sftp internal-sftp
+
+Match User crtdh
+    ChrootDirectory /home/crtdh
+    # Start in /www (the account's "home"); umask 022 so the web server (another user) can read what is uploaded.
+    ForceCommand internal-sftp -d /www -u 0022

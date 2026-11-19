@@ -1,0 +1,99 @@
+# CRTDH staging on a homelab: an OVERRIDE of deploy/docker-compose.yml (the production stack runs unchanged).
+# Run it only through deploy/staging/setup.sh / teardown.sh, or as:
+#
+#   cd deploy && docker compose --env-file staging/.env.staging \
+#     -f docker-compose.yml -f staging/docker-compose.staging.yml <command>
+#
+# Paths below are relative to deploy/ (Compose resolves every path against the FIRST file's folder).
+# Needs Docker Compose 2.24.4 or newer (!override / !reset).
+#
+# What this adds or changes:
+#   - env: every backend service reads staging/.env.staging instead of deploy/.env (made by setup.sh).
+#   - cloudflared: token mode (remotely managed tunnel; routes are set in the Cloudflare dashboard, TUNNEL.md),
+#     token from staging/secrets/tunnel.env. Still 172.30.80.11 on `internal`, so TRUSTED_PROXY_IPS is unchanged.
+#   - sftp + site: stand-ins for the CIC server. `sftp` is a chrooted key-only SFTP account; `site` is Apache 2.4
+#     serving that account's web root read-only with AllowOverride FileInfo, so the real built .htaccess is tested.
+#   - publish-agent: the real publish_agent, polling https://<CMS host> through the tunnel like the campus PC.
+#   - internal network: dynamic addresses come only from .128/25, so no container (or `docker compose run`
+#     one-off) can take the gateway's .10 or cloudflared's .11 before they start.
+# Nothing publishes a host port here either.
+
+name: crtdh-staging
+
+services:
+  migrate:
+    env_file: !override [staging/.env.staging]
+  cms:
+    env_file: !override [staging/.env.staging]
+  mcp:
+    env_file: !override [staging/.env.staging]
+  worker:
+    env_file: !override [staging/.env.staging]
+  housekeeping:
+    env_file: !override [staging/.env.staging]
+
+  # Remotely managed tunnel: no config.yml or credentials.json; the dashboard holds the routes (TUNNEL.md).
+  cloudflared:
+    command: tunnel --no-autoupdate run
+    env_file: [staging/secrets/tunnel.env]   # TUNNEL_TOKEN=... (0600, git-ignored)
+    volumes: !reset []
+    depends_on: [gateway, mcp, site]
+
+  # Stand-in for academicweb.iitkgp.ac.in's SFTP account. Only the publish agent talks to it.
+  sftp:
+    build:
+      context: staging/sftp
+    image: crtdh-staging-sftp:local
+    restart: unless-stopped
+    volumes:
+      - site_www:/home/crtdh/www
+      # ssh_host_ed25519_key + authorized_key.pub (setup.sh); copied into place by the entrypoint.
+      - ./staging/secrets/sftp:/seed:ro
+    security_opt:
+      - no-new-privileges:true
+    networks: [internal]
+
+  # Stand-in for the CIC web server: Apache serving the SFTP account's web root. cloudflared -> http://site:80.
+  site:
+    image: httpd:2.4
+    restart: unless-stopped
+    environment:
+      SITE_HOST: ${SITE_HOST:?set SITE_HOST in staging/.env.staging}
+    volumes:
+      - site_www:/srv/www:ro
+      - ./staging/site/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    depends_on: [sftp]   # sftp's entrypoint owns and seeds the volume first
+    security_opt:
+      - no-new-privileges:true
+    networks: [internal]
+
+  # The real publish agent (campus PC stand-in). Reaches the CMS only through Cloudflare (egress), the SFTP
+  # stand-in over `internal`. Config, key, secret and state: staging/secrets/agent (setup.sh), mounted at /agent.
+  publish-agent:
+    build:
+      context: ..
+      dockerfile: deploy/staging/agent/Dockerfile
+    image: crtdh-staging-agent:local
+    restart: unless-stopped
+    user: "${STAGING_UID:?run staging/setup.sh}:${STAGING_GID:?run staging/setup.sh}"
+    command: ["run"]
+    volumes:
+      - ./staging/secrets/agent:/agent
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    depends_on: [sftp]
+    networks: [internal, egress]
+
+networks:
+  internal:
+    ipam: !override
+      config:
+        - subnet: 172.30.80.0/24
+          ip_range: 172.30.80.128/25   # dynamic addresses; .10 (gateway) and .11 (cloudflared) stay free
+
+volumes:
+  site_www:   # the SFTP account's web folder: public_html + crtdh-releases/ (what the CIC server holds)

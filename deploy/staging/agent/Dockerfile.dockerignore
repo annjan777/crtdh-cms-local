@@ -1,0 +1,12 @@
+# For deploy/staging/agent/Dockerfile (context: the repository root). Send only the agent.
+*
+!publish_agent
+publish_agent/tests
+**/__pycache__
+**/*.pyc
+publish_agent/config.ini
+publish_agent/*.txt
+!publish_agent/requirements.txt
+publish_agent/keys
+publish_agent/state
+publish_agent/.venv

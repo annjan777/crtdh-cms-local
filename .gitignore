@@ -16,3 +16,7 @@ deploy/cloudflared/credentials.json
 backend/.env
 .dpdp/scan.json
 .dpdp/runs/
+# Staging kit (deploy/staging/setup.sh): generated env, tunnel token, keys, agent secret and state
+deploy/staging/.env.staging
+deploy/staging/.env.staging.*
+deploy/staging/secrets/

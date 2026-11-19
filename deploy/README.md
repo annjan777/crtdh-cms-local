@@ -4,6 +4,9 @@ The public website is static files on the CIC server (published by the campus pu
 stack is the private CMS zone: Postgres, the Django CMS API (gunicorn), the MCP server (uvicorn), the
 publish worker, a daily housekeeping job, an nginx gateway serving the admin SPA, and `cloudflared`.
 
+To rehearse this stack on a homelab first (with stand-ins for the CIC server and the campus PC), see
+[staging/README.md](staging/README.md).
+
 Nothing publishes a host port. All traffic arrives through one Cloudflare Tunnel:
 
 | Hostname | Goes to | Protection |
