@@ -6,7 +6,7 @@ PY=$(command -v python3 || command -v python)
 "$PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else "Python 3.10 or newer is needed")'
 [ -d .venv ] || "$PY" -m venv .venv
 .venv/bin/python -m pip install --upgrade pip >/dev/null
-.venv/bin/python -m pip install -r publish_agent/requirements.txt
+.venv/bin/python -m pip install --require-hashes -r publish_agent/requirements.txt
 [ -f config.ini ] || cp publish_agent/config.example.ini config.ini
 mkdir -p keys state
 [ -f keys/crtdh_publish_ed25519 ] || .venv/bin/python -m publish_agent keygen keys/crtdh_publish_ed25519

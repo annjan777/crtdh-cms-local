@@ -13,7 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /opt/agent
 COPY publish_agent/requirements.txt /tmp/agent-requirements.txt
-RUN pip install --no-cache-dir -r /tmp/agent-requirements.txt && rm /tmp/agent-requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r /tmp/agent-requirements.txt && rm /tmp/agent-requirements.txt
 COPY publish_agent/ /opt/agent/publish_agent/
 
 WORKDIR /agent

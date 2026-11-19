@@ -188,7 +188,10 @@ If everything is broken, restore `state/backups/live-site-before-agent-*.tar.gz`
 
 - Code: `agent.py` (CLI), `deploy.py` (flow, retention, media GC), `strategies.py`, `layout.py`, `remote.py`
   (SFTP helpers), `cmsclient.py` (HMAC), `bundle.py` (safe unpack), `discover.py` + `discover.sh`, `logutil.py` (redaction).
-- Tests: `pip install -r publish_agent/requirements-dev.txt; python -m pytest publish_agent/tests -p no:asyncio`.
+- Tests: `pip install --require-hashes -r publish_agent/requirements.txt; pip install -r publish_agent/requirements-dev.txt;
+  python -m pytest publish_agent/tests -p no:asyncio`.
+- Dependencies: edit `requirements.in`, then regenerate the hash-pinned `requirements.txt` with the `uv pip compile`
+  command at the top of `requirements.in` (it resolves for Windows, Linux and macOS on Python 3.10+ at once).
   They run an in-process paramiko SFTP server (with fault injection for dropped connections and a full quota), a fake CMS, and a fake web server.
 - Manual sandbox: `python -m publish_agent.tests.run_fakes /tmp/crtdh-e2e` (fake CMS on :8500, SFTP on :2222), then
   `CRTDH_AGENT_SECRET=local-test-agent-secret-0123456789 python -m publish_agent -c /tmp/crtdh-e2e/config.ini run --once`.

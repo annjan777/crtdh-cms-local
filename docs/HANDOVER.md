@@ -159,18 +159,22 @@ docker compose ps && docker compose run --rm cms python manage.py check --deploy
 
 Take a backup first. Migrations move forward only, so rolling the code back after a migration means restoring
 the database too. To update the publish agent, copy the new `publish_agent/` folder onto the campus PC and
-restart the task.
+restart the task. If `publish_agent/requirements.txt` changed, run its `install/setup` script again first.
 
 ### Dependency audits (monthly; CI also runs them on every push)
 
 ```bash
 pip-audit -r backend/requirements.txt --require-hashes
+pip-audit -r publish_agent/requirements.txt --require-hashes
 cd frontend && npm audit --omit=dev; cd ../admin && npm audit --omit=dev
 bandit -r backend/apps backend/mcp_server publish_agent -x '*/tests/*,*/migrations/*' -ll -ii
 ```
 
 `backend/requirements.txt` is hash-pinned. Edit `requirements.in`, then regenerate with
-`pip-compile --generate-hashes`. Base images: bump `postgres:16-alpine`, `python:3.12-slim`, `node:20-alpine`
+`pip-compile --generate-hashes`. `publish_agent/requirements.txt` is hash-pinned too, for every OS and Python 3.10+:
+edit `publish_agent/requirements.in` and run the `uv pip compile --universal ...` command written at its top. When
+the agent's dependencies change, re-run `publish_agent/install/setup.ps1` (or `setup.sh`) on the campus PC: it
+installs with `--require-hashes`. Base images: bump `postgres:16-alpine`, `python:3.12-slim`, `node:20-alpine`
 and `nginx:1.27-alpine` when they reach end of life. Pin `CLOUDFLARED_IMAGE` to a newer digest every few months
 (GO-LIVE step 3).
 

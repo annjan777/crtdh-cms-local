@@ -130,6 +130,23 @@ def test_staging_override_never_reuses_production_image_tags():
         assert image != base.get(name, {}).get("image")
 
 
+def test_publish_agent_dependencies_are_hash_pinned_everywhere():
+    import re
+    lock = (ROOT / "publish_agent/requirements.txt").read_text()
+    reqs = re.findall(r"^([A-Za-z0-9_.-]+)==\S+(?: ;[^\\\n]*)? \\\n((?:\s+--hash=sha256:[0-9a-f]{64}(?: \\)?\n)+)", lock, re.M)
+    names = re.findall(r"^([A-Za-z0-9_.-]+)==", lock, re.M)
+    assert "paramiko" in names and len(reqs) == len(names), "every pinned package needs --hash lines"
+    assert "--hash" not in (ROOT / "publish_agent/requirements-dev.txt").read_text()
+    assert "-r requirements.txt" not in (ROOT / "publish_agent/requirements-dev.txt").read_text()
+    for installer in ("publish_agent/install/setup.sh", "publish_agent/install/setup.ps1",
+                      "deploy/staging/agent/Dockerfile"):
+        text = (ROOT / installer).read_text()
+        assert "--require-hashes -r" in text and "requirements.txt" in text, installer
+    ci = (ROOT / ".github/workflows/ci.yml").read_text()
+    assert ci.count("pip install --require-hashes -r publish_agent/requirements.txt") == ci.count(
+        "pip install -r publish_agent/requirements-dev.txt") >= 1
+
+
 def test_internet_egress_is_minimal():
     c = _compose()
     on_egress = {n for n, s in c["services"].items() if "egress" in _nets(s)}
