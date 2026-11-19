@@ -21,6 +21,8 @@ Assessment record: `.dpdp/assessment.yaml` (scope: the public contact form only)
 >
 > **What we collect.** Your name, email address, phone number (optional) and the text of your message. We do not use cookies or tracking on this form. To block spam, Cloudflare Turnstile checks that the form was sent by a person; Cloudflare processes technical data such as your IP address for that check.
 >
+> **Maps and videos.** The map and the videos on this site come from Google Maps and YouTube. Nothing is loaded from them until you press "Show the map" or "Play video"; from then on Google receives your IP address and browser details, as for any visit to its sites.
+>
 > **Why.** Only to read and answer your enquiry. We do not add you to a mailing list, sell or share your details, or use them for anything else.
 >
 > **Who can see it.** A small number of CRTDH staff who answer enquiries, through our private content system. We receive a short email alert that a message has arrived; the alert does not contain your details.

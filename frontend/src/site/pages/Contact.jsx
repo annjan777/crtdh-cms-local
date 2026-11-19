@@ -1,5 +1,6 @@
 import { PageDataProvider } from '../api/data.jsx'
 import { mapEmbedUrl } from '../util.js'
+import { MapFacade } from '../components/ClickToLoad.jsx'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
 import { fetchOne } from '../api/client'
@@ -81,12 +82,7 @@ function ContactView() {
 
             {mapEmbedUrl(siteSettings?.map_embed_url) && (
               <div className="map-embed card contact-map">
-                <iframe
-                  src={mapEmbedUrl(siteSettings.map_embed_url)}
-                  title="CRTDH location map"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
+                <MapFacade src={siteSettings.map_embed_url} address={siteSettings.address} />
               </div>
             )}
           </Reveal>

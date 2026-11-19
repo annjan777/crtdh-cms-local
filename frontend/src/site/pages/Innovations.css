@@ -82,3 +82,7 @@
   height: 100%;
   border: none;
 }
+
+.innovation__video .ctl-poster {
+  border-radius: inherit;
+}

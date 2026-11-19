@@ -1,5 +1,6 @@
 import { PageDataProvider } from '../api/data.jsx'
-import { mapEmbedUrl, safeHref } from '../util.js'
+import { safeHref } from '../util.js'
+import { MapFacade, directionsUrl } from '../components/ClickToLoad.jsx'
 import SiteLink from '../link.jsx'
 import { Link } from '../router.jsx'
 import { ArrowRight, FlaskConical, HeartPulse, Users2, Activity, Map, Microscope, Users, Lightbulb, Building2, Calendar } from 'lucide-react'
@@ -392,20 +393,14 @@ function HomeView() {
                   {home?.location_address || 'Diamond Jubilee Building, IIT Kharagpur'}
                 </p>
                 <br />
-                <a href={safeHref(siteSettings.map_embed_url)} target="_blank" rel="noreferrer" className="btn btn--primary">
+                <a href={directionsUrl(siteSettings.address || home?.location_address)} target="_blank" rel="noopener noreferrer" className="btn btn--primary">
                   Get Directions <ArrowRight size={17} aria-hidden="true" />
                 </a>
               </Reveal>
             </div>
             <div>
-              <Reveal delay={0.1} className="map-embed card shadow-sm" style={{ height: '100%', minHeight: '250px' }}>
-                {mapEmbedUrl(siteSettings.map_embed_url) && <iframe
-                  src={mapEmbedUrl(siteSettings.map_embed_url)}
-                  title="CRTDH location map"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  style={{ width: '100%', height: '100%', border: 0 }}
-                />}
+              <Reveal delay={0.1} className="map-embed card shadow-sm" style={{ height: '100%' }}>
+                <MapFacade src={siteSettings.map_embed_url} address={siteSettings.address} />
               </Reveal>
             </div>
             <div>

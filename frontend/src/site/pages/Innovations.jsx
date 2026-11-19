@@ -1,4 +1,4 @@
-import { youtubeId } from '../util.js'
+import { YouTubeFacade, youtubeEmbedUrl } from '../components/ClickToLoad.jsx'
 import { PageDataProvider } from '../api/data.jsx'
 import RichText from '../components/RichText.jsx'
 import { useApi } from '../hooks/useApi'
@@ -72,14 +72,9 @@ function InnovationsView() {
                       {innovation.body && (
                         <RichText html={innovation.body} className="rich-text" />
                       )}
-                      {toYouTubeEmbed(innovation.video_url) && (
+                      {youtubeEmbedUrl(innovation.video_url) && (
                         <div className="innovation__video">
-                          <iframe
-                            src={toYouTubeEmbed(innovation.video_url)}
-                            title={innovation.title}
-                            allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
-                            allowFullScreen
-                          />
+                          <YouTubeFacade url={innovation.video_url} title={innovation.title} />
                         </div>
                       )}
                     </div>
@@ -94,10 +89,6 @@ function InnovationsView() {
   )
 }
 
-function toYouTubeEmbed(url) {
-  const id = youtubeId(url)
-  return id && /^[\w-]{6,20}$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null
-}
 
 /** Page component `({ data }) => JSX`: `data` is this page's snapshot slice (route loader or CMS preview). */
 export default function Innovations({ data }) {
