@@ -197,3 +197,15 @@ def test_every_place_that_names_the_anthropic_ranges_names_both():
             assert expr == WAF_EXPRESSION, f"{rel}: {expr}"
     assert WAF_EXPRESSION in (ROOT / "deploy/cloudflared/config.yml.template").read_text()
     assert WAF_EXPRESSION in (ROOT / "docs/GO-LIVE.md").read_text()
+
+
+def test_housekeeping_runs_every_daily_cleanup():
+    import re
+
+    cmd = " ".join(_compose()["services"]["housekeeping"]["command"].split())
+    jobs = re.findall(r"python manage\.py (\w+)", cmd)
+    assert jobs == ["purge_contact_messages", "clearsessions", "clear_auth_throttles", "cleartokens"]
+    assert "sleep 86400" in cmd and " && " in cmd
+    from django.core.management import get_commands
+
+    assert set(jobs) <= set(get_commands())  # each one exists in this codebase

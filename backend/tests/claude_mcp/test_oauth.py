@@ -570,3 +570,15 @@ def test_admin_lists_everyone_with_a_live_claude_connection(editor, claude_app):
     assert names[editor.username]["user_id"] == editor.pk and names[editor.username]["connections"][0]["client"]
     api.post("/api/v1/cms/claude-access/revoke/", {"user_id": editor.pk}, format="json")
     assert api.get("/api/v1/cms/claude-access/").json()["users"] == []
+
+
+def test_cleartokens_removes_expired_and_revoked_tokens_only(editor, claude_app):
+    # Scheduled daily in deploy/docker-compose.yml housekeeping (B6).
+    live = _tokens(editor, claude_app)
+    other = make_user("expired_user")
+    old = AccessToken.objects.create(user=other, application=claude_app, token="", token_checksum="0" * 64,
+                                     expires=timezone.now() - timedelta(days=1), scope="cms.drafts")
+    before = AccessToken.objects.filter(user=editor).count()
+    call_command("cleartokens")
+    assert not AccessToken.objects.filter(pk=old.pk).exists()
+    assert AccessToken.objects.filter(user=editor).count() == before and live

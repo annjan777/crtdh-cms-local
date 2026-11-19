@@ -129,11 +129,13 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Daily housekeeping: contact-message retention (docs/privacy-notice.md) and expired sessions.
+  # Daily housekeeping: contact-message retention (docs/privacy-notice.md), expired sessions, auth throttles and
+  # expired/revoked Claude connector OAuth tokens (django-oauth-toolkit cleartokens).
   housekeeping:
     <<: *backend
     command: >
-      sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions && python manage.py clear_auth_throttles; sleep 86400; done"
+      sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions
+      && python manage.py clear_auth_throttles && python manage.py cleartokens; sleep 86400; done"
     depends_on:
       migrate:
         condition: service_completed_successfully
