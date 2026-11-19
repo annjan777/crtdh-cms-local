@@ -202,9 +202,12 @@ a {
 .app {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
+  /* minmax(0, 1fr): the body row never grows past the window, so a long page list scrolls inside its
+     own column instead of stretching the whole page (which hid the Site links and shifted the editor). */
+  grid-template-rows: auto minmax(0, 1fr);
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
 }
 .skip-link {
   position: absolute;
@@ -443,6 +446,7 @@ a {
   background: var(--surface);
   border-right: 1px solid var(--line);
   overflow: auto;
+  overscroll-behavior: contain;
 }
 .col-main {
   display: flex;
@@ -501,6 +505,7 @@ a {
 .canvas-scroll {
   flex: 1;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 16px 20px 40px;
 }
 .canvas-frame {

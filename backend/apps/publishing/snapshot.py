@@ -235,13 +235,14 @@ def build_snapshot(published_by=None, now=None):
 
 def preview(page_id, request=None):
     """Snapshot-shaped data for one page from the current DB (admin canvas). Media stay CMS URLs."""
-    page = registry.get_page(page_id)
+    # "site" is the Header & footer editor: its canvas shows the Home page with the site chrome around it.
+    page = registry.get_page("home" if page_id == "site" else page_id)
     if page is None:
         return None
     names = {s["resource"] for s in page["sections"]} | {s["resource"] for s in registry.GLOBALS}
     # Pages that borrow other resources (stats on Home, page banners from hero slides).
     names |= {"home": {"team-members", "innovations", "enterprises"}, "team": {"hero-slides"},
-              "media": {"hero-slides"}}.get(page_id, set())
+              "media": {"hero-slides"}}.get(page["id"], set())
     ordered = [n for n in registry.RESOURCES if n in names]
     data = collect(include_hidden=False, request=request, resources=ordered)
     return {"schema_version": SCHEMA_VERSION, "page": page_id, **data}
