@@ -39,7 +39,7 @@ handover meeting. To deploy from nothing, use [GO-LIVE.md](GO-LIVE.md). The staf
    │        └────────────────────► mcp (uvicorn ASGI :8400): /mcp, OAuth metadata/token/revoke     │
    │                                                                                               │
    │  worker: queued publish → snapshot.json → content-hashed media → frontend build → tarball     │
-   │  housekeeping (daily): purge_contact_messages, clearsessions, clear_auth_throttles            │
+   │  housekeeping daily: purge_contact_messages, clearsessions, clear_auth_throttles, cleartokens │
    │  migrate (one-shot): migrate, createcachetable, collectstatic                                 │
    │  db: Postgres 16  (volume pgdata)        media (volume media_data)   static (static_data)     │
    │  networks: internal (no internet, everything)  egress (cloudflared, cms, mcp, worker only)    │
