@@ -1,4 +1,9 @@
 {
+ "_meta": {
+  "source": "834f59a runtime SPA, full seed (items, images)",
+  "rebaselined": "2026-11-19: headings taken from the v3 build (redesign); 'Research Member'-style role badges dropped by design (DESIGN.md); Home figures and Team heading must still match (D10 decision); 2026-11-19 final: '/' h1 is the seed hero headline (test edits are normalised in the spec), 'Explore CRTDH' added with the D13 restore",
+  "previous": "public_content.v1-834f59a.json"
+ },
  "/": {
   "headings": [
    [
@@ -7,59 +12,39 @@
    ],
    [
     "h2",
-    "Affordable healthcare for a billion people"
+    "Explore CRTDH"
+   ],
+   [
+    "h2",
+    "Who builds with us"
+   ],
+   [
+    "h2",
+    "Devices from the lab bench"
+   ],
+   [
+    "h2",
+    "From prototype to production"
    ],
    [
     "h3",
-    "Innovations"
+    "Facilities at the centre"
+   ],
+   [
+    "h2",
+    "Healthcare that reaches the village"
+   ],
+   [
+    "h2",
+    "News from the centre"
    ],
    [
     "h3",
-    "Enterprises"
-   ],
-   [
-    "h3",
-    "Social Impact"
+    "Newsletters and brochures"
    ],
    [
     "h2",
-    "Annual Membership for MSME / Startup"
-   ],
-   [
-    "h2",
-    "Healthcare shouldn't depend on geography."
-   ],
-   [
-    "h2",
-    "From innovation to impact"
-   ],
-   [
-    "h2",
-    "Technology reaching rural communities"
-   ],
-   [
-    "h2",
-    "Second Floor (204), Bioscience Building, Diamond Jubilee Complex, IIT Kharagpur"
-   ],
-   [
-    "h3",
-    "CRTDH Conference Room & Office"
-   ],
-   [
-    "h3",
-    "Pilot Plant and Manufacturing Units"
-   ],
-   [
-    "h3",
-    "CRTDH Sterile Room"
-   ],
-   [
-    "h2",
-    "See CRTDH in action"
-   ],
-   [
-    "h2",
-    "Visit CRTDH"
+    "Visit the centre"
    ]
   ],
   "items": [
@@ -205,10 +190,18 @@
   "headings": [
    [
     "h1",
-    "Mission & Vision"
+    "About CRTDH"
    ],
    [
     "h2",
+    "The CRTDH programme"
+   ],
+   [
+    "h2",
+    "Mission and vision"
+   ],
+   [
+    "h3",
     "Where we work"
    ],
    [
@@ -217,7 +210,7 @@
    ],
    [
     "h2",
-    "Healthcare ecosystem at IIT Kharagpur"
+    "The healthcare ecosystem at IIT Kharagpur"
    ],
    [
     "h3",
@@ -233,15 +226,15 @@
    ],
    [
     "h2",
-    "A note from our Principal Investigator"
+    "The institutions behind CRTDH"
    ],
    [
     "h3",
-    "About DSIR, Govt. of India"
+    "DSIR, Government of India"
    ],
    [
     "h3",
-    "About IIT Kharagpur"
+    "IIT Kharagpur"
    ]
   ],
   "items": [
@@ -288,7 +281,7 @@
   "headings": [
    [
     "h1",
-    "PI, Co-PIs and Research Team"
+    "Our team"
    ],
    [
     "h2",
@@ -422,7 +415,7 @@
   "headings": [
    [
     "h1",
-    "Devices & diagnostics from the lab bench to the clinic"
+    "Innovations"
    ],
    [
     "h2",
@@ -491,6 +484,10 @@
    [
     "h2",
     "ChestXAI"
+   ],
+   [
+    "h2",
+    "Licence or co-develop a technology"
    ]
   ],
   "items": [
@@ -657,19 +654,103 @@
   "headings": [
    [
     "h1",
-    "Equipment & manufacturing infrastructure"
+    "Facilities"
    ],
    [
     "h2",
-    "Lab & testing equipment"
-   ],
-   [
-    "h2",
-    "Pilot plant & manufacturing units"
+    "Laboratory and testing equipment"
    ],
    [
     "h3",
+    "Two Sterile rooms BSL level 2"
+   ],
+   [
+    "h3",
+    "Pilot Plant for Paper based Devices"
+   ],
+   [
+    "h3",
+    "Electronic Dispenser"
+   ],
+   [
+    "h3",
+    "Vacuum Packaging Machine"
+   ],
+   [
+    "h3",
+    "Two Cryogenic Refrigerators (-80 & -20 degree)"
+   ],
+   [
+    "h3",
+    "Wave Soldering Machine"
+   ],
+   [
+    "h3",
+    "Heat Chamber/ Autoclave"
+   ],
+   [
+    "h3",
+    "Programmable syringe pump"
+   ],
+   [
+    "h3",
+    "High frequency (up to GHz) amplifier"
+   ],
+   [
+    "h3",
+    "Digital ECG and APIs"
+   ],
+   [
+    "h3",
+    "Server and computer accessories"
+   ],
+   [
+    "h3",
+    "Laser Cutter"
+   ],
+   [
+    "h3",
+    "Thermal Imaging System with IR Fusion Technology"
+   ],
+   [
+    "h3",
+    "Arbitrary Waveform Generator, DC Power Supply | Multimeter, Spectrum Analyzer"
+   ],
+   [
+    "h3",
+    "LFA manufacturing unit"
+   ],
+   [
+    "h3",
+    "Covirap manufacturing unit"
+   ],
+   [
+    "h3",
+    "Kit preparation plant"
+   ],
+   [
+    "h3",
+    "Paper based device pilot plant"
+   ],
+   [
+    "h3",
+    "Prototyping for PCB"
+   ],
+   [
+    "h3",
+    "3d Printing Facilities"
+   ],
+   [
+    "h3",
+    "Pathology Lab at Midnapur"
+   ],
+   [
+    "h2",
     "Manufacturing plants and demonstration units"
+   ],
+   [
+    "h2",
+    "Book a facility"
    ]
   ],
   "items": [
@@ -790,11 +871,35 @@
   "headings": [
    [
     "h1",
-    "What CRTDH offers"
+    "Services"
    ],
    [
     "h2",
-    "Services for healthcare innovators"
+    "What we offer"
+   ],
+   [
+    "h3",
+    "R&D support"
+   ],
+   [
+    "h3",
+    "Prototyping and testing facilities"
+   ],
+   [
+    "h3",
+    "Regulatory guidance"
+   ],
+   [
+    "h3",
+    "Training & capacity-building"
+   ],
+   [
+    "h3",
+    "Market access opportunities"
+   ],
+   [
+    "h3",
+    "Support for scalability and sustainability"
    ]
   ],
   "items": [
@@ -836,27 +941,47 @@
   "headings": [
    [
     "h1",
-    "From prototype to product"
+    "Products"
    ],
    [
     "h2",
     "Gluco QR"
    ],
    [
+    "h3",
+    "Commercialisation partners"
+   ],
+   [
     "h2",
     "Sense-Hb"
+   ],
+   [
+    "h3",
+    "Commercialisation partners"
    ],
    [
     "h2",
     "Oral Cancer"
    ],
    [
+    "h3",
+    "Commercialisation partners"
+   ],
+   [
     "h2",
     "Hemomeasure"
    ],
    [
+    "h3",
+    "Commercialisation partners"
+   ],
+   [
     "h2",
     "COVIRAP"
+   ],
+   [
+    "h3",
+    "Commercialisation partners"
    ]
   ],
   "items": [
@@ -929,14 +1054,18 @@
   "headings": [
    [
     "h1",
-    "MSMEs & startups engaged with CRTDH"
+    "Enterprises"
    ],
    [
     "h2",
-    "Enterprises engagement"
+    "Enterprise engagement"
    ],
    [
-    "h3",
+    "h2",
+    "The enterprise cluster"
+   ],
+   [
+    "h2",
     "Demonstration And Training Of MSMEs"
    ]
   ],
@@ -1095,7 +1224,15 @@
   "headings": [
    [
     "h1",
-    "Technology reaching communities"
+    "Social impact"
+   ],
+   [
+    "h2",
+    "E-health clinics and local livelihoods"
+   ],
+   [
+    "h2",
+    "Community outreach"
    ]
   ],
   "items": [],
@@ -1154,11 +1291,15 @@
   "headings": [
    [
     "h1",
-    "CRTDH's response to the pandemic"
+    "Covid-19 response"
    ],
    [
     "h2",
-    "Combating the Pandemic"
+    "Combating the pandemic"
+   ],
+   [
+    "h2",
+    "In the field"
    ],
    [
     "h2",
@@ -1200,51 +1341,51 @@
   "headings": [
    [
     "h1",
-    "Events, camps & coverage"
+    "Media and gallery"
    ],
    [
-    "h3",
+    "h2",
     "Pathology and Eye Clinic"
    ],
    [
-    "h3",
+    "h2",
     "Rural Healthcare Foundation"
    ],
    [
-    "h3",
+    "h2",
     "Anemia detection camp at Kuchlachati Primary School"
    ],
    [
-    "h3",
+    "h2",
     "Arjun Malhotra"
    ],
    [
-    "h3",
+    "h2",
     "Conclave"
    ],
    [
-    "h3",
+    "h2",
     "Chintan Shivir"
    ],
    [
-    "h3",
+    "h2",
     "Jio"
    ],
    [
-    "h3",
+    "h2",
     "Other Ongoing Activities"
    ],
    [
-    "h3",
+    "h2",
     "More from CRTDH"
    ],
    [
     "h2",
-    "Media coverage"
+    "Press coverage"
    ],
    [
     "h2",
-    "Looking for something specific?"
+    "Newsletters"
    ]
   ],
   "items": [
@@ -1520,7 +1661,7 @@
   "headings": [
    [
     "h1",
-    "Get in touch"
+    "Contact CRTDH"
    ],
    [
     "h2",
@@ -1528,7 +1669,11 @@
    ],
    [
     "h2",
-    "Our office"
+    "The office"
+   ],
+   [
+    "h2",
+    "How we use your message"
    ]
   ],
   "items": [

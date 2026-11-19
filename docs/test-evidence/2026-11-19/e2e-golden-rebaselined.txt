@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/claude/wt/qa/tests/e2e
+configfile: pytest.ini
+plugins: playwright-0.10.0, asyncio-1.5.0, platformdirs-4.14.7, Faker-40.54.0, timeout-2.4.0, anyio-4.16.0, cov-7.1.0, django-4.14.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 25 items
+
+tests/e2e/test_golden_regression.py ............F.F..........            [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_items_not_lost[/] ____________________________
+
+site = 'https://localhost:3601', route = '/'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_items_not_lost(site, route):
+        page = _page_tokens(site, route)
+        lost = []
+        for item in GOLDEN[route]["items"]:
+            need = {t for t in _tokens(BADGES.sub(" ", item)) if len(t) > 2}  # 2-char tile initials (3P, DE) are decoration
+            if need - page:
+                lost.append((item[:70], sorted(need - page)[:6]))
+>       assert not lost, f"{len(lost)} golden items not on the page: {lost[:6]}"
+E       AssertionError: 8 golden items not on the page: [('9+ Researchers & staff', ['researchers', 'staff']), ('Researchers & staff', ['researchers', 'staff']), ('Innovations Devices and diagnostics developed in-house, ready for tran', ['house', 'translation']), ('Enterprises MSMEs and startups incubated at CRTDH with mentorship and ', ['mentorship', 'msmes', 'startups']), ('Social Impact Camps, clinics and outreach programmes bringing technolo', ['bringing', 'camps', 'communities', 'programmes']), ('Skill development and prototype manufacturing', ['skill'])]
+E       assert not [('9+ Researchers & staff', ['researchers', 'staff']), ('Researchers & staff', ['researchers', 'staff']), ('Innovation...['bringing', 'camps', 'communities', 'programmes']), ('Skill development and prototype manufacturing', ['skill']), ...]
+
+tests/e2e/test_golden_regression.py:66: AssertionError
+__________________________ test_items_not_lost[/team] __________________________
+
+site = 'https://localhost:3601', route = '/team'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_items_not_lost(site, route):
+        page = _page_tokens(site, route)
+        lost = []
+        for item in GOLDEN[route]["items"]:
+            need = {t for t in _tokens(BADGES.sub(" ", item)) if len(t) > 2}  # 2-char tile initials (3P, DE) are decoration
+            if need - page:
+                lost.append((item[:70], sorted(need - page)[:6]))
+>       assert not lost, f"{len(lost)} golden items not on the page: {lost[:6]}"
+E       AssertionError: 2 golden items not on the page: [('Prof. Suman Chakraborty PRINCIPAL INVESTIGATOR Indian Institute of Tec', ["crtdh's", 'guiding', 'leadership', 'technologies', 'vision']), ('A multidisciplinary team working towards innovative healthcare solutio', ['collaboration', 'get', 'innovation'])]
+E       assert not [('Prof. Suman Chakraborty PRINCIPAL INVESTIGATOR Indian Institute of Tec', ["crtdh's", 'guiding', 'leadership', 'tech...]), ('A multidisciplinary team working towards innovative healthcare solutio', ['collaboration', 'get', 'innovation'])]
+
+tests/e2e/test_golden_regression.py:66: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_golden_regression.py::test_items_not_lost[/] - Assertio...
+FAILED tests/e2e/test_golden_regression.py::test_items_not_lost[/team] - Asse...
+======================== 2 failed, 23 passed in 15.58s =========================

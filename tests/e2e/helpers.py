@@ -26,7 +26,7 @@ def ui_login(page, cms, username, password, totp_secret=None):
     page.get_by_role("button", name=re.compile("sign in|log in", re.I)).click()
     if totp_secret:
         page.get_by_label(re.compile("code", re.I)).fill(totp_now(totp_secret))
-        page.get_by_role("button", name=re.compile("verify|continue|sign in", re.I)).click()
+        page.get_by_role("button", name=re.compile(r"^\s*(verify|continue)", re.I)).click()
     page.wait_for_url(re.compile(r"/(pages|$|dashboard)"), timeout=15000)
     return page
 

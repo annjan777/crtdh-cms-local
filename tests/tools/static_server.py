@@ -18,7 +18,8 @@ import urllib.request
 from functools import partial
 from pathlib import Path
 
-PROXY_PREFIXES = ("/api/", "/admin/", "/media/", "/mcp", "/.well-known/", "/oauth/", "/o/", "/upload/", "/static/")
+PROXY_PREFIXES = ("/api/", "/admin/", "/media/", "/mcp", "/.well-known/", "/oauth/", "/o/", "/upload/", "/static/",
+                  "/cms/login")  # as deploy/nginx gateway: Django owns /cms/login (OAuth sign-in entry)
 HOP = {"connection", "keep-alive", "transfer-encoding", "te", "trailer", "upgrade", "proxy-authorization", "proxy-authenticate"}
 
 
@@ -49,9 +50,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         body = self.rfile.read(length) if length else None
         req = urllib.request.Request(self.proxy + self.path, data=body, method=self.command)
         for k, v in self.headers.items():
-            if k.lower() not in HOP and k.lower() != "host":
-                req.add_header(k, v)
-        req.add_header("X-Forwarded-Host", self.headers.get("Host", ""))
+            if k.lower() not in HOP:
+                req.add_header(k, v)  # Host passes through, as the gateway's `proxy_set_header Host $host`
+        req.add_header("X-Forwarded-Proto", "https")
         try:
             resp = _proxy_opener().open(req, timeout=60)
         except urllib.error.HTTPError as e:
@@ -66,7 +67,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.command != "HEAD":
             self.wfile.write(data)
 
+    static_root = None
+
     def _route(self):
+        if self.static_root and self.path.startswith("/static/"):  # gateway serves collectstatic output itself
+            rel = self.path.split("?", 1)[0][len("/static/"):]
+            f = (Path(self.static_root) / rel).resolve()
+            if Path(self.static_root).resolve() in f.parents and f.is_file():
+                self.path = "/" + rel
+                self.directory = str(Path(self.static_root))
+                return super().do_GET() if self.command == "GET" else super().do_HEAD()
+            self.send_error(404)
+            return None
         if self.proxy and self.path.startswith(PROXY_PREFIXES):
             return self._proxy()
         root = Path(self.directory)
@@ -107,16 +119,30 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+    request_queue_size = 128
+    tls = None
+
+    def finish_request(self, request, client_address):
+        # Wrapping the listening socket ran the TLS handshake inside accept() on the main thread: one slow
+        # handshake stalled every other connection and Chrome gave up on some CSS (ERR_TOO_MANY_RETRIES ->
+        # unstyled pages -> false overflow/font failures in E2E).
+        if self.tls is not None:
+            try:
+                request = self.tls.wrap_socket(request, server_side=True)
+            except (OSError, ValueError):
+                return
+        super().finish_request(request, client_address)
 
 
-def serve(directory, port, mode="static", proxy=None, host="127.0.0.1", cert=None, key=None):
-    handler = type("H", (Handler,), {"mode": mode, "proxy": proxy.rstrip("/") if proxy else None})
+def serve(directory, port, mode="static", proxy=None, host="127.0.0.1", cert=None, key=None, static_root=None):
+    handler = type("H", (Handler,), {"mode": mode, "proxy": proxy.rstrip("/") if proxy else None,
+                                     "static_root": static_root})
     srv = Server((host, port), partial(handler, directory=str(directory)))
     if cert:
         import ssl
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ctx.load_cert_chain(cert, key)
-        srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+        srv.tls = ctx  # handshake per connection in the worker thread (see Server.finish_request)
     return srv
 
 
@@ -129,5 +155,6 @@ if __name__ == "__main__":
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--cert")
     ap.add_argument("--key")
+    ap.add_argument("--static-root", help="serve this dir at /static/ (the gateway serves collectstatic output)")
     a = ap.parse_args()
-    serve(a.dir, a.port, a.mode, a.proxy, a.host, a.cert, a.key).serve_forever()
+    serve(a.dir, a.port, a.mode, a.proxy, a.host, a.cert, a.key, a.static_root).serve_forever()

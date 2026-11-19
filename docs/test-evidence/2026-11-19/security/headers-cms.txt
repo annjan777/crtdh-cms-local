@@ -1,0 +1,11 @@
+FAIL admin /: HSTS missing or < 1 year: ''
+FAIL admin /: X-Content-Type-Options: nosniff missing
+FAIL admin /: framing not blocked (no X-Frame-Options and no CSP frame-ancestors)
+FAIL admin /: Content-Security-Policy missing
+WARN admin /: Referrer-Policy missing
+WARN admin /: Server leaks a version: 'SimpleHTTP/0.6 Python/3.13.18'
+INFO CMS csrf cookie __Host-crtdh_csrf: expires=Thu, 18 Nov 2027 01:11:10 GMT; HttpOnly; Max-Age=31449600; Path=/; SameSite=Strict; Secure
+INFO CMS login cookie __Host-crtdh_session: HttpOnly; Path=/; SameSite=Strict; Secure
+
+4 FAIL, 2 WARN
+exit=1

@@ -1,0 +1,11 @@
+# gitleaks dir on 'git archive HEAD' (tracked files at ec511d9, not history; .preprod/ runtime secrets are gitignored and excluded)
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m6:44AM[0m [32mINF[0m [1mscanned ~3537315 bytes (3.54 MB) in 392ms[0m
+[90m6:44AM[0m [32mINF[0m [1mno leaks found[0m
+exit=0

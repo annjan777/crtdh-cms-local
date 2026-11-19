@@ -1,0 +1,87 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/claude/wt/qa/tests/e2e
+configfile: pytest.ini
+plugins: playwright-0.10.0, asyncio-1.5.0, platformdirs-4.14.7, Faker-40.54.0, timeout-2.4.0, anyio-4.16.0, cov-7.1.0, django-4.14.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 209 items
+
+tests/e2e/test_00_harness.py ....                                        [  1%]
+tests/e2e/test_cms_editor.py .......                                     [  5%]
+tests/e2e/test_contact_form.py s.                                        [  6%]
+tests/e2e/test_mcp_connector.py ......                                   [  9%]
+tests/e2e/test_public_site.py .......................................... [ 29%]
+........................................................................ [ 63%]
+.....................                                                    [ 73%]
+tests/e2e/test_publish_flow.py .                                         [ 74%]
+tests/e2e/test_golden_regression.py F.........F...........F..            [ 86%]
+tests/e2e/test_public_site.py ..........................                 [ 98%]
+tests/e2e/test_publish_flow.py ..s                                       [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_headings_unchanged[/] __________________________
+
+current = {'/': {'headings': [['h1', 'Published by E2E 1795070928 Technology Development Hub'], ['h2', 'Explore CRTDH'], ['h2', ...06d5-480.avif'}, {'alt': 'Printed Paper Channels for Blood Pathology', 'src': '689fcc57f1743aef-480.avif'}, ...]}, ...}
+route = '/'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_headings_unchanged(current, route):
+>       assert current[route]["headings"] == GOLDEN[route]["headings"]
+E       AssertionError: assert [['h1', 'Publ...centre'], ...] == [['h1', 'Prep...illage'], ...]
+E         
+E         At index 0 diff: ['h1', 'Published by E2E 1795070928 Technology Development Hub'] != ['h1', 'Preprod smoke 1795068704 Technology Development Hub']
+E         Left contains one more item: ['h2', 'Visit the centre']
+E         Use -v to get more diff
+
+tests/e2e/test_golden_regression.py:55: AssertionError
+_______________________ test_headings_unchanged[/media] ________________________
+
+current = {'/': {'headings': [['h1', 'Published by E2E 1795070928 Technology Development Hub'], ['h2', 'Explore CRTDH'], ['h2', ...06d5-480.avif'}, {'alt': 'Printed Paper Channels for Blood Pathology', 'src': '689fcc57f1743aef-480.avif'}, ...]}, ...}
+route = '/media'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_headings_unchanged(current, route):
+>       assert current[route]["headings"] == GOLDEN[route]["headings"]
+E       AssertionError: assert [['h1', 'Medi...nclave'], ...] == [['h1', 'Medi...nclave'], ...]
+E         
+E         At index 10 diff: ['h2', 'Newsletters'] != ['h2', 'Press coverage']
+E         Right contains one more item: ['h2', 'Newsletters']
+E         Use -v to get more diff
+
+tests/e2e/test_golden_regression.py:55: AssertionError
+_________________________ test_items_not_lost[/media] __________________________
+
+site = 'https://localhost:3601', route = '/media'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_items_not_lost(site, route):
+        page = _page_tokens(site, route)
+        lost = []
+        for item in GOLDEN[route]["items"]:
+            need = {t for t in _tokens(BADGES.sub(" ", item)) if len(t) > 2}  # 2-char tile initials (3P, DE) are decoration
+            if need - page:
+                lost.append((item[:70], sorted(need - page)[:6]))
+>       assert not lost, f"{len(lost)} golden items not on the page: {lost[:6]}"
+E       AssertionError: 8 golden items not on the page: [('https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covira', ['article34376251.ece', 'covirap', 'diagnostic', 'launches', 'sci', 'tech']), ('https://indianexpress.com/article/explained/covirap-iit-kharagpur-covi', ['6830805', 'article', 'covirap', 'explained', 'indianexpress.com', 'test']), ('https://www.telegraphindia.com/states/west-bengal/research-hub-at-iit-', ['1683564', 'bengal', 'cid', 'hospital', 'states', 'www.telegraphindia.com']), ('https://www.dnaindia.com/business/report-iit-kgp-to-set-up-hub-to-tap-', ['2715269', 'business', 'msmes', 'report', 'set', 'tap']), ('https://www.ndtv.com/education/iit-kharagpur-to-set-up-hub-to-tap-msme', ['1987360', 'education', 'msmes', 'set', 'tap', 'www.ndtv.com']), ('https://yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msme', ['msmes', 'set', 'smbstory', 'yourstory.com'])]
+E       assert not [('https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covira', ['article34376251.ece', 'covirap', 'diagno...//yourstory.com/smbstory/iit-kharagpur-to-set-up-rd-hub-for-msme', ['msmes', 'set', 'smbstory', 'yourstory.com']), ...]
+
+tests/e2e/test_golden_regression.py:66: AssertionError
+=============================== warnings summary ===============================
+test_00_harness.py::test_browser_launches[chromium]
+  /home/claude/venv/lib/python3.13/site-packages/_pytest/fixtures.py:1392: PytestRemovedIn10Warning: Session-scoped fixtures defined as instance methods are deprecated.
+  Instance attributes set in the 'base_url' fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use a @classmethod decorator below @pytest.fixture and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /home/claude/wt/qa/docs/test-evidence/2026-11-19/e2e-final-junit.xml -
+=========================== short test summary info ============================
+FAILED tests/e2e/test_golden_regression.py::test_headings_unchanged[/] - Asse...
+FAILED tests/e2e/test_golden_regression.py::test_headings_unchanged[/media]
+FAILED tests/e2e/test_golden_regression.py::test_items_not_lost[/media] - Ass...
+SKIPPED [1] tests/e2e/test_contact_form.py:21: send needs Cloudflare Turnstile (widget + siteverify); not reachable from the sandbox
+SKIPPED [1] tests/e2e/test_publish_flow.py:93: run with the publish agent stopped (E2E_AGENT_STOPPED=1)
+======= 3 failed, 204 passed, 2 skipped, 1 warning in 464.14s (0:07:44) ========
+exit=1

@@ -33,7 +33,7 @@ def capture(site, routes=ROUTES, executable=None):
     out = {}
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=executable) if executable else p.chromium.launch()
-        page = b.new_page(viewport={"width": 1280, "height": 900})
+        page = b.new_page(viewport={"width": 1280, "height": 900}, ignore_https_errors=True)
         for r in routes:
             page.goto(site + r, wait_until="networkidle")
             page.wait_for_timeout(500)

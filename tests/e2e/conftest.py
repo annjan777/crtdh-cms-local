@@ -36,6 +36,9 @@ def pytest_addoption(parser):
 
 
 def pytest_collection_modifyitems(config, items):
+    # The golden regression compares against the seed content, so it runs before the specs that change content
+    # on purpose (the editor spec empties Media coverage; the publish specs publish that). Stable sort: harness first.
+    items.sort(key=lambda i: {"test_00_harness.py": 0, "test_golden_regression.py": 1}.get(i.path.name, 2))
     if config.getoption("--integration") or os.environ.get("RUN_INTEGRATION") == "1":
         return
     skip = pytest.mark.skip(reason="needs_integration: run with --integration once lanes are merged")
@@ -54,6 +57,10 @@ def browser_type_launch_args(browser_type_launch_args):
     chrome = os.environ.get("CHROME_BIN")
     if not bundled.exists() and chrome and Path(chrome).exists():
         args["executable_path"] = chrome
+    # The browser may only talk to the local stack: OAuth redirects to claude.ai (auth codes!), fonts, analytics
+    # and anything else external go to a dead proxy. Playwright's route() does not see redirect hops.
+    args["args"] = [*args.get("args", []), "--proxy-server=http://127.0.0.1:9",
+                    "--proxy-bypass-list=localhost;127.0.0.1;[::1]"]
     return args
 
 

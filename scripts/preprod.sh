@@ -87,18 +87,28 @@ DEBUG=False
 SECRET_KEY=$(openssl rand -base64 60 | tr -d '\n=+/')
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOW_ALL_ORIGINS=False
-CORS_ALLOWED_ORIGINS=https://localhost:$ADMIN_PORT,https://localhost:$SITE_PORT
+CORS_ALLOWED_ORIGINS=https://localhost:$ADMIN_PORT,https://localhost:$SITE_PORT${PREPROD_EXTRA_ORIGINS:+,$PREPROD_EXTRA_ORIGINS}
 CSRF_TRUSTED_ORIGINS=https://localhost:$ADMIN_PORT
 SSL_CERT_FILE=$ST/tls/cert.pem
 REQUESTS_CA_BUNDLE=$ST/tls/cert.pem
 CRTDH_SKIP_DOTENV=1
+# Trusted-proxy rule as in deploy/docker-compose.yml: only the gateway (here: the static host on 127.0.0.1)
+# may reach the app processes; any other peer (e.g. 127.0.0.5) gets 403. Lets the attack pass test a bypass.
+TRUSTED_PROXY_IPS=127.0.0.1
+REQUIRE_TRUSTED_PROXY=True
 MEDIA_ROOT=$ST/media
 PUBLISH_ROOT=$ST/publish
 CMS_PUBLIC_URL=https://localhost:$ADMIN_PORT
 PUBLIC_SITE_URL=https://localhost:$SITE_PORT
+# read by the worker's frontend build (deploy/.env.example sets the same two)
+SITE_URL=https://localhost:$SITE_PORT
+CONTACT_API_URL=https://localhost:$CMS_PORT/api/v1/contact/
+# the worker builds exactly as the production worker image does (deploy/worker/build-site.sh, output outside frontend/)
+FRONTEND_BUILD_CMD="sh $REPO/deploy/worker/build-site.sh"
+FRONTEND_DIR=$REPO/frontend
+FRONTEND_BUILD_OUTPUT=$ST/site/build/client
 MCP_PUBLIC_URL=https://localhost:$MCP_PORT
-EMAIL_URL=filemail://$ST/mail
-EMAIL_FILE_PATH=$ST/mail
+EMAIL_URL=smtp://127.0.0.1:2525
 AGENT_HMAC_SECRET=$(openssl rand -hex 32)
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
 CRTDH_ALLOW_TEST_SEED=1
@@ -128,6 +138,10 @@ up() {
     $PY manage.py shell -c "from tests.support.content import *; load_snapshot_into_db(FULL_SNAPSHOT_PATH)"
     touch "$ST/seeded"
   fi
+  if ! grep -q '^E2E_OAUTH_CLIENT_ID=' "$ST/env.oauth" 2>/dev/null; then  # Claude connector client (shown once)
+    $PY manage.py create_claude_client 2>/dev/null | awk '/Client ID:/{print "E2E_OAUTH_CLIENT_ID="$3} /Client secret:/{print "E2E_OAUTH_CLIENT_SECRET="$3}' > "$ST/env.oauth" || true
+    chmod 600 "$ST/env.oauth"
+  fi
   $PY manage.py seed_test_users --rehearsal | tail -1 > "$ST/users.json"; chmod 600 "$ST/users.json"
   $PY manage.py create_baseline_snapshot >/dev/null 2>&1 || log "no baseline snapshot command result (ok on first run)"
 
@@ -138,8 +152,9 @@ up() {
       || log "WARNING: admin build failed (logs/admin-build.log); CMS UI not served, API-level smoke still runs"
   fi
 
+  start_bg smtp "$ST/logs/smtp.log" $PY "$REPO/tests/tools/smtp_sink.py" --dir "$ST/mail" --port 2525
   start_bg gunicorn "$ST/logs/gunicorn.log" $PY -m gunicorn config.wsgi:application -b 127.0.0.1:$CMS_PORT -w 3 --timeout 120 --certfile "$ST/tls/cert.pem" --keyfile "$ST/tls/key.pem" --access-logfile -
-  start_bg mcp "$ST/logs/mcp.log" $PY -m uvicorn mcp_server.asgi:app --host 127.0.0.1 --port $MCP_PORT --ssl-certfile "$ST/tls/cert.pem" --ssl-keyfile "$ST/tls/key.pem"
+  start_bg mcp "$ST/logs/mcp.log" $PY -m uvicorn mcp_server.asgi:app --host 127.0.0.1 --port $MCP_PORT --no-proxy-headers --ssl-certfile "$ST/tls/cert.pem" --ssl-keyfile "$ST/tls/key.pem"
   start_bg worker "$ST/logs/worker.log" $PY manage.py run_publish_worker
   cd "$REPO"
   start_bg sftp "$ST/logs/sftp.log" $PY tests/tools/sftp_host.py --root "$ST/sftp" --port $SFTP_PORT \
@@ -170,7 +185,7 @@ INI
   export CRTDH_AGENT_SECRET=$AGENT_HMAC_SECRET
   $PY -m publish_agent -c "$ST/agent/config.ini" check --no-http > "$ST/logs/agent-check.log" 2>&1 || log "agent check reported issues (logs/agent-check.log)"
   start_bg agent "$ST/logs/agent.log" $PY -m publish_agent -c "$ST/agent/config.ini" run
-  [ -f "$REPO/admin/dist/index.html" ] && start_bg admin "$ST/logs/admin-static.log" $PY tests/tools/static_server.py --dir "$REPO/admin/dist" --port $ADMIN_PORT --mode spa --proxy https://localhost:$CMS_PORT $TLS
+  [ -f "$REPO/admin/dist/index.html" ] && start_bg admin "$ST/logs/admin-static.log" $PY tests/tools/static_server.py --dir "$REPO/admin/dist" --port $ADMIN_PORT --mode spa --proxy https://localhost:$CMS_PORT --static-root "$REPO/backend/staticfiles" $TLS
   # The public site is whatever the agent made live in the SFTP web root (follows its symlink/htaccess switch).
   start_bg site "$ST/logs/site-static.log" $PY tests/tools/static_server.py --dir "$WEBROOT" --port $SITE_PORT --mode static $TLS
   wait_url "https://localhost:$MCP_PORT/" 30 || true
@@ -182,11 +197,11 @@ INI
 smoke() { cd "$REPO" && $PY tests/tools/preprod_smoke.py --state "$ST"; }
 
 e2e() { # Playwright E2E (all levels incl. needs_integration) against this running stack
-  cd "$REPO"; set -a; . "$ST/env"; set +a
-  E2E_CA_FILE="$ST/tls/cert.pem" E2E_USERS_FILE="$ST/users.json" E2E_PUBLISH_STACK=1 \
-  E2E_SITE_URL="https://localhost:$SITE_PORT" E2E_ADMIN_URL="https://localhost:$ADMIN_PORT" \
+  cd "$REPO"; set -a; . "$ST/env"; [ -f "$ST/env.oauth" ] && . "$ST/env.oauth"; set +a
+  E2E_CA_FILE="$ST/tls/cert.pem" E2E_USERS_FILE="$ST/users.json" E2E_PUBLISH_STACK=1 E2E_SEED=full E2E_MAIL_DIR="$ST/mail" \
+  E2E_SITE_URL="${E2E_SITE_URL:-https://localhost:$SITE_PORT}" E2E_ADMIN_URL="https://localhost:$ADMIN_PORT" \
   E2E_MCP_URL="https://localhost:$MCP_PORT/mcp" \
-    $PY -m pytest tests/e2e --integration --external "$@"
+    $PY -m pytest $(printf '%s\n' "$@" | grep -q '^tests/' || echo tests/e2e) --integration --external --output test-results/e2e "$@"
 }
 
 status() {

@@ -1,0 +1,43 @@
+PASS direct request from non-proxy peer to :8600: HTTP 403
+PASS direct request from non-proxy peer to :8601: HTTP 403
+PASS spoofed CF-Connecting-IP to MCP still needs OAuth: HTTP 401
+PASS password-only session reads content: 401
+INFO password-only session /auth/me: 401
+PASS password-only session writes content: 401
+PASS TOTP code replay in the same 30 s step (second session): 401
+PASS write without CSRF token: 403 {'code': 'CMS_CSRF_FAILED', 'message': 'Security token missing or expired.', 'fix': 'Fetch /api/v1/auth/csrf/ and resend with the X-CSRFToken header.', 'retryable': True, 'side_effects': 'none', 'field': None, 'current_version': None, 'request_id': 'cc9f680e2d6b4aa29c1246468cecd4a0'}
+PASS write with token but foreign Origin: 403
+PASS editor GET /api/v1/contact-messages/: 403
+PASS editor GET /api/v1/auth/users/: 403
+PASS editor POST /api/v1/auth/users/3/role/: 403
+PASS editor POST /api/v1/cms/publish/: 403
+PASS editor DELETE /api/v1/hero-slides/18/: 403
+INFO editor GET /api/v1/cms/audit/: 200
+PASS editor self-promotion via PATCH /auth/me/: 405 roles ['editor'] -> ['editor']
+INFO mass-assignment of id/version on update: 200 {'id': 18, 'version': 20, 'image': 'https://localhost:8600/api/v1/media/hero_slides/banner06.jpg', 'alt_text': '', 'eyebrow': 'DSIR · GOVERNMENT OF INDIA', 'hea
+PASS upload JPEG+HTML polyglot refused: 400 {'code': 'CMS_VALIDATION', 'message': 'The image contains embedded markup or an archive and was rejected.', 'fix': 'Re-e
+PASS upload SVG with script refused: 400 {'code': 'CMS_VALIDATION', 'message': 'That file is not a JPEG, PNG or WebP image (SVG and HTML are not accepted).', 'fi
+PASS upload GIF header + script refused: 400 {'code': 'CMS_VALIDATION', 'message': 'That file is not a JPEG, PNG or WebP image (SVG and HTML are not accepted).', 'fi
+PASS upload traversal filename did not escape: 201 {'media_id': 5, 'width': 64, 'height': 64}
+PASS upload link is one-time: 404
+PASS polyglot HTML tail stripped from stored media (re-encoded)
+PASS CMS media traversal /api/v1/media/../../config/settings.py: 404
+PASS CMS media traversal /api/v1/media/..%2f..%2fconfig%2fsettings.py: 404
+PASS CMS media traversal /api/v1/media/%2e%2e/%2e%2e/etc/passwd: 404
+PASS CMS media traversal /api/v1/media//etc/passwd: 404
+PASS CMS media traversal /api/v1/media/hero_slides/..%5c..%5cdb: 404
+PASS CMS draft media needs a session (anonymous): 401
+PASS static host traversal /_media/../../../etc/passwd: 404
+PASS static host traversal /_media/%2e%2e/%2e%2e/etc/passwd: 404
+PASS static host traversal /..%2f..%2fetc/passwd: 404
+PASS static host traversal /.htaccess: 200
+FAIL MCP fetch probe could not run: agement/commands/shell.py", line 247, in handle
+    exec(options["command"], {**globals(), **self.get_namespace(**options)})
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 14, in <module>
+AttributeError: 'CmsError' object has no attribute 'body'
+
+PASS MFA brute force (12 wrong codes) is throttled/locked: [401, 401, 401, 401, 429, 429, 429, 429, 429, 429, 429, 429]
+PASS correct code accepted right after brute force (should stay locked): 429 {'code': 'CMS_RATE_LIMITED', 'message': 'Too many requests. Try again in 32 seconds.', 'fix': 'Wait a minute and try again.', 'retryable': True, 'side_effects': 'none', 'field': None, 'current_version': None, 'request_id': 'aa621aeb942c48ddbba9968e918c1793'}
+
+1 FAIL, 32 PASS, 3 INFO

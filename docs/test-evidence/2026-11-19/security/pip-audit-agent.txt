@@ -1,0 +1,6 @@
+ERROR:pip_audit._virtual_env:internal pip failure: ERROR: In --require-hashes mode, all requirements must have their versions pinned with ==. These do not:
+    paramiko<6,>=3.4 from https://files.pythonhosted.org/packages/13/45/fa0e8d70cb25d2dae06bc238e580a84834f6ca53a4e2408cccc19a78db7b/paramiko-5.1.0-py3-none-any.whl (from -r publish_agent/requirements.txt (line 1))
+
+ERROR:pip_audit._cli:Failed to install packages: ['/tmp/tmpfv0zyqx0/bin/python3.13', '-m', 'pip', 'install', '--no-input', '--keyring-provider=subprocess', '--dry-run', '--report', '/tmp/tmplhqrgkur/tmpcfplirzy', '--require-hashes', '-r', 'publish_agent/requirements.txt']
+No known vulnerabilities found
+exit=0

@@ -1,0 +1,66 @@
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.13.18
+[manager]	WARNING	Test in comment: clears is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: the is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: secret is not a test name or id, ignoring
+[tester]	WARNING	nosec encountered (B106), but no failed test on file backend/apps/accounts/mfa.py:108
+[manager]	WARNING	Test in comment: constant is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: https is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: URL is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: scheme is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: is is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: restricted is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: to is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: http is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: https is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: just is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: above is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: the is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: URL is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: is is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: the is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: owner is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: s is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: verify_url is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: the is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: command is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: is is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: a is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: fixed is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: template is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: from is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: SHELL_COMMANDS is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: and is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: every is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: argument is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: is is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: shlex is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: quote is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: d is not a test name or id, ignoring
+Working... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:01
+Run started:2026-11-19 06:44:33.374677+00:00
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 11017
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 4
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 17
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 5
+		High: 12
+Files skipped (0):
+exit=0

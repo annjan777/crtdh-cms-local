@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/claude/wt/qa/tests/e2e
+configfile: pytest.ini
+plugins: playwright-0.10.0, asyncio-1.5.0, platformdirs-4.14.7, Faker-40.54.0, timeout-2.4.0, anyio-4.16.0, cov-7.1.0, django-4.14.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 209 items
+
+tests/e2e/test_00_harness.py ....                                        [  1%]
+tests/e2e/test_golden_regression.py .........................            [ 13%]
+tests/e2e/test_cms_editor.py .......                                     [ 17%]
+tests/e2e/test_contact_form.py s.                                        [ 18%]
+tests/e2e/test_mcp_connector.py ......                                   [ 21%]
+tests/e2e/test_public_site.py .......................................... [ 41%]
+........................................................................ [ 75%]
+.....................                                                    [ 85%]
+tests/e2e/test_publish_flow.py .                                         [ 86%]
+tests/e2e/test_public_site.py ..........................                 [ 98%]
+tests/e2e/test_publish_flow.py ..s                                       [100%]
+
+=============================== warnings summary ===============================
+test_00_harness.py::test_browser_launches[chromium]
+  /home/claude/venv/lib/python3.13/site-packages/_pytest/fixtures.py:1392: PytestRemovedIn10Warning: Session-scoped fixtures defined as instance methods are deprecated.
+  Instance attributes set in the 'base_url' fixture will NOT be visible to test methods,
+  as each test gets a new instance while the fixture runs only once per class.
+  Use a @classmethod decorator below @pytest.fixture and set attributes on cls instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#class-scoped-fixture-as-instance-method
+    fixturefunc = resolve_fixture_function(fixturedef, request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /home/claude/wt/qa/docs/test-evidence/2026-11-19/e2e-final-junit.xml -
+=========================== short test summary info ============================
+SKIPPED [1] tests/e2e/test_contact_form.py:21: send needs Cloudflare Turnstile (widget + siteverify); not reachable from the sandbox
+SKIPPED [1] tests/e2e/test_publish_flow.py:93: run with the publish agent stopped (E2E_AGENT_STOPPED=1)
+============ 207 passed, 2 skipped, 1 warning in 487.80s (0:08:07) =============
+exit=0

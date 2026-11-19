@@ -1,0 +1,14 @@
+/               exact-lost  24  text-missing  16 ['13+', '13+ Innovations developed', '28+', '28+ Enterprises incubated']  alts-missing 0 []
+/about          exact-lost   5  text-missing   1 ['About IIT Kharagpur The Indian Institute of Technology Khara']  alts-missing 1 ["Note from the PI's desk"]
+/team           exact-lost  18  text-missing   9 ['Dr. Aditya Bandyopadhyay RESEARCH MEMBER Indian Institute of', 'Dr. Arindam Mondal RESEARCH MEMBER Indian Institute of Techn', 'Prof. Gautam Saha CO-PRINCIPAL INVESTIGATOR Indian Institute', 'Prof. Jayanta Mukhopadhyay CO-PRINCIPAL INVESTIGATOR Indian ']  alts-missing 0 []
+/innovations    exact-lost   2  text-missing   0 []  alts-missing 0 []
+/facilities     exact-lost   5  text-missing   5 ['3P 3d Printing Facilities', 'DE Digital ECG and APIs', 'KP Kit preparation plant', 'PP Pilot Plant for Paper based Devices']  alts-missing 0 []
+/services       exact-lost   0  text-missing   0 []  alts-missing 0 []
+/product        exact-lost   5  text-missing   5 ['‹ › COVIRAP COMMERCIALISATION PARTNERS InnoDx Solutions Priv', '‹ › Gluco QR COMMERCIALISATION PARTNERS HealthLedger Diagnos', '‹ › Hemomeasure COMMERCIALISATION PARTNERS Huwel Lifescience', '‹ › Oral Cancer COMMERCIALISATION PARTNERS IMEDTECH LLP']  alts-missing 0 []
+/enterprises    exact-lost   5  text-missing   1 ['IMEDTECH LLP (IIT KGP Spin-off)']  alts-missing 0 []
+/social-impact  exact-lost   0  text-missing   0 []  alts-missing 0 []
+/covid-19       exact-lost   2  text-missing   0 []  alts-missing 0 []
+/media          exact-lost   8  text-missing   0 []  alts-missing 0 []
+/contact        exact-lost   4  text-missing   2 ['EMAIL suman@mech.iitkgp.ac.in, sohom.banner@gmail.com', 'Send a message Name * Email * Phone (optional) Message * Sen']  alts-missing 0 []
+
+TOTAL golden items/alts whose text is not on the page: 40

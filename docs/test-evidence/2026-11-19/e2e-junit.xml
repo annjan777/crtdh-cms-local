@@ -1,0 +1,1697 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="6" failures="59" skipped="37" tests="220" time="564.149" timestamp="2026-11-19T01:11:07.578961+00:00" hostname="vm"><testcase classname="test_00_harness" name="test_backend_up_with_prod_like_settings" time="0.031" /><testcase classname="test_00_harness" name="test_seeded_users" time="0.001" /><testcase classname="test_00_harness" name="test_static_host_404" time="0.508" /><testcase classname="test_00_harness" name="test_browser_launches[chromium]" time="1.149" /><testcase classname="test_cms_editor" name="test_edit_hero_autosave_preview_not_live[chromium]" time="0.921"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-edit-hero-autosave-preview-not-live-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-edit-hero-autosave-preview-not-live-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a473f60&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+site = 'https://localhost:3602'
+
+    def test_edit_hero_autosave_preview_not_live(login, page, cms, site):
+        """Edit hero headline -&gt; autosave 'Saved…not live' -&gt; preview shows it -&gt; live site unchanged."""
+&gt;       login("erin_editor")
+
+tests/e2e/test_cms_editor.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile("verify|continue|sign in", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c2a4b8650&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a49bd80&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_editor_sees_request_review_and_publishers_are_emailed[chromium]" time="20.291"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-editor-sees-request-review-and-publishers-are-emailed-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-editor-sees-request-review-and-publishers-are-emailed-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a4dc540&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_editor_sees_request_review_and_publishers_are_emailed(login, page, cms, stack):
+&gt;       login("erin_editor")
+
+tests/e2e/test_cms_editor.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile("verify|continue|sign in", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29f2e490&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a4dd120&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_publisher_sees_review_and_publish[chromium]" time="0.845"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-publisher-sees-review-and-publish-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-publisher-sees-review-and-publish-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a462fc0&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+
+    def test_publisher_sees_review_and_publish(login, page, cms):
+&gt;       login("priya")
+
+tests/e2e/test_cms_editor.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile("verify|continue|sign in", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c2a545e50&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a462020&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_stale_save_two_tabs[chromium]" time="28.802"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-stale-save-two-tabs-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-stale-save-two-tabs-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a5927a0&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;
+second_page = &lt;Page url='about:blank'&gt;, cms = 'https://localhost:3600'
+
+    def test_stale_save_two_tabs(login, page, second_page, cms):
+        """Two tabs edit the same section; the second save shows the conflict message; nothing overwritten."""
+&gt;       login("erin_editor")
+
+tests/e2e/test_cms_editor.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile("verify|continue|sign in", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c2a545450&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a5d9300&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_restore_version_confirmation_creates_draft[chromium]" time="29.803"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-restore-version-confirmation-creates-draft-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-restore-version-confirmation-creates-draft-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a5d9260&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_restore_version_confirmation_creates_draft(login, page, cms, stack):
+        """Restore an earlier version from history -&gt; confirmation names version and date -&gt; draft created."""
+        call = api_session(stack, "priya")
+        status, snaps = call("GET", "/api/v1/cms/snapshots/")
+        assert status == 200
+        if not (snaps.get("results", snaps) if isinstance(snaps, dict) else snaps):
+            pytest.skip("needs at least one published snapshot (run after test_publish_flow)")
+&gt;       login("priya")
+
+tests/e2e/test_cms_editor.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile(r"^\s*(verify|continue)", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c2a0b3ac0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a5e2700&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_hero_upload_rules[chromium]" time="0.900"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-hero-upload-rules-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-hero-upload-rules-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a5e44a0&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-191/test_hero_upload_rules_chromiu0')
+
+    def test_hero_upload_rules(login, page, cms, tmp_path):
+        """1599 px hero rejected with reason; missing alt text blocks save."""
+        import sys
+        sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[2] / "backend"))
+        from tests.support.images import make_image_bytes
+        small = tmp_path / "small.jpg"
+        small.write_bytes(make_image_bytes(1599, 900))
+&gt;       login("erin_editor")
+
+tests/e2e/test_cms_editor.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile(r"^\s*(verify|continue)", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c2a1b7700&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c2a1dc4a0&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_cms_editor" name="test_empty_collection_shows_add_first[chromium]" time="28.745"><properties><property name="playwright_screenshot" value="test-results/e2e/test-cms-editor-py-test-empty-collection-shows-add-first-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-cms-editor-py-test-empty-collection-shows-add-first-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c2a1df100&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_empty_collection_shows_add_first(login, page, cms, stack):
+        call = api_session(stack, "ada_admin")
+        status, body = call("GET", "/api/v1/media-coverage-links/")
+        assert status == 200
+        for row in body.get("results", body):
+            call("DELETE", f"/api/v1/media-coverage-links/{row['id']}/")
+&gt;       login("erin_editor")
+
+tests/e2e/test_cms_editor.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile(r"^\s*(verify|continue)", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb51d0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29f360c0&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_contact_form" name="test_blur_validation_send_success[chromium]" time="30.774"><properties><property name="playwright_screenshot" value="test-results/e2e/test-contact-form-py-test-blur-validation-send-success-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-contact-form-py-test-blur-validation-send-success-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;valid email&quot;, re.IGNORECASE)) to be visible">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602'
+
+    def test_blur_validation_send_success(page, site):
+        page.goto(site + "/contact")
+        email = page.get_by_label(re.compile("email", re.I))
+        email.fill("not-an-email")
+        email.blur()
+&gt;       page.get_by_text(re.compile(r"valid email", re.I)).wait_for()
+
+tests/e2e/test_contact_form.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb6670&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29f45940&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"valid email", re.IGNORECASE)) to be visible
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</failure></testcase><testcase classname="test_contact_form" name="test_relay_down_shows_mailto[chromium]" time="0.632"><properties><property name="playwright_screenshot" value="test-results/e2e/test-contact-form-py-test-relay-down-shows-mailto-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-contact-form-py-test-relay-down-shows-mailto-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.fill: Error: strict mode violation: get_by_label(re.compile(r&quot;message&quot;, re.IGNORECASE)) resolved to 3 elements:&#10;    1) &lt;form class=&quot;form&quot; method=&quot;post&quot; novalidate=&quot;&quot; data-testid=&quot;contact-form&quot; aria-labelledby=&quot;contact-form-title&quot;&gt;…&lt;/form&gt; aka get_by_test_id(&quot;contact-form&quot;)&#10;    2) &lt;textarea rows=&quot;6&quot; required=&quot;&quot; name=&quot;message&quot; maxlength=&quot;4000&quot; id=&quot;contact-message&quot; aria-describedby=&quot;contact-message-hint&quot;&gt;&lt;/textarea&gt; aka get_by_role(&quot;textbox&quot;, name=&quot;Message&quot;)&#10;[+4 more lines; full report in element text]">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602'
+
+    def test_relay_down_shows_mailto(page, site):
+        page.route(re.compile(r".*/api/v1/contact/.*"), lambda r: r.abort())
+        page.goto(site + "/contact")
+        page.get_by_label(re.compile("name", re.I)).first.fill("E2E")
+        page.get_by_label(re.compile("email", re.I)).fill("v@example.test")
+&gt;       page.get_by_label(re.compile("message", re.I)).fill("relay down test")
+
+tests/e2e/test_contact_form.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11664: in fill
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:352: in fill
+    return await self._frame.fill(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:736: in fill
+    return await self._channel.fill(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb4780&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fe1c60&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.fill: Error: strict mode violation: get_by_label(re.compile(r"message", re.IGNORECASE)) resolved to 3 elements:
+E               1) &lt;form class="form" method="post" novalidate="" data-testid="contact-form" aria-labelledby="contact-form-title"&gt;…&lt;/form&gt; aka get_by_test_id("contact-form")
+E               2) &lt;textarea rows="6" required="" name="message" maxlength="4000" id="contact-message" aria-describedby="contact-message-hint"&gt;&lt;/textarea&gt; aka get_by_role("textbox", name="Message")
+E               3) &lt;section id="privacy" aria-labelledby="privacy-title" class="section section--surface"&gt;…&lt;/section&gt; aka get_by_role("region", name="How we use your message")
+E           
+E           Call log:
+E             - waiting for get_by_label(re.compile(r"message", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_mcp_connector" name="test_tools_listed_with_hints[chromium]" time="30.832"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_mcp_connector" name="test_find_update_preview_not_live[chromium]" time="0.001"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_mcp_connector" name="test_stale_version_via_mcp[chromium]" time="0.001"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_mcp_connector" name="test_upload_link_then_add_hero_slide[chromium]" time="0.000"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_mcp_connector" name="test_request_review_then_publisher_publishes[chromium]" time="0.000"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_mcp_connector" name="test_session_write_cap[chromium]" time="0.001"><error message="failed on setup with &quot;playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.&#10;Call log:&#10;  - waiting for get_by_text(re.compile(r&quot;Allow Claude to edit drafts as&quot;, re.IGNORECASE)) to be visible&#10;    - waiting for &quot;https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…&quot; navigation to finish...&#10;[+1 more line; full report in element text]">browser = &lt;Browser type=&lt;BrowserType name=chromium executable_path=/opt/pw-browsers/chromium-1255/chrome-linux64/chrome&gt; version=153.0.8010.12&gt;
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+mcp_url = 'https://localhost:8601/mcp'
+
+    @pytest.fixture(scope="module")
+    def mcp(browser, stack, mcp_url):
+&gt;       m = MCP(mcp_url, oauth_token(browser, stack, mcp_url))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_mcp_connector.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_mcp_connector.py:112: in oauth_token
+    consent.wait_for()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:13663: in wait_for
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:943: in wait_for
+    await self._frame._channel.waitForSelector(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:398: in _mapped
+    return mapper(await awaitable)
+                  ^^^^^^^^^^^^^^^
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c29fb62b0&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c29fb8c20&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 30000ms exceeded.
+E           Call log:
+E             - waiting for get_by_text(re.compile(r"Allow Claude to edit drafts as", re.IGNORECASE)) to be visible
+E               - waiting for "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…" navigation to finish...
+E               - navigated to "https://localhost:3600/oauth/authorize/?response_type=code&amp;client_id=claude-e2e&amp;redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&amp;code_challenge=bL3T--eqEsPJByVshHTvA9PuJfhWiJPAqBWQLO0…"
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: TimeoutError</error></testcase><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/]" time="0.992" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/about]" time="1.043" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/team]" time="0.990" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/innovations]" time="1.070" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/facilities]" time="1.143" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/services]" time="1.065" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/product]" time="1.058" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/enterprises]" time="1.073" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/social-impact]" time="1.109" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/covid-19]" time="0.981" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/media]" time="1.133" /><testcase classname="test_public_site" name="test_no_cms_api_calls[chromium-/contact]" time="0.990" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/]" time="0.389" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/about]" time="0.301" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/team]" time="0.281" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/innovations]" time="0.399" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/facilities]" time="0.333" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/services]" time="0.290" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/product]" time="0.342" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/enterprises]" time="0.379" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/social-impact]" time="0.308" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/covid-19]" time="0.306" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/media]" time="0.544" /><testcase classname="test_public_site" name="test_content_visible_without_js[chromium-/contact]" time="0.294" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/]" time="1.702" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/about]" time="1.370" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/team]" time="1.270" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/innovations]" time="1.508" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/facilities]" time="1.431" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/services]" time="1.331" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/product]" time="1.240" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/enterprises]" time="1.423" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/social-impact]" time="1.364" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/covid-19]" time="1.218" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/media]" time="1.602" /><testcase classname="test_public_site" name="test_axe_no_serious_violations[chromium-/contact]" time="1.249" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/]" time="0.891" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/about]" time="0.553" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/team]" time="0.600" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/innovations]" time="0.639" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/facilities]" time="0.668" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/services]" time="0.644" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/product]" time="0.631" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/enterprises]" time="0.603" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/social-impact]" time="0.595" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/covid-19]" time="0.489" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/media]" time="0.653" /><testcase classname="test_public_site" name="test_landmarks_and_skip_link[chromium-/contact]" time="0.538" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/-phone]" time="1.061" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/-tablet]" time="1.102"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-tablet/trace.zip" /></properties><failure message="AssertionError: assert 657 &lt;= 0&#10; +  where 657 = horizontal_overflow(&lt;Page url='https://localhost:3602/'&gt;)">page = &lt;Page url='https://localhost:3602/'&gt;, site = 'https://localhost:3602'
+route = '/', vp = 'tablet'
+
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_no_horizontal_overflow(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+&gt;       assert horizontal_overflow(page) &lt;= 0
+E       AssertionError: assert 657 &lt;= 0
+E        +  where 657 = horizontal_overflow(&lt;Page url='https://localhost:3602/'&gt;)
+
+tests/e2e/test_public_site.py:88: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/-desktop]" time="1.263" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/about-phone]" time="0.987" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/about-tablet]" time="0.963" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/about-desktop]" time="1.005" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/team-phone]" time="0.993" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/team-tablet]" time="1.030" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/team-desktop]" time="1.010" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/innovations-phone]" time="0.978" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/innovations-tablet]" time="1.041" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/innovations-desktop]" time="1.035" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/facilities-phone]" time="1.097" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/facilities-tablet]" time="1.267"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-facilities-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-facilities-tablet/trace.zip" /></properties><failure message="AssertionError: assert 330 &lt;= 0&#10; +  where 330 = horizontal_overflow(&lt;Page url='https://localhost:3602/facilities'&gt;)">page = &lt;Page url='https://localhost:3602/facilities'&gt;
+site = 'https://localhost:3602', route = '/facilities', vp = 'tablet'
+
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_no_horizontal_overflow(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+&gt;       assert horizontal_overflow(page) &lt;= 0
+E       AssertionError: assert 330 &lt;= 0
+E        +  where 330 = horizontal_overflow(&lt;Page url='https://localhost:3602/facilities'&gt;)
+
+tests/e2e/test_public_site.py:88: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/facilities-desktop]" time="2.515" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/services-phone]" time="1.260" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/services-tablet]" time="1.318" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/services-desktop]" time="1.294" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/product-phone]" time="1.400" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/product-tablet]" time="1.532" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/product-desktop]" time="1.623" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/enterprises-phone]" time="1.293" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/enterprises-tablet]" time="1.346" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/enterprises-desktop]" time="1.607" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/social-impact-phone]" time="1.345" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/social-impact-tablet]" time="1.349" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/social-impact-desktop]" time="1.289" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/covid-19-phone]" time="1.113"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-covid-19-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-covid-19-phone/trace.zip" /></properties><failure message="AssertionError: assert 189 &lt;= 0&#10; +  where 189 = horizontal_overflow(&lt;Page url='https://localhost:3602/covid-19'&gt;)">page = &lt;Page url='https://localhost:3602/covid-19'&gt;
+site = 'https://localhost:3602', route = '/covid-19', vp = 'phone'
+
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_no_horizontal_overflow(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+&gt;       assert horizontal_overflow(page) &lt;= 0
+E       AssertionError: assert 189 &lt;= 0
+E        +  where 189 = horizontal_overflow(&lt;Page url='https://localhost:3602/covid-19'&gt;)
+
+tests/e2e/test_public_site.py:88: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/covid-19-tablet]" time="1.291" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/covid-19-desktop]" time="1.436" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/media-phone]" time="1.427" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/media-tablet]" time="2.597" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/media-desktop]" time="1.670" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/contact-phone]" time="1.101"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-contact-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-no-horizontal-overflow-chromium-contact-phone/trace.zip" /></properties><failure message="AssertionError: assert 13 &lt;= 0&#10; +  where 13 = horizontal_overflow(&lt;Page url='https://localhost:3602/contact'&gt;)">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602', route = '/contact', vp = 'phone'
+
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_no_horizontal_overflow(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+&gt;       assert horizontal_overflow(page) &lt;= 0
+E       AssertionError: assert 13 &lt;= 0
+E        +  where 13 = horizontal_overflow(&lt;Page url='https://localhost:3602/contact'&gt;)
+
+tests/e2e/test_public_site.py:88: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/contact-tablet]" time="1.254" /><testcase classname="test_public_site" name="test_no_horizontal_overflow[chromium-/contact-desktop]" time="1.272" /><testcase classname="test_public_site" name="test_long_and_indic_names_do_not_overflow[chromium]" time="1.230" /><testcase classname="test_public_site" name="test_designed_404[chromium]" time="0.796" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/]" time="3.116"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/58e84a953b67c877.jpg', 'https://localhost:3602/_media/0688a59b4289e535.jpg', 'https://....jpg', 'https://localhost:3602/_media/a07ae7b3116edbf9.jpg', 'https://localhost:3602/_media/b346fd9b719468d4.jpg', ...]&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2906a4d0&gt;)">page = &lt;Page url='https://localhost:3602/'&gt;, site = 'https://localhost:3602'
+route = '/'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/58e84a953b67c877.jpg', 'https://localhost:3602/_media/0688a59b4289e535.jpg', 'https://....jpg', 'https://localhost:3602/_media/a07ae7b3116edbf9.jpg', 'https://localhost:3602/_media/b346fd9b719468d4.jpg', ...]
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2906a4d0&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/about]" time="2.192" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/team]" time="2.365" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/innovations]" time="2.006"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-innovations/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-innovations/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/689fcc57f1743aef.jpg', 'https://localhost:3602/_media/1a68fcfe2d3cbf0e.jpg', 'https://....jpg', 'https://localhost:3602/_media/c522f93d1b5289fa.jpg', 'https://localhost:3602/_media/0688a59b4289e535.jpg', ...]&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a0f52f0&gt;)">page = &lt;Page url='https://localhost:3602/innovations'&gt;
+site = 'https://localhost:3602', route = '/innovations'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/689fcc57f1743aef.jpg', 'https://localhost:3602/_media/1a68fcfe2d3cbf0e.jpg', 'https://....jpg', 'https://localhost:3602/_media/c522f93d1b5289fa.jpg', 'https://localhost:3602/_media/0688a59b4289e535.jpg', ...]
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a0f52f0&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/facilities]" time="1.814"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-facilities/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-facilities/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/855467f0401aa3ae.jpg', 'https://localhost:3602/_media/8297edaf59f510a8.jpg', 'https://....png', 'https://localhost:3602/_media/7340bdea7426d3fc.jpg', 'https://localhost:3602/_media/43c3a5c534864800.jpg', ...]&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a458d40&gt;)">page = &lt;Page url='https://localhost:3602/facilities'&gt;
+site = 'https://localhost:3602', route = '/facilities'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/855467f0401aa3ae.jpg', 'https://localhost:3602/_media/8297edaf59f510a8.jpg', 'https://....png', 'https://localhost:3602/_media/7340bdea7426d3fc.jpg', 'https://localhost:3602/_media/43c3a5c534864800.jpg', ...]
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a458d40&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/services]" time="1.911"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-services/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-services/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/ca3ad9c6d56e094f.jpg', 'https://localhost:3602/_media/47ceed6bd42f4aac.jpg']&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a347850&gt;)">page = &lt;Page url='https://localhost:3602/services'&gt;
+site = 'https://localhost:3602', route = '/services'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/ca3ad9c6d56e094f.jpg', 'https://localhost:3602/_media/47ceed6bd42f4aac.jpg']
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a347850&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/product]" time="2.025" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/enterprises]" time="2.052"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-enterprises/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-enterprises/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/acd62fa966e3c0ce.png', 'https://localhost:3602/_media/2507c1c1f1f07831.png', 'https://...png', 'https://localhost:3602/_media/3fe39cd0714bae6f.jpeg', 'https://localhost:3602/_media/4cd48e8807bfba8e.png', ...]&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a046810&gt;)">page = &lt;Page url='https://localhost:3602/enterprises'&gt;
+site = 'https://localhost:3602', route = '/enterprises'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/acd62fa966e3c0ce.png', 'https://localhost:3602/_media/2507c1c1f1f07831.png', 'https://...png', 'https://localhost:3602/_media/3fe39cd0714bae6f.jpeg', 'https://localhost:3602/_media/4cd48e8807bfba8e.png', ...]
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a046810&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/social-impact]" time="2.015" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/covid-19]" time="1.892" /><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/media]" time="1.985"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-media/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-placeholder-and-broken-content-sweep-chromium-media/trace.zip" /></properties><failure message="AssertionError: ['https://localhost:3602/_media/1f692e8fcc10a27f.jpeg', 'https://localhost:3602/_media/98f383767703d111.jpeg', 'https:...jpeg', 'https://localhost:3602/_media/d6abb66ae284dcd8.jpg', 'https://localhost:3602/_media/d37214feb951b14a.jpg', ...]&#10;assert False&#10; +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a5acad0&gt;)">page = &lt;Page url='https://localhost:3602/media'&gt;
+site = 'https://localhost:3602', route = '/media'
+
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_placeholder_and_broken_content_sweep(page, site, route):
+        page.goto(site + route, wait_until="networkidle")
+        text = page.locator("body").inner_text()
+        assert not PLACEHOLDER.search(text), PLACEHOLDER.search(text).group(0)
+        empty_h = page.evaluate("() =&gt; [...document.querySelectorAll('h1,h2,h3,h4')].filter(h =&gt; !h.textContent.trim()).length")
+        assert empty_h == 0, "empty heading"
+        imgs = page.evaluate("""() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0,
+            alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
+        page.evaluate("() =&gt; window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(800)
+        imgs = page.evaluate("() =&gt; [...document.images].map(i =&gt; ({src: i.currentSrc || i.src, ok: i.complete &amp;&amp; i.naturalWidth &gt; 0, alt: i.hasAttribute('alt')}))")
+        assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
+&gt;       assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
+E       AssertionError: ['https://localhost:3602/_media/1f692e8fcc10a27f.jpeg', 'https://localhost:3602/_media/98f383767703d111.jpeg', 'https:...jpeg', 'https://localhost:3602/_media/d6abb66ae284dcd8.jpg', 'https://localhost:3602/_media/d37214feb951b14a.jpg', ...]
+E       assert False
+E        +  where False = all(&lt;generator object test_placeholder_and_broken_content_sweep.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f8c2a5acad0&gt;)
+
+tests/e2e/test_public_site.py:135: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_placeholder_and_broken_content_sweep[chromium-/contact]" time="1.822" /><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/-phone]" time="1.438"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/'&gt;, site = 'https://localhost:3602'
+route = '/', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/-tablet]" time="1.714"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/'&gt;, site = 'https://localhost:3602'
+route = '/', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/-desktop]" time="1.850"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/'&gt;, site = 'https://localhost:3602'
+route = '/', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/about-phone]" time="1.218"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/about'&gt;
+site = 'https://localhost:3602', route = '/about', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/about-tablet]" time="1.550"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/about'&gt;
+site = 'https://localhost:3602', route = '/about', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/about-desktop]" time="1.601"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-about-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/about'&gt;
+site = 'https://localhost:3602', route = '/about', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/team-phone]" time="1.604"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/team'&gt;, site = 'https://localhost:3602'
+route = '/team', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/team-tablet]" time="1.633"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/team'&gt;, site = 'https://localhost:3602'
+route = '/team', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/team-desktop]" time="1.507"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-team-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/team'&gt;, site = 'https://localhost:3602'
+route = '/team', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/innovations-phone]" time="1.442"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/innovations'&gt;
+site = 'https://localhost:3602', route = '/innovations', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/innovations-tablet]" time="2.826"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/innovations'&gt;
+site = 'https://localhost:3602', route = '/innovations', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/innovations-desktop]" time="1.950"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-innovations-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'arial', 'times new roman'}&#10;assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'arial'&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/innovations'&gt;
+site = 'https://localhost:3602', route = '/innovations', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'arial', 'times new roman'}
+E       assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'arial'
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/facilities-phone]" time="1.238"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/facilities'&gt;
+site = 'https://localhost:3602', route = '/facilities', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/facilities-tablet]" time="1.799"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/facilities'&gt;
+site = 'https://localhost:3602', route = '/facilities', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/facilities-desktop]" time="1.903"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-facilities-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/facilities'&gt;
+site = 'https://localhost:3602', route = '/facilities', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/services-phone]" time="2.011"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/services'&gt;
+site = 'https://localhost:3602', route = '/services', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/services-tablet]" time="1.571"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/services'&gt;
+site = 'https://localhost:3602', route = '/services', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/services-desktop]" time="1.460"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-services-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/services'&gt;
+site = 'https://localhost:3602', route = '/services', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/product-phone]" time="1.613"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/product'&gt;
+site = 'https://localhost:3602', route = '/product', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/product-tablet]" time="1.567"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'times new roman'}&#10;assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/product'&gt;
+site = 'https://localhost:3602', route = '/product', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'times new roman'}
+E       assert {'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/product-desktop]" time="1.571"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-product-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/product'&gt;
+site = 'https://localhost:3602', route = '/product', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/enterprises-phone]" time="2.356"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/enterprises'&gt;
+site = 'https://localhost:3602', route = '/enterprises', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/enterprises-tablet]" time="1.506"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/enterprises'&gt;
+site = 'https://localhost:3602', route = '/enterprises', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/enterprises-desktop]" time="1.818"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-enterprises-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/enterprises'&gt;
+site = 'https://localhost:3602', route = '/enterprises', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/social-impact-phone]" time="1.118"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/social-impact'&gt;
+site = 'https://localhost:3602', route = '/social-impact', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/social-impact-tablet]" time="1.499"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/social-impact'&gt;
+site = 'https://localhost:3602', route = '/social-impact', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/social-impact-desktop]" time="2.984"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-social-impact-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'arial', 'times new roman'}&#10;assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'arial'&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/social-impact'&gt;
+site = 'https://localhost:3602', route = '/social-impact', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'arial', 'times new roman'}
+E       assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'arial'
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/covid-19-phone]" time="1.179"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/covid-19'&gt;
+site = 'https://localhost:3602', route = '/covid-19', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/covid-19-tablet]" time="1.818"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/covid-19'&gt;
+site = 'https://localhost:3602', route = '/covid-19', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/covid-19-desktop]" time="1.607"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-covid-19-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'arial', 'times new roman'}&#10;assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'arial'&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/covid-19'&gt;
+site = 'https://localhost:3602', route = '/covid-19', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'arial', 'times new roman'}
+E       assert {'arial', 'times new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'arial'
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/media-phone]" time="1.392"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/media'&gt;
+site = 'https://localhost:3602', route = '/media', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/media-tablet]" time="1.796"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/media'&gt;
+site = 'https://localhost:3602', route = '/media', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/media-desktop]" time="2.457"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-media-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/media'&gt;
+site = 'https://localhost:3602', route = '/media', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/contact-phone]" time="1.120"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-phone/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-phone/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602', route = '/contact', vp = 'phone'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/contact-tablet]" time="1.275"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-tablet/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-tablet/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'arial', 'times new roman'}&#10;assert {'arial', 'mo...es new roman'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'arial'&#10;  'times new roman'">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602', route = '/contact', vp = 'tablet'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'arial', 'times new roman'}
+E       assert {'arial', 'mo...es new roman'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'arial'
+E         'times new roman'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_visual_baseline_and_fonts[chromium-/contact-desktop]" time="1.176"><properties><property name="playwright_screenshot" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-desktop/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-public-site-py-test-visual-baseline-and-fonts-chromium-contact-desktop/trace.zip" /></properties><failure message="AssertionError: off-system fonts: {'fraunces'}&#10;assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}&#10;  &#10;  Extra items in the left set:&#10;  'fraunces'">page = &lt;Page url='https://localhost:3602/contact'&gt;
+site = 'https://localhost:3602', route = '/contact', vp = 'desktop'
+
+    @pytest.mark.visual
+    @pytest.mark.parametrize("vp", list(VIEWPORTS))
+    @pytest.mark.parametrize("route", ROUTES)
+    def test_visual_baseline_and_fonts(page, site, route, vp):
+        page.set_viewport_size(dict(zip(("width", "height"), VIEWPORTS[vp])))
+        page.goto(site + route, wait_until="networkidle")
+        out = RESULTS / "visual" / f"{route.strip('/') or 'home'}-{vp}.png"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(out), full_page=True)
+        fams = page.evaluate("() =&gt; [...new Set([...document.querySelectorAll('body *')].map(e =&gt; getComputedStyle(e).fontFamily))]")
+        used = {f.strip().strip('"\'').lower() for fam in fams for f in fam.split(",")[:1]}
+&gt;       assert used &lt;= ALLOWED_FONTS, f"off-system fonts: {used - ALLOWED_FONTS}"
+E       AssertionError: off-system fonts: {'fraunces'}
+E       assert {'fraunces', ..., 'open sans'} &lt;= {'-apple-syst... 'serif', ...}
+E         
+E         Extra items in the left set:
+E         'fraunces'
+
+tests/e2e/test_public_site.py:153: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_home_js_budget[chromium]" time="1.537" /><testcase classname="test_publish_flow" name="test_edit_preview_publish_static_changed[chromium]" time="0.830"><properties><property name="playwright_screenshot" value="test-results/e2e/test-publish-flow-py-test-edit-preview-publish-static-changed-chromium/test-failed-1.png" /><property name="playwright_trace" value="test-results/e2e/test-publish-flow-py-test-edit-preview-publish-static-changed-chromium/trace.zip" /></properties><failure message="playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role(&quot;button&quot;, name=re.compile(r&quot;verify|continue|sign in&quot;, re.IGNORECASE)) resolved to 2 elements:&#10;    1) &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-block&quot;&gt;Verify code&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Verify code&quot;)&#10;    2) &lt;button type=&quot;button&quot; class=&quot;link-btn&quot;&gt;Sign in as someone else&lt;/button&gt; aka get_by_role(&quot;button&quot;, name=&quot;Sign in as someone else&quot;)&#10;&#10;Call log:&#10;[+1 more line; full report in element text]">login = &lt;function login.&lt;locals&gt;._login at 0x7f8c293f7ce0&gt;
+page = &lt;Page url='https://localhost:3600/login'&gt;, cms = 'https://localhost:3600'
+site = 'https://localhost:3602'
+stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_edit_preview_publish_static_changed(login, page, cms, site, stack):
+        marker = f"Published by E2E {int(time.time())}"
+&gt;       login("priya")
+
+tests/e2e/test_publish_flow.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/conftest.py:109: in _login
+    return ui_login(p or page, cms, username, stack.password, stack.users.get(username, {}).get("totp_secret"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/e2e/helpers.py:29: in ui_login
+    page.get_by_role("button", name=re.compile(r"^\s*(verify|continue)", re.I)).click()
+../../venv/lib/python3.13/site-packages/playwright/sync_api/_generated.py:11045: in click
+    self._sync(
+../../venv/lib/python3.13/site-packages/playwright/_impl/locator.py:222: in click
+    return await self._frame.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/frame.py:587: in click
+    return await self._channel.click(
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:387: in finish
+    raise e from None
+../../venv/lib/python3.13/site-packages/playwright/_impl/channel_owner.py:352: in finish
+    result = await zone.run_async(lambda: awaitable)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;playwright._impl.utils.zones.Zone object at 0x7f8c28f7ec10&gt;
+func = &lt;function ChannelOwner._wrap_api_call.&lt;locals&gt;.finish.&lt;locals&gt;.&lt;lambda&gt; at 0x7f8c293122a0&gt;
+
+    async def run_async(self, func: Callable[[], Awaitable[R]]) -&gt; R:
+        # Python: run() of an async function. The coroutine runs when it is awaited,
+        # so the zone must be current while it is awaited, not while it is created.
+        token = _async_local_storage.set(self)
+        try:
+&gt;           return await func()
+                   ^^^^^^^^^^^^
+E           playwright._impl._errors.Error: Locator.click: Error: strict mode violation: get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE)) resolved to 2 elements:
+E               1) &lt;button type="submit" class="btn btn-primary btn-block"&gt;Verify code&lt;/button&gt; aka get_by_role("button", name="Verify code")
+E               2) &lt;button type="button" class="link-btn"&gt;Sign in as someone else&lt;/button&gt; aka get_by_role("button", name="Sign in as someone else")
+E           
+E           Call log:
+E             - waiting for get_by_role("button", name=re.compile(r"verify|continue|sign in", re.IGNORECASE))
+
+../../venv/lib/python3.13/site-packages/playwright/_impl/utils/zones.py:58: Error</failure></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/]" time="0.001"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/about]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/team]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/innovations]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/facilities]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/services]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/product]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/enterprises]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/social-impact]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/covid-19]" time="0.001"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/media]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_headings_unchanged[/contact]" time="0.001"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:34: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/about]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/team]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/innovations]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/facilities]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/services]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/product]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/enterprises]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/social-impact]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/covid-19]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/media]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_items_not_lost[/contact]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:39: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/about]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/team]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/innovations]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/facilities]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/services]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/product]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/enterprises]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/social-impact]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/covid-19]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/media]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_golden_regression" name="test_images_not_lost[/contact]" time="0.000"><skipped type="pytest.skip" message="golden comparison needs E2E_SEED=full (same seed as the golden)">/home/claude/wt/qa/tests/e2e/test_golden_regression.py:45: golden comparison needs E2E_SEED=full (same seed as the golden)</skipped></testcase><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/]" time="0.005" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/about]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/team]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/innovations]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/facilities]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/services]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/product]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/enterprises]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/social-impact]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/covid-19]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/media]" time="0.004" /><testcase classname="test_public_site" name="test_prerendered_html_contains_content[/contact]" time="0.004" /><testcase classname="test_public_site" name="test_team_page_lists_published_members" time="0.004"><failure message="AssertionError: Dr. Venkataraghavan Subramaniam Ananthapadmanabhan Krishnamurthy Raghunathan Iye&#10;assert 'Dr. Venkataraghavan Subramaniam Ananthapadmanabhan Krishnamurthy Raghunathan Iye' in '&lt;!DOCTYPE html&gt;&lt;html lang=&quot;en-IN&quot;&gt;&lt;head&gt;&lt;meta charSet=&quot;utf-8&quot;/&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, ini...pt&gt;window.__reactRouterContext.streamController.close();&lt;/script&gt;&lt;/div&gt;&lt;script&gt;$RC(&quot;B:1&quot;,&quot;S:1&quot;)&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'">site = 'https://localhost:3602'
+
+    def test_team_page_lists_published_members(site):
+        _, html = raw(site + "/team")
+        for m in SAMPLE["collections"]["team-members"]:
+            if m["is_published"]:
+&gt;               assert m["name"].split(" / ")[0] in html, m["name"]
+E               AssertionError: Dr. Venkataraghavan Subramaniam Ananthapadmanabhan Krishnamurthy Raghunathan Iye
+E               assert 'Dr. Venkataraghavan Subramaniam Ananthapadmanabhan Krishnamurthy Raghunathan Iye' in '&lt;!DOCTYPE html&gt;&lt;html lang="en-IN"&gt;&lt;head&gt;&lt;meta charSet="utf-8"/&gt;&lt;meta name="viewport" content="width=device-width, ini...pt&gt;window.__reactRouterContext.streamController.close();&lt;/script&gt;&lt;/div&gt;&lt;script&gt;$RC("B:1","S:1")&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'
+
+tests/e2e/test_public_site.py:45: AssertionError</failure></testcase><testcase classname="test_public_site" name="test_sitemap_lists_every_route" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/about]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/team]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/innovations]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/facilities]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/services]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/product]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/enterprises]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/social-impact]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/covid-19]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/media]" time="0.004" /><testcase classname="test_public_site" name="test_seo_meta[/contact]" time="0.004" /><testcase classname="test_publish_flow" name="test_publish_state_sequence_api" time="208.077"><failure message="AssertionError: publish 3ea4f7d0-b351-4d60-a029-87502ba3602b stuck; states seen ['uploading']">stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_publish_state_sequence_api(stack):
+        call = api_session(stack, "priya")
+        s, body = call("POST", "/api/v1/cms/publish/", {})
+        assert s in (202, 409)
+        pid = body["publish_id"] if s == 202 else body.get("publish_id")
+&gt;       st, seen = wait_status(call, pid, "live")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_publish_flow.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+call = &lt;function api_session.&lt;locals&gt;.call at 0x7f8c2a034680&gt;
+publish_id = '3ea4f7d0-b351-4d60-a029-87502ba3602b', want = 'live'
+timeout = 180
+
+    def wait_status(call, publish_id, want, timeout=180):
+        seen = []
+        end = time.time() + timeout
+        while time.time() &lt; end:
+            _, st = call("GET", f"/api/v1/cms/publish/{publish_id}/")
+            if not seen or seen[-1] != st["status"]:
+                seen.append(st["status"])
+            if st["status"] in (want, "failed"):
+                return st, seen
+            time.sleep(1)
+&gt;       raise AssertionError(f"publish {publish_id} stuck; states seen {seen}")
+E       AssertionError: publish 3ea4f7d0-b351-4d60-a029-87502ba3602b stuck; states seen ['uploading']
+
+tests/e2e/test_publish_flow.py:35: AssertionError</failure></testcase><testcase classname="test_publish_flow" name="test_double_click_publish_one_build" time="0.272"><failure message="assert (409 == 202)">stack = Stack(backend_port=8600, admin_port=3600, site_port=3601, workdir=PosixPath('/tmp/pytest-of-root/pytest-191/stack0'), ...n': {'role': 'admin', 'name': 'Ada Admin', 'totp_secret': 'REDACTED'}}, _procs=[], _servers=[])
+
+    def test_double_click_publish_one_build(stack):
+        call = api_session(stack, "priya")
+        s1, b1 = call("POST", "/api/v1/cms/publish/", {})
+        s2, b2 = call("POST", "/api/v1/cms/publish/", {})
+&gt;       assert s1 == 202 and s2 == 409 and b2["code"] == "CMS_PUBLISH_RUNNING"
+E       assert (409 == 202)
+
+tests/e2e/test_publish_flow.py:71: AssertionError</failure></testcase><testcase classname="test_publish_flow" name="test_agent_offline_shows_waiting" time="0.348"><skipped type="pytest.skip" message="run with the publish agent stopped (E2E_AGENT_STOPPED=1)">/home/claude/wt/qa/tests/e2e/test_publish_flow.py:78: run with the publish agent stopped (E2E_AGENT_STOPPED=1)</skipped></testcase></testsuite></testsuites>

@@ -1,0 +1,19 @@
+PASS anonymous content read refused
+PASS CSP header on CMS
+PASS nosniff on CMS
+PASS MCP requires OAuth
+PASS publisher signs in (password + TOTP)
+PASS draft edit saved
+PASS draft not live before publish
+PASS review screen lists the change
+PASS publish queued
+     status: queued queued Waiting for the build worker.
+     status: building media Building.
+     status: uploading download Downloading the build
+     status: live check_live Live at 2026-11-19T06:57:57Z (release 2026-11-19T06-55-27Z-ef808c)
+PASS publish reached live
+PASS live folder serves the change
+PASS live page carries the build marker
+
+SMOKE PASSED
+smoke=0

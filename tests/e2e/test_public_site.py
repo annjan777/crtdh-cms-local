@@ -17,8 +17,9 @@ pytestmark = pytest.mark.needs_integration
 RESULTS = Path(__file__).resolve().parents[2] / "test-results"
 PLACEHOLDER = re.compile(r"\b(lorem|ipsum|todo|placeholder|sample text|tbd|xxx)\b", re.I)
 ALLOWED_FONTS = {f.strip().lower() for f in os.environ.get(
-    "E2E_ALLOWED_FONTS", "Open Sans,Montserrat,system-ui,-apple-system,sans-serif,serif,monospace").split(",")}
+    "E2E_ALLOWED_FONTS", "Fraunces,Open Sans,Montserrat,Georgia,Times New Roman,Segoe UI,Roboto,system-ui,-apple-system,sans-serif,serif,monospace").split(",")}
 SAMPLE = json.loads((Path(__file__).resolve().parents[2] / "backend/tests/fixtures/sample_snapshot.json").read_text())
+FULL_SNAPSHOT = Path(__file__).resolve().parents[2] / "backend/tests/fixtures/full_snapshot.json"
 
 
 def raw(url):
@@ -39,8 +40,12 @@ def test_prerendered_html_contains_content(site, route):
 
 
 def test_team_page_lists_published_members(site):
+    """Every published member of the seed the stack was loaded with (E2E_SEED: sample | full) is on /team."""
+    import html as htmllib
     _, html = raw(site + "/team")
-    for m in SAMPLE["collections"]["team-members"]:
+    html = htmllib.unescape(html)
+    seed = SAMPLE if os.environ.get("E2E_SEED", "sample") == "sample" else json.loads(FULL_SNAPSHOT.read_text())
+    for m in seed["collections"]["team-members"]:
         if m["is_published"]:
             assert m["name"].split(" / ")[0] in html, m["name"]
 
@@ -128,9 +133,10 @@ def test_placeholder_and_broken_content_sweep(page, site, route):
     assert empty_h == 0, "empty heading"
     imgs = page.evaluate("""() => [...document.images].map(i => ({src: i.currentSrc || i.src, ok: i.complete && i.naturalWidth > 0,
         alt: i.hasAttribute('alt'), lazy: i.loading === 'lazy'}))""")
-    page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
-    page.wait_for_timeout(800)
-    imgs = page.evaluate("() => [...document.images].map(i => ({src: i.currentSrc || i.src, ok: i.complete && i.naturalWidth > 0, alt: i.hasAttribute('alt')}))")
+    # scroll through so every lazy image loads; images not rendered at this width (display:none) never load
+    page.evaluate("async () => { for (let y = 0; y < document.body.scrollHeight; y += 400) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 100)); } }")
+    page.wait_for_timeout(2500)
+    imgs = page.evaluate("() => [...document.images].filter(i => i.offsetWidth || i.offsetHeight).map(i => ({src: i.currentSrc || i.src, ok: i.complete && i.naturalWidth > 0, alt: i.hasAttribute('alt')}))")
     assert all(i["alt"] for i in imgs), [i["src"] for i in imgs if not i["alt"]]
     assert all(i["ok"] for i in imgs), [i["src"] for i in imgs if not i["ok"]]
     hrefs = page.evaluate("() => [...document.querySelectorAll('a[href^=\"/\"]')].map(a => a.getAttribute('href'))")

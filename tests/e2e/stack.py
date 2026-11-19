@@ -53,8 +53,8 @@ class Stack:
     settings_module: str = os.environ.get("E2E_DJANGO_SETTINGS", "config.settings")
     site_dir: Path = None
     admin_dir: Path = None
-    password: str = field(default_factory=lambda: secrets.token_urlsafe(18))
-    users: dict = field(default_factory=dict)
+    password: str = field(default_factory=lambda: secrets.token_urlsafe(18), repr=False)
+    users: dict = field(default_factory=dict, repr=False)  # holds TOTP secrets: never in tracebacks
     _procs: list = field(default_factory=list)
     _servers: list = field(default_factory=list)
 
@@ -152,5 +152,5 @@ class Stack:
 
     def mail(self):
         """Emails written by the filebased backend, newest last, as raw text."""
-        d = self.workdir / "mail"
+        d = Path(os.environ["E2E_MAIL_DIR"]) if os.environ.get("E2E_MAIL_DIR") else self.workdir / "mail"
         return [f.read_text(errors="replace") for f in sorted(d.glob("*.log"), key=lambda f: f.stat().st_mtime)] if d.exists() else []

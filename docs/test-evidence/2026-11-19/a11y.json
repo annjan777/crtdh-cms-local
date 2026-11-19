@@ -1,0 +1,449 @@
+[
+ {
+  "screen": "site /",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /about",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "landmark-unique",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     ".section--surface[aria-labelledby=\"about-objectives\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /team",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /innovations",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "image-redundant-alt",
+    "impact": "minor",
+    "nodes": 4,
+    "example": [
+     "img[src=\"/_media/0d67bc972d046e39.jpg\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /facilities",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "image-redundant-alt",
+    "impact": "minor",
+    "nodes": 16,
+    "example": [
+     "img[src=\"/_media/0ef0b012c9f0d415.jpg\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /services",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /product",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /enterprises",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /social-impact",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /covid-19",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /media",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /contact",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /no-such-page",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /about",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "landmark-unique",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     ".section--surface[aria-labelledby=\"about-objectives\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /team",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /innovations",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "image-redundant-alt",
+    "impact": "minor",
+    "nodes": 4,
+    "example": [
+     "img[src=\"/_media/0d67bc972d046e39.jpg\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /facilities",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "image-redundant-alt",
+    "impact": "minor",
+    "nodes": 16,
+    "example": [
+     "img[src=\"/_media/0ef0b012c9f0d415.jpg\"]"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "site /services",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /product",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /enterprises",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /social-impact",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /covid-19",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /media",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /contact",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "site /no-such-page",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /login",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /login",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin MFA screen",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin MFA screen",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/home",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/about",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/team",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/media",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/contact",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /review",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /history",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /users",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /messages",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /shot-list",
+  "width": 375,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "landmark-main-is-top-level",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     "#main"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "admin /pages/home",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/about",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/team",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 3,
+  "violations": [
+   {
+    "id": "landmark-one-main",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     "html"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     "html"
+    ]
+   },
+   {
+    "id": "region",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     "#root"
+    ]
+   }
+  ]
+ },
+ {
+  "screen": "admin /pages/media",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /pages/contact",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /review",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /history",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /users",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /messages",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 0,
+  "violations": []
+ },
+ {
+  "screen": "admin /shot-list",
+  "width": 1280,
+  "serious_critical": 0,
+  "moderate_minor": 1,
+  "violations": [
+   {
+    "id": "landmark-main-is-top-level",
+    "impact": "moderate",
+    "nodes": 1,
+    "example": [
+     "#main"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,51 @@
+  0 serious/critical   0 other    375  site /  
+  0 serious/critical   1 other    375  site /about  landmark-unique(moderate,1)
+  0 serious/critical   0 other    375  site /team  
+  0 serious/critical   1 other    375  site /innovations  image-redundant-alt(minor,4)
+  0 serious/critical   1 other    375  site /facilities  image-redundant-alt(minor,16)
+  0 serious/critical   0 other    375  site /services  
+  0 serious/critical   0 other    375  site /product  
+  0 serious/critical   0 other    375  site /enterprises  
+  0 serious/critical   0 other    375  site /social-impact  
+  0 serious/critical   0 other    375  site /covid-19  
+  0 serious/critical   0 other    375  site /media  
+  0 serious/critical   0 other    375  site /contact  
+  0 serious/critical   0 other    375  site /no-such-page  
+  0 serious/critical   0 other   1280  site /  
+  0 serious/critical   1 other   1280  site /about  landmark-unique(moderate,1)
+  0 serious/critical   0 other   1280  site /team  
+  0 serious/critical   1 other   1280  site /innovations  image-redundant-alt(minor,4)
+  0 serious/critical   1 other   1280  site /facilities  image-redundant-alt(minor,16)
+  0 serious/critical   0 other   1280  site /services  
+  0 serious/critical   0 other   1280  site /product  
+  0 serious/critical   0 other   1280  site /enterprises  
+  0 serious/critical   0 other   1280  site /social-impact  
+  0 serious/critical   0 other   1280  site /covid-19  
+  0 serious/critical   0 other   1280  site /media  
+  0 serious/critical   0 other   1280  site /contact  
+  0 serious/critical   0 other   1280  site /no-such-page  
+  0 serious/critical   0 other    375  admin /login  
+  0 serious/critical   0 other   1280  admin /login  
+  0 serious/critical   0 other    375  admin MFA screen  
+  0 serious/critical   0 other   1280  admin MFA screen  
+  0 serious/critical   0 other    375  admin /pages/home  
+  0 serious/critical   0 other    375  admin /pages/about  
+  0 serious/critical   0 other    375  admin /pages/team  
+  0 serious/critical   0 other    375  admin /pages/media  
+  0 serious/critical   0 other    375  admin /pages/contact  
+  0 serious/critical   0 other    375  admin /review  
+  0 serious/critical   0 other    375  admin /history  
+  0 serious/critical   0 other    375  admin /users  
+  0 serious/critical   0 other    375  admin /messages  
+  0 serious/critical   1 other    375  admin /shot-list  landmark-main-is-top-level(moderate,1)
+  0 serious/critical   0 other   1280  admin /pages/home  
+  0 serious/critical   0 other   1280  admin /pages/about  
+  0 serious/critical   3 other   1280  admin /pages/team  landmark-one-main(moderate,1), page-has-heading-one(moderate,1), region(moderate,1)
+  0 serious/critical   0 other   1280  admin /pages/media  
+  0 serious/critical   0 other   1280  admin /pages/contact  
+  0 serious/critical   0 other   1280  admin /review  
+  0 serious/critical   0 other   1280  admin /history  
+  0 serious/critical   0 other   1280  admin /users  
+  0 serious/critical   0 other   1280  admin /messages  
+  0 serious/critical   1 other   1280  admin /shot-list  landmark-main-is-top-level(moderate,1)
+exit=0

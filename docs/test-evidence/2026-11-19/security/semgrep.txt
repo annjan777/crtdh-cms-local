@@ -1,0 +1,45 @@
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 330 files tracked by git with 11 Code rules:
+                                                                                                                        
+  Language   Rules   Files          Origin   Rules                                                                      
+ ──────────────────────────        ────────────────                                                                     
+  python        10     184          Custom      11                                                                      
+  js             1      95                                                                                              
+                                                                                                                        
+                  
+                  
+┌────────────────┐
+│ 1 Code Finding │
+└────────────────┘
+                                   
+    backend/mcp_server/evals/run.py
+    ❯❱ tests.security.crtdh-requests-without-timeout
+          ❰❰ Blocking ❱❱
+          outbound HTTP without a timeout can hang a worker (publish worker, MCP fetch, Turnstile).
+                                                                                                   
+          121┆ async with mcp_client(build_app(), token) as client, httpx.AsyncClient(timeout=120) as api:
+
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 1 (1 blocking)
+ • Rules run: 11
+ • Targets scanned: 279
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Matching --exclude patterns: 66
+   ◦ Files larger than  files 1.0 MB: 26
+   ◦ Files matching .semgrepignore patterns: 71
+ • Scan was limited to files tracked by git
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 11 rules on 279 files: 1 finding.
+WARNING backend/mcp_server/evals/run.py:121 tests.security.crtdh-requests-without-timeout
+semgrep: 0 error(s), 1 warning(s), 0 scan error(s)
+exit=0

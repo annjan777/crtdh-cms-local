@@ -1,0 +1,12 @@
+PASS http://127.0.0.1:8600/api/v1/auth/csrf/ blocked: CMS_FETCH_BLOCKED Only https:// links can be fetched. Nothing was downloaded.
+PASS https://127.0.0.1/ blocked: CMS_FETCH_BLOCKED Links to a bare IP address are not fetched. Nothing was down
+PASS https://localhost/ blocked: CMS_FETCH_BLOCKED localhost is not on this site's list of trusted photo source
+PASS https://[::1]/ blocked: CMS_FETCH_BLOCKED Links to a bare IP address are not fetched. Nothing was down
+PASS https://169.254.169.254/latest/meta-data/ blocked: CMS_FETCH_BLOCKED Links to a bare IP address are not fetched. Nothing was down
+PASS https://10.0.0.1/x.jpg blocked: CMS_FETCH_BLOCKED Links to a bare IP address are not fetched. Nothing was down
+PASS https://0x7f000001/ blocked: CMS_FETCH_BLOCKED 0x7f000001 is not on this site's list of trusted photo sourc
+PASS https://2130706433/ blocked: CMS_FETCH_BLOCKED 2130706433 is not on this site's list of trusted photo sourc
+PASS https://localtest.me/x.jpg blocked: CMS_FETCH_BLOCKED localtest.me is not on this site's list of trusted photo sou
+PASS file:///etc/passwd blocked: CMS_FETCH_BLOCKED Only https:// links can be fetched. Nothing was downloaded.
+PASS gopher://127.0.0.1:25/ blocked: CMS_FETCH_BLOCKED Only https:// links can be fetched. Nothing was downloaded.
+PASS https://user@127.0.0.1/ blocked: CMS_FETCH_BLOCKED Links with a user name or password in them are not fetched. 

@@ -13,3 +13,20 @@ paths = [
   '''^\.github/workflows/ci\.yml$''',
   '''^backend/config/settings_test\.py$''',
 ]
+
+
+# Reviewed false positives (lead-approved 19 Nov): narrow, per rule + exact file + exact line shape.
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "admin dev mock API: fake temporary passwords 'tmp-xxxx-xxxx' returned by mock user endpoints"
+condition = "AND"
+paths = ['''^admin/src/mock/server\.js$''']
+regexTarget = "line"
+regexes = ['''temporary_password: 'tmp-[A-Za-z0-9]{4}(-[A-Za-z0-9]{4})+''']
+[[rules.allowlists]]
+description = "publish agent keygen: default key *file name*, not key material"
+condition = "AND"
+paths = ['''^publish_agent/agent\.py$''']
+regexTarget = "line"
+regexes = ['''default=os\.path\.join\("keys", "crtdh_publish_ed25519"\)''']

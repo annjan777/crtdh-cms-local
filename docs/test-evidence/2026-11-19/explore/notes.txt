@@ -1,0 +1,5 @@
+first Tab focuses #username; focus style: solid none
+keyboard-only sign-in (Tab/type/Enter, code + Enter) works
+editor at 375 px: horizontal overflow 0px
+canvas iframe text at 375: ''
+page errors: []

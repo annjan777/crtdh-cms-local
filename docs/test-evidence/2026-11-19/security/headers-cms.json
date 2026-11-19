@@ -1,0 +1,42 @@
+[
+  {
+    "level": "INFO",
+    "where": "CMS csrf cookie __Host-crtdh_csrf",
+    "message": "expires=Thu, 18 Nov 2027 01:11:10 GMT; HttpOnly; Max-Age=31449600; Path=/; SameSite=Strict; Secure"
+  },
+  {
+    "level": "INFO",
+    "where": "CMS login cookie __Host-crtdh_session",
+    "message": "HttpOnly; Path=/; SameSite=Strict; Secure"
+  },
+  {
+    "level": "FAIL",
+    "where": "admin /",
+    "message": "HSTS missing or < 1 year: ''"
+  },
+  {
+    "level": "FAIL",
+    "where": "admin /",
+    "message": "X-Content-Type-Options: nosniff missing"
+  },
+  {
+    "level": "WARN",
+    "where": "admin /",
+    "message": "Referrer-Policy missing"
+  },
+  {
+    "level": "FAIL",
+    "where": "admin /",
+    "message": "framing not blocked (no X-Frame-Options and no CSP frame-ancestors)"
+  },
+  {
+    "level": "WARN",
+    "where": "admin /",
+    "message": "Server leaks a version: 'SimpleHTTP/0.6 Python/3.13.18'"
+  },
+  {
+    "level": "FAIL",
+    "where": "admin /",
+    "message": "Content-Security-Policy missing"
+  }
+]
