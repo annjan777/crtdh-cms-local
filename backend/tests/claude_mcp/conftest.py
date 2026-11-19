@@ -1,8 +1,6 @@
 import contextlib
 import io
 import secrets
-import shutil
-import tempfile
 from datetime import timedelta
 
 import httpx2
@@ -15,7 +13,6 @@ from mcp.client.streamable_http import streamable_http_client
 from oauth2_provider.models import AccessToken, Application, set_token_value
 from PIL import Image
 
-from mcp_server.models import StagedImage
 
 MCP_URL = "http://localhost:8400/mcp"
 
@@ -106,7 +103,9 @@ def png_bytes(width=1800, height=1000, fmt="PNG", color=(15, 76, 117)) -> bytes:
 
 
 def stage_image(user, width=1800, height=1000) -> str:
-    img = StagedImage(owner=user, sha256=secrets.token_hex(32), width=width, height=height, source="test")
-    img.file.save("t.png", ContentFile(png_bytes(width, height)), save=False)
-    img.save()
-    return f"media:{img.pk}"
+    """A photo `user` uploaded (core media library), as the media id tools take."""
+    from apps.publishing.models import MediaAsset
+
+    asset = MediaAsset(uploaded_by=user)
+    asset.file.save(f"t-{secrets.token_hex(4)}.png", ContentFile(png_bytes(width, height)), save=True)
+    return f"media:{asset.pk}"

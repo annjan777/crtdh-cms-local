@@ -249,17 +249,19 @@ def test_non_photos_rejected(payload):
     assert exc.value.code == "CMS_VALIDATION"
 
 
-def test_polyglot_is_reencoded_without_payload():
+def test_polyglot_is_rejected():
+    """apps.common.images (the one upload checker) refuses polyglots instead of re-encoding them."""
     jpeg = png_bytes(64, 64, fmt="JPEG")
     polyglot = jpeg + b"<html><script>alert(document.cookie)</script></html>"
-    out = process_image(polyglot)
-    assert out.ext == "jpg" and (out.width, out.height) == (64, 64)
-    assert b"<script>" not in out.content and b"<html>" not in out.content
+    with pytest.raises(CmsError) as exc:
+        process_image(polyglot)
+    assert exc.value.code == "CMS_VALIDATION" and exc.value.field == "url"
 
 
 def test_exif_is_stripped():
     from PIL import Image
     import io
+    import os
 
     img = Image.new("RGB", (32, 32))
     exif = img.getexif()
@@ -267,7 +269,12 @@ def test_exif_is_stripped():
     buf = io.BytesIO()
     img.save(buf, "JPEG", exif=exif)
     out = process_image(buf.getvalue())
-    assert b"Secret Photographer" not in out.content
+    try:
+        with open(out.path, "rb") as fh:
+            assert b"Secret Photographer" not in fh.read()
+        assert out.ext == "jpg"
+    finally:
+        os.unlink(out.path)
 
 
 def test_decompression_bomb_rejected():

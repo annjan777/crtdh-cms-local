@@ -54,10 +54,14 @@ def seed():
     from django.contrib.auth.models import Group, User
     from oauth2_provider.models import Application
 
-    from apps.carousel.models import HeroSlide
-    from apps.core.models import AboutPage, NewsItem, SiteSettings
-    from apps.media_gallery.models import MediaEvent
-    from apps.team.models import TeamCategory, TeamMember
+    from apps.publishing.registry import RESOURCES  # mcp_server reaches content models only via apps.publishing
+
+    def model(resource):
+        return RESOURCES[resource].model_class
+
+    HeroSlide, NewsItem, MediaEvent = model("hero-slides"), model("news-items"), model("media-events")
+    AboutPage, SiteSettings = model("about-page"), model("site-settings")
+    TeamCategory, TeamMember = model("team-categories"), model("team-members")
 
     faculty = TeamCategory.objects.create(name="Faculty", order=0)
     TeamCategory.objects.create(name="Staff", order=1)

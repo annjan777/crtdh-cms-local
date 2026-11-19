@@ -96,9 +96,9 @@ any exception text.
 ## Adding a tool via the registry
 
 Most new content needs no new tool: `get_page`, `update_section`, `add_item`, `hide_item` and
-`reorder` work for every section in the registry (`apps.publishing.registry` after
-integration; `mcp_server/_fallback_registry.py` until then). To add a section, add it to the
-registry; the field schema Claude sees comes from it.
+`reorder` work for every section in the registry (`apps.publishing.registry`, data in
+`registry_data.py`). To add a section, add it to the registry; the field schema Claude sees comes
+from it (file fields, focus points, visibility, order and row-placing keys are not offered).
 
 For a collection staff talk about by name (as with team members), add a typed trio to
 `TYPED` in `mcp_server/tools.py`:
@@ -228,12 +228,25 @@ there is nothing else to add.
 
 ## Integration status
 
-`mcp_server/cms.py` talks to the existing models until backend-core's `apps.publishing`
-lands; every `TODO(integration, backend-core)` there names the function that replaces the
-fallback. The fallbacks that behave differently today: versions are a hash of the row (core
-adds a `version` integer); `list_pending_changes`, `discard_*` cover only Claude's own
-changes (core covers every channel and reverts to the last published values);
-`request_upload_link` returns `CMS_INTERNAL` "not available yet"; a discarded new item is
-hidden rather than removed. The fallback discard restores only the fields Claude changed, and
-refuses with `CMS_STALE_VERSION` (changing nothing) if anyone edited those fields after
-Claude did; `discard_session_changes` checks every item before changing any.
+Integrated with backend-core and backend-security (v3/integration). `mcp_server/cms.py` reads
+through `apps.publishing.registry` and writes only through `apps.publishing.content`
+(`update_by_item_id`, `create_item(section_id=...)`, `attach_media`, `reorder`),
+`changes`, `review` and `uploads`, with `WriteContext(user, channel="mcp",
+connector_session=<Mcp-Session-Id>)`, so every change is versioned and audited like an admin
+edit. Photos are `apps.publishing.models.MediaAsset` rows (`media:<id>`); fetched images go
+through `apps.common.images.process_upload` (polyglots are rejected, not re-encoded).
+
+Behaviour on top of core:
+- New items start hidden (addendum A3); a Publisher reviews and shows them. Photos added with
+  a new item are visible (the hidden parent controls them); photos added to an item already on
+  the site start hidden.
+- A media id must be one of the caller's own uploads.
+- `list_pending_changes` shows every unpublished change (any editor), marking this
+  conversation's.
+- Discard never overwrites someone else's work: if only the caller's Claude changes touched the
+  item since the last publish (and its last discard), `changes.discard_item` reverts it to the
+  published values (removing an item Claude added). If others edited it too, only Claude's own
+  fields are put back, and only if nobody changed them after Claude; otherwise
+  `CMS_STALE_VERSION` and nothing changes. `discard_session_changes` is all or nothing.
+  A discarded create no longer de-duplicates.
+- `mcp_server.models.StagedImage` is unused and can be dropped with a migration.

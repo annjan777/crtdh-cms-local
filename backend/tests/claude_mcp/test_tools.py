@@ -28,6 +28,9 @@ def seed():
     NewsItem.objects.create(text="Admissions open", order=0)
     MediaEvent.objects.create(title="Old camp", slug="old-camp", order=0)
     HomePage.load()
+    # Today's content is the published baseline, so pending changes and discard compare against it.
+    from django.core.management import call_command
+    call_command("create_baseline_snapshot", stdout=open("/dev/null", "w"))
     return {"sharma": sharma, "slides": slides}
 
 
@@ -87,8 +90,11 @@ async def test_find_and_get_page(asgi_app, token):
         assert [i["position"] for i in hero["items"]] == [1, 2, 3]
         assert hero["items"][2]["values"]["heading"] == "Slide 2"
         assert next(f for f in hero["fields"] if f["name"] == "image")["min_width"] == 1600
-        about = next(s for s in page["sections"] if s["kind"] == "singleton")
-        assert about["item"]["id"] == "home.about.home-page:1"
+        objective = next(s for s in page["sections"] if s["kind"] == "singleton")
+        assert objective["item"]["id"] == "home.objective.home-page:1"
+        assert "objective_text" in objective["item"]["values"]
+        site = ok(await call(client, "get_page", {"page": "site"}))
+        assert {s["id"] for s in site["sections"]} >= {"site.nav", "site.social", "site.logos"}
         err(await call(client, "get_page", {"page": "nope"}), "CMS_NOT_FOUND")
 
 
@@ -111,11 +117,12 @@ async def test_update_team_member_and_stale_version(asgi_app, token):
             "id": m["id"], "fields": {"designation": "Professor"}, "expected_version": m["version"]}))
         assert WRITE_KEYS <= set(res) and res["status"] == "draft"
         assert res["message"] == "Not live yet — a Publisher must publish it."
-        assert res["preview_url"] == f"https://cms.example.org/pages/team?item={m['id'].replace(':', '%3A')}"
+        assert res["preview_url"] == f"https://cms.example.org/pages/team?item={m['id']}"  # registry.preview_url
         assert res["version"] != m["version"]
         stale = err(await call(client, "update_team_member", {
             "id": m["id"], "fields": {"designation": "Dean"}, "expected_version": m["version"]}), "CMS_STALE_VERSION")
         assert stale["current_version"] == res["version"] and stale["side_effects"] == "none"
+        assert stale["edited_by"] == "priya" and stale["edited_at"]  # addendum A4, from apps.publishing
         text = (await call(client, "update_team_member", {
             "id": m["id"], "fields": {"designation": "Dean"}, "expected_version": m["version"]})).content[0].text
         assert text.startswith("CMS_STALE_VERSION:")
@@ -159,7 +166,8 @@ async def test_update_section_singleton_and_richtext(asgi_app, token):
         item = next(s for s in home["sections"] if s["kind"] == "singleton")["item"]
         ok(await call(client, "update_section", {"id": item["id"], "fields": {"objective_text": "New objective"},
                                                  "expected_version": item["version"]}))
-        inno = next(s for s in ok(await call(client, "get_page", {"page": "innovations"}))["sections"])["items"][0]
+        inno = next(s for s in ok(await call(client, "get_page", {"page": "innovations"}))["sections"]
+                    if s["id"] == "innovations.list")["items"][0]
         assert inno["id"] == f"innovations.list.innovations:{pk}"
         err(await call(client, "update_section", {"id": inno["id"], "fields": {"body": "<script>x</script>"},
                                                   "expected_version": inno["version"]}), "CMS_VALIDATION")
@@ -234,7 +242,7 @@ async def test_add_news_item_and_generic_add_item(asgi_app, token):
         res = ok(await call(client, "add_item", {"section": "media.coverage", "fields": {
             "title": "The Telegraph", "url": "https://example.org/article"}}))
         assert res["id"].startswith("media.coverage.media-coverage-links:")
-        err(await call(client, "add_item", {"section": "home.about", "fields": {}}), "CMS_VALIDATION")
+        err(await call(client, "add_item", {"section": "home.objective", "fields": {}}), "CMS_VALIDATION")
         err(await call(client, "add_item", {"section": "no.such", "fields": {}}), "CMS_NOT_FOUND")
 
 
@@ -245,8 +253,10 @@ async def test_hide_reorder_and_discard(asgi_app, token):
         hero = next(s for s in ok(await call(client, "get_page", {"page": "home"}))["sections"] if s["id"] == "home.hero")
         third = hero["items"][2]
         ok(await call(client, "hide_hero_slide", {"id": third["id"], "expected_version": third["version"]}))
-        news = next(s for s in ok(await call(client, "get_page", {"page": "home"}))["sections"] if s["id"] == "home.news")
-        err(await call(client, "hide_item", {"id": news["items"][0]["id"], "expected_version": 0}), "CMS_VALIDATION")
+        objective = next(s for s in ok(await call(client, "get_page", {"page": "home"}))["sections"]
+                         if s["id"] == "home.objective")["item"]
+        err(await call(client, "hide_item", {"id": objective["id"], "expected_version": objective["version"]}),
+            "CMS_VALIDATION")
         ids = [i["id"] for i in hero["items"]]
         err(await call(client, "reorder", {"section": "home.hero", "ids": ids[:2]}), "CMS_VALIDATION")
         ok(await call(client, "reorder", {"section": "home.hero", "ids": list(reversed(ids))}))
@@ -274,17 +284,21 @@ async def test_upload_image_from_url_and_search_media(asgi_app, token, monkeypat
         assert first["media_id"].startswith("media:") and first["width"] == 2000
         again = ok(await call(client, "upload_image_from_url", {"url": "https://photos.iitkgp.ac.in/a.png"}))
         assert again["media_id"] == first["media_id"] and again["deduplicated"] is True
-        found = ok(await call(client, "search_media", {"query": "iitkgp"}))["media"]
-        assert [m["media_id"] for m in found] == [first["media_id"]]
+        found = ok(await call(client, "search_media", {"query": ""}))["media"]
+        assert [m["media_id"] for m in found] == [first["media_id"]]  # core MediaAsset, owned by the caller
         monkeypatch.undo()
         blocked = err(await call(client, "upload_image_from_url", {"url": "http://10.0.0.1/x.png"}), "CMS_FETCH_BLOCKED")
         assert blocked["field"] == "url"
 
 
-async def test_request_upload_link_unavailable_until_core(asgi_app, token):
+async def test_request_upload_link_uses_core(asgi_app, editor, token):
     async with mcp_client(asgi_app, token) as client:
-        body = err(await call(client, "request_upload_link", {}), "CMS_INTERNAL")
-        assert body["retryable"] is False and "upload_image_from_url" in body["fix"]
+        data = ok(await call(client, "request_upload_link", {}))
+    assert data["upload_url"].startswith("https://cms.example.org/api/v1/cms/upload/") and data["expires_at"]
+
+    from apps.publishing.models import UploadLink
+    link = await sync_to_async(UploadLink.objects.get)()
+    assert link.created_by_id == editor.pk and link.channel == "mcp" and link.connector_session
 
 
 async def test_request_review_emails_publishers_never_publishes(asgi_app, token):
@@ -334,31 +348,6 @@ async def test_every_call_is_audited(asgi_app, editor, token):
     assert [(r["tool"], r["outcome"]) for r in rows] == [("find_content", "ok"), ("get_page", "CMS_NOT_FOUND")]
     assert all(r["user_id"] == editor.pk and r["session_key"] for r in rows)
     assert rows[0]["arg_names"] == "query"
-
-
-async def test_request_upload_link_uses_core_when_present(asgi_app, editor, token, monkeypatch):
-    """Happy path against backend-core's contract signature (stand-in module until it merges)."""
-    import sys
-    import types
-
-    seen = {}
-
-    class WriteContext:
-        def __init__(self, **kw):
-            seen["ctx"] = kw
-
-    def create_upload_link(user, *, ctx):
-        seen["user"] = user.pk
-        return {"url": "https://cms.example.org/upload/one-time-abc", "token": "abc", "expires_at": "2026-11-20T10:00:00Z"}
-
-    if "apps.publishing" not in sys.modules:
-        monkeypatch.setitem(sys.modules, "apps.publishing", types.ModuleType("apps.publishing"))
-    monkeypatch.setitem(sys.modules, "apps.publishing.uploads", types.SimpleNamespace(create_upload_link=create_upload_link))
-    monkeypatch.setitem(sys.modules, "apps.publishing.audit", types.SimpleNamespace(WriteContext=WriteContext))
-    async with mcp_client(asgi_app, token) as client:
-        data = ok(await call(client, "request_upload_link", {}))
-    assert data == {"upload_url": "https://cms.example.org/upload/one-time-abc", "expires_at": "2026-11-20T10:00:00Z"}
-    assert seen["user"] == editor.pk and seen["ctx"]["channel"] == "mcp" and seen["ctx"]["connector_session"]
 
 
 # ---------------------------------------------------------------- review fixes (19 Nov)
@@ -448,16 +437,37 @@ async def test_section_filter_keys_are_not_editable(asgi_app, token):
     pk = await block()
     async with mcp_client(asgi_app, token) as client:
         section = next(s for s in ok(await call(client, "get_page", {"page": "social-impact"}))["sections"]
-                       if s["id"] == "social-impact.grids")
+                       if s["id"] == "social-impact.photo-sections")
         assert "page" not in {f["name"] for f in section["fields"]}
         item = section["items"][0]
         assert err(await call(client, "update_section", {"id": item["id"], "fields": {"page": "home"},
                                                          "expected_version": item["version"]}), "CMS_VALIDATION")["field"] == "page"
-        err(await call(client, "add_item", {"section": "social-impact.grids",
+        err(await call(client, "add_item", {"section": "social-impact.photo-sections",
                                             "fields": {"section_title": "x", "page": "home"}}), "CMS_VALIDATION")
-        res = ok(await call(client, "add_item", {"section": "social-impact.grids", "fields": {"section_title": "Covid camps"}}))
+        res = ok(await call(client, "add_item", {"section": "social-impact.photo-sections",
+                                                 "fields": {"section_title": "Covid camps"}}))
 
     from apps.common.models import ImageGridBlock
     assert await sync_to_async(lambda: ImageGridBlock.objects.get(pk=pk).page)() == "social-impact"
     new_pk = int(res["id"].rsplit(":", 1)[1])
     assert await sync_to_async(lambda: ImageGridBlock.objects.get(pk=new_pk).page)() == "social-impact"
+
+
+async def test_discard_removes_an_added_item_and_new_items_start_hidden(asgi_app, token):
+    """Integration: creates follow addendum A3 (hidden until a Publisher shows them); discarding an item Claude
+    added (nobody else touched it) goes through apps.publishing.changes.discard_item, which removes it."""
+    await seed()
+    async with mcp_client(asgi_app, token) as client:
+        res = ok(await call(client, "add_news_item", {"fields": {"text": "Temporary line"}}))
+        from apps.core.models import NewsItem
+        row = await sync_to_async(NewsItem.objects.get)(text="Temporary line")
+        assert row.is_published is False
+        ok(await call(client, "discard_change", {"id": res["id"]}))
+        assert not await sync_to_async(NewsItem.objects.filter(text="Temporary line").exists)()
+        again = ok(await call(client, "add_news_item", {"fields": {"text": "Temporary line"}}))
+        assert again["deduplicated"] is False  # the discarded create no longer de-duplicates
+
+    from apps.publishing.models import AuditEntry
+    actions = await sync_to_async(lambda: list(AuditEntry.objects.filter(resource="news-items")
+                                               .order_by("id").values_list("action", "channel")))()
+    assert actions == [("create", "mcp"), ("discard", "mcp"), ("create", "mcp")]

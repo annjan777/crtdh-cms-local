@@ -66,7 +66,7 @@ def Arg(schema: dict, description: str):
 ItemId = Arg({"type": "string"}, "Content id from find_content or get_page, e.g. home.hero.hero-slides:7.")
 Version = Arg({"type": "integer"}, "The `version` you last read for this item (optimistic locking).")
 IdempotencyKey = Arg({"type": ["string", "null"]}, "Optional. Repeating a create with the same key returns the first result.")
-PageId = Arg({"type": "string", "enum": [p["id"] for p in cms.fallback.PAGES]}, "Page id.")
+PageId = Arg({"type": "string", "enum": cms.page_ids()}, "Page id (\"site\" = header and footer on every page).")
 
 
 # --------------------------------------------------------------------------- runner
@@ -213,13 +213,14 @@ def build_server() -> MCPServer:
         return await _run(ctx, "get_page", {"page": 1}, lambda a: _read(cms.get_page(a, str(page or ""))))
 
     @mcp.tool(annotations=READ, description=(
-        "List the unpublished changes waiting for a Publisher (Claude's changes, grouped by page, with which "
-        "were made in this conversation)."))
+        "List every unpublished change waiting for a Publisher (from anyone, grouped by page), marking which "
+        "were made in this conversation."))
     async def list_pending_changes(ctx: Context) -> CallToolResult:
         return await _run(ctx, "list_pending_changes", {}, lambda a: _read(cms.list_pending_changes(a)))
 
     @mcp.tool(annotations=READ, description=(
-        "Find photos already uploaded through Claude (media ids to use in image fields). Empty query lists the most recent."))
+        "Find photos you uploaded (through an upload link or upload_image_from_url) and get their media ids for "
+        "image fields. Empty query lists the most recent."))
     async def search_media(
         query: Arg({"type": "string"}, "Words from the file name or source, or empty.") = "",
         ctx: Context = None,
@@ -255,7 +256,8 @@ def build_server() -> MCPServer:
 
     @mcp.tool(annotations=WRITE, description=(
         "Add an item to a list section that has no specific add_ tool (e.g. about.timeline, facilities.equipment, "
-        "media.coverage, services.list). Use get_page to see the section's fields. Saved as an unpublished change."))
+        "media.coverage, services.list). Use get_page to see the section's fields. The new item starts hidden: a "
+        "Publisher reviews it and shows it on the site."))
     async def add_item(
         section: Arg({"type": "string"}, "Section id from get_page, e.g. media.coverage."),
         fields: Arg({"type": "object"}, "Field name → value."),
@@ -277,7 +279,8 @@ def build_server() -> MCPServer:
 
     @mcp.tool(annotations=WRITE, description=(
         "Put the items of a list section in a new order. Send every item id of the section exactly once, "
-        "first to last (get_page lists them). Saved as an unpublished change."))
+        "first to last (get_page lists them). To reorder one item's photos, send all of that item's photo ids "
+        "(its children in get_page). Saved as an unpublished change."))
     async def reorder(
         section: Arg({"type": "string"}, "Section id, e.g. home.hero."),
         ids: Arg({"type": "array", "items": {"type": "string"}}, "All item ids of the section in the new order."),
@@ -287,12 +290,15 @@ def build_server() -> MCPServer:
             a, lambda: cms.reorder(a, str(section or ""), ids)), write=True)
 
     @mcp.tool(annotations=WRITE, description=(
-        "Undo the unpublished changes on one item (it goes back to how it was). Use when the user changes their mind."))
+        "Undo your unpublished changes on one item (it goes back to how it was). Use when the user changes their "
+        "mind. Refused, with nothing changed, if someone else has edited the same item since."))
     async def discard_change(id: ItemId, ctx: Context) -> CallToolResult:
         return await _run(ctx, "discard_change", {"id": 1},
                           lambda a: _read(cms.discard_change(a, str(id or "")), None), write=True)
 
-    @mcp.tool(annotations=WRITE, description="Undo every unpublished change made in this conversation.")
+    @mcp.tool(annotations=WRITE, description=(
+        "Undo every unpublished change made in this conversation. All or nothing: refused, with nothing changed, "
+        "if someone else has edited one of those items since."))
     async def discard_session_changes(ctx: Context) -> CallToolResult:
         return await _run(ctx, "discard_session_changes", {}, lambda a: _read(cms.discard_session(a)), write=True)
 
@@ -362,9 +368,9 @@ _JSON_TYPES = {
 }
 
 
-def _fields_schema(section: dict, *, for_create: bool) -> dict:
+def _fields_schema(fields: list[dict], *, for_create: bool) -> dict:
     props, required = {}, []
-    for spec in section["fields"]:
+    for spec in fields:
         prop = dict(_JSON_TYPES.get(spec["type"], {"type": "string"}))
         if spec.get("choices"):
             prop["enum"] = spec["choices"]
@@ -391,9 +397,9 @@ def _add_typed_tools(mcp: MCPServer):
     for noun, section_id, words in TYPED:
         _, section = cms._section(section_id)
         resource = section["resource"]
-        model = cms._resource_models()[resource]
-        create_fields = Arg(_fields_schema(section, for_create=True), "Values for the new item.")
-        update_fields = Arg(_fields_schema(section, for_create=False), "Only the fields to change.")
+        fields_spec = cms.section_fields(section_id)
+        create_fields = Arg(_fields_schema(fields_spec, for_create=True), "Values for the new item.")
+        update_fields = Arg(_fields_schema(fields_spec, for_create=False), "Only the fields to change.")
 
         def make(noun=noun, section_id=section_id, resource=resource, create_fields=create_fields,
                  update_fields=update_fields):
@@ -419,10 +425,11 @@ def _add_typed_tools(mcp: MCPServer):
 
         add, update, hide = make()
         mcp.add_tool(add, name=f"add_{noun}", annotations=WRITE,
-                     description=f"Add {words}. Saved as an unpublished change; returns its id and a preview link.")
+                     description=f"Add {words}. Saved as an unpublished change that starts hidden: a Publisher "
+                                 "reviews it and shows it on the site. Returns its id and a preview link.")
         mcp.add_tool(update, name=f"update_{noun}", annotations=WRITE,
                      description=f"Change {words}. Send only the fields to change and expected_version. Saved as an unpublished change.")
-        if any(f.name == "is_published" for f in model._meta.fields):
+        if cms.has_visibility(resource):
             mcp.add_tool(hide, name=f"hide_{noun}", annotations=WRITE,
                          description=f"Hide {words} from the public site (not a delete). Saved as an unpublished change.")
 

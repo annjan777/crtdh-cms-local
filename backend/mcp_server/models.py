@@ -59,10 +59,9 @@ class ToolCall(models.Model):
 
 
 class StagedImage(models.Model):
-    """An image Claude fetched (upload_image_from_url), re-encoded, waiting to be used.
-
-    TODO(integration, backend-core): replace with the core media library once upload-links
-    lands; media ids keep the form "media:<id>"."""
+    """No longer used: photos from upload_image_from_url and upload links are
+    apps.publishing.models.MediaAsset rows ("media:<MediaAsset id>"). Kept only so the
+    existing migration state stays valid; drop it with a migration in the mcp lane."""
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     file = models.ImageField(upload_to="mcp_uploads/")
