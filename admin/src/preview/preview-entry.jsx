@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import SitePreview from './SitePreview.jsx';
 import { CmsPreviewContext } from './cms-context.js';
 import { tagSections } from './section-map.js';
+import '@site-styles'; // the public site's real stylesheet, so the canvas looks like the live page
 import './editor-overlay.css';
 
 

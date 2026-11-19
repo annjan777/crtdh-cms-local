@@ -48,7 +48,14 @@ function serveMedia() {
 export default defineConfig(() => ({
   plugins: [react(), ...(process.env.VITE_USE_MOCK === '1' ? [serveMedia()] : [])],
   resolve: {
-    alias: { '@site': sitePath() },
+    // The canvas loads the public site's own stylesheet (src/preview/preview-entry.jsx). Its CSS imports
+    // @fontsource packages, which the Docker build has only in admin/node_modules (frontend/ ships just
+    // src/site), so resolve them from here. Same versions as frontend/package.json.
+    alias: [
+      { find: '@site-styles', replacement: path.join(siteDir, 'styles/index.css') },
+      { find: '@site', replacement: sitePath() },
+      { find: /^@fontsource\/(open-sans|montserrat)\//, replacement: path.join(here, 'node_modules/@fontsource/$1/') },
+    ],
     dedupe: SHARED,
   },
   build: {
