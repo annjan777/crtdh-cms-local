@@ -27,6 +27,20 @@ for (const [name, user, path] of SCREENS) {
   });
 }
 
+// Phones (QA wave 2 D9): the user button lost its name when .user-name is hidden, and /shot-list had a
+// scroll region with nothing focusable in it.
+for (const [name, user, path] of SCREENS) {
+  test(`axe at 375 px: ${name}`, async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    if (user) await signIn(page, user, path);
+    else await page.goto(path);
+    await page.waitForTimeout(800);
+    const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).exclude('iframe').analyze();
+    const issues = res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`);
+    expect(issues).toEqual([]);
+  });
+}
+
 test('keyboard: skip link, page nav, section list and fields are reachable with a visible focus ring', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home');
   await page.keyboard.press('Tab');

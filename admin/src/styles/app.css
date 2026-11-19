@@ -1838,9 +1838,17 @@ tr.is-inactive td {
     --nav-w: 216px;
     --panel-w: 352px;
   }
-  .crumb,
-  .user-name {
+  .crumb {
     display: none;
+  }
+  /* Hidden visually, not from screen readers: it is the account button's only name (QA D9). */
+  .user-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .canvas-hint {
     display: none;
@@ -1857,9 +1865,6 @@ tr.is-inactive td {
   .page-main {
     padding: 24px 20px 48px;
     overflow: visible;
-  }
-  .user-name {
-    display: none;
   }
 }
 @media (max-width: 639.98px) {

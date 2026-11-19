@@ -12,7 +12,8 @@ const SHOTS = [
 export default function ShotListPage() {
   return (
     <AppShell crumb="Photo shot list">
-      <div className="editor is-wide page-layout">
+      {/* On phones this scroll area holds no link or field, so it must be focusable to scroll by keyboard. */}
+      <div className="editor is-wide page-layout" tabIndex={0} role="region" aria-label="Photo shot list">
         <div className="col-nav">
           <PageNav />
         </div>
