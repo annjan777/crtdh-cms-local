@@ -146,7 +146,8 @@ def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
         HTACCESS_BEGIN,
         f"# Live release: {target}. Written by the CRTDH publish agent; edits inside this block are overwritten,",
         "# rules outside it are kept.",
-        "Options -Indexes",
+        # No "Options": on a host with AllowOverride FileInfo only, any Options line makes every request a 500.
+        # Listings are not needed off: every folder of a build has an index.html, and so does _media/.
         "RewriteEngine On",
         "RewriteBase /",
         "# Block direct requests to the release store",
