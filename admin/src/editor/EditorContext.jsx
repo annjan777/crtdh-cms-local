@@ -61,6 +61,7 @@ export function EditorProvider({ pageId, children }) {
   const timers = useRef({});
   const inflight = useRef({});
   const fieldsRef = useRef({});
+  const restoredKeys = useRef([]);
 
   // Synchronous against recRef so autosave reads what it just wrote.
   const patchRecord = useCallback((key, fn) => {
@@ -89,17 +90,28 @@ export function EditorProvider({ pageId, children }) {
         setPreview(pv);
         const recs = recordsFrom(p, opts.keep ? recRef.current : {});
         // Restore text kept on this computer (offline, signed out, closed tab).
+        // A draft that matches what the CMS already holds is not a change: drop it
+        // silently, so opening a page never claims unsaved work that isn't there.
         let n = 0;
+        const kept = [];
         if (!opts.keep) {
           for (const r of Object.values(recs)) {
             const d = readDraft(r.key);
             if (!d) continue;
-            r.values = { ...r.values, ...d.values };
+            const values = { ...r.values, ...(d.values || {}) };
+            if (!Object.keys(unsavedOf({ values, saved: r.saved })).length) {
+              clearDraft(r.key);
+              continue;
+            }
+            r.serverVersion = r.version;
+            r.values = values;
             r.version = d.base_version ?? r.version;
             r.status = 'dirty';
+            kept.push(r.key);
             n += 1;
           }
         }
+        restoredKeys.current = kept;
         recRef.current = recs;
         setRecords(recs);
         if (n) {
@@ -114,6 +126,8 @@ export function EditorProvider({ pageId, children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [pageId],
   );
+  const loadRef = useRef(load);
+  loadRef.current = load;
 
   useEffect(() => {
     setPage(null);
@@ -216,6 +230,25 @@ export function EditorProvider({ pageId, children }) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // "Discard" on the restored-changes banner: drop every change kept on this
+  // computer for this page and show what the CMS holds.
+  const discardRestored = useCallback(() => {
+    let conflicted = false;
+    for (const key of restoredKeys.current) {
+      const r = recRef.current[key];
+      // Already saved (or saving): nothing left on this computer to discard.
+      if (!r || ['saved', 'idle', 'saving'].includes(r.status)) continue;
+      clearTimeout(timers.current[key]);
+      clearDraft(key);
+      if (r.status === 'conflict') conflicted = true;
+      patchRecord(key, (x) => ({ ...x, values: { ...x.saved }, version: x.serverVersion ?? x.version, status: 'idle', error: null }));
+    }
+    restoredKeys.current = [];
+    setRestored(0);
+    // Someone else saved meanwhile: take the CMS's current copy.
+    if (conflicted) loadRef.current?.({ keep: true, quiet: true });
+  }, [patchRecord]);
+
   // Conflict: drop local text for this record and take the server's copy.
   const reloadRecord = useCallback(
     async (key) => {
@@ -316,8 +349,8 @@ export function EditorProvider({ pageId, children }) {
   }, [preview, records]);
 
   const value = useMemo(
-    () => ({ pageId, page, preview: livePreview, loadError, records, restored, online, reload: load, edit, retry, reloadRecord, uploadImage, addItem, reorder, removeItem, keyOf, dismissRestored: () => setRestored(0) }),
-    [pageId, page, livePreview, loadError, records, restored, online, load, edit, retry, reloadRecord, uploadImage, addItem, reorder, removeItem],
+    () => ({ pageId, page, preview: livePreview, loadError, records, restored, online, reload: load, edit, retry, reloadRecord, uploadImage, addItem, reorder, removeItem, keyOf, dismissRestored: () => setRestored(0), discardRestored }),
+    [pageId, page, livePreview, loadError, records, restored, online, load, edit, retry, reloadRecord, uploadImage, addItem, reorder, removeItem, discardRestored],
   );
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
 }

@@ -104,7 +104,7 @@ function PanelSkeleton() {
 }
 
 function Editor() {
-  const { page, preview, loadError, reload, records, restored, dismissRestored, online } = useEditor();
+  const { page, preview, loadError, reload, records, restored, dismissRestored, discardRestored, online } = useEditor();
   const { pages } = useChanges();
   const { pageId } = useParams();
   const [params, setParams] = useSearchParams();
@@ -152,6 +152,7 @@ function Editor() {
 
   // Guard: in-flight or failed saves.
   const unsaved = hasUnsaved(records);
+  const restoredStuck = !!restored && Object.values(records).some((r) => ['invalid', 'conflict', 'error'].includes(r.status));
   const blocker = useBlocker(({ currentLocation, nextLocation }) => unsaved && currentLocation.pathname !== nextLocation.pathname);
   useEffect(() => {
     if (!unsaved) return undefined;
@@ -185,8 +186,17 @@ function Editor() {
         <main id="main" className="col-main" tabIndex={-1}>
           {!online ? <Banner tone="warn">You’re offline. Keep typing: your text is kept on this computer and saves when the connection is back.</Banner> : null}
           {restored ? (
-            <Banner tone="info" actions={<button type="button" className="btn btn-small" onClick={dismissRestored}>Dismiss</button>}>
-              Restored {restored} unsaved change{restored === 1 ? '' : 's'} from this computer. {restored === 1 ? 'It is' : 'They are'} being saved now.
+            <Banner
+              tone={restoredStuck ? 'warn' : 'info'}
+              actions={
+                <>
+                  <button type="button" className="btn btn-small" onClick={discardRestored}>Discard {restored === 1 ? 'it' : 'them'}</button>
+                  <button type="button" className="btn btn-small" onClick={dismissRestored}>Dismiss</button>
+                </>
+              }
+            >
+              Restored {restored} unsaved change{restored === 1 ? '' : 's'} from an earlier visit on this computer.{' '}
+              {restoredStuck ? 'It can’t save as it is: fix the highlighted field, or discard it.' : restored === 1 ? 'It is being saved now.' : 'They are being saved now.'}
             </Banner>
           ) : null}
           {loadError ? (
