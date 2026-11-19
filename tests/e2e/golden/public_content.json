@@ -1,7 +1,7 @@
 {
  "_meta": {
   "source": "834f59a runtime SPA, full seed (items, images)",
-  "rebaselined": "2026-11-19: headings taken from the v3 build (redesign); 'Research Member'-style role badges dropped by design (DESIGN.md); Home figures and Team heading must still match (D10 decision); 2026-11-19 final: '/' h1 is the seed hero headline (test edits are normalised in the spec), 'Explore CRTDH' added with the D13 restore | 2026-11-20 (R-6): headings re-taken from the restored old-look design (owner's 2026-11-19 request to go back to the previous public design; commit 429bd2d). Items and images unchanged: test_items_not_lost passed on all 12 pages before the re-baseline. Fewer headings on Facilities/Services/Social impact is logged as F-18.",
+  "rebaselined": "2026-11-19: headings taken from the v3 build (redesign); 'Research Member'-style role badges dropped by design (DESIGN.md); Home figures and Team heading must still match (D10 decision); 2026-11-19 final: '/' h1 is the seed hero headline (test edits are normalised in the spec), 'Explore CRTDH' added with the D13 restore | 2026-11-20 (R-6): headings re-taken from the restored old-look design (owner's 2026-11-19 request to go back to the previous public design; commit 429bd2d). Items and images unchanged: test_items_not_lost passed on all 12 pages before the re-baseline. Fewer headings on Facilities/Services/Social impact is logged as F-18. | 2026-11-20 fix: '/media' gains 'Media coverage' (the first re-capture ran on a rehearsal whose coverage links an earlier E2E run had emptied; confirmed on a wiped rehearsal).",
   "previous": "public_content.v2-v3design.json"
  },
  "/": {
@@ -1246,6 +1246,10 @@
    [
     "h3",
     "More from CRTDH"
+   ],
+   [
+    "h2",
+    "Media coverage"
    ],
    [
     "h2",
