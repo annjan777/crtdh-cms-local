@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 COPY . .
 RUN rm -f .env && useradd --system --no-create-home --uid 10001 app \
-    && mkdir -p /data/media /data/static && chown app:app /data/media /data/static
+    && mkdir -p /data/media /data/static /data/publish && chown app:app /data/media /data/static /data/publish
 USER app
 
 EXPOSE 8000

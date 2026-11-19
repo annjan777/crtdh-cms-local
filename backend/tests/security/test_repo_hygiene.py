@@ -148,3 +148,31 @@ def test_preview_document_is_framed_same_origin_only():
         assert directive in csp
     assert "'unsafe-inline'" not in preview["Content-Security-Policy"]
     assert {"X-Content-Type-Options", "Strict-Transport-Security", "Referrer-Policy"} <= set(preview)
+
+
+# ---- publish worker (GO-LIVE blocker 1): it must be able to build the site in production -------------------------
+def test_worker_has_node_frontend_and_a_publish_volume():
+    c = _compose()
+    worker, cms = c["services"]["worker"], c["services"]["cms"]
+    assert worker["build"] == {"context": "..", "dockerfile": "deploy/worker/Dockerfile"}
+    dockerfile = (ROOT / "deploy/worker/Dockerfile").read_text()
+    assert "FROM node:22" in dockerfile and "COPY --from=frontend /usr/local/bin/node" in dockerfile
+    assert "npm ci" in dockerfile and "--omit=dev" not in dockerfile  # vite/@react-router/dev are devDependencies
+    assert "COPY --from=frontend /srv/frontend /srv/frontend" in dockerfile
+    assert "\nUSER app\n" in dockerfile and "useradd --system --no-create-home --uid 10001 app" in dockerfile
+    assert worker["read_only"] is True and worker["cap_drop"] == ["ALL"]
+    assert "publish_data:/data/publish" in worker["volumes"] and "publish_data" in c["volumes"]
+    assert "publish_data:/data/publish:ro" in cms["volumes"]  # the cms serves the tarballs to the agent
+    assert any(t.startswith("/tmp") for t in worker["tmpfs"])
+    env = worker["environment"]
+    assert env["PUBLISH_ROOT"] == "/data/publish"
+    assert env["FRONTEND_BUILD_CMD"] == "/usr/local/bin/crtdh-build-site"
+    assert env["FRONTEND_BUILD_OUTPUT"].startswith("/tmp/") and env["FRONTEND_BUILD_OUTPUT"].endswith("/client")
+    assert env["DEBUG"] == "False" and env["REQUIRE_TRUSTED_PROXY"] == "True"  # shared backend env kept
+    script = (ROOT / "deploy/worker/build-site.sh").read_text()
+    assert "BUILD_OUTPUT_DIR" in script and "SNAPSHOT_PATH" in script and "npm --prefix" in script
+    ignore = (ROOT / "deploy/worker/Dockerfile.dockerignore").read_text().splitlines()
+    assert "*" in ignore and "!backend" in ignore and "!frontend" in ignore
+    assert {"backend/.env", "frontend/node_modules", "backend/media"} <= set(ignore)
+    # the backend image creates /data/publish too, so the named volume is owned by app whichever container mounts it first
+    assert "/data/publish" in (ROOT / "backend/Dockerfile").read_text()

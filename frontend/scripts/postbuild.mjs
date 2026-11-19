@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { PAGES } from '../src/site/registry.js'
 
-const out = path.resolve(process.env.BUILD_DIR || 'build/client')
+const out = path.resolve(process.env.BUILD_OUTPUT_DIR || process.env.BUILD_DIR || 'build/client') // BUILD_OUTPUT_DIR: publish worker
 const site = (process.env.SITE_URL || 'https://crtdh.iitkgp.ac.in').replace(/\/$/, '')
 const contactApi = process.env.CONTACT_API_URL || ''
 const turnstile = !!process.env.TURNSTILE_SITE_KEY

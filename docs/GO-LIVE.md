@@ -10,13 +10,11 @@ Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.`,
 
 > **Read first: blockers found while writing this runbook** (19 Nov 2026). Until they are fixed in code, the steps marked BLOCKED below will fail.
 >
-> 1. **The production publish worker can't build the site yet (BLOCKED: step 6).** In `deploy/docker-compose.yml`
->    the `worker` runs from the backend image (`python:3.12-slim`). That image has no Node.js and no copy of
->    `frontend/`, so `FRONTEND_BUILD_CMD=npm --prefix /srv/frontend run build` can't run. The root file system is also
->    read-only, and `PUBLISH_ROOT=/data/publish` is not on a volume, so the worker can't create its build folder.
->    The fix (a developer change, not a docs change): give the worker an image with Node 20, `frontend/` and its
->    `npm ci`, plus a named volume mounted at `/data/publish`. Until then, steps 0–5 and 7–8 still work. Step 6 can
->    only be tested in the rehearsal (`scripts/preprod.sh`), which runs the worker on the host with Node.
+> 1. **Fixed (publish worker).** The `worker` now has its own image (`deploy/worker/Dockerfile`: the backend plus
+>    Node 22 and `frontend/` with its build dependencies), runs non-root on a read-only root file system, and keeps its
+>    work on the named volume `publish_data` (`/data/publish`; the `cms` mounts it read-only to serve tarballs). The
+>    build command and output folder are set in `docker-compose.yml`, not in `.env`. Not yet built under Docker
+>    (see item 3): if step 6 fails, check `docker compose logs worker` first.
 > 2. **The publish agent can't get past Cloudflare Access (BLOCKER for step 5.4 unless you add the bypass in step 2.5).**
 >    The agent calls `https://cms.<domain>/api/v1/agent/...`. It signs each request with the agent secret, but it
 >    sends no Cloudflare Access headers. Step 2.5 adds a path-scoped Access *Bypass* for `/api/v1/agent/` that only
@@ -297,7 +295,7 @@ Fill **every** `<...>` value. Here is where each one comes from:
 | `DEFAULT_FROM_EMAIL`, `EMAIL_URL` | **Unknown:** which SMTP service the lab may use. Ask the institute's mail admin. Format `smtp+tls://user:password@host:587` (URL-escape `@` in the password as `%40`) |
 | `AGENT_HMAC_SECRET` | `gen`. Pasted again into the campus PC's `agent-secret.txt` in step 5.3 |
 | `CMS_INTERNAL_SECRET` | `gen`, or leave empty to turn it off |
-| `PUBLISH_ROOT`, `FRONTEND_BUILD_CMD`, `FRONTEND_BUILD_OUTPUT` | keep the example values (`/data/publish`, `npm --prefix /srv/frontend run build`, `/srv/frontend/build/client`). They match the worker fix in blocker 1 |
+| `PUBLISH_ROOT`, `FRONTEND_BUILD_CMD`, `FRONTEND_BUILD_OUTPUT` | not in `.env` any more: `docker-compose.yml` and the worker image set them. Delete them from an older `.env` |
 | `CONTACT_API_URL` | `https://contact.<domain>/api/v1/contact/` |
 | `MCP_PUBLIC_URL` | `https://mcp.<domain>` |
 | `CLOUDFLARED_IMAGE` | `docker pull cloudflare/cloudflared:<current version>` then `docker inspect --format '{{index .RepoDigests 0}}' cloudflare/cloudflared:<version>` → paste the `cloudflare/cloudflared@sha256:...` value |
@@ -448,14 +446,14 @@ The CMS shows "Waiting for upload machine (last seen …)" whenever this PC is o
 
 ---
 
-## 6. First publish of the current content, and live check (BLOCKED until blocker 1 is fixed)
+## 6. First publish of the current content, and live check
 
 1. In the CMS, make one small, real, harmless change (for example fix one item from `docs/content-gaps.md`). The
    draft bar shows **1 unpublished change on 1 page**.
 2. **Review & publish** → **Publish 1 change**. The state moves through queued → building → "Publishing · waiting
    for upload machine" → uploading → **Live at HH:MM**.
-   - If it fails at `snapshot` or `frontend` with "read-only file system" or "command was not found (npm)",
-     that's blocker 1.
+   - If it fails at `snapshot` or `frontend`, read `docker compose logs worker` and the build log in the
+     `publish_data` volume (`builds/<publish id>/build.log`).
 3. Check the site is really live with this build:
 
    ```bash

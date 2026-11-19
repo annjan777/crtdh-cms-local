@@ -21,7 +21,7 @@ x-backend: &backend
   image: crtdh-backend:prod
   restart: unless-stopped
   env_file: .env
-  environment:
+  environment: &backend-env
     DEBUG: "False"
     CRTDH_ENV: production
     TRUST_CF_CONNECTING_IP: "True"
@@ -30,6 +30,7 @@ x-backend: &backend
     REQUIRE_TRUSTED_PROXY: "True"
     STATIC_ROOT: /data/static
     MEDIA_ROOT: /data/media
+    PUBLISH_ROOT: /data/publish
   volumes:
     - media_data:/data/media
     - static_data:/data/static
@@ -73,6 +74,11 @@ services:
 
   cms:
     <<: *backend
+    volumes:
+      - media_data:/data/media
+      - static_data:/data/static
+      # Serves the worker's tarballs to the publish agent (GET /api/v1/agent/builds/<id>.tar.gz).
+      - publish_data:/data/publish:ro
     command: >
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60
       --limit-request-line 8190 --access-logfile - --worker-tmp-dir /tmp
@@ -96,10 +102,27 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Builds publish tarballs for the campus publish agent (publishing lane).
+  # Builds publish tarballs for the campus publish agent (publishing lane). Its own image: the backend plus
+  # Node 22 and frontend/ with its build dependencies (deploy/worker/Dockerfile), still read-only and non-root.
   worker:
     <<: *backend
+    build:
+      context: ..
+      dockerfile: deploy/worker/Dockerfile
+    image: crtdh-worker:prod
     command: python manage.py run_publish_worker
+    environment:
+      <<: *backend-env
+      # Set here so stale values in .env can't override the image's (compose environment beats env_file).
+      PUBLISH_ROOT: /data/publish
+      FRONTEND_BUILD_CMD: /usr/local/bin/crtdh-build-site
+      FRONTEND_BUILD_OUTPUT: /tmp/site/build/client
+    volumes:
+      - media_data:/data/media:ro
+      - publish_data:/data/publish
+    # The site build (/tmp/site), Vite/React Router temp files and the npm cache.
+    tmpfs:
+      - /tmp:size=1g
     # Outbound: review/publish notification email (SMTP).
     networks: [internal, egress]
     depends_on:
@@ -189,3 +212,4 @@ volumes:
   pgdata:
   media_data:
   static_data:
+  publish_data:   # worker: snapshots, content-hashed media, tarballs (cms reads tarballs)

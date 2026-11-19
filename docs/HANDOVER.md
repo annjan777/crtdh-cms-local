@@ -251,8 +251,6 @@ Signed: outgoing ____________ incoming ____________ centre head ____________ dat
 
 ## 6. Known gaps at the time of writing (19 Nov 2026)
 
-- Production `worker` can't run the frontend build (no Node or frontend in the image; `/data/publish` not on a
-  volume). See GO-LIVE blocker 1.
 - The publish agent sends no Cloudflare Access headers, so it needs the path bypass (GO-LIVE 2.5).
 - `docs/connect-claude.md` and `docs/mcp.md` say "CMS → your profile → Disconnect Claude". The admin app has no
   such screen yet (the user menu has only Sign out / Sign out on all devices). The API
