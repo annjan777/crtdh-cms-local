@@ -132,6 +132,13 @@ export function PageNav({ sections, selectedSection, onSelectSection, onNavigate
             </NavLink>
           </li>
         ) : null}
+        {isAdmin ? (
+          <li>
+            <NavLink to="/backup" className="nav-link" onClick={onNavigate}>
+              Backup
+            </NavLink>
+          </li>
+        ) : null}
       </ul>
     </nav>
   );

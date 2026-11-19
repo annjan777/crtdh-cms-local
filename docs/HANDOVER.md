@@ -109,9 +109,10 @@ All commands run on the lab server in `/srv/crtdh/app/deploy` unless stated othe
 
 ### Backups (state = the `pgdata` and `media_data` volumes; `deploy/.env` too)
 
-**Use `deploy/backup/crtdh-backup.sh` (nightly, from cron) and `deploy/backup/crtdh-restore-check.sh latest`** —
-set-up, cron line and full-restore steps in `deploy/backup/README.md`. They do what the recipe below does, plus
-verification, checksums, the off-host copy and safe pruning. The recipe is kept for reference.
+**Backups are made from the CMS: Backup page (Admins).** *Download content* (small) after big changes and
+*Download content + photos* now and then; keep the files off this server. *Upload a backup* restores it as
+unpublished changes (Review & publish, then Publish). A full backup over 100 MB must be uploaded from the campus
+network (Cloudflare refuses larger requests). The recipe below is an optional server-side extra.
 
 Daily, from cron (`crontab -e`). Keep 14 days locally and copy them off the server (lab NAS or drive):
 

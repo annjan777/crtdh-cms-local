@@ -1,4 +1,5 @@
 """CMS endpoints (contract §3 "CMS" + addendum 1). Session auth; roles from apps.accounts.roles."""
+import logging
 import os
 
 from django.http import HttpResponse, JsonResponse
@@ -10,9 +11,9 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.roles import IsEditor, IsPublisher
+from apps.accounts.roles import IsAdminRole, IsEditor, IsPublisher
 
-from . import changes, publish, registry, review, snapshot, uploads
+from . import backup, changes, publish, registry, review, snapshot, uploads
 from .audit import context_from_request, serialize_entry
 from .errors import CMSError, error_body
 from .models import AgentState, AuditEntry, Publish, ReviewRequest, Snapshot
@@ -263,6 +264,41 @@ class SnapshotRestoreView(PublisherView):
         count = changes.restore_snapshot(snap, ctx=context_from_request(request))
         now = changes.pending_changes()
         return Response({"snapshot_id": snap.snapshot_id, "restored": count, "pending": now["count"], **now})
+
+
+# ---- backup (Admins) -------------------------------------------------------------------------------------------
+class BackupView(APIView):
+    """GET /api/v1/cms/backup/?photos=1 - download the CMS content (and photos) as one zip."""
+
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        from django.http import FileResponse
+
+        include_media = request.query_params.get("photos") == "1"
+        fh = backup.build_file(user=request.user, include_media=include_media)
+        logging.getLogger("crtdh.security").info("backup downloaded by user %s (photos=%s)", request.user.pk, include_media)
+        resp = FileResponse(fh, as_attachment=True, filename=backup.backup_filename(include_media),
+                            content_type="application/zip")
+        resp["Cache-Control"] = "no-store"
+        return resp
+
+
+class BackupRestoreView(APIView):
+    """POST /api/v1/cms/backup/restore/ (multipart: file) - restore a backup as unpublished changes."""
+
+    permission_classes = [IsAdminRole]
+
+    def post(self, request):
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise CMSError("CMS_VALIDATION", "Choose a backup file to upload.", fix="Pick a crtdh-backup-*.zip file.",
+                           field="file")
+        result = backup.restore_backup(upload, ctx=context_from_request(request))  # each row audited as "restore"
+        logging.getLogger("crtdh.security").info("backup restored by user %s: %s rows, %s photos written",
+                                                 request.user.pk, result["restored"], result["photos_written"])
+        now = changes.pending_changes()
+        return Response({**result, "pending": now["count"], **now})
 
 
 # ---- audit ------------------------------------------------------------------------------------------------------

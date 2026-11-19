@@ -1,7 +1,7 @@
 // One function per contract §3 endpoint the admin uses. Extras are from
 // team/CONTRACT-ADDENDUM-1.md (A1-A9).
 
-import { api } from './client.js';
+import { api, request } from './client.js';
 
 const SINGLETONS = new Set(['site-settings', 'about-page', 'home-page']);
 const rowPath = (resource, pk) => (SINGLETONS.has(resource) ? `/${resource}/` : `/${resource}/${pk}/`);
@@ -82,6 +82,14 @@ function apiPath(url) {
   return i === -1 ? null : u.pathname.slice(i + '/api/v1'.length) + u.search;
 }
 // Claude connector access (apps.oauth). Admins also get `users` (everyone with a live connection).
+export const backups = {
+  restore: (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    return request('POST', '/cms/backup/restore/', { form });
+  },
+};
+
 export const claudeAccess = {
   get: () => api.get('/cms/claude-access/'),
   // {} = your own; {user_id} = someone else's (Admins only). Effective on Claude's next call.

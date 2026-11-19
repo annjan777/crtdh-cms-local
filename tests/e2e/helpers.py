@@ -70,16 +70,28 @@ def api_session(stack, username):
     opener = urllib.request.build_opener(*handlers)
     token = {"v": ""}
 
-    def call(method, path, body=None):
+    def call(method, path, body=None, files=None, raw=False):
+        """files={"field": (filename, bytes)} sends multipart; raw=True returns the response bytes."""
         csrf = token["v"]
-        req = urllib.request.Request(stack.api + path, method=method,
-                                     data=json.dumps(body).encode() if body is not None else None,
-                                     headers={"Content-Type": "application/json", "X-CSRFToken": csrf,
-                                              "Referer": stack.admin + "/"})
+        headers = {"Content-Type": "application/json", "X-CSRFToken": csrf, "Referer": stack.admin + "/"}
+        data = json.dumps(body).encode() if body is not None else None
+        if files:
+            import uuid
+
+            boundary = uuid.uuid4().hex
+            parts = []
+            for field, (filename, content) in files.items():
+                parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; filename="{filename}"\r\n'
+                             f"Content-Type: application/octet-stream\r\n\r\n".encode() + content + b"\r\n")
+            data = b"".join(parts) + f"--{boundary}--\r\n".encode()
+            headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+        req = urllib.request.Request(stack.api + path, method=method, data=data, headers=headers)
         try:
-            with opener.open(req, timeout=30) as r:
-                raw = r.read()
-                return r.status, (json.loads(raw) if raw else None)
+            with opener.open(req, timeout=120) as r:
+                content = r.read()
+                if raw:
+                    return r.status, content
+                return r.status, (json.loads(content) if content else None)
         except urllib.error.HTTPError as e:
             raw = e.read()
             try:

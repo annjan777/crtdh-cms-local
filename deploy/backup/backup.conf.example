@@ -1,9 +1,0 @@
-# Copy to deploy/backup/backup.conf on the lab server and adjust. No secrets in here: the passphrase lives in its
-# own file (mode 600) and in the password manager.
-CRTDH_DEPLOY_DIR=/srv/crtdh/app/deploy
-CRTDH_BACKUP_DIR=/srv/crtdh/backups
-CRTDH_BACKUP_PASSFILE=/home/crtdh/.crtdh-backup-pass
-CRTDH_BACKUP_KEEP_DAYS=14
-# A folder on another machine or disk, mounted here (lab NAS share, USB drive). Leave empty only temporarily.
-CRTDH_OFFHOST_DIR=/mnt/lab-nas/crtdh-backups
-CRTDH_OFFHOST_KEEP_DAYS=60

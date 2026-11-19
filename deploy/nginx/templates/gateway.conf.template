@@ -32,6 +32,18 @@ server {
         proxy_read_timeout 60s;
     }
 
+    # Upload backup (Admins): a full backup carries every photo (hundreds of MB). Only this endpoint takes large
+    # bodies; Cloudflare's free plan still stops anything over 100 MB, so full backups are uploaded on the campus
+    # network (docs/HANDOVER.md §3).
+    location = /api/v1/cms/backup/restore/ {
+        client_max_body_size 1g;
+        proxy_request_buffering on;
+        proxy_pass http://cms:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_read_timeout 300s;
+    }
+
     # Sign-in entry for the OAuth authorize step: Django sends an MFA-verified session straight to
     # ?next=, anyone else to the SPA's /login?next=.
     location ~ ^/cms/login/?$ {

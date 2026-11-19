@@ -710,6 +710,14 @@ async function route(method, path, body) {
   }
 
   // ---- contact messages (publisher/admin; stored HTML-escaped)
+  // Backup upload (backend apps/publishing/backup.py): a .zip restores as unpublished changes; anything else is refused.
+  if (path === '/cms/backup/restore/' && method === 'POST') {
+    if (!can(user, 'admin')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only an Admin can upload a backup.', 'Ask an Admin.');
+    const f = body.form?.get?.('file');
+    if (!f || !/\.zip$/i.test(f.name || '')) return fail(400, 'CMS_VALIDATION', 'This file is not a CRTDH backup (it is not a zip file).', 'Download a new backup from this CMS and upload that file.');
+    if (/damaged/i.test(f.name)) return fail(400, 'CMS_VALIDATION', 'This backup is damaged or was changed after it was downloaded (content checksum does not match).', 'Download a new backup from this CMS and upload that file.');
+    return json(200, { restored: 3, photos_written: 0, photos_already_present: 0, backup_created_at: '2026-11-19T10:00:00Z', includes_media: false, pending: 3 });
+  }
   // Claude connector access (backend apps/oauth ClaudeAccessView / ClaudeAccessRevokeView).
   if (path === '/cms/claude-access/' && method === 'GET') {
     db.claude ||= {};

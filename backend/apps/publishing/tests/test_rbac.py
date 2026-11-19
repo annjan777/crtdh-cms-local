@@ -108,6 +108,8 @@ def test_every_route_enforces_roles(role, api_as, baseline, publish_env, publish
     go("get", "cms-snapshots", 1)
     go("post", "cms-snapshot-restore", 2, pk=baseline.pk)
     go("get", "cms-audit", 1)
+    go("get", "cms-backup", 3)  # download backup: Admins only
+    go("post", "cms-backup-restore", 3, {})  # upload backup: Admins only (an empty form is 400 for them)
     go("post", "cms-upload-links", 1, {})
     covered.add("cms-upload")  # token-authenticated: a bad token is 404 for everyone
     assert client.get(reverse("cms-upload", kwargs={"token": "bad"})).status_code == 404
