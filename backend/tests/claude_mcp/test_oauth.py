@@ -14,6 +14,7 @@ from django.utils import timezone
 from oauth2_provider.models import AccessToken, Application, RefreshToken
 from rest_framework.test import APIClient
 
+from apps.accounts.mfa import SESSION_METHOD
 from apps.oauth.mfa import SESSION_FLAG
 from apps.oauth.models import GrantFamily
 
@@ -37,6 +38,7 @@ def signed_in(user, mfa=True) -> Client:
     if mfa:
         session = client.session
         session[SESSION_FLAG] = user.pk
+        session[SESSION_METHOD] = "totp"
         session.save()
     return client
 
@@ -127,6 +129,7 @@ def test_mfa_flag_for_another_user_does_not_count(editor, claude_app):
     client = signed_in(editor, mfa=False)
     session = client.session
     session[SESSION_FLAG] = other.pk
+    session[SESSION_METHOD] = "totp"
     session.save()
     _, challenge = pkce()
     assert client.get("/oauth/authorize/", authorize_params(claude_app, challenge)).status_code == 302
@@ -520,6 +523,7 @@ def _csrf_consent_page(user, claude_app):
     client.force_login(user)
     session = client.session
     session[SESSION_FLAG] = user.pk
+    session[SESSION_METHOD] = "totp"
     session.save()
     _, challenge = pkce()
     params = authorize_params(claude_app, challenge)

@@ -87,10 +87,10 @@ def _pending_user(request):
     return user
 
 
-def _complete_login(request, user):
+def _complete_login(request, user, method="totp"):
     request.session.pop(PENDING, None)
     login(request, user, backend=BACKEND)  # cycles the session key and rotates the CSRF token
-    mfa.mark_session_verified(request.session, user)
+    mfa.mark_session_verified(request.session, user, method)
     sessions.track(request, user)
     lockout.clear(user.get_username())
     logger.info("auth success user=%s ip=%s", user.get_username(), client_ip(request))
@@ -126,7 +126,7 @@ class LoginView(_AuthView):
         if user is None:
             _fail(request, username, "Wrong username or password.")
         if not settings.MFA_ENABLED:
-            return Response(_complete_login(request, user))
+            return Response(_complete_login(request, user, method="password"))
         request.session.cycle_key()
         request.session[PENDING] = {"uid": user.pk, "at": time.time(), "hash": user.get_session_auth_hash()}
         # Contract addendum A6: enrolled -> {mfa_required}, not yet enrolled -> {mfa_setup_required}.

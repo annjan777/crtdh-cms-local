@@ -2,7 +2,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from apps.common.errors import CMSError
 
-from .mfa import SESSION_FLAG
+from .mfa import session_signed_in
 from .models import UserSecurity
 
 
@@ -17,8 +17,8 @@ class CMSSessionAuthentication(SessionAuthentication):
             self.enforce_csrf(request)
         if not user or not user.is_active:
             return None
-        if request._request.session.get(SESSION_FLAG) != user.pk:
-            return None  # signed in without MFA (e.g. some other Django login path): not a CMS session
+        if not session_signed_in(request._request.session, user):
+            return None  # no completed CMS sign-in (another Django login path, or password-only with MFA on)
         if self._must_change_password(user) and not getattr(request.parser_context.get("view"),
                                                              "allowed_before_password_change", False):
             raise CMSError("CMS_FORBIDDEN_ROLE", "Change your temporary password first.",

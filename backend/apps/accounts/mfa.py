@@ -17,7 +17,10 @@ from django.utils import timezone
 from .models import RecoveryCode, UserSecurity
 
 RECOVERY_CODE_COUNT = 10
-SESSION_FLAG = "crtdh_mfa_verified"  # set only after password + TOTP; checked on every request
+SESSION_FLAG = "crtdh_mfa_verified"  # set when sign-in completes; checked on every request
+# How the session signed in: "totp" (password + code) or "password" (MFA_ENABLED off). With MFA on, only "totp"
+# sessions count, so switching MFA on ends every password-only session at once (they sign in again with a code).
+SESSION_METHOD = "crtdh_auth_method"
 STEP = 30
 
 
@@ -109,11 +112,20 @@ def reset(user):
     RecoveryCode.objects.filter(user=user).delete()
 
 
-def mark_session_verified(session, user):
-    """Marks a session as having passed MFA for `user`. Called by the login flow
-    (and by the QA test harness after force_login). CMSSessionAuthentication
-    rejects any session without this flag, so no other login path bypasses MFA."""
+def mark_session_verified(session, user, method="totp"):
+    """Marks a session as a completed CMS sign-in for `user` (method "totp", or "password" when MFA is off).
+    Called by the login flow (and by the QA test harness after force_login). CMSSessionAuthentication rejects
+    any session without this mark, so no other login path bypasses it."""
     session[SESSION_FLAG] = user.pk
+    session[SESSION_METHOD] = method
+
+
+def session_signed_in(session, user):
+    """The one rule for "this session is a CMS sign-in for this user": the mark matches, and with MFA on the
+    sign-in used a code (a password-only session from before MFA was switched on no longer counts)."""
+    if session.get(SESSION_FLAG) != user.pk:
+        return False
+    return not settings.MFA_ENABLED or session.get(SESSION_METHOD) == "totp"
 
 
 def is_verified(request):
@@ -121,4 +133,4 @@ def is_verified(request):
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated or not user.is_active:
         return False
-    return request.session.get(SESSION_FLAG) == user.pk
+    return session_signed_in(request.session, user)

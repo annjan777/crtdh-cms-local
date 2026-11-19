@@ -52,3 +52,43 @@ def test_signed_in_mfa_actions_answer_404(browser, cms_admin, editor):
     browser.token = _login(browser, cms_admin).json()["csrfToken"]
     assert browser.post("/api/v1/auth/mfa/recovery-codes/", {"code": "123456"}).status_code == 404
     assert browser.post(f"/api/v1/auth/users/{editor.pk}/reset-mfa/").status_code == 404
+
+
+# ---- R-1 / F-01: switching MFA on must end every password-only session at once --------------------------------
+def test_password_only_session_stops_working_when_mfa_is_switched_on(browser, editor):
+    res = _login(browser, editor)
+    browser.token = res.json()["csrfToken"]
+    assert browser.get("/api/v1/auth/me/").status_code == 200
+    with override_settings(MFA_ENABLED=True):
+        assert browser.get("/api/v1/auth/me/").status_code == 401  # must sign in again, this time with a code
+
+
+def test_password_only_session_cannot_authorize_claude_once_mfa_is_on(browser, editor):
+    from django.test import RequestFactory
+
+    from apps.accounts import mfa
+    from apps.oauth.mfa import session_has_mfa
+
+    _login(browser, editor)
+    req = RequestFactory().get("/oauth/authorize/")
+    req.user = editor
+    req.session = browser.c.session
+    assert session_has_mfa(req) is True  # MFA off: the password sign-in is the CMS sign-in
+    with override_settings(MFA_ENABLED=True):
+        assert mfa.is_verified(req) is False
+        assert session_has_mfa(req) is False
+
+
+def test_session_marked_with_code_still_counts_when_mfa_is_on(editor):
+    from django.contrib.sessions.backends.db import SessionStore
+
+    from apps.accounts import mfa
+
+    s = SessionStore()
+    mfa.mark_session_verified(s, editor, "totp")
+    with override_settings(MFA_ENABLED=True):
+        assert mfa.session_signed_in(s, editor) is True
+    legacy = SessionStore()
+    legacy[mfa.SESSION_FLAG] = editor.pk  # a session from before this change: no sign-in method recorded
+    with override_settings(MFA_ENABLED=True):
+        assert mfa.session_signed_in(legacy, editor) is False
