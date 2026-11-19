@@ -135,6 +135,10 @@ AUTH_LOCKOUT = {
     "MAX_SECONDS": 3600,
     "RESET_AFTER_SECONDS": 24 * 3600,
 }
+# Two-step sign-in (TOTP). Off: password alone signs in, and every MFA screen, endpoint and admin
+# control is hidden (the endpoints answer 404). The code, data and tests stay, so it can be turned back on
+# by setting MFA_ENABLED=True; anyone already enrolled is asked for their code again from then on.
+MFA_ENABLED = env.bool("MFA_ENABLED", default=False)
 MFA_ISSUER = env("MFA_ISSUER", default="CRTDH CMS")
 MFA_PENDING_SECONDS = 300  # time allowed between the password step and the TOTP step
 

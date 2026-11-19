@@ -1,5 +1,8 @@
 """CMS authentication (contract §3 Auth).
 
+With MFA_ENABLED off (the default), POST /auth/login/ signs in on the password alone and the MFA
+endpoints answer 404. What follows describes MFA_ENABLED on.
+
 Sign-in is two steps: POST /auth/login/ checks the password and parks the user
 in a short "pending" state in the session; POST /auth/mfa/ (or the enrol
 confirm step, for a first sign-in) checks the TOTP code and only then creates
@@ -40,7 +43,8 @@ def me_payload(user):
         "name": user.get_full_name() or user.get_username(),
         "email": user.email,
         "roles": user_roles(user),
-        "mfa_enrolled": mfa.is_enrolled(user),
+        "mfa_enabled": settings.MFA_ENABLED,
+        "mfa_enrolled": mfa.is_enrolled(user) if settings.MFA_ENABLED else False,
         "must_change_password": bool(sec and sec.must_change_password),
     }
 
@@ -59,7 +63,8 @@ def _check_lock(request, username):
         until = lockout.locked_until(keys)
         raise CMSError(
             "CMS_RATE_LIMITED", f"Too many failed attempts. Try again in {wait} seconds.",
-            fix="Wait, then sign in again. An admin can reset your MFA if you lost your device.",
+            fix=("Wait, then sign in again. An admin can reset your MFA if you lost your device."
+                 if settings.MFA_ENABLED else "Wait, then sign in again. An admin can reset your password."),
             retryable=True, headers={"Retry-After": str(wait)},
             extra={"locked_until": until.isoformat() if until else None},
         )
@@ -92,6 +97,11 @@ def _complete_login(request, user):
     return dict(me_payload(user), csrfToken=get_token(request))
 
 
+def require_mfa_enabled():
+    if not settings.MFA_ENABLED:
+        raise CMSError("CMS_NOT_FOUND", "Not found.", fix="Two-step sign-in is turned off for this CMS.")
+
+
 class _AuthView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [IPScopedThrottle]
@@ -115,6 +125,8 @@ class LoginView(_AuthView):
         user = authenticate(request, username=username, password=password)
         if user is None:
             _fail(request, username, "Wrong username or password.")
+        if not settings.MFA_ENABLED:
+            return Response(_complete_login(request, user))
         request.session.cycle_key()
         request.session[PENDING] = {"uid": user.pk, "at": time.time(), "hash": user.get_session_auth_hash()}
         # Contract addendum A6: enrolled -> {mfa_required}, not yet enrolled -> {mfa_setup_required}.
@@ -127,6 +139,7 @@ class MFAView(_AuthView):
     """POST /api/v1/auth/mfa/ {code} - TOTP or recovery code; completes sign-in."""
 
     def post(self, request):
+        require_mfa_enabled()
         user = _pending_user(request)
         code = _str(request, "code", 64)
         _check_lock(request, user.get_username())
@@ -142,6 +155,7 @@ class MFAEnrolView(_AuthView):
     """POST /api/v1/auth/mfa/enrol/ - first sign-in only (after the password step)."""
 
     def post(self, request):
+        require_mfa_enabled()
         user = _pending_user(request)
         if mfa.is_enrolled(user):
             raise CMSError("CMS_FORBIDDEN_ROLE", "MFA is already set up for this account.",
@@ -153,6 +167,7 @@ class MFAEnrolConfirmView(_AuthView):
     """POST /api/v1/auth/mfa/enrol/confirm/ {code} - confirms, returns recovery codes once, signs in."""
 
     def post(self, request):
+        require_mfa_enabled()
         user = _pending_user(request)
         code = _str(request, "code", 16)
         _check_lock(request, user.get_username())
@@ -170,6 +185,7 @@ class RecoveryCodesView(APIView):
     throttle_scope = "auth"
 
     def post(self, request):
+        require_mfa_enabled()
         _check_lock(request, request.user.get_username())
         if not mfa.verify_code(request.user, _str(request, "code", 64)):
             _fail(request, request.user.get_username(), "Wrong or already-used code.")

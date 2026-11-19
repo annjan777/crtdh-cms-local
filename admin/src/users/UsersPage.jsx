@@ -16,6 +16,7 @@ const EMPTY = { name: '', username: '', email: '', role: 'editor' };
 const suggestUsername = (name) => name.trim().toLowerCase().split(/\s+/)[0]?.replace(/[^a-z0-9._-]/g, '') || '';
 
 function AddUser({ open, onClose, onAdded }) {
+  const mfaOn = useAuth().user?.mfa_enabled !== false;
   const [v, setV] = useState(EMPTY);
   const [userEdited, setUserEdited] = useState(false);
   const [touched, setTouched] = useState({});
@@ -68,7 +69,7 @@ function AddUser({ open, onClose, onAdded }) {
   return (
     <Dialog open={open} onClose={close} size="drawer" title="Add a user" initialFocus="name">
       <form onSubmit={submit} noValidate className="drawer-form">
-        <p className="dialog-lead">You’ll get a temporary password to pass on. At first sign-in they set up two-step sign-in and choose their own password.</p>
+        <p className="dialog-lead">You’ll get a temporary password to pass on. At first sign-in they {mfaOn ? 'set up two-step sign-in and ' : ''}choose their own password.</p>
         {err && !err.field ? <Banner tone="danger">{err.message} {err.fix}</Banner> : null}
         {input('name', 'Full name')}
         {input('username', 'Username', {
@@ -106,6 +107,7 @@ function AddUser({ open, onClose, onAdded }) {
 
 export default function UsersPage() {
   const { user: me, isAdmin } = useAuth();
+  const mfaOn = me?.mfa_enabled !== false; // two-step sign-in is off unless MFA_ENABLED is set on the server
   const [list, setList] = useState(null);
   const [error, setError] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -169,7 +171,7 @@ export default function UsersPage() {
                 <tr>
                   <th scope="col">Name</th>
                   <th scope="col">Role</th>
-                  <th scope="col">Two-step sign-in</th>
+                  {mfaOn ? <th scope="col">Two-step sign-in</th> : null}
                   <th scope="col">Last signed in</th>
                   <th scope="col">
                     <span className="visually-hidden">Actions</span>
@@ -219,14 +221,16 @@ export default function UsersPage() {
                           {st.busy ? 'Saving…' : st.ok || (st.err ? `${st.err.message}` : '')}
                         </span>
                       </td>
-                      <td data-label="Two-step sign-in">
-                        {u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}
-                        {u.mfa_enrolled && u.is_active && !self ? (
-                          <button type="button" className="link-btn cell-action" onClick={() => setResetting({ user: u, kind: 'mfa' })}>
-                            Reset<span className="visually-hidden"> two-step sign-in for {u.name}</span>
-                          </button>
-                        ) : null}
-                      </td>
+                      {mfaOn ? (
+                        <td data-label="Two-step sign-in">
+                          {u.mfa_enrolled ? 'Set up' : <span className="warn-text">Not set up yet</span>}
+                          {u.mfa_enrolled && u.is_active && !self ? (
+                            <button type="button" className="link-btn cell-action" onClick={() => setResetting({ user: u, kind: 'mfa' })}>
+                              Reset<span className="visually-hidden"> two-step sign-in for {u.name}</span>
+                            </button>
+                          ) : null}
+                        </td>
+                      ) : null}
                       <td data-label="Last signed in">{u.last_login ? fmtDate(u.last_login) : <span className="muted">Never</span>}</td>
                       <td className="actions-cell">
                         {self || !u.is_active ? null : (
@@ -273,7 +277,7 @@ export default function UsersPage() {
             : temp?.reason === 'password'
               ? `${temp?.user.name}’s old password no longer works. `
               : ''}
-          Give this temporary password to {temp?.user.name?.split(' ')[0]} in person or by phone, with the username <strong>{temp?.user.username}</strong>. It’s shown only once. At their next sign-in they {temp?.reason === 'password' ? '' : 'set up two-step sign-in and '}choose their own password.
+          Give this temporary password to {temp?.user.name?.split(' ')[0]} in person or by phone, with the username <strong>{temp?.user.username}</strong>. It’s shown only once. At their next sign-in they {temp?.reason === 'password' || !mfaOn ? '' : 'set up two-step sign-in and '}choose their own password.
         </p>
         <p className="temp-password">
           <code>{temp?.password}</code>
@@ -307,7 +311,7 @@ export default function UsersPage() {
         }
       >
         {resetting?.kind === 'password' ? (
-          <p>Use this when {resetting?.user.name} has forgotten their password. Their current password stops working at once and you get a temporary one to pass on. Their two-step sign-in stays as it is.</p>
+          <p>Use this when {resetting?.user.name} has forgotten their password. Their current password stops working at once and you get a temporary one to pass on.{mfaOn ? ' Their two-step sign-in stays as it is.' : ''}</p>
         ) : (
           <p>Use this when {resetting?.user.name} has lost their phone. Their authenticator app, recovery codes and current password stop working at once. You get a temporary password to pass on, and they set up two-step sign-in again at their next sign-in.</p>
         )}

@@ -19,6 +19,8 @@ os.environ.setdefault("CRTDH_SKIP_DOTENV", "1")  # keep a dev backend/.env out o
 
 from .settings import *  # noqa: E402,F401,F403
 
+MFA_ENABLED = True  # the suite covers the MFA flow; tests for MFA off override this
+
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
 if os.environ.get("TEST_DATABASE_URL"):  # CI runs the suite on Postgres 16 too (production engine)
     import environ

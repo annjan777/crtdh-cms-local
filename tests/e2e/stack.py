@@ -93,6 +93,7 @@ class Stack:
             "TURNSTILE_SECRET": "1x0000000000000000000000000000000AA",  # Cloudflare's always-pass test key
             "CRTDH_SKIP_DOTENV": "1",
             "CRTDH_ALLOW_TEST_SEED": "1",
+            "MFA_ENABLED": os.environ.get("E2E_MFA_ENABLED", "True"),  # the E2E flows cover two-step sign-in
             "CRTDH_TEST_PASSWORD": self.password,
             "PYTHONPATH": str(BACKEND),
         })

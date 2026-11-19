@@ -4,8 +4,7 @@ With this, you can ask Claude to change the website in plain English: "update Pr
 designation", "add Saturday's eye camp to Media". Claude saves every change as an
 **unpublished change**. Nothing goes live until a Publisher publishes it in the CMS.
 
-**Before you start:** you need a CMS account with two-step sign-in (the 6-digit code app)
-already set up, and a Claude account. Ask the site admin for:
+**Before you start:** you need a CMS account and a Claude account. Ask the site admin for:
 - the server URL: `https://mcp.<domain>/mcp`
 - the **client ID** and **client secret** (sent to you privately; don't paste them in chat or email)
 
@@ -25,7 +24,7 @@ Custom → Web), and everyone else starts at step 2 and clicks **Connect**.
 ## 2. Sign in and allow
 
 1. Click **Connect** next to CRTDH CMS.
-2. A CRTDH CMS page opens. Sign in with your CMS username, password and 6-digit code.
+2. A CRTDH CMS page opens. Sign in with your CMS username and password.
 3. You'll see **"Allow Claude to edit drafts as <your name> (<your role>)?"** Click **Allow**.
 
 You're returned to Claude. The connection lasts up to 30 days; after that, click Connect again.

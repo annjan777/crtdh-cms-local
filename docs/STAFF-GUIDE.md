@@ -24,24 +24,16 @@ That's what **"Saved · not live yet"** means. Your work is safe, and visitors c
 1. Open the CMS address.
 2. First you see a Cloudflare page. Type your email address. A code arrives by email. Type it in.
 3. Now you see the CRTDH sign-in. Type your **Username** and **Password**.
-4. Open the authenticator app on your phone. Type the 6-digit code it shows for **CRTDH CMS**.
 
 **The first time only**
 
 - Type the temporary password you were given. Then choose your own: **at least 12 characters**. A short
   sentence works well.
-- You see **Set up two-step sign-in**. Install an authenticator app on your phone (for example Google
-  Authenticator or Microsoft Authenticator). In the app, add an account and scan the code on screen. Type the
-  6-digit code to confirm.
-- You see **Save your recovery codes**. These 10 codes let you in if you lose your phone. Write them down and keep
-  them somewhere safe. They are shown only once.
 
 **If it goes wrong**
 
-- Wrong code: wait for the next code in the app and try again.
 - "Sign-in is paused": too many wrong tries. Wait a few minutes.
-- Lost your phone: sign in with a recovery code (**Use a recovery code**), or ask an Admin to reset your two-step
-  sign-in.
+- Forgot your password: ask an Admin to reset it. You get a temporary password and choose a new one.
 
 To sign out, click your name at the top, then **Sign out**. If you used a shared computer, choose
 **Sign out on all devices**.

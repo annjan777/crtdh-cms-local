@@ -20,7 +20,7 @@ from . import mfa, sessions
 from .models import UserSecurity
 from .roles import ADMIN, ORDER, IsAdminRole
 from .signals import user_deactivated
-from .views import me_payload
+from .views import me_payload, require_mfa_enabled
 
 logger = logging.getLogger("crtdh.security")
 User = get_user_model()
@@ -125,6 +125,7 @@ class UserResetMFAView(_AdminView):
     or the person who took the phone) enrol their own authenticator at the next sign-in."""
 
     def post(self, request, pk):
+        require_mfa_enabled()
         user = self.get_target(pk)
         if user.pk == request.user.pk:
             raise CMSError("CMS_VALIDATION", "Another admin must reset your MFA.", fix="Ask another admin.")

@@ -40,8 +40,8 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
    - runs the publish agent's server check.
 
    Running it again is safe: it keeps the secrets and the data, and only fills in what's missing.
-7. **Sign in** at https://cms-crtdh.annjan.in with that account. The CMS makes you set up two-step sign-in: scan
-   the QR code with an authenticator app, type the 6-digit code, and save the 10 recovery codes it shows once.
+7. **Sign in** at https://cms-crtdh.annjan.in with that account (username and password; two-step sign-in is off
+   unless `MFA_ENABLED=True` is set in `.env.staging`).
 8. **Publish once.** Change one small thing (for example a news item), open **Review & publish** and press
    **Publish**. Watch it with `deploy/staging/dc.sh logs -f worker publish-agent`. The status goes queued →
    building → uploading → **Live**. Then https://crtdh.annjan.in shows the site.
@@ -65,7 +65,7 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
 | Agent: previous release back | `deploy/staging/dc.sh stop publish-agent && deploy/staging/dc.sh run --rm --no-deps publish-agent rollback && deploy/staging/dc.sh start publish-agent` |
 | Look at the "CIC server" files | `deploy/staging/dc.sh exec site ls -la /srv/www /srv/www/crtdh-releases/releases` |
 | New Claude client secret | `deploy/staging/dc.sh exec cms python manage.py create_claude_client --rotate` |
-| Someone lost their phone | another admin: CMS → Users → Reset MFA |
+| Someone forgot their password | another admin: CMS → Users → Reset password |
 
 ## How staging differs from production
 
