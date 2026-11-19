@@ -186,8 +186,7 @@ and `nginx:1.27-alpine` when they reach end of life. Pin `CLOUDFLARED_IMAGE` to 
 
 ### Other regular jobs
 
-- Weekly: `docker compose run --rm cms python manage.py cleartokens` (expired OAuth tokens; `docs/mcp.md`). The
-  `housekeeping` loop doesn't run it, so add it to cron.
+- Expired and revoked Claude (OAuth) tokens are removed daily by `housekeeping` (`cleartokens`).
 - Contact messages are deleted after `CONTACT_RETENTION_DAYS` (365) by `housekeeping`.
 - People: an Admin uses **Users** to add people, reset passwords or two-step sign-in, and deactivate leavers.
   Deactivating also signs them out and revokes their Claude tokens.
@@ -253,7 +252,8 @@ Signed: outgoing ____________ incoming ____________ centre head ____________ dat
 
 - The publish agent's Cloudflare Access service token expires (1 year by default): renew it before then
   (deploy/README.md, "Publish agent and Cloudflare Access").
-- `docs/privacy-notice.md` calls the retention job the `purge` service; in compose it is `housekeeping`.
-  `deploy/.env.example` calls the agent config `config.toml`; it is `config.ini`.
-- No uptime monitor or `make dev` in the repo. No sandbox page for first Claude tries (PLAN WS4.8).
-- `cleartokens` isn't scheduled (see §3).
+- No uptime monitor. Nothing alerts anyone if `cms.<domain>` or the public site goes down; add an external check
+  (for example a free uptime service watching the public site) when there is an owner for the alerts.
+- No sandbox page for first Claude tries (PLAN WS4.8): new staff try Claude on the real drafts. Drafts are never
+  live until a Publisher publishes, and Discard reverts them, but a dedicated practice page was not built.
+- No `make dev`: use the commands in the root README, `scripts/preprod.sh`, or `docker-compose.local.yml`.

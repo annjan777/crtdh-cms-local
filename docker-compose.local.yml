@@ -49,24 +49,14 @@ services:
     ports:
       - "8000:8000"
 
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_BASE_URL: "http://localhost:8000/api/v1"
-    restart: unless-stopped
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-
   admin:
     build:
       context: .
       dockerfile: admin/Dockerfile  # root context: the canvas needs frontend/src/site
       args:
         VITE_API_BASE_URL: "http://localhost:8000/api/v1"
-        VITE_PUBLIC_SITE_URL: "http://localhost:3000"
+        # The public site is static (built by the publish worker); preview it with frontend/README.md "Local development".
+        VITE_PUBLIC_SITE_URL: "http://localhost:3100"
     restart: unless-stopped
     ports:
       - "3001:80"

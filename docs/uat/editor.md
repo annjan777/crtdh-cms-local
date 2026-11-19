@@ -10,7 +10,7 @@ live. Use the text "UAT test – please ignore" wherever you type.
 | # | What you do | You should see | Result | Notes |
 |---|---|---|---|---|
 | E1 **must** | Open the CMS address. Sign in with your username and password, then the 6-digit code from your phone app. | The CMS home with the list of website pages. Your name and "Editor" are shown. A wrong code says so in plain words and lets you try again. Auto: `test_cms_editor` login | [ ] Pass [ ] Fail | |
-| E2 **must** | Open **Home**. Click the big headline on the first slide and change it. Wait two seconds. | "Saved as draft" appears near the field. You did not have to press a Save button. | [ ] Pass [ ] Fail | |
+| E2 **must** | Open **Home**. Click the big headline on the first slide and change it. Wait two seconds. | "Saved · not live yet" appears near the field. You did not have to press a Save button. | [ ] Pass [ ] Fail | |
 | E3 **must** | Click **Preview**. | The home page as visitors will see it, with your new headline. | [ ] Pass [ ] Fail | |
 | E4 **must** | In a private browser window, open the public website home page. | The **old** headline. Your change is not live yet. Auto: `test_edit_hero_autosave_preview_not_live` | [ ] Pass [ ] Fail | |
 | E5 | Back in the CMS, look at the bar at the bottom of the screen. | Something like "1 unpublished change on 1 page · Preview · Request review". There is **no** "Publish" button for you. | [ ] Pass [ ] Fail | |

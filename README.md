@@ -83,8 +83,8 @@ cd frontend && npm test;  cd admin && npm test
 
 Details, CI gates and security scans: [docs/testing.md](docs/testing.md).
 
-`docker-compose.local.yml` is older than the static-site rework: its `frontend` service still expects `dist/`
-and no snapshot. Use the commands above or `scripts/preprod.sh` instead.
+`docker-compose.local.yml` runs the database, backend and admin only. The public site is static: build and
+preview it as in `frontend/README.md`, or run the whole publish flow with `scripts/preprod.sh`.
 
 ## Rules
 

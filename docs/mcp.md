@@ -182,7 +182,7 @@ open Claude session on its next call.
 
 Tokens: access 1 hour (`MCP_ACCESS_TOKEN_SECONDS`), refresh tokens rotate, and a connection
 ends `MCP_OAUTH_MAX_GRANT_DAYS` (30) days after consent however often it refreshes. Tokens are
-stored only as SHA-256 checksums. Run `python manage.py cleartokens` weekly.
+stored only as SHA-256 checksums. `python manage.py cleartokens` runs daily in the `housekeeping` service.
 
 ### Rotating the OAuth client secret
 

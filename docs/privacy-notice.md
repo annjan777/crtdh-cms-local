@@ -37,7 +37,7 @@ Assessment record: `.dpdp/assessment.yaml` (scope: the public contact form only)
 - Keep "12 months" in step with `CONTACT_RETENTION_DAYS` (default 365).
 
 ## Retention rule (implemented)
-- `python manage.py purge_contact_messages` deletes contact messages older than `CONTACT_RETENTION_DAYS` (default 365 days). Runs daily from the `purge` service in `deploy/docker-compose.yml`.
+- `python manage.py purge_contact_messages` deletes contact messages older than `CONTACT_RETENTION_DAYS` (default 365 days). Runs daily from the `housekeeping` service in `deploy/docker-compose.yml`.
 - 12 months keeps the one-year minimum the DPDP Rules set for personal data and processing logs (Rules r.8(3)), then erases because the purpose (answering the enquiry) is served (Act s.8(7)).
 - Earlier deletion on request: a Publisher or Admin deletes the message in the CMS (`DELETE /api/v1/contact-messages/<id>/`). Whether an on-request deletion inside the first year conflicts with r.8(3) is open question Q-02.
 
