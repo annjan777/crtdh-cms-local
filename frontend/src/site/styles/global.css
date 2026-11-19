@@ -85,10 +85,13 @@ p {
   text-align: left;
 }
 
-/* Justified body text (the original site's look) only where lines are long
-   enough not to open wide gaps; hyphenation keeps the spacing even. */
+/* Justified long-form body text (the original site's look) only where lines
+   are long enough not to open wide gaps; hyphenation keeps the spacing even.
+   Short UI text (subtitles, captions, addresses, notes: every <p> with a
+   class) and anything in the footer stays ragged-right. */
 @media (min-width: 768px) {
-  p {
+  main p:not([class]),
+  .rich-text p {
     text-align: justify;
     hyphens: auto;
     -webkit-hyphens: auto;
