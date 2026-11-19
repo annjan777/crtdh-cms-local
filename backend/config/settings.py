@@ -260,6 +260,10 @@ EMAIL_BACKEND = _email["EMAIL_BACKEND"]
 for _k in ("EMAIL_HOST", "EMAIL_PORT", "EMAIL_HOST_USER", "EMAIL_HOST_PASSWORD", "EMAIL_USE_TLS", "EMAIL_USE_SSL"):
     if _k in _email:
         globals()[_k] = _email[_k]
+if EMAIL_BACKEND.endswith("filebased.EmailBackend"):
+    # filemail:///abs/dir (rehearsal/dev). Read the path from the URL itself: django-environ drops its leading "/".
+    _path = env("EMAIL_URL").split("://", 1)[1].split("?", 1)[0]
+    EMAIL_FILE_PATH = "/" + _path.lstrip("/") if _path.startswith("/") else str(Path(_path).resolve())
 EMAIL_TIMEOUT = 10
 
 

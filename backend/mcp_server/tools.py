@@ -341,7 +341,13 @@ def build_server() -> MCPServer:
                                       "Nothing is live until one publishes.")
                 data = cms.request_review(a, note)
                 guardrails.record_review(session, data["notified"])
+            notice = data.pop("_notice")  # committed now, so the email has been tried
             data["already_requested"] = False
+            data["email_sent"] = bool(notice.sent)
+            if not notice.sent:
+                data["notified"] = 0
+                return _ok_result(data, f"{notice.message} Nothing is live until one publishes; tell a Publisher "
+                                        "another way that the changes are ready.")
             return _ok_result(data, f"Review requested; {data['notified']} Publisher(s) emailed. Nothing is live until one publishes.")
         return await _run(ctx, "request_review", {"note": 1}, do)
 

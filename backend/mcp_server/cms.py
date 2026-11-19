@@ -916,8 +916,9 @@ def fetch_image_from_url(actor: Actor, url: str, *, resolver=None, connector=Non
 def request_review(actor: Actor, note: str) -> dict:
     note = _CONTROL.sub("", str(note or "")).strip()[:1000]
     with _core():
-        review.request_review(actor.user, note, ctx=actor.ctx)
-    return {"notified": len(review.publisher_emails()), "status": "waiting_for_review"}
+        rr = review.request_review(actor.user, note, ctx=actor.ctx)
+    # The email goes out when the caller's transaction commits; read rr.notice after that (tools.request_review).
+    return {"notified": len(rr.notice.recipients), "status": "waiting_for_review", "_notice": rr.notice}
 
 
 def describe_item(actor: Actor, item_id: str) -> dict:

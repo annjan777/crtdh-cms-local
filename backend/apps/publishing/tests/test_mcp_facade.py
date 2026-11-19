@@ -100,8 +100,10 @@ def test_session_scoped_changes_and_discard(content, mcp, editor):
         ["home.hero.hero-slides:19"]
 
 
-def test_review_upload_and_preview_names(content, mcp, editor, publisher, mail_outbox):
-    rr = review.request_review(editor, "From Claude", ctx=mcp)
+def test_review_upload_and_preview_names(content, mcp, editor, publisher, mail_outbox,
+                                        django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):  # the email is sent on commit
+        rr = review.request_review(editor, "From Claude", ctx=mcp)
     assert rr.pk and "(through Claude)" in mail_outbox[0].body
     link = uploads.create_upload_link(editor, ctx=mcp, min_width=1600)
     assert set(link) == {"url", "token", "expires_at"}

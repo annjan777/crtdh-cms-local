@@ -238,3 +238,16 @@ test('header & footer is listed from the API globals and opens the site-wide sec
   await expect(page).toHaveURL(/\/pages\/site$/);
   await expect(page.getByRole('button', { name: /Menu links/ })).toBeVisible();
 });
+
+test('a review request whose email fails still counts, and says so', async ({ page }) => {
+  await signIn(page, 'ravi');
+  await mock(page, 'failNextReviewEmail');
+  await page.getByRole('navigation', { name: 'Website' }).getByRole('link', { name: 'Review & publish' }).click();
+  await page.getByRole('button', { name: 'Request review' }).first().click();
+  await page.getByRole('dialog', { name: 'Request a review' }).getByRole('button', { name: 'Send request' }).click();
+  const done = page.getByRole('dialog', { name: 'Review requested' });
+  await expect(done).toContainText('Review requested; the email to Publishers could not be sent.');
+  await expect(done).toContainText('Tell a Publisher another way');
+  await done.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText(/Waiting for review/).first()).toBeVisible();
+});

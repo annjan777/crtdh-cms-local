@@ -71,6 +71,8 @@ def test_preview_is_snapshot_shaped_for_the_page(api_as, content):
     assert_contract_error(api_as("editor").get("/api/v1/cms/preview/nope/"), "CMS_NOT_FOUND")
 
 
+# transaction=True: autocommit like production, so the on-commit email runs before the response is built.
+@pytest.mark.django_db(transaction=True)
 def test_review_request_emails_publishers(api_as, content, publisher, cms_admin, mail_outbox, editor):
     resp = api_as(editor).post("/api/v1/cms/review-requests/", {"note": "Hero updated for the camp"}, format="json")
     assert resp.status_code == 201
@@ -81,6 +83,54 @@ def test_review_request_emails_publishers(api_as, content, publisher, cms_admin,
     open_list = api_as("editor").get("/api/v1/cms/review-requests/").json()["open"]
     assert open_list[0]["requested_by"] == "erin_editor"
     assert ReviewRequest.objects.count() == 1
+    assert resp.json()["email_sent"] is True and resp.json()["notified"] == 2 and "message" not in resp.json()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_review_request_survives_an_smtp_failure(api_as, content, publisher, editor, monkeypatch, caplog):
+    # QA wave 2 D11: an SMTP outage made "Request review" a CMS_INTERNAL although the row was created.
+    def broken(*a, **kw):
+        raise ConnectionRefusedError("smtp down")
+
+    monkeypatch.setattr("apps.publishing.review.send_mail", broken)
+    resp = api_as(editor).post("/api/v1/cms/review-requests/", {"note": "x"}, format="json")
+    assert resp.status_code == 201
+    body = resp.json()
+    assert body["email_sent"] is False and body["notified"] == 0
+    assert body["message"] == "Review requested; the email to Publishers could not be sent."
+    assert ReviewRequest.objects.count() == 1
+    assert "review request email" in caplog.text
+
+
+def test_review_request_with_no_publisher_email(api_as, content, editor):
+    resp = api_as(editor).post("/api/v1/cms/review-requests/", {}, format="json")
+    assert resp.status_code == 201 and resp.json()["email_sent"] is False
+    assert "no Publisher has an email address" in resp.json()["message"]
+
+
+def test_review_email_waits_for_commit(content, publisher, editor, mail_outbox, django_capture_on_commit_callbacks):
+    from apps.publishing import review
+
+    with django_capture_on_commit_callbacks(execute=False) as hooks:
+        rr = review.request_review(editor, "inside a transaction")
+    assert rr.notice.sent is None and mail_outbox == []  # nothing is sent before the commit
+    for hook in hooks:
+        hook()
+    assert rr.notice.sent is True and len(mail_outbox) == 1
+
+
+def test_filemail_url_sets_email_file_path(monkeypatch, tmp_path):
+    import importlib
+
+    import config.settings as real
+
+    monkeypatch.setenv("EMAIL_URL", f"filemail://{tmp_path}/mails")
+    try:
+        mod = importlib.reload(real)
+        assert mod.EMAIL_BACKEND.endswith("filebased.EmailBackend") and mod.EMAIL_FILE_PATH == f"{tmp_path}/mails"
+    finally:
+        monkeypatch.delenv("EMAIL_URL")
+        importlib.reload(real)
 
 
 def test_upload_link_one_time(api_as, client, content, media_root):

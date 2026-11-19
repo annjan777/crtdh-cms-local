@@ -165,7 +165,12 @@ class ReviewRequestsView(EditorView):
         if not isinstance(note, str):
             raise CMSError("CMS_VALIDATION", "note must be text.", field="note")
         rr = review.request_review(request.user, note, ctx=context_from_request(request))
-        return Response({"id": rr.id, "created_at": rr.created_at, "notified": len(review.publisher_emails())}, status=201)
+        notice = rr.notice
+        body = {"id": rr.id, "created_at": rr.created_at, "notified": len(notice.recipients) if notice.sent else 0,
+                "email_sent": bool(notice.sent)}
+        if notice.message:
+            body["message"] = notice.message
+        return Response(body, status=201)
 
 
 # ---- publish ----------------------------------------------------------------------------------------------------

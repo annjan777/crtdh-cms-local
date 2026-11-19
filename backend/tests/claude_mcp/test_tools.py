@@ -309,6 +309,23 @@ async def test_request_review_emails_publishers_never_publishes(asgi_app, token)
         res = ok(await call(client, "request_review", {"note": "Updated Prof. Sharma"}))
     assert res["notified"] == 1 and res["status"] == "waiting_for_review"
     assert mail.outbox[0].to == ["pub@example.org"] and "Updated Prof. Sharma" in mail.outbox[0].body
+    assert res["email_sent"] is True
+
+
+async def test_request_review_reports_a_failed_email_without_failing(asgi_app, token, monkeypatch):
+    # QA wave 2 D11: SMTP problems made the tool return CMS_INTERNAL.
+    await sync_to_async(make_user)("pub", role="publisher", email="pub@example.org")
+
+    def broken(*a, **kw):
+        raise TimeoutError("smtp timeout")
+
+    monkeypatch.setattr("apps.publishing.review.send_mail", broken)
+    async with mcp_client(asgi_app, token) as client:
+        result = await call(client, "request_review", {"note": "x"})
+        res = ok(result)
+    assert res["email_sent"] is False and res["notified"] == 0 and res["status"] == "waiting_for_review"
+    text = " ".join(getattr(c, "text", "") for c in result.content)
+    assert "the email to Publishers could not be sent" in text
 
 
 # ---------------------------------------------------------------- guardrails

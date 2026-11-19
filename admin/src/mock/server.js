@@ -642,7 +642,13 @@ async function route(method, path, body) {
   if (path === '/cms/review-requests/') {
     db.reviewRequest = { by: user.name, at: nowIso(), note: body.data?.note || '' };
     save();
-    return json(201, { status: 'sent', notified: db.users.filter((u) => u.is_active && can(u, 'publisher')).map((u) => u.name) });
+    // Real API: {id, created_at, notified: <count>, email_sent, message?}; the mock names who was emailed.
+    if (db.flags.failReviewEmail) {
+      db.flags.failReviewEmail = false;
+      save();
+      return json(201, { status: 'sent', notified: 0, email_sent: false, message: 'Review requested; the email to Publishers could not be sent.' });
+    }
+    return json(201, { status: 'sent', email_sent: true, notified: db.users.filter((u) => u.is_active && can(u, 'publisher')).map((u) => u.name) });
   }
   if (path === '/cms/publish/' && method === 'POST') {
     if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Editors can’t publish.', 'Request a review; a Publisher will be emailed.');
@@ -876,6 +882,11 @@ if (typeof window !== 'undefined') {
     failNextPublish(message = 'The server refused the upload: disk quota exceeded (98% of 2 GB used).') {
       load();
       db.flags.failNext = message;
+      save();
+    },
+    failNextReviewEmail() {
+      load();
+      db.flags.failReviewEmail = true;
       save();
     },
     expireSession() {

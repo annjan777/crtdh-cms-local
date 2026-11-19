@@ -22,7 +22,8 @@ export default function RequestReviewDialog({ open, onClose }) {
     setError(null);
     try {
       const res = await cms.requestReview(note.trim());
-      setSent(res.notified || []);
+      // notified: names (mock) or a count (API). email_sent false: the request exists but nobody was emailed.
+      setSent({ names: Array.isArray(res.notified) ? res.notified : [], emailed: res.email_sent !== false, message: res.message });
       refreshNow();
     } catch (err) {
       setError(err);
@@ -55,9 +56,14 @@ export default function RequestReviewDialog({ open, onClose }) {
         )
       }
     >
-      {sent ? (
+      {sent && !sent.emailed ? (
+        <>
+          <Banner tone="warn">{sent.message || 'Review requested; the email to Publishers could not be sent.'}</Banner>
+          <p>Your request is recorded and Publishers see it on Review &amp; publish, but nobody got an email. Tell a Publisher another way that your changes are ready.</p>
+        </>
+      ) : sent ? (
         <p>
-          {sent.length ? `${sent.join(', ')} ${sent.length === 1 ? 'has' : 'have'} been emailed.` : 'Publishers have been emailed.'} The bar at the top shows “Waiting for review” until your changes are published.
+          {sent.names.length ? `${sent.names.join(', ')} ${sent.names.length === 1 ? 'has' : 'have'} been emailed.` : 'Publishers have been emailed.'} The bar at the top shows “Waiting for review” until your changes are published.
         </p>
       ) : (
         <>
