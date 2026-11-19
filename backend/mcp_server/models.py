@@ -56,20 +56,3 @@ class ToolCall(models.Model):
     request_id = models.CharField(max_length=32)
     duration_ms = models.PositiveIntegerField(default=0)
     at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-
-class StagedImage(models.Model):
-    """No longer used: photos from upload_image_from_url and upload links are
-    apps.publishing.models.MediaAsset rows ("media:<MediaAsset id>"). Kept only so the
-    existing migration state stays valid; drop it with a migration in the mcp lane."""
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
-    file = models.ImageField(upload_to="mcp_uploads/")
-    sha256 = models.CharField(max_length=64)
-    width = models.PositiveIntegerField()
-    height = models.PositiveIntegerField()
-    source = models.CharField(max_length=300, blank=True)  # host + path only, never the query
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["owner", "sha256"], name="mcp_staged_image_unique_hash")]

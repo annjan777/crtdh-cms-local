@@ -249,4 +249,5 @@ Behaviour on top of core:
   fields are put back, and only if nobody changed them after Claude; otherwise
   `CMS_STALE_VERSION` and nothing changes. `discard_session_changes` is all or nothing.
   A discarded create no longer de-duplicates.
-- `mcp_server.models.StagedImage` is unused and can be dropped with a migration.
+- `StagedImage` (the pre-integration photo store) was dropped in `mcp_server` migration 0003; any
+  old files under `MEDIA_ROOT/mcp_uploads/` are no longer referenced and can be deleted.
