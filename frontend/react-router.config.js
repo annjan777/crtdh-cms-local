@@ -5,6 +5,9 @@ import { PAGE_PATHS } from './src/site/registry.js'
 export default {
   appDirectory: 'app',
   ssr: false,
+  // Public URLs end in "/" (registry paths, links, canonical, sitemap). React Router keys prerendering on the
+  // path without it and writes <page>/index.html either way; the routes match "/about/" and "/about" alike, and
+  // a client navigation to "/about/" loads /about.data, which is what the prerender writes.
   // '/404' renders the catch-all route; scripts/postbuild.mjs copies it to 404.html.
-  prerender: [...PAGE_PATHS, '/404'],
+  prerender: [...PAGE_PATHS.map((p) => (p === '/' ? p : p.replace(/\/$/, ''))), '/404'],
 }

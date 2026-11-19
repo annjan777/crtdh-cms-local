@@ -1,6 +1,7 @@
 import PageShell from '../components/PageShell.jsx'
-import { PageBanner, Prose } from '../components/Blocks.jsx'
+import { PageBanner, RichText } from '../components/Blocks.jsx'
 import { Img } from '../media.jsx'
+import SiteLink from '../link.jsx'
 
 /** About (detail pattern): one reading column, with a facts column where it helps. */
 export default function About({ data }) {
@@ -23,7 +24,7 @@ export default function About({ data }) {
           <div className="wrap split">
             <div className="split__main">
               <h2 id="about-programme">The CRTDH programme</h2>
-              <Prose text={about.intro} />
+              <RichText html={about.intro} />
             </div>
             {about.ecosystem_image && (
               <figure className="split__side">
@@ -41,7 +42,7 @@ export default function About({ data }) {
             {about.mission_vision && (
               <div className="split__main">
                 <h2 id="about-mission">Mission and vision</h2>
-                <Prose text={about.mission_vision} className="mt-6" />
+                <RichText html={about.mission_vision} className="mt-6" />
               </div>
             )}
             {focus.length > 0 && (
@@ -122,7 +123,7 @@ export default function About({ data }) {
               <h2 id="about-pi">From the Principal Investigator’s desk</h2>
               {about.pi_desk_document && (
                 <p className="mt-6">
-                  <a href={about.pi_desk_document} className="text-link" download>Read the note (PDF)</a>
+                  <SiteLink to={about.pi_desk_document} className="text-link" download>Read the note (PDF)</SiteLink>
                 </p>
               )}
             </div>
@@ -143,13 +144,13 @@ export default function About({ data }) {
               {about.dsir_about && (
                 <div>
                   <h3>DSIR, Government of India</h3>
-                  <Prose text={about.dsir_about} className="mt-4" />
+                  <RichText html={about.dsir_about} className="mt-4" />
                 </div>
               )}
               {about.iitkgp_about && (
                 <div>
                   <h3>IIT Kharagpur</h3>
-                  <Prose text={about.iitkgp_about} className="mt-4" />
+                  <RichText html={about.iitkgp_about} className="mt-4" />
                 </div>
               )}
             </div>

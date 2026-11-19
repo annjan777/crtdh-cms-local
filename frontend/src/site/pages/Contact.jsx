@@ -1,4 +1,5 @@
 import PageShell from '../components/PageShell.jsx'
+import SiteLink from '../link.jsx'
 import ContactForm from '../components/ContactForm.jsx'
 import { MapEmbed, PageBanner } from '../components/Blocks.jsx'
 
@@ -17,7 +18,7 @@ export default function Contact({ data, settings: settingsProp }) {
       />
       <section className="section">
         <div className="wrap contact__grid">
-          <ContactForm email={settings.email_primary} notice={<ShortNotice privacy={privacy} />} />
+          <ContactForm email={settings.email_primary} phone={settings.phone_primary} notice={<ShortNotice privacy={privacy} />} />
           <aside className="contact__details" aria-labelledby="contact-office">
             <h2 id="contact-office">The office</h2>
             <dl className="facts">
@@ -87,7 +88,7 @@ function inlineLinks(text) {
   let m
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index))
-    if (m[1]) out.push(<a key={m.index} href={m[2]}>{m[1]}</a>)
+    if (m[1]) out.push(<SiteLink key={m.index} to={m[2]}>{m[1]}</SiteLink>)
     else out.push(<strong key={m.index}>{m[3]}</strong>)
     last = re.lastIndex
   }

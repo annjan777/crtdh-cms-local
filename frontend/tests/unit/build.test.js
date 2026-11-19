@@ -51,7 +51,7 @@ describe('navigation grouping', () => {
     expect(groups.map((g) => g.label)).toEqual(['About', 'Our work', 'Impact', 'News'])
     const routes = groups.flatMap((g) => g.items.map((i) => i.route))
     expect(routes.length + 1).toBe(stub.collections['nav-items'].length - 1) // all but Home, plus Contact
-    expect(contact.route).toBe('/contact')
+    expect(contact.route).toBe('/contact/')
   })
   it('an unknown CMS item still appears (under About)', () => {
     const { groups } = groupNav([...stub.collections['nav-items'], { id: 99, label: 'Careers', url: '/careers' }])
@@ -98,10 +98,10 @@ describe('privacy notice', () => {
 
 describe('utilities', () => {
   it('normalises nav urls', () => {
-    expect(toRoute('about.html')).toBe('/about')
+    expect(toRoute('about.html')).toBe('/about/')
     expect(toRoute('/')).toBe('/')
     expect(toRoute('index.html')).toBe('/')
-    expect(toRoute('/media/')).toBe('/media')
+    expect(toRoute('/media/')).toBe('/media/')
   })
   it('reads YouTube ids', () => {
     expect(youtubeId('https://www.youtube.com/watch?v=ZkZXzuaIeoQ')).toBe('ZkZXzuaIeoQ')

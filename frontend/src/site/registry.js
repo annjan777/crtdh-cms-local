@@ -3,17 +3,17 @@
 // loaders (build), the build guard and the admin preview.
 export const PAGES = [
   { id: 'home', path: '/', title: 'Home' },
-  { id: 'about', path: '/about', title: 'About' },
-  { id: 'team', path: '/team', title: 'Team' },
-  { id: 'innovations', path: '/innovations', title: 'Innovations' },
-  { id: 'facilities', path: '/facilities', title: 'Facilities' },
-  { id: 'services', path: '/services', title: 'Services' },
-  { id: 'product', path: '/product', title: 'Product' },
-  { id: 'enterprises', path: '/enterprises', title: 'Enterprises' },
-  { id: 'social-impact', path: '/social-impact', title: 'Social Impact' },
-  { id: 'covid-19', path: '/covid-19', title: 'Covid-19' },
-  { id: 'media', path: '/media', title: 'Media' },
-  { id: 'contact', path: '/contact', title: 'Contact' },
+  { id: 'about', path: '/about/', title: 'About' },
+  { id: 'team', path: '/team/', title: 'Team' },
+  { id: 'innovations', path: '/innovations/', title: 'Innovations' },
+  { id: 'facilities', path: '/facilities/', title: 'Facilities' },
+  { id: 'services', path: '/services/', title: 'Services' },
+  { id: 'product', path: '/product/', title: 'Product' },
+  { id: 'enterprises', path: '/enterprises/', title: 'Enterprises' },
+  { id: 'social-impact', path: '/social-impact/', title: 'Social Impact' },
+  { id: 'covid-19', path: '/covid-19/', title: 'Covid-19' },
+  { id: 'media', path: '/media/', title: 'Media' },
+  { id: 'contact', path: '/contact/', title: 'Contact' },
 ]
 
 export const PAGE_PATHS = PAGES.map((p) => p.path)
@@ -27,7 +27,7 @@ export const LAYOUT_NEEDS = {
 export const PAGE_NEEDS = {
   home: {
     singletons: ['home-page', 'site-settings'],
-    collections: ['hero-slides', 'enterprises', 'products', 'innovations', 'news-items', 'documents', 'media-events'],
+    collections: ['hero-slides', 'enterprises', 'products', 'innovations', 'news-items', 'documents', 'media-events', 'equipment'],
   },
   about: {
     singletons: ['about-page'],

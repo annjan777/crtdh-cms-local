@@ -86,20 +86,30 @@
 .video__frame { position: relative; background: #061c2b; overflow: hidden; }
 .video__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .video__poster {
-  position: absolute; inset: 0; width: 100%; padding: var(--s-6); border: 1px solid var(--rule); background: var(--surface); color: var(--navy);
-  cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: flex-start; gap: var(--s-2);
+  position: absolute; inset: 0; width: 100%; padding: var(--s-8); border: 0; color: #fff;
+  cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: var(--s-4);
 }
-.video__label { font-family: var(--font-ui); font-size: var(--fs-14); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--teal); }
+/* No photograph: a typographic poster on the navy field (title large, the play control under it). */
+.video__poster--type { background: var(--navy-deep); }
+/* A related event photograph, with a neutral scrim under the title only. */
+.video__poster--photo { background: #061c2b; }
+.video__photo { position: absolute; inset: 0; }
+.video__poster--photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(4, 18, 28, 0.82) 0%, rgba(4, 18, 28, 0.45) 45%, rgba(4, 18, 28, 0) 75%); }
+.video__poster--photo .video__photo img { transition: transform var(--t-base) var(--ease-out); }
+.video__poster--photo:hover .video__photo img { transform: scale(1.02); }
 .video__title {
-  font-family: var(--font-display); font-size: clamp(var(--fs-18), 2.6vw, var(--fs-28)); line-height: var(--lh-heading); max-width: 22ch; text-wrap: balance;
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; /* never runs under the Play button */
+  position: relative; z-index: 1;
+  font-family: var(--font-display); font-size: clamp(var(--fs-22), 3vw, var(--fs-36)); line-height: var(--lh-heading); letter-spacing: -0.01em;
+  max-width: 16ch; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
 }
 .video__play {
-  position: absolute; left: var(--s-4); bottom: var(--s-4); display: inline-flex; align-items: center; gap: 8px;
-  min-height: 44px; padding: 8px 16px; background: var(--navy-deep); color: #fff; font-family: var(--font-ui); font-weight: 600;
-  transition: background-color var(--t-fast) var(--ease-out);
+  position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 8px 16px; background: #fff; color: var(--navy-deep); font-family: var(--font-ui); font-weight: 600;
+  transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
 }
-.video__poster:hover .video__play { background: var(--teal); }
+.video__poster:hover .video__play, .video__poster:focus-visible .video__play { background: var(--teal-light); color: var(--navy-deep); }
+@media (max-width: 479.98px) { .video__poster { padding: var(--s-4); gap: var(--s-3); } }
 .videos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-8); }
 @media (max-width: 767.98px) { .videos { grid-template-columns: minmax(0, 1fr); } }
 

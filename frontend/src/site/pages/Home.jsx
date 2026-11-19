@@ -1,7 +1,7 @@
 import PageShell from '../components/PageShell.jsx'
 import HeroPrints from '../components/HeroPrints.jsx'
-import { VideoPoster } from '../components/Blocks.jsx'
-import SiteLink from '../link.jsx'
+import { VideoPoster, eventPhotoFor } from '../components/Blocks.jsx'
+import SiteLink, { PlainLink } from '../link.jsx'
 import { Img } from '../media.jsx'
 import { visible } from '../util.js'
 
@@ -26,8 +26,8 @@ export default function Home({ data }) {
             <h1 id="hero-title">{headline || 'Common Research and Technology Development Hub'}</h1>
             {lead.description && <p className="hero__line">{lead.description}</p>}
             <div className="actions">
-              <SiteLink to="/services" className="btn btn--primary">Work with CRTDH</SiteLink>
-              <SiteLink to="/innovations" className="btn btn--secondary">See our innovations</SiteLink>
+              <SiteLink to="/services/" className="btn btn--primary">Work with CRTDH</SiteLink>
+              <SiteLink to="/innovations/" className="btn btn--secondary">See our innovations</SiteLink>
             </div>
           </div>
           {slides.length > 0 && <HeroPrints slides={slides} />}
@@ -36,7 +36,7 @@ export default function Home({ data }) {
 
       <Proof enterprises={c.enterprises} products={c.products} />
       <Work innovations={c.innovations} />
-      <Manufacturing home={home} />
+      <Manufacturing home={home} equipment={c.equipment} />
       <Community home={home} />
       <News items={c['news-items']} documents={c.documents} events={c['media-events']} home={home} />
       <Visit home={home} settings={settings} />
@@ -60,7 +60,7 @@ function Proof({ enterprises = [], products = [] }) {
             {enterprises.length} enterprises engaged with the centre
             {partners.length > 0 && `, and the partners taking ${products.length} of its products to market`}.
           </p>
-          <SiteLink to="/enterprises" className="text-link proof__all">All enterprises</SiteLink>
+          <SiteLink to="/enterprises/" className="text-link proof__all">All enterprises</SiteLink>
           {partners.length > 0 && (
             <dl className="names names--partners">
               <dt className="soft">Products and their partners</dt>
@@ -84,7 +84,7 @@ function Proof({ enterprises = [], products = [] }) {
             </ul>
           )}
           {enterprises.length > 8 && (
-            <SiteLink to="/enterprises" className="text-link proof__more">All {enterprises.length} enterprises</SiteLink>
+            <SiteLink to="/enterprises/" className="text-link proof__more">All {enterprises.length} enterprises</SiteLink>
           )}
         </div>
       </div>
@@ -105,14 +105,14 @@ function Work({ innovations = [] }) {
           <li className="work__head">
             <h2 id="work-title">Devices from the lab bench</h2>
             <p className="soft">Diagnostics, devices and digital tools developed at the centre for low-resource settings.</p>
-            <SiteLink to="/innovations" className="text-link">All {innovations.length} innovations</SiteLink>
+            <SiteLink to="/innovations/" className="text-link">All {innovations.length} innovations</SiteLink>
           </li>
           {shown.map((inv, i) => {
             const img = inv.images[0]
             const shape = shapes[i % shapes.length]
             return (
               <li key={inv.id} className={`work__tile work__tile--${shape} work__tile--${i + 1}`}>
-                <SiteLink to={`/innovations#innovation-${inv.id}`} className="work__link">
+                <SiteLink to={`/innovations/#innovation-${inv.id}`} className="work__link">
                   <Img
                     src={img.image}
                     alt={img.image_alt || img.caption || ''}
@@ -132,10 +132,13 @@ function Work({ innovations = [] }) {
 }
 
 /** From lab to manufacturing: the enterprise engagement text with its pictures and the facilities band. */
-function Manufacturing({ home }) {
+function Manufacturing({ home, equipment = [] }) {
+  // The CMS facility-card images are clipart icons (docs/content-gaps.md), so each card shows the photograph of
+  // the matching equipment row instead; a card with no matching photograph is set as a typographic tile.
   const panels = [1, 2, 3]
-    .map((n) => ({ title: home[`facility_card_${n}_title`], image: home[`facility_card_${n}_image`], link: home[`facility_card_${n}_link`] }))
-    .filter((p) => p.image)
+    .map((n) => ({ title: home[`facility_card_${n}_title`], link: home[`facility_card_${n}_link`] || '/facilities/' }))
+    .filter((p) => p.title)
+    .map((p) => ({ ...p, photo: facilityPhoto(p.title, equipment) }))
   if (!home.enterprises_text && !panels.length) return null
   return (
     <section className="section manufacture" aria-labelledby="manufacture-title">
@@ -144,8 +147,8 @@ function Manufacturing({ home }) {
           <h2 id="manufacture-title">From prototype to production</h2>
           {home.enterprises_text && <p>{home.enterprises_text}</p>}
           <div className="actions">
-            <SiteLink to="/facilities" className="btn btn--secondary">See the facilities</SiteLink>
-            <SiteLink to="/enterprises" className="text-link">Enterprise engagement</SiteLink>
+            <SiteLink to="/facilities/" className="btn btn--secondary">See the facilities</SiteLink>
+            <SiteLink to="/enterprises/" className="text-link">Enterprise engagement</SiteLink>
           </div>
         </div>
         {home.enterprises_image_1 && (
@@ -163,24 +166,45 @@ function Manufacturing({ home }) {
         <div className="wrap">
           <h3 className="facility-list__title">Facilities at the centre</h3>
           <ul className="facility-list">
-            {panels.map((p, i) => {
-              const inner = (
-                <>
-                  <Img src={p.image} alt={p.image_alt || ''} ratio="1x1" figure sizes="88px" />
-                  <span>{p.title}</span>
-                </>
-              )
-              return (
-                <li key={p.title || i}>
-                  {p.link ? <SiteLink to={p.link} className="facility-list__item">{inner}</SiteLink> : <span className="facility-list__item">{inner}</span>}
-                </li>
-              )
-            })}
+            {panels.map((p, i) => (
+              <li key={p.title || i}>
+                <SiteLink to={p.link} className={`facility-list__item${p.photo ? ' facility-list__item--photo' : ' facility-list__item--type'}`}>
+                  {p.photo && <Img src={p.photo.image} alt={p.photo.image_alt || p.photo.name || ''} ratio="3x2" sizes="(min-width: 768px) 30vw, 40vw" />}
+                  <span className="facility-list__name">{p.title}</span>
+                  {!p.photo && <span className="facility-list__more">At the centre in IIT Kharagpur</span>}
+                </SiteLink>
+              </li>
+            ))}
           </ul>
         </div>
       )}
     </section>
   )
+}
+
+const FACILITY_STOP = new Set(['crtdh', 'and', 'the', 'of', 'for', 'room', 'rooms', 'unit', 'units', 'facility', 'facilities'])
+const facilityWords = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map((w) => w.replace(/s$/, ''))
+    .filter((w) => w.length > 2 && !FACILITY_STOP.has(w) && !FACILITY_STOP.has(`${w}s`))
+
+/** The equipment row (with a photograph) that shares the most significant words with a facility card title. */
+export function facilityPhoto(title, equipment) {
+  const want = new Set(facilityWords(title))
+  if (!want.size) return null
+  let best = null
+  let score = 0
+  for (const e of equipment || []) {
+    if (!e?.image) continue
+    const s = facilityWords(e.name).filter((w) => want.has(w)).length
+    if (s > score) {
+      best = e
+      score = s
+    }
+  }
+  return best
 }
 
 /** In the community: the livelihood story with its two pictures, linking to Social Impact. */
@@ -198,7 +222,7 @@ function Community({ home }) {
           <h2 id="community-title">Healthcare that reaches the village</h2>
           <p>{home.women_text_1}</p>
           <div className="actions">
-            <SiteLink to="/social-impact" className="btn btn--secondary">Read about our social impact</SiteLink>
+            <SiteLink to="/social-impact/" className="btn btn--secondary">Read about our social impact</SiteLink>
           </div>
         </div>
         {home.women_image_2 && (
@@ -252,25 +276,33 @@ function News({ items = [], documents = [], events = [], home }) {
                 <ul className="rows">
                   {documents.map((d) => (
                     <li key={d.id}>
-                      <a href={d.file} className="rows__link" download>
+                      <PlainLink href={d.file} className="rows__link" download>
                         <span>{d.title}</span>
                         <span className="soft small">PDF</span>
-                      </a>
+                      </PlainLink>
                     </li>
                   ))}
                 </ul>
               </>
             )}
             <div className="actions">
-              <SiteLink to="/media" className="text-link">Photographs and press coverage</SiteLink>
+              <SiteLink to="/media/" className="text-link">Photographs and press coverage</SiteLink>
             </div>
           </div>
         </div>
         {videos.length > 0 && (
           <div className="news__videos">
-            {videos.map((v) => (
-              <VideoPoster key={v.id} url={`https://www.youtube.com/watch?v=${v.id}`} title={v.title} />
-            ))}
+            {videos.map((v) => {
+              const photo = eventPhotoFor(v.title, events)
+              return (
+                <VideoPoster
+                  key={v.id}
+                  url={`https://www.youtube.com/watch?v=${v.id}`}
+                  title={v.title}
+                  image={photo?.image}
+                />
+              )
+            })}
           </div>
         )}
       </div>
@@ -311,9 +343,9 @@ function Visit({ home, settings }) {
           </ul>
           {home.membership_pdf && (
             <p className="visit__membership">
-              <a href={home.membership_pdf} className="btn btn--primary" download>
+              <PlainLink href={home.membership_pdf} className="btn btn--primary" download>
                 {home.membership_heading ? `${home.membership_heading} (PDF)` : 'MSME and startup membership (PDF)'}
-              </a>
+              </PlainLink>
             </p>
           )}
         </div>

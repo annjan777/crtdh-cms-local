@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 
 export const snapshot = JSON.parse(fs.readFileSync(process.env.SNAPSHOT_PATH || 'snapshot.json', 'utf8'))
-export const ROUTES = ['/', '/about', '/team', '/innovations', '/facilities', '/services', '/product', '/enterprises', '/social-impact', '/covid-19', '/media', '/contact']
+export const ROUTES = ['/', '/about/', '/team/', '/innovations/', '/facilities/', '/services/', '/product/', '/enterprises/', '/social-impact/', '/covid-19/', '/media/', '/contact/']
 export const visible = (rows) => (rows || []).filter((r) => r.is_published !== false)
 
 /** Requests a static page may make: its own origin; YouTube thumbnails and the map embed are third-party media. */

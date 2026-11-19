@@ -48,7 +48,7 @@ export default function NotFound({ data }) {
               ))}
             </ul>
             {terms.length > 0 && hits.length === 0 && (
-              <p className="mt-4">No page matches “{q}”. Try a shorter word, or <SiteLink to="/contact">ask the centre</SiteLink>.</p>
+              <p className="mt-4">No page matches “{q}”. Try a shorter word, or <SiteLink to="/contact/">ask the centre</SiteLink>.</p>
             )}
           </div>
         </div>

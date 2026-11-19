@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import SiteLink from '../link.jsx'
 import { Img } from '../media.jsx'
 import { paragraphs, youtubeId } from '../util.js'
+import { hasMarkup, sanitizeRichText } from '../richtext.js'
 
 /**
  * Inner-page banner (reading mode): H1 in Fraunces, one sentence, optional print.
@@ -38,11 +39,19 @@ export function Prose({ text, className = '' }) {
   )
 }
 
-/** Rich text from the CMS. Only Innovation.body is rendered this way; Innovation.save() runs bleach.clean (b, i, a, ul, ol, h3). */
+/**
+ * Rich text from the CMS (every registry field of type richtext: about-page intro, mission_vision, dsir_about,
+ * iitkgp_about; innovations body). The backend cleans these on write with the allow-list p, br, strong/b, em/i,
+ * a, ul, ol, li, h3; sanitizeRichText applies the same allow-list again here. Plain text (no markup) is shown as
+ * paragraphs, like Prose.
+ */
 export function RichText({ html, className = '' }) {
   if (!html) return null
-  // nosemgrep: crtdh-no-dangerously-set-inner-html -- sanitised by Innovation.save (bleach)
-  return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
+  if (!hasMarkup(html)) return <Prose text={html} className={className} />
+  const clean = sanitizeRichText(html)
+  if (!clean.trim()) return null
+  // nosemgrep: crtdh-no-dangerously-set-inner-html -- rebuilt from an allow-list by sanitizeRichText (src/site/richtext.js); backend clean_richtext on write
+  return <div className={`prose ${className}`} dangerouslySetInnerHTML={{ __html: clean }} />
 }
 
 /** Google map that loads only when pressed (no third-party requests on page load), with a directions link. */
@@ -67,8 +76,12 @@ export function MapEmbed({ src, address }) {
   )
 }
 
-/** YouTube poster that loads the player (youtube-nocookie) only when pressed; no third-party requests before. */
-export function VideoPoster({ url, title }) {
+/**
+ * YouTube poster that loads the player (youtube-nocookie) only when pressed; no third-party requests before.
+ * With `image` (a related event photograph from the snapshot) the poster is that photograph with the title on
+ * it; without one it is a typographic poster on the navy field. Never an empty box, never a YouTube thumbnail.
+ */
+export function VideoPoster({ url, title, image }) {
   const [playing, setPlaying] = useState(false)
   const id = youtubeId(url)
   if (!id) return null
@@ -83,9 +96,14 @@ export function VideoPoster({ url, title }) {
             allowFullScreen
           />
         ) : (
-          <button type="button" className="video__poster" onClick={() => setPlaying(true)} data-youtube={id}>
-            {/* No third-party thumbnail: the poster is drawn here, so nothing loads from YouTube before the press. */}
-            <span className="video__label" aria-hidden="true">Video</span>
+          <button
+            type="button"
+            className={`video__poster ${image ? 'video__poster--photo' : 'video__poster--type'}`}
+            onClick={() => setPlaying(true)}
+            data-youtube={id}
+          >
+            {/* Decorative inside the button: its name is "Play video: <title>". */}
+            {image && <Img src={image} alt="" ratio={null} className="video__photo" sizes="(min-width: 768px) 48vw, 100vw" />}
             {title && <span className="video__title" aria-hidden="true">{title}</span>}
             <span className="video__play">
               <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l12 7-12 7z" fill="currentColor" /></svg>
@@ -97,6 +115,15 @@ export function VideoPoster({ url, title }) {
       {title && playing && <figcaption>{title}</figcaption>}
     </figure>
   )
+}
+
+/** The first photograph of a media event whose title or slug matches `title` (e.g. a video of the same event). */
+export function eventPhotoFor(title, events) {
+  const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const key = norm(title)
+  if (!key) return null
+  const ev = (events || []).find((e) => norm(e.slug) === key || norm(e.title) === key)
+  return (ev?.images || []).find((im) => im && im.image) || null
 }
 
 /**
@@ -191,7 +218,7 @@ export function GridBlock({ block, headingLevel = 2, limit = 0, extraAnchor }) {
 }
 
 /** Closing band at the foot of a page: one sentence and one action. `surface` alternates the ground. */
-export function ClosingBand({ id, title, text, action, to = '/contact', surface = false }) {
+export function ClosingBand({ id, title, text, action, to = '/contact/', surface = false }) {
   return (
     <section className={`section${surface ? ' section--surface' : ''}`} aria-labelledby={id}>
       <div className="wrap closing">

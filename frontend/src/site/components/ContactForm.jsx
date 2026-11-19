@@ -60,11 +60,56 @@ function loadTurnstile() {
 }
 
 /**
+ * What the prerendered HTML carries instead of the form (JavaScript off, or not yet hydrated): the
+ * office email and phone. There is never a <form> without JavaScript, so a browser can never fall back
+ * to submitting personal data in a GET query string.
+ */
+export function ContactDirect({ email, phone, notice }) {
+  const tel = phone ? phone.replace(/[^\d+]/g, '') : ''
+  return (
+    <div className="form form--direct" data-testid="contact-direct">
+      <h2 id="contact-form-title">Write to the centre</h2>
+      <p className="mt-4">
+        {email && phone
+          ? 'Send your message straight to the office by email, or call the office.'
+          : email
+            ? 'Send your message straight to the office by email.'
+            : phone
+              ? 'Call the office to talk to the team.'
+              : 'The message form needs JavaScript in your browser. The office address is on this page.'}
+      </p>
+      {(email || phone) && (
+        <p className="actions">
+          {email && (
+            <a className="btn btn--primary" href={`mailto:${email}?subject=${encodeURIComponent('Enquiry from the CRTDH website')}`}>
+              Email {email}
+            </a>
+          )}
+          {tel && (
+            <a className="btn btn--secondary" href={`tel:${tel}`}>
+              Call {phone}
+            </a>
+          )}
+        </p>
+      )}
+      {notice}
+    </div>
+  )
+}
+
+/** Before hydration (and with JavaScript off) the direct contact block; the form only once React runs. */
+export default function ContactForm(props) {
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => setHydrated(true), [])
+  return hydrated ? <InteractiveForm {...props} /> : <ContactDirect email={props.email} phone={props.phone} notice={props.notice} />
+}
+
+/**
  * Contact form. States: idle → sending → sent; field errors on blur; Turnstile failure;
  * rate limited (429); relay unreachable → a prepared email (mailto) instead.
  * The submit button is never disabled; it reports what is missing.
  */
-export default function ContactForm({ email, notice }) {
+function InteractiveForm({ email, notice }) {
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle') // idle | sending | sent | turnstile | limited | offline | failed
@@ -206,7 +251,7 @@ export default function ContactForm({ email, notice }) {
     ) : null
 
   return (
-    <form className="form" onSubmit={onSubmit} noValidate aria-labelledby="contact-form-title" data-testid="contact-form">
+    <form className="form" method="post" onSubmit={onSubmit} noValidate aria-labelledby="contact-form-title" data-testid="contact-form">
       <h2 id="contact-form-title">Send a message</h2>
       <p className="soft mt-2">All fields except phone are needed.</p>
 

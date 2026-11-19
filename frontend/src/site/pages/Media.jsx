@@ -1,5 +1,6 @@
 import PageShell from '../components/PageShell.jsx'
 import { Gallery, PageBanner } from '../components/Blocks.jsx'
+import { PlainLink } from '../link.jsx'
 import { formatDate, uniqueItems } from '../util.js'
 
 /** Media (listing): events as galleries with an index, more photographs, press, newsletters. */
@@ -68,10 +69,10 @@ export default function Media({ data }) {
                 <ul className="rows mt-6">
                   {coverage.map((l) => (
                     <li key={l.id}>
-                      <a href={l.url} className="rows__link" target="_blank" rel="noopener noreferrer">
+                      <PlainLink href={l.url} className="rows__link" target="_blank" rel="noopener noreferrer">
                         <span>{pressLabel(l)}</span>
                         <span className="soft small">{host(l.url)}</span>
-                      </a>
+                      </PlainLink>
                     </li>
                   ))}
                 </ul>
@@ -83,10 +84,10 @@ export default function Media({ data }) {
                 <ul className="rows mt-6">
                   {documents.map((d) => (
                     <li key={d.id}>
-                      <a href={d.file} className="rows__link" download>
+                      <PlainLink href={d.file} className="rows__link" download>
                         <span>{d.title}</span>
                         <span className="soft small">PDF</span>
-                      </a>
+                      </PlainLink>
                     </li>
                   ))}
                 </ul>

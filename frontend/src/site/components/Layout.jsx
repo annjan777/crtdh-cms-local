@@ -1,16 +1,23 @@
 import { useEffect, useRef } from 'react'
-import SiteLink from '../link.jsx'
-import { toRoute, formatDate } from '../util.js'
+import SiteLink, { PlainLink } from '../link.jsx'
+import { toRoute, formatDate, safeHref } from '../util.js'
 
 // Grouped navigation (PLAN WS2.2): About · Our work · Impact · News · Contact.
 // Labels and order come from the CMS nav items; the group is chosen by route.
 const GROUPS = [
-  { id: 'about', label: 'About', routes: ['/about', '/team'] },
-  { id: 'work', label: 'Our work', routes: ['/innovations', '/facilities', '/services', '/product', '/enterprises'] },
-  { id: 'impact', label: 'Impact', routes: ['/social-impact', '/covid-19'] },
-  { id: 'news', label: 'News', routes: ['/media'] },
+  { id: 'about', label: 'About', routes: ['/about/', '/team/'] },
+  { id: 'work', label: 'Our work', routes: ['/innovations/', '/facilities/', '/services/', '/product/', '/enterprises/'] },
+  { id: 'impact', label: 'Impact', routes: ['/social-impact/', '/covid-19/'] },
+  { id: 'news', label: 'News', routes: ['/media/'] },
 ]
-const CONTACT = '/contact'
+const CONTACT = '/contact/'
+// Footer column headings. The header's "About" menu opens onto an "About" page, which is fine in a menu but
+// reads as a duplicate when the heading sits directly over the link, so the footer names the columns itself.
+const FOOTER_LABELS = { about: 'The centre', work: 'Our work', impact: 'Impact', news: 'Keep in touch' }
+export const footerLabel = (g) => {
+  const label = FOOTER_LABELS[g.id] || g.label
+  return g.items.some((i) => String(i.label || '').trim().toLowerCase() === label.toLowerCase()) ? `${label} at CRTDH` : label
+}
 
 export function groupNav(navItems) {
   const items = (navItems || []).map((n) => ({ ...n, route: toRoute(n.url) })).filter((n) => n.route !== '/')
@@ -32,7 +39,12 @@ export function groupNav(navItems) {
   return { groups, contact }
 }
 
-const isActive = (current, route) => (route === '/' ? current === '/' : current === route || current.startsWith(`${route}/`))
+const trim = (p) => String(p || '/').replace(/(.)\/+$/, '$1')
+const isActive = (current, route) => {
+  const c = trim(current)
+  const r = trim(route)
+  return r === '/' ? c === '/' : c === r || c.startsWith(`${r}/`)
+}
 
 /** Site chrome: skip link, header with grouped nav, main landmark, footer. Props only. */
 export default function Layout({ data, currentPath = '/', children }) {
@@ -175,7 +187,7 @@ function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
     ['LinkedIn', settings.linkedin_url],
     ['Instagram', settings.instagram_url],
     ['X (Twitter)', settings.twitter_url],
-  ].filter(([, href]) => href)
+  ].filter(([, href]) => safeHref(href))
   return (
     <footer className="site-footer on-navy">
       <div className="wrap">
@@ -210,7 +222,7 @@ function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
               <ul className="site-footer__social">
                 {social.map(([label, href]) => (
                   <li key={label}>
-                    <a href={href} target="_blank" rel="noopener noreferrer">{label}</a>
+                    <PlainLink href={href} target="_blank" rel="noopener noreferrer">{label}</PlainLink>
                   </li>
                 ))}
               </ul>
@@ -219,7 +231,7 @@ function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
           <nav className="site-footer__nav" aria-label="Footer">
             {groups.map((g) => (
               <div key={g.id}>
-                <h2 className="site-footer__h">{g.label}</h2>
+                <h2 className="site-footer__h">{footerLabel(g)}</h2>
                 <ul>
                   {g.items.map((i) => (
                     <li key={i.id ?? i.route}>
@@ -243,7 +255,7 @@ function Footer({ settings, groups, contact, publishedAt, privacyNotice }) {
           </div>
           <p className="small">
             A DSIR-sponsored centre at IIT Kharagpur. © {year} CRTDH, IIT Kharagpur.{' '}
-            <SiteLink to={privacyNotice ? '/contact#privacy' : '/contact#contact-notice'}>How we use contact messages</SiteLink>.
+            <SiteLink to={privacyNotice ? '/contact/#privacy' : '/contact/#contact-notice'}>How we use contact messages</SiteLink>.
             {publishedAt && <> Last updated {formatDate(publishedAt)}.</>}
           </p>
         </div>

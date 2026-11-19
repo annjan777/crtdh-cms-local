@@ -1,5 +1,7 @@
 import { mediaRoot } from '../../scripts/media-root.mjs'
 import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { ROUTES, isAllowedRequest } from './helpers.js'
@@ -156,7 +158,7 @@ test('mobile menu opens full screen with 48px rows and closes on navigation', as
 
 test('contact map and videos load third-party frames only when pressed', async ({ page }) => {
   await page.route('https://www.google.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>map</p>' }))
-  await page.goto('/contact')
+  await page.goto('/contact/')
   await expect(page.locator('iframe')).toHaveCount(0)
   const show = page.getByRole('button', { name: 'Show the map' })
   if (await show.count()) {
@@ -166,4 +168,85 @@ test('contact map and videos load third-party frames only when pressed', async (
   await page.goto('/')
   await expect(page.locator('iframe')).toHaveCount(0)
   await expect(page.locator('img[src^="http"]')).toHaveCount(0)
+})
+
+test('every sitemap URL ends with "/" and is the canonical and og:url of the page it serves', async ({ request }) => {
+  const xml = await (await request.get('/sitemap.xml')).text()
+  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
+  expect(locs).toHaveLength(ROUTES.length)
+  for (const loc of locs) {
+    expect(loc.endsWith('/')).toBe(true)
+    const path = new URL(loc).pathname
+    const res = await request.get(path, { maxRedirects: 0 })
+    expect(res.status()).toBe(200)
+    const html = await res.text()
+    expect(html).toContain(`<link rel="canonical" href="${loc}"/>`)
+    expect(html).toContain(`<meta property="og:url" content="${loc}"/>`)
+  }
+})
+
+test('internal page links all end with "/"', async ({ request }) => {
+  for (const r of ROUTES) {
+    const html = await (await request.get(r)).text()
+    const body = html.slice(html.indexOf('<body'))
+    for (const m of body.matchAll(/<a\b[^>]*\shref="(\/[^"]*)"/g)) {
+      const path = m[1].split(/[?#]/)[0]
+      if (/\.\w{2,5}$/.test(path)) continue // files (/_media/x.pdf)
+      expect(path, `${r} links to ${m[1]}`).toMatch(/\/$/)
+    }
+  }
+})
+
+test('.htaccess needs only AllowOverride FileInfo and guards every module block', async () => {
+  const ht = fs.readFileSync(path.resolve('build/client/.htaccess'), 'utf8')
+  const code = ht.split('\n').filter((l) => l.trim() && !l.trim().startsWith('#'))
+  for (const banned of [/^\s*Options\b/, /^\s*Expires/, /^\s*DirectorySlash\b/, /^\s*(Auth|Require|Order|Allow|Deny)\b/]) {
+    expect(code.filter((l) => banned.test(l))).toEqual([])
+  }
+  // Header / SetEnvIf / AddType only inside the matching <IfModule>.
+  const stack = []
+  for (const l of code) {
+    const open = l.match(/^\s*<IfModule\s+([\w.]+)>/)
+    if (open) stack.push(open[1])
+    else if (/^\s*<\/IfModule>/.test(l)) stack.pop()
+    else if (/^\s*Header\b/.test(l)) expect(stack).toContain('mod_headers.c')
+    else if (/^\s*SetEnvIf\b/.test(l)) expect(stack).toContain('mod_setenvif.c')
+    else if (/^\s*AddType\b/.test(l)) expect(stack).toContain('mod_mime.c')
+  }
+  expect(stack).toEqual([])
+  expect(ht).toMatch(/AllowOverride FileInfo/)
+  expect(fs.existsSync(path.resolve('build/client/assets/index.html'))).toBe(true)
+})
+
+test('home video posters and facility tiles are never empty boxes', async ({ page }) => {
+  await page.goto('/')
+  const posters = page.locator('.news__videos .video__poster')
+  for (let i = 0; i < (await posters.count()); i++) {
+    const p = posters.nth(i)
+    const cls = await p.getAttribute('class')
+    expect(cls).toMatch(/video__poster--(photo|type)/)
+    if (cls.includes('--photo')) await expect(p.locator('img')).toHaveCount(1)
+    await expect(p.locator('.video__title')).not.toBeEmpty()
+  }
+  const tiles = page.locator('.facility-list__item')
+  expect(await tiles.count()).toBeGreaterThan(0)
+  for (let i = 0; i < (await tiles.count()); i++) {
+    const t = tiles.nth(i)
+    const cls = await t.getAttribute('class')
+    if (cls.includes('--photo')) {
+      await t.scrollIntoViewIfNeeded()
+      await expect(t.locator('img')).toBeVisible()
+      await expect.poll(() => t.locator('img').evaluate((img) => img.complete && img.naturalWidth)).toBeGreaterThan(0)
+    } else expect(cls).toContain('--type')
+  }
+})
+
+test('footer column headings never repeat a link label in their column', async ({ page }) => {
+  await page.goto('/')
+  const cols = page.locator('.site-footer__nav > div')
+  for (let i = 0; i < (await cols.count()); i++) {
+    const h = (await cols.nth(i).locator('h2').innerText()).trim().toLowerCase()
+    const labels = (await cols.nth(i).locator('a').allInnerTexts()).map((s) => s.trim().toLowerCase())
+    expect(labels).not.toContain(h)
+  }
 })

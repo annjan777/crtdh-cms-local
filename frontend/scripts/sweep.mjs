@@ -77,6 +77,8 @@ for (const [route, { html }] of pages) {
       if (!fileExists(targetRoute)) add(route, `link to missing file ${href}`)
       continue
     }
+    // Page URLs are canonical with a trailing slash (Apache would 301 "/about" to "/about/").
+    if (p !== '' && !p.endsWith('/')) add(route, `page link without trailing slash ${href}`)
     const target = pages.get(targetRoute)
     if (!target) {
       add(route, `link to missing page ${href}`)

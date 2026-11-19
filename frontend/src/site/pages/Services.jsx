@@ -1,6 +1,6 @@
 import PageShell from '../components/PageShell.jsx'
 import { PageBanner } from '../components/Blocks.jsx'
-import SiteLink from '../link.jsx'
+import SiteLink, { PlainLink } from '../link.jsx'
 import { Img } from '../media.jsx'
 
 /** Services (listing): what the centre offers MSMEs and startups, and how to start. */
@@ -14,11 +14,11 @@ export default function Services({ data }) {
         intro="Support for healthcare MSMEs, startups and innovators, from research and prototyping to regulation, training and market access."
       >
         <div className="actions">
-          <SiteLink to="/contact" className="btn btn--primary">Ask about a service</SiteLink>
+          <SiteLink to="/contact/" className="btn btn--primary">Ask about a service</SiteLink>
           {home.membership_pdf && (
-            <a href={home.membership_pdf} className="text-link" download>
+            <PlainLink href={home.membership_pdf} className="text-link" download>
               {home.membership_heading ? `${home.membership_heading} (PDF)` : 'Membership brochure (PDF)'}
-            </a>
+            </PlainLink>
           )}
         </div>
       </PageBanner>

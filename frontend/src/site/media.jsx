@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { safeColor } from './util.js'
 
 // The snapshot's `media` map: { "/_media/<hash>.<ext>": { width, height, variants: { avif, webp }, lqip? } }
 const MediaContext = createContext({})
@@ -38,7 +39,8 @@ export function Img({ src, alt = '', ratio = '3x2', sizes = '100vw', priority = 
   if (!src) return null
   const avif = toSrcset(info?.variants?.avif)
   const webp = toSrcset(info?.variants?.webp)
-  const bg = info?.lqip || info?.color || info?.dominant_color
+  // Only a hex colour may become a CSS value (an lqip could be a data: URL or anything else).
+  const bg = safeColor(info?.lqip) || safeColor(info?.color) || safeColor(info?.dominant_color)
   const cls = ['img', ratio ? `r-${ratio}` : '', contain ? 'img--contain' : '', figure ? 'img--figure' : '', className].filter(Boolean).join(' ')
   const img = (
     <img
