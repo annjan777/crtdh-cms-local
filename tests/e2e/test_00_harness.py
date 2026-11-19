@@ -43,3 +43,14 @@ def test_static_host_404(tmp_path):
 def test_browser_launches(page):
     page.set_content("<main><h1>ok</h1></main>")
     assert page.inner_text("h1") == "ok"
+
+
+def test_stack_never_prints_test_secrets(stack):
+    """R-9 / F-09: pytest prints fixtures in tracebacks; the stack's repr must not carry TOTP seeds or the password."""
+    text = repr(stack) + str(stack)
+    assert "totp" not in text.lower()
+    assert stack.password not in text
+    for user in stack.users.values():
+        secret = (user or {}).get("totp_secret")
+        if secret:
+            assert secret not in text
