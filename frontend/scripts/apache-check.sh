@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Serve build/client with Apache 2.4 under "AllowOverride FileInfo" only (the most a shared host may allow)
 # and check that the generated .htaccess does not 500: every sitemap URL returns 200, "/about" 301s to
-# "/about/", an unknown path gets 404, and the security headers are present.
+# "/about/", the old site's /about.html etc. 301 to the new pages, an unknown path gets 404, and the security headers are present.
 # Usage: scripts/apache-check.sh [AllowOverride value, default FileInfo]   (needs apache2 and curl; run as root
 # or a user that may bind 127.0.0.1:8089)
 set -euo pipefail
@@ -52,6 +52,12 @@ site="$(grep -o '<loc>[^<]*' "$BUILD/sitemap.xml" | head -1 | sed 's#<loc>##; s#
 for loc in $(grep -o '<loc>[^<]*' "$BUILD/sitemap.xml" | sed 's#<loc>##'); do check "${loc#$site}" 200; done
 check /about 301 "http://127.0.0.1:$PORT/about/"
 check /assets/ 200
+# Old hand-written site URLs move to the new pages; /index.html still serves the home page.
+for old in about team innovations facilities services product enterprises social-impact media contact; do
+  check "/$old.html" 301 "http://127.0.0.1:$PORT/$old/"
+done
+check /index.html 200
+check /About.html 404
 check /no-such-page/ 404
 check /sitemap.xml 200
 headers="$(curl -sI "http://127.0.0.1:$PORT/about/")"

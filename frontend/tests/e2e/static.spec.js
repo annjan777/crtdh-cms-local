@@ -159,10 +159,24 @@ test('.htaccess needs only AllowOverride FileInfo and guards every module block'
     else if (/^\s*Header\b/.test(l)) expect(stack).toContain('mod_headers.c')
     else if (/^\s*SetEnvIf\b/.test(l)) expect(stack).toContain('mod_setenvif.c')
     else if (/^\s*AddType\b/.test(l)) expect(stack).toContain('mod_mime.c')
+    else if (/^\s*Redirect/.test(l)) expect(stack).toContain('mod_alias.c')
   }
   expect(stack).toEqual([])
   expect(ht).toMatch(/AllowOverride FileInfo/)
   expect(fs.existsSync(path.resolve('build/client/assets/index.html'))).toBe(true)
+})
+
+test('old site pages (/about.html etc.) redirect to their new page, and every target exists', async () => {
+  const ht = fs.readFileSync(path.resolve('build/client/.htaccess'), 'utf8')
+  const rules = [...ht.matchAll(/^\s*RedirectMatch 301 \^\/([\w-]+)\\\.html\$ (\/[\w-]+\/)$/gm)].map((m) => [m[1], m[2]])
+  expect(rules.map(([from]) => from).sort()).toEqual(
+    ['about', 'contact', 'enterprises', 'facilities', 'innovations', 'media', 'product', 'services', 'social-impact', 'team'],
+  )
+  for (const [from, to] of rules) {
+    expect(to).toBe(`/${from}/`)
+    expect(fs.existsSync(path.resolve(`build/client${to}index.html`)), to).toBe(true)
+  }
+  expect(ht).not.toMatch(/Redirect\w*\s+\d*\s*\^?\/index/) // would loop with DirectoryIndex
 })
 
 test('mobile menu opens from the header and closes on navigation', async ({ page }) => {

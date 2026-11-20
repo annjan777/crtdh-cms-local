@@ -472,6 +472,14 @@ The CMS shows "Waiting for upload machine (last seen …)" whenever this PC is o
    The agent checks this itself and rolls back automatically if the marker doesn't appear after 5 tries.
 4. Open all 12 pages in a browser at phone and desktop width. Compare them with the old site (the golden
    regression test checks headings, items and images, but look anyway).
+5. Check the old site's addresses now lead to the new pages (bookmarks and Google results still use them):
+
+   ```bash
+   curl -sI https://crtdh.iitkgp.ac.in/about.html | grep -iE '^(HTTP|location)'
+   ```
+
+   Expect `301` and `location: https://crtdh.iitkgp.ac.in/about/`. If it is `200` or `404`, CIC Apache is
+   ignoring `.htaccess` redirects (mod_alias off or AllowOverride None); ask CIC to allow `FileInfo`.
 
 Roll back: `python -m publish_agent rollback` (previous release) or `rollback --to legacy-…` (the site from
 before the agent; the id is shown in `status`). For a broken CMS, use the manual upload runbook in
