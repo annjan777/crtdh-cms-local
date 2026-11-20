@@ -191,6 +191,7 @@ def main():
     fails = sum(1 for r in RESULTS if r[0] == "FAIL")
     print(f"\n{fails} FAIL, {sum(1 for r in RESULTS if r[0] == 'WARN')} WARN")
     if a.json:
+        os.makedirs(os.path.dirname(a.json) or ".", exist_ok=True)
         with open(a.json, "w") as f:
             json.dump([dict(zip(("level", "where", "message"), r)) for r in RESULTS], f, indent=2)
     return 1 if fails else 0

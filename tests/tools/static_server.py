@@ -6,12 +6,15 @@
 static: /x -> x/index.html | x.html | x ; unknown -> 404.html with HTTP 404 (like Apache on CIC).
 spa:    unknown non-file paths -> index.html (admin router).
 --cert/--key: serve HTTPS (production settings refuse http origins).
+spa also sends the security headers the nginx gateway sends on the CMS origin (CSP values read from
+deploy/nginx/templates/gateway.conf.template, so the two never drift).
 --proxy: /api/, /admin/, /media/, /mcp, /.well-known/, /oauth/, /upload/ are forwarded so the admin
          is same-origin with the CMS API (as in production behind one hostname).
 """
 import argparse
 import http.server
 import os
+import re
 import socketserver
 import urllib.error
 import urllib.request
@@ -20,6 +23,38 @@ from pathlib import Path
 
 PROXY_PREFIXES = ("/api/", "/admin/", "/media/", "/mcp", "/.well-known/", "/oauth/", "/o/", "/upload/", "/static/",
                   "/cms/login")  # as deploy/nginx gateway: Django owns /cms/login (OAuth sign-in entry)
+GATEWAY_TEMPLATE = Path(__file__).resolve().parents[2] / "deploy" / "nginx" / "templates" / "gateway.conf.template"
+HSTS = ("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+
+
+def gateway_headers(path, csp):
+    """Headers deploy/nginx adds on the CMS origin for a non-proxied path (its location blocks, in order)."""
+    if path.startswith("/assets/"):
+        return [("X-Content-Type-Options", "nosniff"), HSTS]
+    if path.startswith("/static/"):
+        return [("X-Content-Type-Options", "nosniff"), ("Content-Security-Policy", csp["static"]), HSTS]
+    preview = path == "/preview.html"
+    return [
+        ("Content-Security-Policy", csp["csp_preview" if preview else "csp"]),
+        ("X-Frame-Options", "SAMEORIGIN" if preview else "DENY"),
+        ("X-Content-Type-Options", "nosniff"),
+        ("Referrer-Policy", "same-origin"),
+        ("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()"),
+        ("Cross-Origin-Opener-Policy", "same-origin"),
+        HSTS,
+    ]
+
+
+def gateway_csp():
+    found = dict(re.findall(r'set \$(csp\w*) "([^"]+)";', GATEWAY_TEMPLATE.read_text()))
+    missing = {"csp", "csp_preview"} - set(found)
+    if missing:
+        raise SystemExit(f"static_server: {sorted(missing)} not found in {GATEWAY_TEMPLATE}")
+    static = re.search(r'location /static/ \{.*?Content-Security-Policy "([^"]+)"', GATEWAY_TEMPLATE.read_text(), re.S)
+    found["static"] = static.group(1) if static else "default-src 'none'; frame-ancestors 'none'"
+    return found
+
+
 HOP = {"connection", "keep-alive", "transfer-encoding", "te", "trailer", "upgrade", "proxy-authorization", "proxy-authenticate"}
 
 
@@ -40,12 +75,20 @@ def _proxy_opener():
 class Handler(http.server.SimpleHTTPRequestHandler):
     mode = "static"
     proxy = None
+    csp = None  # spa: gateway CSP values
+
+    def end_headers(self):
+        if self.mode == "spa" and self.csp and not getattr(self, "_proxied", False):
+            for k, v in gateway_headers(getattr(self, "_request_path", self.path).split("?", 1)[0], self.csp):
+                self.send_header(k, v)
+        super().end_headers()
 
     def log_message(self, fmt, *args):
         if os.environ.get("STATIC_SERVER_LOG"):
             super().log_message(fmt, *args)
 
     def _proxy(self):
+        self._proxied = True
         length = int(self.headers.get("Content-Length") or 0)
         body = self.rfile.read(length) if length else None
         req = urllib.request.Request(self.proxy + self.path, data=body, method=self.command)
@@ -70,6 +113,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     static_root = None
 
     def _route(self):
+        self._request_path, self._proxied = self.path, False
         if self.static_root and self.path.startswith("/static/"):  # gateway serves collectstatic output itself
             rel = self.path.split("?", 1)[0][len("/static/"):]
             f = (Path(self.static_root) / rel).resolve()
@@ -136,7 +180,7 @@ class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 def serve(directory, port, mode="static", proxy=None, host="127.0.0.1", cert=None, key=None, static_root=None):
     handler = type("H", (Handler,), {"mode": mode, "proxy": proxy.rstrip("/") if proxy else None,
-                                     "static_root": static_root})
+                                     "static_root": static_root, "csp": gateway_csp() if mode == "spa" else None})
     srv = Server((host, port), partial(handler, directory=str(directory)))
     if cert:
         import ssl
