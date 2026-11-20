@@ -1,5 +1,18 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from apps.common.versioning import VersionedModel
+
+
+_POSITION_WORD = r"(?:left|center|right|top|bottom)"
+_POSITION_PCT = r"(?:100|[1-9]?\d)(?:\.\d)?%"
+_POSITION_RE = re.compile(rf"^(?:{_POSITION_WORD} {_POSITION_WORD}|{_POSITION_PCT} {_POSITION_PCT})$")
+
+
+def validate_image_position(value):
+    if value and not _POSITION_RE.match(value):
+        raise ValidationError('Use a focus point such as "30% 45%" (across, down) or "center center".')
 
 
 class HeroSlide(VersionedModel):
@@ -15,16 +28,10 @@ class HeroSlide(VersionedModel):
     secondary_button_label = models.CharField(max_length=100, blank=True, default="About CRTDH")
     secondary_button_link = models.CharField(max_length=255, blank=True, default="/about")
     is_published = models.BooleanField(default=True)
-    # Which part of the photo stays in view when the hero crops it (CSS object-position).
-    IMAGE_POSITION_CHOICES = [
-        ("center center", "Centre"),
-        ("left center", "Left"),
-        ("right center", "Right"),
-        ("center top", "Top"),
-        ("center bottom", "Bottom"),
-    ]
+    # Which point of the photo stays in view when the hero crops it: a CSS object-position, either a
+    # keyword pair ("center center", "right top") or the focus point the editor clicks ("30% 45%").
     image_position = models.CharField(
-        max_length=20, choices=IMAGE_POSITION_CHOICES, default="center center", blank=True
+        max_length=20, default="center center", blank=True, validators=[validate_image_position]
     )
     order = models.IntegerField(default=0)
 

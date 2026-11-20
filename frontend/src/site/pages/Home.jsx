@@ -14,6 +14,13 @@ import TiltCard from '../components/TiltCard'
 import Counter from '../components/Counter'
 import './Home.css'
 
+// The editor's focus point for a hero photo (CMS "click the part to keep in view"): a CSS object-position
+// such as "30% 45%" or "right top". The CMS validates it; anything else falls back to the stylesheet's default.
+const FOCUS_RE = /^((left|center|right|top|bottom) (left|center|right|top|bottom)|\d{1,3}(\.\d)?% \d{1,3}(\.\d)?%)$/
+function focusStyle(position) {
+  return position && position !== 'center center' && FOCUS_RE.test(position) ? { objectPosition: position } : undefined
+}
+
 const MEMBERSHIP_TIERS = [
   { label: 'Platinum', bg: '#e5e4e2' },
   { label: 'Gold', bg: '#ffd700' },
@@ -51,7 +58,7 @@ function HomeView() {
             ariaLabel="Hero image carousel"
             renderItem={(slide) => (
               <div className="hero__slide">
-                <img src={slide.image} alt="" />
+                <img src={slide.image} alt="" style={focusStyle(slide.image_position)} />
               </div>
             )}
           />

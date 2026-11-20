@@ -1,7 +1,8 @@
 // Photo field, kept deliberately simple: the photo, a Replace button, and Save / Keep current when a new
 // one is chosen. Size rule: hero rejects < min_width, others warn < 1200 px. The photo description for
-// screen readers is filled in automatically (the section's own title, else the file name), and the crop
-// stays centred, so editors only ever pick a photo.
+// screen readers is filled in automatically (the section's own title, else the file name). Fields with a
+// position_field (the home hero) also get a focus point: click or drag on the photo, and the phone and computer
+// previews show exactly what the site keeps in view.
 import { useEffect, useRef, useState } from 'react';
 import { Banner, Spinner } from '../../ui/index.jsx';
 import { checkImageSize } from '../validate.js';
@@ -25,7 +26,104 @@ export function autoDescription(record, file) {
   return (base || 'Photo').slice(0, 200);
 }
 
-export default function ImageField({ field, record, onUpload, id }) {
+// The site's own default when no point has been chosen (Home.css: object-position: right center).
+const SITE_DEFAULT = [100, 50];
+const WORD = { left: 0, center: 50, right: 100, top: 0, bottom: 100 };
+
+/** "30% 45%" | "right top" | "" -> [across, down] in percent. */
+function parsePosition(value) {
+  if (!value || value === 'center center') return SITE_DEFAULT;
+  const pct = value.match(/^(\d{1,3}(?:\.\d)?)% (\d{1,3}(?:\.\d)?)%$/);
+  if (pct) return [Math.min(100, +pct[1]), Math.min(100, +pct[2])];
+  let [x, y] = [50, 50];
+  for (const w of value.split(' ')) {
+    if (w === 'left' || w === 'right') x = WORD[w];
+    else if (w === 'top' || w === 'bottom') y = WORD[w];
+  }
+  return [x, y];
+}
+
+const clamp = (n) => Math.round(Math.min(100, Math.max(0, n)));
+
+function FocusPicker({ url, value, onChange, id }) {
+  const [draft, setDraft] = useState(null); // the point while dragging or just set, until the saved value catches up
+  const box = useRef(null);
+  const dragging = useRef(false);
+  const saved = parsePosition(value);
+  const point = draft || saved;
+  const setPoint = setDraft;
+
+  const save = (p) => {
+    onChange(`${p[0]}% ${p[1]}%`);
+    setDraft(null);
+  };
+  const at = (e) => {
+    const r = box.current.getBoundingClientRect();
+    return [clamp(((e.clientX - r.left) / r.width) * 100), clamp(((e.clientY - r.top) / r.height) * 100)];
+  };
+  const css = `${point[0]}% ${point[1]}%`;
+
+  return (
+    <div className="focus-picker">
+      <p className="field-label" id={`${id}-focus-label`}>Part of the photo to keep in view</p>
+      <p className="field-hint">
+        Click or drag on the photo. Phones show only a narrow upright slice, so put the dot on what matters most.
+      </p>
+      <div
+        ref={box}
+        className="focus-picker__photo"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          dragging.current = true;
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+          setPoint(at(e));
+        }}
+        onPointerMove={(e) => dragging.current && setPoint(at(e))}
+        onPointerUp={(e) => {
+          if (!dragging.current) return;
+          dragging.current = false;
+          const p = at(e);
+          setPoint(p);
+          save(p);
+        }}
+      >
+        <img src={url} alt="" draggable={false} />
+        <button
+          type="button"
+          className="focus-picker__dot"
+          style={{ left: `${point[0]}%`, top: `${point[1]}%` }}
+          aria-labelledby={`${id}-focus-label`}
+          aria-description={`${point[0]}% across, ${point[1]}% down. Arrow keys move it.`}
+          onKeyDown={(e) => {
+            const step = e.shiftKey ? 10 : 2;
+            const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+            if (!d) return;
+            e.preventDefault();
+            const p = [clamp(point[0] + d[0]), clamp(point[1] + d[1])];
+            setPoint(p);
+            save(p);
+          }}
+        />
+      </div>
+      <div className="focus-picker__previews" aria-hidden="true">
+        <figure>
+          <div className="focus-preview focus-preview--phone">
+            <img src={url} alt="" style={{ objectPosition: css }} />
+          </div>
+          <figcaption>Phone</figcaption>
+        </figure>
+        <figure>
+          <div className="focus-preview focus-preview--wide">
+            <img src={url} alt="" style={{ objectPosition: css }} />
+          </div>
+          <figcaption>Computer</figcaption>
+        </figure>
+      </div>
+    </div>
+  );
+}
+
+export default function ImageField({ field, record, onChange, onUpload, id }) {
   const url = record.values[field.name];
   const media = record.media?.[field.name];
   const fileInput = useRef(null);
@@ -76,7 +174,14 @@ export default function ImageField({ field, record, onUpload, id }) {
         {field.label}
         {field.required ? <span className="req" aria-hidden="true"> *</span> : null}
       </legend>
-      {shown ? (
+      {url && !pending && field.position_field ? (
+        <FocusPicker
+          url={url}
+          id={id}
+          value={record.values[field.position_field]}
+          onChange={(v) => onChange({ [field.position_field]: v })}
+        />
+      ) : shown ? (
         <div className="image-preview">
           <img src={shown} alt="" />
         </div>

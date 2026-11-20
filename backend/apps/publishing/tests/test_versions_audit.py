@@ -68,6 +68,19 @@ def test_validation_errors_use_contract_body(api_as, content):
     assert HeroSlide.objects.get(pk=18).version == 1
 
 
+def test_hero_focus_point_accepts_clicked_point_and_keywords(api_as, content):
+    client = api_as("editor")
+    v = HeroSlide.objects.get(pk=18).version
+    for value in ("30% 45%", "0% 100%", "12.5% 50%", "right top", "center center", ""):
+        resp = client.patch("/api/v1/hero-slides/18/", {"image_position": value, "expected_version": v}, format="json")
+        assert resp.status_code == 200, (value, resp.json())
+        v = resp.json()["version"]
+        assert HeroSlide.objects.get(pk=18).image_position == value
+    for bad in ("30%", "130% 20%", "30% 45%; color:red", "url(x) 1%"):
+        resp = client.patch("/api/v1/hero-slides/18/", {"image_position": bad, "expected_version": v}, format="json")
+        assert_contract_error(resp, "CMS_VALIDATION", field="image_position")
+
+
 def test_reorder_bumps_versions_of_moved_rows_and_audits(api_as, content):
     client = api_as("editor")
     ids = [r["id"] for r in client.get("/api/v1/news-items/").json()["results"]]

@@ -59,17 +59,18 @@ test('stale version: a save based on an old version shows who changed it and nev
 
 test('upload rejection: a hero photo under 1600 px is refused and the old photo kept', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
-  const before = await panel(page).locator('.image-preview img').getAttribute('src');
+  const current = panel(page).locator('.image-field img').first(); // the focus picker's photo
+  const before = await current.getAttribute('src');
   await panel(page).locator('input[type=file]').first().setInputFiles(path.join(fixtures, 'photo-1200.png'));
   await expect(panel(page).getByText('This photo is 1200 px wide. Photos in this section need at least 1600 px')).toBeVisible();
   await expect(panel(page).getByRole('link', { name: 'See the shot list' }).first()).toBeVisible();
-  expect(await panel(page).locator('.image-preview img').getAttribute('src')).toBe(before);
+  expect(await current.getAttribute('src')).toBe(before);
   await expect(panel(page).getByRole('button', { name: 'Save photo' })).toHaveCount(0);
 });
 
-// The photo field was simplified on 2026-11-19 (owner request): no description box and no focus-point
-// picker. The rule these tests guard is unchanged: a photo is never saved without a description for screen
-// readers. It is now written automatically from the section's own text.
+// The photo field was simplified on 2026-11-19 (owner request): no description box. The rule this test guards
+// is unchanged: a photo is never saved without a description for screen readers. It is written automatically
+// from the section's own text. (On 2026-11-20 the owner asked for the hero focus point back: e2e/focus-point.spec.js.)
 test('a new photo is saved with an automatic description, never without one', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
   const heading = await panel(page).getByRole('textbox', { name: 'Headline', exact: true }).inputValue();
@@ -86,10 +87,12 @@ test('a new photo is saved with an automatic description, never without one', as
   expect(db.rows['hero-slides']['18'].alt_text).toBe(heading.trim());
 });
 
-test('photos stay centred: no focus-point picker is offered', async ({ page }) => {
+test('only the hero photo offers a focus point; other photos are a plain preview', async ({ page }) => {
   await signIn(page, 'priya', '/pages/home?section=home.hero');
-  await expect(panel(page).locator('.image-preview img')).toBeVisible();
-  await expect(panel(page).getByLabel('Focus point')).toHaveCount(0);
+  await expect(panel(page).locator('.focus-picker')).toBeVisible();
+  await page.goto('/pages/facilities?section=facilities.equipment');
+  await expect(panel(page).locator('.image-field').first()).toBeVisible();
+  await expect(panel(page).locator('.focus-picker')).toHaveCount(0);
 });
 
 test('collections: add, hide and reorder with the keyboard', async ({ page }) => {
@@ -106,7 +109,9 @@ test('collections: add, hide and reorder with the keyboard', async ({ page }) =>
   await panel(page).getByRole('button', { name: 'Add news line' }).click();
   await expect(list.locator('.item-row').last()).toContainText('Hidden');
   await panel(page).getByRole('textbox', { name: 'News line' }).fill('Eye camp at Kharagpur on 2 December');
-  await panel(page).getByRole('switch', { name: 'Shown on site' }).check();
+  // Click the switch as people do (its label); the input itself is a 1px hidden control.
+  await panel(page).locator('label.switch', { hasText: 'Shown on site' }).click();
+  await expect(panel(page).getByRole('switch', { name: 'Shown on site' })).toBeChecked();
   await expect(panel(page).getByText('Saved · not live yet')).toBeVisible();
   await expect(canvas(page).locator('[data-cms-section="home.news"]')).toContainText('Eye camp at Kharagpur');
 });

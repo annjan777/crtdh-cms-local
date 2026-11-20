@@ -75,3 +75,11 @@
   border-radius: 999px;
   transition: width 0.2s ease;
 }
+
+/* Phones: the hero text covers the arrows, and swiping is the natural way to change slides there.
+   Keep the dots, which stay tappable below the text. */
+@media (max-width: 768px) {
+  .carousel__arrow {
+    display: none;
+  }
+}
