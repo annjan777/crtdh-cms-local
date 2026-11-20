@@ -819,7 +819,11 @@ async function route(method, path, body) {
       save();
       return json(200, { order: ids });
     }
-    if (method === 'GET' && !pk) return json(200, sortRows(Object.values(db.rows[resource])));
+    if (method === 'GET' && !pk) {
+      // Same shape as the real API (DRF pagination): a bare array here once hid a crash on the Team page.
+      const rows = sortRows(Object.values(db.rows[resource]));
+      return json(200, { count: rows.length, next: null, previous: null, results: rows });
+    }
     if (method === 'GET') return db.rows[resource][pk] ? json(200, db.rows[resource][pk]) : fail(404, 'CMS_NOT_FOUND', 'Not found.', 'Reload.');
     if (method === 'POST' && !pk) {
       const values = { ...(body.data || {}) };

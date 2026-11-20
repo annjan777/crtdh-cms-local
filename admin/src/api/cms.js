@@ -49,7 +49,7 @@ export const content = {
   create: (resource, values) => api.post(`/${resource}/`, values),
   reorder: (resource, ids) => api.post(`/${resource}/reorder/`, { order: ids }),
   remove: (resource, pk) => api.del(`/${resource}/${pk}/`),
-  list: (resource) => api.get(`/${resource}/`),
+  list: (resource) => allPages(`/${resource}/`), // the API pages its lists ({count, next, results})
 };
 
 // Addendum A12 (supersedes A7): user management, admin role only.

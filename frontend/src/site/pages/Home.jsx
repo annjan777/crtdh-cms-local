@@ -46,8 +46,6 @@ function HomeView() {
   return (
     <div className="home-page">
       <section data-block="home.hero" className="hero">
-        <div className="hero__grid" aria-hidden="true" />
-
         {slidesLoading ? (
           <div className="hero__fallback">
             <Spinner label="Loading…" />
