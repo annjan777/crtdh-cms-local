@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CRTDH website + CMS on academicweb.iitkgp.ac.in (no root, no Docker), in one run:
 #
-#   git clone -b dev https://github.com/annjan777/crtdh-cms-local.git ~/.crtdh/app && bash ~/.crtdh/app/deploy/academicweb/setup.sh
+#   ulimit -n 65536; mkdir -m 700 ~/.crtdh && git clone -b dev https://github.com/annjan777/crtdh-cms-local.git ~/.crtdh/app && bash ~/.crtdh/app/deploy/academicweb/setup.sh
 #
 # What it does, in order (it stops at the first problem, before changing the live site):
 #   1. checks this server can do it: .htaccess rules, and a way to reach the CMS (Apache proxy, else PHP)

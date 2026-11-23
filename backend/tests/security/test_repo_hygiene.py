@@ -195,7 +195,7 @@ def test_admin_spa_may_frame_its_preview_but_is_never_framed():
 
 def test_preview_document_is_framed_same_origin_only():
     canvas = (ROOT / "admin/src/editor/Canvas.jsx").read_text()
-    assert 'src="/preview.html"' in canvas  # what the location below is for
+    assert "src={`${import.meta.env.BASE_URL}preview.html`}" in canvas  # /preview.html: what the location below is for
     preview = _gateway_cms_locations()["= /preview.html"]
     csp = _csp(preview["Content-Security-Policy"])
     assert csp["frame-ancestors"] == ["'self'"] and preview["X-Frame-Options"] == "SAMEORIGIN"
