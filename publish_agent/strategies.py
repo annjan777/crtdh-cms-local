@@ -136,7 +136,28 @@ def _switch_symlink(remote, layout, state, target, kind, _local):
     remote.replace(tmp, layout.web_root)  # atomic rename of the link
 
 
-def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
+# One-line redirects from the build's own .htaccess (the old site's /about.html etc., frontend/scripts/postbuild.mjs).
+# In the htaccess strategy every request is rewritten into releases/<id>/ first, so the build's RedirectMatch lines
+# would only ever see the rewritten path; they are copied up here as RewriteRules that run before that. Only this
+# exact, plain shape is accepted, so nothing else in a build can reach the top-level .htaccess.
+_REDIRECT_LINE = re.compile(r"^\s*RedirectMatch (301|410) \^/((?:[A-Za-z0-9_-]|\\\.)+)\$(?: (/[A-Za-z0-9_/-]*))?\s*$")
+
+
+def build_redirects(htaccess_text: str) -> list:
+    """[(status, escaped path without the leading slash, target or None)] from a build's .htaccess."""
+    out = []
+    for line in htaccess_text.splitlines():
+        m = _REDIRECT_LINE.match(line)
+        if not m:
+            continue
+        status, path, target = m.group(1), m.group(2), m.group(3)
+        if (status == "301") != bool(target):
+            continue
+        out.append((status, path, target))
+    return out
+
+
+def htaccess_rules(layout: Layout, target: str, index_dirs: list, redirects: list | None = None) -> str:
     rel = posixpath.relpath(layout.base, layout.web_root)
     rel_release = f"{rel}/releases/{target}"
     if not (_APACHE_SAFE.match(rel_release) and _APACHE_SAFE.match(rel)):
@@ -150,6 +171,12 @@ def htaccess_rules(layout: Layout, target: str, index_dirs: list) -> str:
         # Listings are not needed off: every folder of a build has an index.html, and so does _media/.
         "RewriteEngine On",
         "RewriteBase /",
+    ]
+    if redirects:
+        lines.append("# The old site's addresses (from this release's own .htaccess)")
+        for status, path, to in redirects:
+            lines.append(f"RewriteRule ^{path}$ {to} [R=301,L]" if status == "301" else f"RewriteRule ^{path}$ - [G,L]")
+    lines += [
         "# Block direct requests to the release store",
         "RewriteCond %{ENV:REDIRECT_STATUS} ^$",
         f"RewriteRule ^{esc(rel)}(/|$) - [F,L]",
@@ -190,7 +217,8 @@ def _switch_htaccess(remote, layout, state, target, kind, _local):
     meta = read_meta(remote, layout, target) or {}
     if not meta:
         raise RemoteError(f"release {target} is missing or incomplete on the server")
-    block = htaccess_rules(layout, target, meta.get("index_dirs", []))
+    own = remote.read_bytes(posixpath.join(layout.stored(target), ".htaccess")) or b""
+    block = htaccess_rules(layout, target, meta.get("index_dirs", []), build_redirects(own.decode("latin-1")))
     remote.write_bytes(path, (block + rest).encode("latin-1"))
 
 

@@ -168,15 +168,18 @@ test('.htaccess needs only AllowOverride FileInfo and guards every module block'
 
 test('old site pages (/about.html etc.) redirect to their new page, and every target exists', async () => {
   const ht = fs.readFileSync(path.resolve('build/client/.htaccess'), 'utf8')
-  const rules = [...ht.matchAll(/^\s*RedirectMatch 301 \^\/([\w-]+)\\\.html\$ (\/[\w-]+\/)$/gm)].map((m) => [m[1], m[2]])
-  expect(rules.map(([from]) => from).sort()).toEqual(
-    ['about', 'contact', 'enterprises', 'facilities', 'innovations', 'media', 'product', 'services', 'social-impact', 'team'],
-  )
+  const rules = [...ht.matchAll(/^\s*RedirectMatch 301 \^\/([\w-]+)\\\.html\$ (\/(?:[\w-]+\/)?)$/gm)].map((m) => [m[1], m[2]])
+  expect(rules.map(([from]) => from).sort()).toEqual([
+    'about', 'contact', 'contact-us', 'covid-19', 'enterprises', 'example', 'facilities', 'innovations', 'media',
+    'product', 'services', 'social-impact', 'team',
+  ])
+  const moved = { 'contact-us': '/contact/', example: '/' }
   for (const [from, to] of rules) {
-    expect(to).toBe(`/${from}/`)
+    expect(to).toBe(moved[from] || `/${from}/`)
     expect(fs.existsSync(path.resolve(`build/client${to}index.html`)), to).toBe(true)
   }
   expect(ht).not.toMatch(/Redirect\w*\s+\d*\s*\^?\/index/) // would loop with DirectoryIndex
+  expect(ht).toMatch(/^\s*RedirectMatch 410 \^\/mail\\\.php\$$/m) // the old contact script is gone
 })
 
 test('mobile menu opens from the header and closes on navigation', async ({ page }) => {

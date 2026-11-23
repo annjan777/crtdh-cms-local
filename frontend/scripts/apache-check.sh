@@ -56,6 +56,10 @@ check /assets/ 200
 for old in about team innovations facilities services product enterprises social-impact media contact; do
   check "/$old.html" 301 "http://127.0.0.1:$PORT/$old/"
 done
+check /contact-us.html 301 "http://127.0.0.1:$PORT/contact/"
+check /covid-19.html 301 "http://127.0.0.1:$PORT/covid-19/"
+check /example.html 301 "http://127.0.0.1:$PORT/"
+check /mail.php 410
 check /index.html 200
 check /About.html 404
 check /no-such-page/ 404

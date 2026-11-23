@@ -87,6 +87,29 @@ def test_htaccess_rules_shape(make_pub, cms, server):
     assert os.path.exists(server.home_path("public_html", "images", "logo.png"))
 
 
+def test_htaccess_strategy_carries_the_old_site_redirects(make_pub, cms, server):
+    # The build's own .htaccess sends /about.html etc. to the new pages. In the htaccess strategy every request is
+    # rewritten into releases/<id>/ first, so the agent repeats those redirects at the top level, before that.
+    own = "\n".join([
+        "<IfModule mod_alias.c>",
+        "  RedirectMatch 301 ^/about\\.html$ /about/",
+        "  RedirectMatch 301 ^/contact-us\\.html$ /contact/",
+        "  RedirectMatch 410 ^/mail\\.php$",
+        "  RedirectMatch 301 ^/(.*)$ https://elsewhere.example/",  # not the plain shape: never copied up
+        "</IfModule>", ""])
+    cms.queue(S1, "p1", make_build(S1, "p1", pages={".htaccess": own}))
+    pub = make_pub(strategy="htaccess")
+    assert pub.run_once() == "live"
+    text = open(server.home_path("public_html", ".htaccess")).read()
+    top = text.index("RewriteBase /")
+    assert text.index("RewriteRule ^about\\.html$ /about/ [R=301,L]") > top
+    assert "RewriteRule ^contact-us\\.html$ /contact/ [R=301,L]" in text
+    assert "RewriteRule ^mail\\.php$ - [G,L]" in text
+    assert "elsewhere.example" not in text
+    # the redirects come before the catch-all that sends everything into the release
+    assert text.index("RewriteRule ^about\\.html$") < text.index("RewriteRule ^(.*)$")
+
+
 # ------------------------------------------------------------------ chaos
 def test_resume_after_connection_drop_mid_upload(make_pub, cms, server):
     pub = make_pub()
