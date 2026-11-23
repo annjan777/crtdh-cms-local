@@ -74,6 +74,8 @@ def _parser() -> argparse.ArgumentParser:
     r.add_argument("--once", action="store_true", help="one pass, then exit (for schedulers)")
     rb = sub.add_parser("rollback", help="make the previous release live again")
     rb.add_argument("--to", help="release id to make live (see `status`)")
+    rb.add_argument("--again", action="store_true",
+                    help="copy the release in even if it is already live (after the site files were put back by hand)")
     sub.add_parser("status", help="show what is live")
     sub.add_parser("set-password", help="store the SFTP password in the system keyring")
     k = sub.add_parser("keygen", help="create an ed25519 SSH key pair for the agent")
@@ -159,7 +161,7 @@ def cmd_run(cfg: Config, args) -> int:
 
 def cmd_rollback(cfg: Config, args) -> int:
     pub = Publisher(cfg, connect=_connector(cfg, interactive=True), dry_run=args.dry_run)
-    target = pub.rollback(args.to)
+    target = pub.rollback(args.to, again=args.again)
     print(f"live release is now: {target}")
     return 0
 

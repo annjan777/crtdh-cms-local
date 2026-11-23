@@ -595,7 +595,7 @@ class Publisher:
                 remote.close()
 
     # ------------------------------------------------------------------ operator commands
-    def rollback(self, to: str | None = None) -> str:
+    def rollback(self, to: str | None = None, again: bool = False) -> str:
         remote = self._connect()
         try:
             layout, state = self.resolve(remote)
@@ -609,7 +609,7 @@ class Publisher:
                 if cur not in hist or hist.index(cur) == 0:
                     raise PublishFailed("switch", "there is no earlier release to roll back to")
                 target = hist[hist.index(cur) - 1]
-            if target == cur:
+            if target == cur and not again:
                 LOG.info("%s is already live", target)
                 return target
             if self.dry_run:

@@ -219,7 +219,9 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = env("STATIC_ROOT", default=str(BASE_DIR / "staticfiles"))
-MEDIA_URL = "/api/v1/media/"
+# Where the CMS's own screens find photos. A host that reaches the CMS under a sub-path (deploy/academicweb:
+# /cms/index.php/) sets this to that path + /api/v1/media/; stored content keeps file names, never these URLs.
+MEDIA_URL = env("MEDIA_URL", default="/api/v1/media/")
 MEDIA_ROOT = env("MEDIA_ROOT", default=str(BASE_DIR / "media"))
 FILE_UPLOAD_PERMISSIONS = 0o640
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750

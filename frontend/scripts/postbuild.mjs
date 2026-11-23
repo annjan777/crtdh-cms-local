@@ -150,6 +150,34 @@ ${LEGACY_PAGES.map(([from, to]) => `  RedirectMatch 301 ^/${from.replace('.', '\
 </IfModule>
 `
 fs.writeFileSync(path.join(out, '.htaccess'), htaccess)
+
+// 5. Hosts that ignore .htaccess (academicweb: AllowOverride None). CSP_IN_PAGES puts the same policy in every
+// page as a <meta> tag (browsers enforce it the same way; frame-ancestors is header-only, so pages also refuse
+// to render inside another site's frame via the policy's sandbox-free fallback below). LEGACY_PAGES_AS_FILES
+// writes the old site's addresses as tiny forwarding pages (instant refresh + canonical, which search engines
+// treat like a permanent redirect) and the old mail.php as "410 Gone".
+if (process.env.CSP_IN_PAGES === '1') {
+  const metaCsp = csp.split('; ').filter((d) => !d.startsWith('frame-ancestors')).join('; ')
+  const tags = `<meta http-equiv="Content-Security-Policy" content="${metaCsp}"/><meta name="referrer" content="strict-origin-when-cross-origin"/>`
+  let n = 0
+  for (const file of htmlFiles(out)) {
+    const html = fs.readFileSync(file, 'utf8')
+    const at = html.search(/<meta charSet="utf-8"\/>|<meta charset="utf-8">/i)
+    if (at < 0 || html.includes('http-equiv="Content-Security-Policy"')) continue
+    const end = html.indexOf('>', at) + 1
+    fs.writeFileSync(file, html.slice(0, end) + tags + html.slice(end))
+    n += 1
+  }
+  console.log(`postbuild: security policy written into ${n} pages`)
+}
+if (process.env.LEGACY_PAGES_AS_FILES === '1') {
+  for (const [from, to] of LEGACY_PAGES) {
+    const url = `${site}${to}`
+    fs.writeFileSync(path.join(out, from), `<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><title>Moved</title><link rel="canonical" href="${url}"><meta http-equiv="refresh" content="0; url=${to}"><meta name="robots" content="noindex, follow"></head><body><p>This page has moved to <a href="${to}">${url}</a>.</p></body></html>\n`)
+  }
+  fs.writeFileSync(path.join(out, 'mail.php'), "<?php\nhttp_response_code(410);\nheader('Content-Type: text/plain; charset=utf-8');\necho \"Gone. Please use the contact form on the website.\\n\";\n")
+  console.log(`postbuild: ${LEGACY_PAGES.length} old addresses forward to the new pages; mail.php answers 410`)
+}
 // No directory listings without "Options -Indexes": give assets/ an index of its own.
 fs.writeFileSync(path.join(out, 'assets', 'index.html'), '<!doctype html><meta charset="utf-8"><title>CRTDH</title><meta name="robots" content="noindex">\n')
 console.log(`postbuild: 404.html, sitemap.xml (${PAGES.length} urls), robots.txt, ${scriptHashes.length} CSP script hashes, .htaccess`)

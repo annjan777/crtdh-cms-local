@@ -5,13 +5,36 @@ publish step (upload to a new folder, switch, verify, keep releases, roll back) 
 """
 from __future__ import annotations
 
+import errno
+import functools
 import os
 import shutil
+import time
 import stat
 import subprocess  # nosec B404: runs only the fixed SHELL_COMMANDS templates, arguments shlex-quoted
 from types import SimpleNamespace
 
 from .remote import Remote, shell_command
+
+
+# A network drive (academicweb's /data is virtiofs) can refuse briefly when many files are created in a row
+# ("Too many open files"), and a create that "failed" may still have happened. Wait and try again a few times.
+_TRANSIENT = {errno.EMFILE, errno.ENFILE, errno.EAGAIN, errno.EBUSY, errno.EINTR}
+
+
+def _retry(fn):
+    @functools.wraps(fn)
+    def run(*args, **kwargs):
+        delay = 0.25
+        for attempt in range(7):
+            try:
+                return fn(*args, **kwargs)
+            except OSError as exc:
+                if exc.errno not in _TRANSIENT or attempt == 6:
+                    raise
+                time.sleep(delay)
+                delay = min(delay * 2, 8)
+    return run
 
 
 class _File:
@@ -63,15 +86,23 @@ class _LocalFiles:
             out.append(SimpleNamespace(filename=name, st_mode=st.st_mode, st_size=st.st_size, st_mtime=st.st_mtime))
         return out
 
+    @_retry
     def chmod(self, path, mode):
         os.chmod(path, mode)
 
+    @_retry
     def mkdir(self, path):
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            if not os.path.isdir(path):
+                raise  # a file is in the way; an existing folder is what we wanted
 
+    @_retry
     def rmdir(self, path):
         os.rmdir(path)
 
+    @_retry
     def remove(self, path):
         os.remove(path)
 
@@ -80,12 +111,15 @@ class _LocalFiles:
             raise OSError(f"{dst} exists")
         os.rename(src, dst)
 
+    @_retry
     def posix_rename(self, src, dst):
         os.replace(src, dst)
 
+    @_retry
     def symlink(self, target, link):
         os.symlink(target, link)
 
+    @_retry
     def put(self, local, remote, confirm=True):
         shutil.copyfile(local, remote)
 
@@ -98,6 +132,7 @@ class _LocalFiles:
     def get_channel(self):
         return _Channel()  # nothing to drop: the "connection" is always up
 
+    @_retry
     def open(self, path, mode="rb"):
         return _File(open(path, mode))  # noqa: SIM115
 
