@@ -33,11 +33,19 @@ class _File:
         self._fh.close()
 
 
+class _Channel:
+    def get_transport(self):
+        return self
+
+    def is_active(self):
+        return True
+
+
 class _LocalFiles:
     """The small part of paramiko.SFTPClient the agent uses, on the local filesystem."""
 
     def normalize(self, path):
-        return os.path.realpath(os.path.expanduser("~") if path == "." else path)
+        return os.path.realpath(os.path.expanduser("~") if path in (".", "") else os.path.expanduser(path))
 
     def lstat(self, path):
         return os.lstat(path)
@@ -80,6 +88,15 @@ class _LocalFiles:
 
     def put(self, local, remote, confirm=True):
         shutil.copyfile(local, remote)
+
+    def get(self, remote, local):
+        shutil.copyfile(remote, local)
+
+    def readlink(self, path):
+        return os.readlink(path)
+
+    def get_channel(self):
+        return _Channel()  # nothing to drop: the "connection" is always up
 
     def open(self, path, mode="rb"):
         return _File(open(path, mode))  # noqa: SIM115
