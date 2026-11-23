@@ -14,7 +14,7 @@
 set -euo pipefail
 
 KEEP="${CRTDH_KEEP:-$HOME/.crtdh}"                                  # network drive: settings, backups, scripts
-ROOT="${CRTDH_INSTALL:-$(cat "$KEEP/install-dir" 2>/dev/null)}"    # local disk: programs, database, photos, logs
+ROOT="${CRTDH_INSTALL:-$(cat "$KEEP/install-dir" 2>/dev/null || true)}"    # local disk: programs, database, photos, logs
 APP="$ROOT/app"
 HERE="$APP/deploy/academicweb"
 WEB_ROOT="$HOME"
@@ -28,6 +28,7 @@ step() { printf '\n== %s\n' "$*"; }
 ok() { printf '   ok  %s\n' "$*"; }
 die() { printf '\nSTOPPED: %s\nNothing on the live website was changed by this step.\n' "$*" >&2; exit 1; }
 
+trap 'printf "\nSTOPPED unexpectedly (setup.sh line %s). The live website is unchanged unless DONE was printed. Send a photo of this screen.\n" "$LINENO" >&2' ERR
 [ -n "$ROOT" ] && [ -d "$APP/backend" ] || die "start with install.sh (the programs folder is not set up)"
 [ "$(id -u)" != 0 ] || die "run this as the website user (crtdh), not root"
 ulimit -n "$(ulimit -Hn)" 2>/dev/null || ulimit -n 65536 2>/dev/null || true
@@ -226,7 +227,7 @@ umask 022
 
 # ---- 4. the CMS address, processes, cron ---------------------------------------------------------------------------
 step "Starting the CMS"
-ACCESS="$(sed -n 's/^access=//p' "$KEEP/host.conf" 2>/dev/null)"; ACCESS="${ACCESS:-campus}"
+ACCESS="$(sed -n 's/^access=//p' "$KEEP/host.conf" 2>/dev/null || true)"; ACCESS="${ACCESS:-campus}"
 mkdir -p "$WEB_ROOT/cms"; chmod 755 "$WEB_ROOT/cms"
 sed -e "s/^\$CMS_PORT = [0-9]*;/\$CMS_PORT = $PORT;/" -e "s/^\$ACCESS = '[a-z]*';/\$ACCESS = '$ACCESS';/" \
     "$HERE/cms-bridge.php" > "$WEB_ROOT/cms/index.php"
