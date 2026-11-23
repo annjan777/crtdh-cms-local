@@ -222,11 +222,13 @@ case "${1:-status}" in
   old-site)
     load_env
     rel="$(release_of legacy)"; [ -n "$rel" ] || die "no saved copy of the old site found"
-    agent rollback --to "$rel" && say "The old site is live again. The CMS keeps running at $SITE/cms/" ;;
+    stop_one agent; agent rollback --to "$rel"; rc=$?; start_one agent
+    [ $rc = 0 ] && say "The old site is live again. The CMS keeps running at $SITE/cms/" ;;
   new-site)
     load_env
     rel="$(release_of newest)"; [ -n "$rel" ] || die "no CMS release yet; run: $ROOT/crtdh go-live"
-    agent rollback --to "$rel" && say "Release $rel is live." ;;
+    stop_one agent; agent rollback --to "$rel"; rc=$?; start_one agent
+    [ $rc = 0 ] && say "Release $rel is live." ;;
   add-user) load_env; manage createsuperuser ;;
   _host) write_host_block "$2" "$3" ;;   # used by setup.sh
   update)
