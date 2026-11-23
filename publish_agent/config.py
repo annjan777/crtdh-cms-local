@@ -28,6 +28,7 @@ class Config:
     access_secret_env: str = "CRTDH_CF_ACCESS_SECRET"
     access_secret_file: str = ""
 
+    transport: str = "sftp"  # sftp | local (the agent runs on the web server itself, e.g. academicweb)
     sftp_host: str = ""
     sftp_port: int = 22
     sftp_user: str = ""
@@ -141,6 +142,7 @@ def load(path: str) -> Config:
         access_client_id=get("cms", "access_client_id"),
         access_secret_env=get("cms", "access_secret_env", "CRTDH_CF_ACCESS_SECRET"),
         access_secret_file=_resolve(base, get("cms", "access_secret_file")),
+        transport=get("sftp", "transport", "sftp") or "sftp",
         sftp_host=get("sftp", "host"),
         sftp_port=getint("sftp", "port", 22),
         sftp_user=get("sftp", "user"),
@@ -175,7 +177,9 @@ def validate(cfg: Config) -> None:
         vparts = urllib.parse.urlsplit(cfg.verify_url)
         if vparts.scheme not in ("http", "https") or not vparts.hostname:
             raise ConfigError("[site] verify_url must be an http:// or https:// address of the public site")
-    if not cfg.sftp_host or not cfg.sftp_user:
+    if cfg.transport not in ("sftp", "local"):
+        raise ConfigError("[sftp] transport must be sftp or local")
+    if cfg.transport == "sftp" and (not cfg.sftp_host or not cfg.sftp_user):
         raise ConfigError("[sftp] host and user are required")
     if cfg.strategy not in ("auto",) + STRATEGIES:
         raise ConfigError(f"[site] strategy must be auto or one of {', '.join(STRATEGIES)}")

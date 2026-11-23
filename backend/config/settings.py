@@ -194,6 +194,15 @@ REQUIRE_TRUSTED_PROXY = env.bool("REQUIRE_TRUSTED_PROXY", default=False)
 # Client IP: use Cloudflare's CF-Connecting-IP (lockout, throttles, logs) only when this is on and
 # the request came from a trusted proxy; otherwise the peer address. Never in dev.
 TRUST_CF_CONNECTING_IP = env.bool("TRUST_CF_CONNECTING_IP", default=False)
+# Behind a plain Apache reverse proxy on the same host (deploy/academicweb): mod_proxy appends the client to
+# X-Forwarded-For and sends X-Forwarded-Host, but no X-Forwarded-Proto. Only for peers in TRUSTED_PROXY_IPS:
+# the client IP is the LAST X-Forwarded-For entry (the one the proxy added, never one the client sent), the host
+# comes from X-Forwarded-Host, and a missing X-Forwarded-Proto counts as FORWARDED_PROTO_DEFAULT.
+TRUST_X_FORWARDED_FOR = env.bool("TRUST_X_FORWARDED_FOR", default=False)
+USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
+FORWARDED_PROTO_DEFAULT = env("FORWARDED_PROTO_DEFAULT", default="")
+# The admin SPA's build folder, served under /cms/ when there is no gateway of our own (apps.common.admin_app).
+ADMIN_DIST_DIR = env("ADMIN_DIST_DIR", default="")
 
 
 # Internationalization

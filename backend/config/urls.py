@@ -6,10 +6,12 @@ Every resource path below matches API_CONTRACT.md exactly.
 
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 
 from apps.accounts.views import cms_login
+from apps.common.admin_app import admin_app
 from apps.oauth.urls import cms_api_urlpatterns as claude_access_patterns
 from apps.oauth.urls import oauth_urlpatterns
 from apps.publishing.urls import agent_patterns, cms_patterns
@@ -118,5 +120,12 @@ urlpatterns = [
 ]
 
 # The Django admin bypasses MFA: local development only (settings refuse it in production).
+# The editor screens under /cms/ on hosts without our nginx gateway (deploy/academicweb). The view answers 404
+# unless ADMIN_DIST_DIR is set, so elsewhere this is inert (and /cms/login above still wins).
+urlpatterns += [
+    path("cms", RedirectView.as_view(url="/cms/", permanent=False)),
+    re_path(r"^cms/(?P<path>.*)$", admin_app, name="admin-app"),
+]
+
 if settings.DEBUG and settings.DJANGO_ADMIN_ENABLED:
     urlpatterns.append(path("admin/", admin.site.urls))

@@ -84,6 +84,10 @@ class Remote:
     # ---- connection --------------------------------------------------------
     @classmethod
     def connect(cls, cfg: Config, trust_new_host_key: bool = False, interactive: bool = False) -> "Remote":
+        if cfg.transport == "local":
+            from .local import LocalRemote
+
+            return LocalRemote()
         client = paramiko.SSHClient()
         if os.path.exists(cfg.known_hosts):
             client.load_host_keys(cfg.known_hosts)

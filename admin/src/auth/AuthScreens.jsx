@@ -12,7 +12,7 @@ function Card({ title, lead, children }) {
     <main className="auth-page" id="main">
       <div className="auth-card">
         <div className="auth-brand">
-          <img src="/apple-touch-icon.png" alt="" width="36" height="36" />
+          <img src={`${import.meta.env.BASE_URL}apple-touch-icon.png`} alt="" width="36" height="36" />
           <span>CRTDH website editor</span>
         </div>
         <h1>{title}</h1>

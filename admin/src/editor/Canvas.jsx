@@ -68,7 +68,7 @@ export default function Canvas({ pageId, data, sections, selected, onSelect, dev
     <div ref={wrap} className={`canvas-frame device-${device}${fill ? ' is-fill' : ''}`} style={{ height: fill ? undefined : height * scale }}>
       <iframe
         ref={frame}
-        src="/preview.html"
+        src={`${import.meta.env.BASE_URL}preview.html`}
         title={title}
         style={{ width, height: fill ? '100%' : height, transform: scale !== 1 ? `scale(${scale})` : undefined, transformOrigin: '0 0' }}
       />

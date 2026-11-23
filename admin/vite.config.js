@@ -47,6 +47,8 @@ function serveMedia() {
 }
 
 export default defineConfig(() => ({
+  // Served under a path on a shared host (academicweb: /cms/); '/' everywhere else.
+  base: process.env.VITE_BASE || '/',
   plugins: [react(), ...(process.env.VITE_USE_MOCK === '1' ? [serveMedia()] : [])],
   resolve: {
     // The canvas loads the public site's own stylesheet (src/preview/preview-entry.jsx). Its CSS imports

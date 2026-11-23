@@ -43,6 +43,8 @@ class TrustedProxyMiddleware:
                 return HttpResponseForbidden(b"", content_type="text/plain")
             for key in FORWARDING_HEADERS:
                 request.META.pop(key, None)
+        elif getattr(settings, "FORWARDED_PROTO_DEFAULT", "") and "HTTP_X_FORWARDED_PROTO" not in request.META:
+            request.META["HTTP_X_FORWARDED_PROTO"] = settings.FORWARDED_PROTO_DEFAULT
         return self.get_response(request)
 
 
@@ -82,4 +84,10 @@ def client_ip(request):
         ip = request.META.get("HTTP_CF_CONNECTING_IP", "").strip()
         if ip:
             return ip
+    if getattr(settings, "TRUST_X_FORWARDED_FOR", False) and peer_is_trusted(request.META.get("REMOTE_ADDR", "")):
+        last = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[-1].strip()
+        try:
+            return str(ipaddress.ip_address(last))
+        except ValueError:
+            pass
     return request.META.get("REMOTE_ADDR", "")

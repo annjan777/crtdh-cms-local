@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+# CRTDH website on academicweb: one command for everything after setup.
+#
+#   ~/.crtdh/crtdh status          is everything running? what is live?
+#   ~/.crtdh/crtdh start | stop | restart
+#   ~/.crtdh/crtdh update          get the latest code from GitHub and restart (data is kept)
+#   ~/.crtdh/crtdh go-live         publish the CMS content and make it the live site
+#   ~/.crtdh/crtdh old-site        put the old hand-written site back (the CMS keeps running)
+#   ~/.crtdh/crtdh new-site        back to the newest CMS release
+#   ~/.crtdh/crtdh access campus   CMS opens only from the campus network (default)
+#   ~/.crtdh/crtdh access anywhere CMS login page reachable from anywhere
+#   ~/.crtdh/crtdh add-user        create another CMS user (asks for the details)
+#   ~/.crtdh/crtdh logs [web|worker|agent]
+#
+# Cron runs "watchdog" every 5 minutes and at reboot, so the CMS comes back by itself.
+set -uo pipefail
+
+ROOT="${CRTDH_ROOT:-$HOME/.crtdh}"
+APP="$ROOT/app"
+WEB_ROOT="${CRTDH_WEB_ROOT:-$HOME}"
+PORT="${CRTDH_PORT:-8650}"
+SITE="${CRTDH_SITE_URL:-https://crtdh.iitkgp.ac.in}"
+[ -f "$ROOT/env" ] && SITE="$(sed -n 's/^SITE_URL=//p' "$ROOT/env")" && SITE="${SITE:-https://crtdh.iitkgp.ac.in}"
+HOST_BEGIN="# BEGIN crtdh-host"
+HOST_END="# END crtdh-host"
+# Campus = private (RFC 1918) addresses as Apache sees them, plus the server itself.
+CAMPUS_RE='^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.0\.0\.1$)'
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+
+load_env() {
+  [ -f "$ROOT/env" ] || die "$ROOT/env is missing. Run setup first."
+  set -a; . "$ROOT/env"; set +a
+  export PATH="$ROOT/node/bin:$ROOT/venv/bin:$PATH" HOME
+  ulimit -n "$(ulimit -Hn)" 2>/dev/null || ulimit -n 65536 2>/dev/null || true
+}
+
+manage() { (cd "$APP/backend" && "$ROOT/venv/bin/python" manage.py "$@"); }
+agent() { (cd "$APP" && "$ROOT/venv/bin/python" -m publish_agent -c "$ROOT/agent/config.ini" "$@"); }
+
+# ---- processes ------------------------------------------------------------------------------------------
+cmd_for() {
+  case "$1" in
+    web) echo "cd '$APP/backend' && exec '$ROOT/venv/bin/gunicorn' config.wsgi:application --bind 127.0.0.1:$PORT \
+--workers 3 --timeout 330 --limit-request-line 8190 --access-logfile - --error-logfile - --capture-output" ;;
+    worker) echo "cd '$APP/backend' && exec '$ROOT/venv/bin/python' manage.py run_publish_worker" ;;
+    agent) echo "cd '$APP' && exec '$ROOT/venv/bin/python' -m publish_agent -c '$ROOT/agent/config.ini' run" ;;
+  esac
+}
+SERVICES="web worker agent"
+
+# Alive = the recorded process exists AND is ours (after a reboot an old number can belong to anything).
+alive() {
+  local f="$ROOT/run/$1.pid" pid
+  [ -f "$f" ] || return 1
+  pid="$(cat "$f")"
+  kill -0 "$pid" 2>/dev/null && ps -p "$pid" -o args= 2>/dev/null | grep -qF "$ROOT"
+}
+
+start_one() {
+  alive "$1" && return 0
+  mkdir -p "$ROOT/run" "$ROOT/logs"
+  # setsid + nohup: keeps running after you log out; output appended to logs/<name>.log
+  setsid nohup bash -c "$(cmd_for "$1")" >>"$ROOT/logs/$1.log" 2>&1 < /dev/null &
+  echo $! > "$ROOT/run/$1.pid"
+}
+
+stop_one() {
+  local f="$ROOT/run/$1.pid"
+  if alive "$1"; then
+    local pid; pid="$(cat "$f")"
+    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+    for _ in $(seq 1 20); do kill -0 "$pid" 2>/dev/null || break; sleep 0.5; done
+    kill -KILL -- "-$pid" 2>/dev/null || true
+  fi
+  rm -f "$f"
+}
+
+do_start() {
+  load_env
+  for s in $SERVICES; do start_one "$s"; done
+  for _ in $(seq 1 40); do
+    curl -s -o /dev/null -m 3 "http://127.0.0.1:$PORT/api/v1/auth/csrf/" && return 0
+    sleep 1
+  done
+  say "The CMS did not answer on port $PORT. See: $ROOT/crtdh logs web"
+  return 1
+}
+
+do_stop() { for s in $SERVICES; do stop_one "$s"; done; }
+
+# Logs: keep each under ~20 MB (one old copy).
+rotate_logs() {
+  for f in "$ROOT"/logs/*.log; do
+    [ -f "$f" ] || continue
+    [ "$(stat -c %s "$f" 2>/dev/null || echo 0)" -gt 20000000 ] && mv -f "$f" "$f.1"
+  done
+}
+
+# ---- .htaccess host block ----------------------------------------------------------------------------------
+# Runs before the publish agent's block: hides the install, limits the CMS to campus, and passes /cms/ and /api/
+# to the CMS (Apache proxy if this server allows it, else the PHP bridge).
+host_block() {
+  local mode="$1" access="$2"
+  echo "$HOST_BEGIN"
+  echo "# Written by ~/.crtdh/crtdh (CRTDH CMS on this server). Edits inside this block are overwritten."
+  echo "RewriteEngine On"
+  echo "RewriteBase /"
+  echo "# Never serve the CMS install, its data, or any hidden file or folder"
+  echo "RewriteRule (^|/)\\.(?!well-known/) - [F,L]"
+  if [ "$access" = campus ]; then
+    echo "# The CMS screens and API from the campus network only; the public contact form stays open"
+    echo "RewriteCond %{REQUEST_URI} !^/api/v1/contact/?\$"
+    echo "RewriteCond %{REMOTE_ADDR} !$CAMPUS_RE"
+    echo "RewriteRule ^(cms|api)(/|\$) - [F,L]"
+  fi
+  echo "RewriteRule ^cms\$ /cms/ [R=302,L]"
+  echo "# The CMS itself (127.0.0.1:$PORT)"
+  if [ "$mode" = proxy ]; then
+    echo "RewriteRule ^((cms|api)/.*)\$ http://127.0.0.1:$PORT/\$1 [P,L]"
+  else
+    echo "RewriteRule ^(cms|api)/ _crtdh_cms.php [END]"
+  fi
+  echo "$HOST_END"
+}
+
+write_host_block() {
+  local mode="$1" access="$2" ht="$WEB_ROOT/.htaccess" tmp
+  tmp="$(mktemp "$WEB_ROOT/.htaccess.XXXXXX")"
+  { host_block "$mode" "$access"
+    [ -f "$ht" ] && sed "/^$HOST_BEGIN\$/,/^$HOST_END\$/d" "$ht"
+  } > "$tmp"
+  chmod 644 "$tmp"
+  mv -f "$tmp" "$ht"
+  printf 'mode=%s\naccess=%s\n' "$mode" "$access" > "$ROOT/host.conf"
+}
+
+host_setting() { sed -n "s/^$1=//p" "$ROOT/host.conf" 2>/dev/null; }
+
+# ---- publishing ---------------------------------------------------------------------------------------------
+do_publish() {
+  load_env
+  alive worker && alive agent || do_start || return 1
+  local out id
+  out="$(manage shell -c '
+from django.contrib.auth import get_user_model
+from apps.publishing.publish import start_publish
+u = get_user_model().objects.filter(is_superuser=True, is_active=True).order_by("date_joined").first()
+p = start_publish(u, confirm_shrink=True)
+print("PUBLISH", p.id)' 2>&1)" || { say "$out"; return 1; }
+  id="$(printf '%s\n' "$out" | sed -n 's/^PUBLISH //p' | tail -1)"
+  [ -n "$id" ] || { say "$out"; return 1; }
+  say "Publishing (this takes 1-3 minutes)..."
+  local status=""
+  for _ in $(seq 1 120); do
+    status="$(manage shell -c "
+from apps.publishing.models import Publish
+p = Publish.objects.get(pk='$id'); print('STATE', p.status, '|', p.message.replace(chr(10), ' ')[:300])" 2>/dev/null | sed -n 's/^STATE //p')"
+    case "$status" in
+      live*) say "  live."; return 0 ;;
+      failed*|cancelled*) say "  $status"; say "Details: $ROOT/crtdh logs worker  and  $ROOT/crtdh logs agent"; return 1 ;;
+    esac
+    sleep 5
+  done
+  say "  still not live after 10 minutes: $status"; return 1
+}
+
+check_live() {
+  local fail=0 got
+  local c="curl -s -m 20 ${CRTDH_CURL_RESOLVE:-}"
+  got="$($c "$SITE/" | grep -c 'name="crtdh-build"')"
+  [ "$got" -ge 1 ] && say "  ok   home page is the new site" || { say "  FAIL home page is not the new site"; fail=1; }
+  got="$($c -o /dev/null -w '%{http_code} %{redirect_url}' "$SITE/about.html")"
+  case "$got" in 301*"/about/") say "  ok   old address /about.html moves to /about/" ;; *) say "  FAIL /about.html -> $got"; fail=1 ;; esac
+  got="$($c -o /dev/null -w '%{http_code}' "$SITE/.crtdh/env")"
+  case "$got" in 403|404) say "  ok   CMS files are hidden ($got)" ;; *) say "  FAIL $SITE/.crtdh/env answered $got"; fail=1 ;; esac
+  got="$($c -o /dev/null -w '%{http_code}' "$SITE/cms/")"
+  [ "$got" = 200 ] && say "  ok   CMS opens at $SITE/cms/" || { say "  note CMS at $SITE/cms/ answered $got from this server"; }
+  return $fail
+}
+
+# current | legacy | newest, from the agent's own record on the server
+release_of() {
+  agent status 2>/dev/null | "$ROOT/venv/bin/python" -c '
+import json, sys
+which = sys.argv[1]
+try:
+    srv = json.load(sys.stdin)["server"]
+except Exception:
+    sys.exit(0)
+hist = srv.get("history") or []
+if which == "current":
+    print(srv.get("current") or "")
+elif which == "legacy":
+    print(next((h for h in hist if h.startswith("legacy-")), ""))
+else:
+    print(next((h for h in reversed(hist) if not h.startswith("legacy-")), ""))' "$1"
+}
+
+# ---- commands -------------------------------------------------------------------------------------------------
+case "${1:-status}" in
+  start) do_start && say "CMS running: $SITE/cms/" ;;
+  stop) do_stop; say "stopped (the public site stays up; only editing stops)" ;;
+  restart) do_stop; do_start && say "restarted" ;;
+  watchdog) rotate_logs; [ -f "$ROOT/env" ] && do_start >/dev/null 2>&1 ;;
+  status)
+    for s in $SERVICES; do alive "$s" && say "  $s: running" || say "  $s: STOPPED"; done
+    curl -s -o /dev/null -m 3 "http://127.0.0.1:$PORT/api/v1/auth/csrf/" && say "  CMS answers on 127.0.0.1:$PORT" \
+      || say "  CMS does not answer (run: $ROOT/crtdh start)"
+    say "  routing: $(host_setting mode), CMS access: $(host_setting access)"
+    load_env; say "  live now: $(release_of current)" ;;
+  logs) tail -n 80 "$ROOT/logs/${2:-web}.log" ;;
+  housekeeping)
+    load_env
+    manage purge_contact_messages; manage clearsessions; manage clear_auth_throttles; manage cleartokens ;;
+  access)
+    case "${2:-}" in campus|anywhere) ;; *) die "use: crtdh access campus | crtdh access anywhere" ;; esac
+    write_host_block "$(host_setting mode)" "$2"; say "CMS access: $2" ;;
+  go-live)
+    do_publish && { say "Checking the live site:"; check_live; } ;;
+  old-site)
+    load_env
+    rel="$(release_of legacy)"; [ -n "$rel" ] || die "no saved copy of the old site found"
+    agent rollback --to "$rel" && say "The old site is live again. The CMS keeps running at $SITE/cms/" ;;
+  new-site)
+    load_env
+    rel="$(release_of newest)"; [ -n "$rel" ] || die "no CMS release yet; run: $ROOT/crtdh go-live"
+    agent rollback --to "$rel" && say "Release $rel is live." ;;
+  add-user) load_env; manage createsuperuser ;;
+  _host) write_host_block "$2" "$3" ;;   # used by setup.sh
+  update)
+    load_env
+    git -C "$APP" pull --ff-only || die "git pull failed (local edits in $APP?)"
+    exec bash "$APP/deploy/academicweb/setup.sh" --update ;;
+  *) sed -n '2,16p' "$0" ;;
+esac

@@ -203,6 +203,23 @@ def strip_block(text: str) -> str:
     return _BLOCK.sub("", text)
 
 
+# A host's own rules that must run before the agent's catch-all (deploy/academicweb writes the CMS forwarding,
+# campus-only access and hidden-folder rules in this block). The agent never edits it and always stays below it.
+HOST_END = "# END crtdh-host"
+
+
+def place_block(text: str, block: str) -> str:
+    """The agent block where it was; if new, right after a host block, else at the top. Other lines kept."""
+    if _BLOCK.search(text):
+        return _BLOCK.sub(lambda _m: block, text, count=1)
+    at = text.find(HOST_END)
+    if at >= 0:
+        cut = text.find("\n", at)
+        cut = len(text) if cut < 0 else cut + 1
+        return text[:cut] + block + text[cut:]
+    return block + text
+
+
 def _switch_htaccess(remote, layout, state, target, kind, _local):
     """Replace only the agent's BEGIN/END block; every other line of .htaccess is kept as it was."""
     path = posixpath.join(layout.web_root, ".htaccess")
@@ -219,7 +236,7 @@ def _switch_htaccess(remote, layout, state, target, kind, _local):
         raise RemoteError(f"release {target} is missing or incomplete on the server")
     own = remote.read_bytes(posixpath.join(layout.stored(target), ".htaccess")) or b""
     block = htaccess_rules(layout, target, meta.get("index_dirs", []), build_redirects(own.decode("latin-1")))
-    remote.write_bytes(path, (block + rest).encode("latin-1"))
+    remote.write_bytes(path, place_block((raw or b"").decode("latin-1"), block).encode("latin-1"))
 
 
 def _switch_swap(remote, layout, state, target, kind, _local):
