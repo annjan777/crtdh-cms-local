@@ -207,13 +207,22 @@ def export():
 def _open_source(src, work):
     if src.startswith("https://"):
         path = os.path.join(work, "download.dat")
-        req = urllib.request.Request(src, headers={"User-Agent": "crtdh-transfer/1"})
         print("Downloading...", file=sys.stderr)
-        try:
-            with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
-                shutil.copyfileobj(r, f, 1 << 20)
-        except Exception as e:  # noqa: BLE001 - shown to the person, who can retry
-            fail(f"could not download {src} ({e})")
+        if shutil.which("curl"):
+            # curl: retries and resumes a cut connection (big files over flaky links)
+            import subprocess
+            r = subprocess.run(["curl", "-fL", "-#", "--retry", "8", "--retry-delay", "3", "--retry-all-errors",
+                                "-C", "-", "-A", "crtdh-transfer/1", "-o", path, src])
+            if r.returncode != 0:
+                fail(f"could not download {src} (curl error {r.returncode}). "
+                     "Test from this server: curl -sS -r 0-99 -o /dev/null -w '%{http_code}\\n' " + src)
+        else:
+            req = urllib.request.Request(src, headers={"User-Agent": "crtdh-transfer/1"})
+            try:
+                with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
+                    shutil.copyfileobj(r, f, 1 << 20)
+            except Exception as e:  # noqa: BLE001 - shown to the person, who can retry
+                fail(f"could not download {src} ({e})")
         return open(path, "rb")
     if src.startswith("http://"):
         fail("use the https:// address")
