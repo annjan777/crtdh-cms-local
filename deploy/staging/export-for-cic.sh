@@ -4,6 +4,8 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/annjan777/crtdh-cms-local/dev/deploy/staging/export-for-cic.sh | bash
 #   ... | bash -s -- --cleanup        afterwards: delete the file from the web and from this machine
+#   ... | bash -s -- --github         also put the newest packed file on a temporary GitHub release
+#   ... | bash -s -- --github-cleanup delete that release
 #
 # The staging checkout is ~/crtdh-cms-v3 (set CRTDH_STAGING_DIR to use another). Nothing on staging is changed.
 # Everything is inside main(), so bash reads the whole script before running any of it: with "curl | bash" a
@@ -43,6 +45,41 @@ diagnose() {
   echo "--- photo addresses on the home page:" >&2
   curl -s -m 30 "$PUBLIC/" | grep -o '/_media/[A-Za-z0-9._/-]*' | head -3 >&2 || true
 }
+
+# --github: put the newest packed file on a temporary GitHub release (for networks that block crtdh.annjan.in).
+# The file stays encrypted; the pass phrase from the export is the same. --github-cleanup deletes the release.
+REPO="${CRTDH_REPO_SLUG:-annjan777/crtdh-cms-local}"
+if [ "${1:-}" = --github ] || [ "${1:-}" = --github-cleanup ]; then
+  command -v gh >/dev/null || die "the GitHub command 'gh' is missing. Install it (brew install gh), run: gh auth login, then retry"
+  gh auth status >/dev/null 2>&1 || die "gh is not signed in. Run: gh auth login   then retry"
+  if [ "$1" = --github-cleanup ]; then
+    for t in $(gh release list --repo "$REPO" --limit 50 </dev/null | awk -F'\t' '{print $3}' | grep '^crtdh-transfer-' || true); do
+      gh release delete "$t" --repo "$REPO" --yes --cleanup-tag </dev/null && echo "deleted release $t"
+    done
+    exit 0
+  fi
+  F="$(ls -1t "$HOME"/crtdh-transfer-*.dat 2>/dev/null | head -1)"
+  [ -n "$F" ] || die "no packed file in $HOME; run this script without --github first"
+  TAG="crtdh-transfer-$(head -c 6 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  cp "$F" "/tmp/$TAG.dat"
+  echo "Uploading $(du -h "$F" | cut -f1) to GitHub (a few minutes)..."
+  gh release create "$TAG" "/tmp/$TAG.dat" --repo "$REPO" --prerelease --target dev --title "temporary transfer file" \
+     --notes "Encrypted CMS transfer for the CIC server. Deleted after use." </dev/null >/dev/null || { rm -f "/tmp/$TAG.dat"; die "upload failed"; }
+  rm -f "/tmp/$TAG.dat"
+  URL="https://github.com/$REPO/releases/download/$TAG/$TAG.dat"
+  GOT="$(curl -sL -r 0-7 "$URL" | head -c 7)"
+  [ "$GOT" = CRTDHX1 ] || die "uploaded, but $URL does not download yet; wait a minute and test it in a browser"
+  cat <<EOF2
+
+Uploaded ($(basename "$F")). On the CIC server, use this address in place of the crtdh.annjan.in one:
+
+  $URL
+
+The pass phrase is the one printed when that file was packed.
+Afterwards delete it:  curl -fsSL $RAW/deploy/staging/export-for-cic.sh | bash -s -- --github-cleanup
+EOF2
+  exit 0
+fi
 
 if [ "${1:-}" = --cleanup ]; then
   M="$(media_dir)" || { diagnose; die "could not find the web folder"; }
