@@ -23,20 +23,37 @@ die() { printf '\nSTOPPED: %s\n' "$*" >&2; exit 1; }
 
 # Where the live release keeps its photos: the "_media" line of the agent's .htaccess, inside the sftp container.
 media_dir() {
-  local rel
-  rel="$("$DC" exec -T sftp cat "$WWW/.htaccess" </dev/null 2>/dev/null \
+  local rel ref sub found
+  # 1. the agent's .htaccess says where /_media/ points
+  rel="$("$DC" exec -T sftp sh -c "cat $WWW/.htaccess 2>/dev/null" </dev/null 2>/dev/null \
         | awk '$1 == "RewriteRule" && $2 == "^_media/(.+)$" { sub("/_media/[$]1$", "", $3); print $3; exit }')"
-  [ -n "$rel" ] || return 1
-  printf '%s/%s/_media' "$WWW" "$rel"
+  if [ -n "$rel" ]; then printf '%s/%s/_media' "$WWW" "$rel"; return 0; fi
+  # 2. otherwise: take one photo address from the live home page and find that file on the web server
+  ref="$(curl -s -m 30 "$PUBLIC/" | grep -o '/_media/[A-Za-z0-9._/-]*' | head -1)"
+  [ -n "$ref" ] || return 1
+  sub="${ref#/_media/}"
+  found="$("$DC" exec -T sftp find /home/crtdh -type f -path "*/_media/$sub" </dev/null 2>/dev/null | head -1)"
+  [ -n "$found" ] || return 1
+  printf '%s' "${found%/$sub}"
+}
+
+diagnose() {
+  echo "--- for Claude: what the web server holds" >&2
+  "$DC" exec -T sftp sh -c 'ls -la /home/crtdh/www /home/crtdh/www/public_html 2>&1 | head -40; echo; head -30 /home/crtdh/www/public_html/.htaccess 2>&1' </dev/null >&2 || true
+  echo "--- photo addresses on the home page:" >&2
+  curl -s -m 30 "$PUBLIC/" | grep -o '/_media/[A-Za-z0-9._/-]*' | head -3 >&2 || true
 }
 
 if [ "${1:-}" = --cleanup ]; then
-  M="$(media_dir)" || die "could not find the web folder"
+  M="$(media_dir)" || { diagnose; die "could not find the web folder"; }
   "$DC" exec -T sftp sh -c "rm -f $M/_transfer-*.dat" </dev/null && rm -f "$HOME"/crtdh-transfer-*.dat
   echo "Removed the transfer file from $PUBLIC and from this machine."
   exit 0
 fi
 
+echo "Finding the web folder for the download..."
+M="$(media_dir)" || { diagnose; die "could not find the live site's photo folder. Send a photo of this screen."; }
+echo "  $M"
 TOOL="$(mktemp)"; trap 'rm -f "$TOOL"' EXIT
 curl -fsSL "$RAW/deploy/transfer.py" -o "$TOOL" || die "could not download the transfer tool from GitHub"
 OUT="$HOME/crtdh-transfer-$(date +%Y%m%d-%H%M).dat"
@@ -47,7 +64,6 @@ PASS="$(sed -n 's/^PASSPHRASE //p' "$OUT.log")"; grep -v '^PASSPHRASE ' "$OUT.lo
 [ -n "$PASS" ] && [ -s "$OUT" ] || die "packing produced no file"
 
 ID="$(head -c 18 /dev/urandom | od -An -tx1 | tr -d ' \n')"
-M="$(media_dir)" || die "could not find the live release's photo folder (publish once on staging, then retry)"
 "$DC" exec -T sftp sh -c "cat > $M/_transfer-$ID.dat && chmod 644 $M/_transfer-$ID.dat" < "$OUT" \
   || die "could not place the file in the web folder"
 URL="$PUBLIC/_media/_transfer-$ID.dat"
