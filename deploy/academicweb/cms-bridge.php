@@ -148,7 +148,8 @@ curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, $line) use ($skip, $MODE
             $value = trim(substr($trimmed, strpos($trimmed, ':') + 1));
             if ($MODE === 'cms') {
                 // Sign-in for the Claude connector: /cms/login?next=/oauth/authorize/... must come back here.
-                $value = str_replace('next=%2Foauth%2F', 'next=%2Fcms%2Findex.php%2Foauth%2F', $value);
+                $value = str_replace(['next=%2Foauth%2F', 'next=/oauth/'],
+                                     ['next=%2Fcms%2Findex.php%2Foauth%2F', 'next=/cms/index.php/oauth/'], $value);
                 $value = preg_replace('#^/(cms|api|oauth)/#', '/cms/index.php/$1/', $value);
                 $value = preg_replace('#^/cms/index\.php/cms/#', '/cms/index.php/', $value);
             }
