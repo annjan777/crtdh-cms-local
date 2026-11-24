@@ -6,7 +6,11 @@
 #   ... | bash -s -- --cleanup        afterwards: delete the file from the web and from this machine
 #
 # The staging checkout is ~/crtdh-cms-v3 (set CRTDH_STAGING_DIR to use another). Nothing on staging is changed.
+# Everything is inside main(), so bash reads the whole script before running any of it: with "curl | bash" a
+# command that reads its input (docker compose exec) would otherwise swallow the rest of the script.
+main() {
 set -euo pipefail
+echo "CRTDH staging export"
 DIR="${CRTDH_STAGING_DIR:-$HOME/crtdh-cms-v3}"
 DC="$DIR/deploy/staging/dc.sh"
 PUBLIC="${CRTDH_STAGING_PUBLIC:-https://crtdh.annjan.in}"
@@ -15,12 +19,12 @@ WWW=/home/crtdh/www/public_html
 
 die() { printf '\nSTOPPED: %s\n' "$*" >&2; exit 1; }
 [ -x "$DC" ] || die "no staging checkout at $DIR (set CRTDH_STAGING_DIR=/path/to/it)"
-"$DC" exec -T cms true 2>/dev/null || die "the staging CMS is not running (start it: $DC up -d)"
+"$DC" exec -T cms true </dev/null >/dev/null 2>&1 || die "the staging CMS is not running (start it: $DC up -d)"
 
 # Where the live release keeps its photos: the "_media" line of the agent's .htaccess, inside the sftp container.
 media_dir() {
   local rel
-  rel="$("$DC" exec -T sftp cat "$WWW/.htaccess" 2>/dev/null \
+  rel="$("$DC" exec -T sftp cat "$WWW/.htaccess" </dev/null 2>/dev/null \
         | awk '$1 == "RewriteRule" && $2 == "^_media/(.+)$" { sub("/_media/[$]1$", "", $3); print $3; exit }')"
   [ -n "$rel" ] || return 1
   printf '%s/%s/_media' "$WWW" "$rel"
@@ -28,7 +32,7 @@ media_dir() {
 
 if [ "${1:-}" = --cleanup ]; then
   M="$(media_dir)" || die "could not find the web folder"
-  "$DC" exec -T sftp sh -c "rm -f $M/_transfer-*.dat" && rm -f "$HOME"/crtdh-transfer-*.dat
+  "$DC" exec -T sftp sh -c "rm -f $M/_transfer-*.dat" </dev/null && rm -f "$HOME"/crtdh-transfer-*.dat
   echo "Removed the transfer file from $PUBLIC and from this machine."
   exit 0
 fi
@@ -66,3 +70,5 @@ When it asks for the pass phrase, type:   $PASS
 
 Afterwards, delete the file:  curl -fsSL $RAW/deploy/staging/export-for-cic.sh | bash -s -- --cleanup
 EOF
+}
+main "$@"
