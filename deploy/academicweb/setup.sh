@@ -197,6 +197,9 @@ FRONTEND_BUILD_CMD='npm --prefix $APP/frontend run build'
 FRONTEND_BUILD_OUTPUT=$APP/frontend/build/client
 MCP_PUBLIC_URL=$SITE/mcp/index.php
 MCP_OAUTH_ISSUER=$SITE
+# This server's firewall refuses query strings over ~270 characters; Claude's sign-in request is longer, so it
+# goes through a static relay page that moves it into the path (apps/oauth/relay.py, gh-pages branch: oauth/).
+MCP_OAUTH_AUTHORIZE_URL=${CRTDH_OAUTH_RELAY:-https://annjan777.github.io/crtdh-cms-local/oauth/}
 EOF
 set -a; . "$KEEP/env"; . "$ROOT/paths.env"; set +a
 

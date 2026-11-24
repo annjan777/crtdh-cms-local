@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from oauth2_provider.views import AuthorizationView
@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.roles import ADMIN, IsEditor, has_role, user_roles
 
+from . import relay
 from .claude_client import get_claude_client, issue_secret, server_url
 from .mfa import must_change_password, session_has_mfa
 from .revoke import active_connections, revoke_all_for_user
@@ -57,6 +58,16 @@ class ConsentAuthorizationView(AuthorizationView):
             return redirect_to_login(request.get_full_path(), settings.CMS_LOGIN_URL, "next")
         if not user_may_connect(request.user):
             return render(request, "oauth/not_allowed.html", status=403)
+        if request.method == "GET" and "k" in request.GET:
+            # A request that came through the relay (see oauth_go): put its parameters back.
+            stored = relay.load(request.GET.get("k", ""))
+            if stored is None:
+                return render(request, "oauth/consent.html", {
+                    "error": {"error": "invalid_request",
+                              "description": "This sign-in link has expired. In Claude, click Connect again."}},
+                    status=400)
+            request.META["QUERY_STRING"] = stored
+            request.GET = QueryDict(stored)
         params = request.POST if request.method == "POST" else request.GET
         if params.get("code_challenge_method") != "S256" or not params.get("code_challenge"):
             # PKCE with S256 only (OAuth 2.1). Shown here rather than redirected: the
@@ -77,6 +88,20 @@ class ConsentAuthorizationView(AuthorizationView):
         # Show where the approval goes, so a look-alike client is noticeable.
         context["redirect_host"] = urlsplit(context.get("redirect_uri") or "").hostname or ""
         return context
+
+
+@require_GET
+def oauth_go(request, payload):
+    """Second hop of the relay for hosts whose firewall refuses long query strings (academicweb): the relay page
+    (MCP_OAUTH_AUTHORIZE_URL) puts Claude's authorization request into the path, base64url-encoded; this checks
+    it, keeps it for a few minutes under a short key and continues at /oauth/authorize/?k=<key>."""
+    query = relay.decode(payload)
+    if query is None or not relay.valid_request(query):
+        return render(request, "oauth/consent.html", {
+            "error": {"error": "invalid_request",
+                      "description": "This sign-in request is not valid. In Claude, click Connect again."}}, status=400)
+    key = relay.store(query)
+    return HttpResponseRedirect(f"/oauth/authorize/?k={key}")
 
 
 DEFAULT_CSP = ("default-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; "

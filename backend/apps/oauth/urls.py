@@ -14,6 +14,7 @@ from .dcr import ClaudeOnlyDCRManagementView
 
 _oauth = [
     path("authorize/", views.ConsentAuthorizationView.as_view(), name="authorize"),
+    path("go/<str:payload>/", views.oauth_go, name="relay-go"),
     path("token/", dot_views.TokenView.as_view(), name="token"),
     path("revoke_token/", dot_views.RevokeTokenView.as_view(), name="revoke-token"),
     # DCR: the view 404s and the permission class refuses unless MCP_OAUTH_DCR_ENABLED.
