@@ -22,6 +22,24 @@ It asks three things:
 
 Everything before that `yes` leaves the live site as it was.
 
+## Bringing over everything from staging (content, photos, users)
+
+1. On the homelab:
+   `curl -fsSL https://raw.githubusercontent.com/annjan777/crtdh-cms-local/dev/deploy/staging/export-for-cic.sh | bash`
+   This packs the staging CMS into one encrypted file at a random address on crtdh.annjan.in. It then prints the
+   command to paste on the CIC server and a one-time pass phrase.
+2. On the CIC server, paste the printed command and type the pass phrase when asked. The command either installs
+   with the staging data (`CRTDH_IMPORT=…`) or, on an existing install, runs `~/.crtdh/crtdh import …`. Both:
+   - save the current data first;
+   - replace the content, photos and users in one step;
+   - publish.
+
+   Everyone signs in with their staging username and password.
+3. Delete the file afterwards: the same homelab command with `| bash -s -- --cleanup`.
+
+Not carried over: sign-in sessions, publish history and the agent's state (each server has its own),
+contact-form messages, and the Claude connector's OAuth data.
+
 ## Day to day
 
 | Command | Does |
@@ -31,6 +49,7 @@ Everything before that `yes` leaves the live site as it was.
 | `~/.crtdh/crtdh old-site` / `new-site` | switch back to the old hand-written site / to the newest CMS release |
 | `~/.crtdh/crtdh access anywhere` / `campus` | who can open the CMS (the contact form always works) |
 | `~/.crtdh/crtdh add-user` | another admin from the terminal (or use Users in the CMS) |
+| `~/.crtdh/crtdh import <address>` | replace content, photos and users with a staging export, then publish |
 | `~/.crtdh/crtdh logs web` (or `worker`, `agent`) | the last log lines |
 
 Cron does three things:
