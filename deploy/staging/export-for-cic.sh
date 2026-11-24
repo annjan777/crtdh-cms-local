@@ -50,8 +50,28 @@ diagnose() {
 # The file stays encrypted; the pass phrase from the export is the same. --github-cleanup deletes the release.
 REPO="${CRTDH_REPO_SLUG:-annjan777/crtdh-cms-local}"
 if [ "${1:-}" = --github ] || [ "${1:-}" = --github-cleanup ]; then
-  command -v gh >/dev/null || die "the GitHub command 'gh' is missing. Install it (brew install gh), run: gh auth login, then retry"
-  gh auth status >/dev/null 2>&1 || die "gh is not signed in. Run: gh auth login   then retry"
+  GH="$(command -v gh || true)"
+  [ -n "$GH" ] || GH="$(ls "$HOME"/.crtdh-gh/*/bin/gh 2>/dev/null | head -1 || true)"
+  if [ -z "$GH" ]; then
+    # No install needed: GitHub's own command-line tool, unpacked into ~/.crtdh-gh
+    echo "Getting the GitHub tool (about 15 MB, no install)..."
+    case "$(uname -m)" in arm64|aarch64) A=arm64 ;; *) A=amd64 ;; esac
+    case "$(uname -s)" in Darwin) PAT="macOS_${A}\.(zip|tar\.gz)" ;; *) PAT="linux_${A}\.tar\.gz" ;; esac
+    U="$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | grep -oE "https://[^\"]*_${PAT}" | head -1)"
+    [ -n "$U" ] || die "could not find the GitHub tool to download"
+    rm -rf "$HOME/.crtdh-gh" && mkdir -p "$HOME/.crtdh-gh" && curl -fsSL "$U" -o "$HOME/.crtdh-gh/gh.pkg" || die "downloading the GitHub tool failed"
+    case "$U" in
+      *.zip) (cd "$HOME/.crtdh-gh" && unzip -q gh.pkg) ;;
+      *) tar -xzf "$HOME/.crtdh-gh/gh.pkg" -C "$HOME/.crtdh-gh" ;;
+    esac || die "unpacking the GitHub tool failed"
+    GH="$(ls "$HOME"/.crtdh-gh/*/bin/gh 2>/dev/null | head -1 || true)"
+    [ -n "$GH" ] || die "the GitHub tool did not unpack as expected"
+  fi
+  gh() { "$GH" "$@"; }
+  if ! gh auth status >/dev/null 2>&1; then
+    echo "Sign in to GitHub: it shows a one-time code; open https://github.com/login/device on any phone or computer and enter it."
+    gh auth login --hostname github.com --git-protocol https --web </dev/tty || die "GitHub sign-in did not finish"
+  fi
   if [ "$1" = --github-cleanup ]; then
     for t in $(gh release list --repo "$REPO" --limit 50 </dev/null | awk -F'\t' '{print $3}' | grep '^crtdh-transfer-' || true); do
       gh release delete "$t" --repo "$REPO" --yes --cleanup-tag </dev/null && echo "deleted release $t"
