@@ -193,13 +193,23 @@ def backup_live_site(cfg: Config, remote: Remote, web_root: str) -> str:
     tmp = path + ".partial"
     count = 0
     skipped: list[str] = []
+    unreadable: list[str] = []
     LOG.info("backing up the current live site %s to %s (first publish only)", web_root, path)
     with tarfile.open(tmp, "w:gz") as tar:
         def walk(rdir: str, prefix: str):
             nonlocal count
-            for attr in remote.sftp.listdir_attr(rdir):
+            try:
+                entries = remote.sftp.listdir_attr(rdir)
+            except PermissionError:
+                unreadable.append(prefix or "./")
+                return
+            for attr in entries:
                 rel = f"{prefix}{attr.filename}"
                 full = posixpath.join(rdir, attr.filename)
+                # Hidden entries in the web root (.ssh, .cache, private settings) are not the website and are never
+                # served; they are left out of this copy rather than spread into a backup file.
+                if not prefix and attr.filename.startswith(".") and attr.filename != ".htaccess":
+                    continue
                 if stat.S_ISDIR(attr.st_mode):
                     if attr.filename == "_crtdh" and not prefix:
                         continue
@@ -208,7 +218,12 @@ def backup_live_site(cfg: Config, remote: Remote, web_root: str) -> str:
                     info = tarfile.TarInfo("site/" + rel)
                     info.size = attr.st_size
                     info.mtime = attr.st_mtime or 0
-                    with remote.sftp.open(full, "rb") as fh:
+                    try:
+                        fh = remote.sftp.open(full, "rb")
+                    except PermissionError:
+                        unreadable.append(rel)
+                        continue
+                    with fh:
                         fh.prefetch(attr.st_size)
                         tar.addfile(info, fh)
                     count += 1
@@ -224,10 +239,14 @@ def backup_live_site(cfg: Config, remote: Remote, web_root: str) -> str:
             root = remote.sftp.normalize(web_root)
         walk(root, "")
         note = (f"Backup of {web_root} taken {stamp} by the CRTDH publish agent. {count} files.\n"
-                "Links (not followed):\n" + "\n".join(skipped) + "\n").encode()
+                "Links (not followed):\n" + "\n".join(skipped) + "\n"
+                "Not readable by this account (not copied):\n" + "\n".join(unreadable) + "\n").encode()
         info = tarfile.TarInfo("BACKUP-README.txt")
         info.size = len(note)
         tar.addfile(info, io.BytesIO(note))
     os.replace(tmp, path)
     LOG.info("backup done: %s files", count)
+    if unreadable:
+        LOG.warning("backup: %s item(s) this account cannot read were left out: %s", len(unreadable),
+                    ", ".join(unreadable[:10]))
     return path

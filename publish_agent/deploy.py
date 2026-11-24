@@ -62,7 +62,8 @@ def describe_write_error(exc: BaseException, what: str) -> str:
         return (f"the server refused to write {what} ({text or 'write failed'}). The disk quota is probably full: "
                 "run `python -m publish_agent check` to see free space and remove old files.")
     if code == errno.EACCES or "permission" in text.lower():
-        return f"permission denied writing {what} on the server"
+        where = getattr(exc, "filename", None)
+        return f"permission denied writing {what} on the server" + (f" ({where})" if where else "")
     return f"could not write {what} on the server: {text or exc.__class__.__name__}"
 
 
