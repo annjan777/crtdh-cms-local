@@ -74,7 +74,8 @@ def _security_settings() -> TransportSecuritySettings:
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
         allowed_hosts=hosts,
-        allowed_origins=["https://claude.ai", "https://claude.com", settings.MCP_PUBLIC_URL],
+        allowed_origins=["https://claude.ai", "https://claude.com",
+                         "{0.scheme}://{0.netloc}".format(urlsplit(settings.MCP_PUBLIC_URL))],
     )
 
 

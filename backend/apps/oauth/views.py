@@ -126,12 +126,13 @@ def _auth_methods():
 def authorization_server_metadata(request):
     """RFC 8414. The issuer is the MCP hostname; the authorization endpoint is on the CMS
     origin (see docs/mcp.md, "Why the sign-in page is on the CMS host")."""
-    issuer = settings.MCP_PUBLIC_URL
+    issuer = settings.MCP_OAUTH_ISSUER
+    base = settings.MCP_PUBLIC_URL
     data = {
         "issuer": issuer,
         "authorization_endpoint": settings.MCP_OAUTH_AUTHORIZE_URL,
-        "token_endpoint": f"{issuer}/oauth/token/",
-        "revocation_endpoint": f"{issuer}/oauth/revoke_token/",
+        "token_endpoint": f"{base}/oauth/token/",
+        "revocation_endpoint": f"{base}/oauth/revoke_token/",
         "response_types_supported": ["code"],
         "response_modes_supported": ["query"],
         "grant_types_supported": ["authorization_code", "refresh_token"],
@@ -143,7 +144,7 @@ def authorization_server_metadata(request):
         "client_id_metadata_document_supported": False,
     }
     if settings.MCP_OAUTH_DCR_ENABLED:
-        data["registration_endpoint"] = f"{issuer}/oauth/register/"
+        data["registration_endpoint"] = f"{base}/oauth/register/"
     return _json(data)
 
 
@@ -153,7 +154,7 @@ def protected_resource_metadata(request):
     return _json(
         {
             "resource": f"{settings.MCP_PUBLIC_URL}/mcp",
-            "authorization_servers": [settings.MCP_PUBLIC_URL],
+            "authorization_servers": [settings.MCP_OAUTH_ISSUER],
             "scopes_supported": [settings.MCP_OAUTH_SCOPE],
             "bearer_methods_supported": ["header"],
             "resource_name": "CRTDH website CMS (unpublished changes only)",

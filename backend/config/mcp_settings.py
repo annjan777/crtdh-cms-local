@@ -23,6 +23,10 @@ MCP_INSTALLED_APPS = [
 #   browser. The OAuth sign-in/consent page lives here, because an editor's browser is not
 #   in Anthropic's IP range and so cannot reach the MCP hostname.
 MCP_PUBLIC_URL = _env("MCP_PUBLIC_URL", default="http://localhost:8400").rstrip("/")
+# The OAuth issuer. Normally the MCP host itself; on a host where /mcp lives under a path (academicweb:
+# https://<site>/mcp/index.php) it is the bare site, whose /.well-known/oauth-authorization-server is a static
+# copy of this server's metadata, because clients look for that file at the issuer's root.
+MCP_OAUTH_ISSUER = _env("MCP_OAUTH_ISSUER", default=MCP_PUBLIC_URL).rstrip("/")
 CMS_PUBLIC_URL = _env("CMS_PUBLIC_URL", default="http://localhost:8000").rstrip("/")
 # Both hostnames must be in ALLOWED_HOSTS (production ALLOWED_HOSTS is empty by default);
 # config/settings.py appends these.
@@ -102,5 +106,5 @@ OAUTH2_PROVIDER = {
     "COMPLIANT_BCP_RFC9700_REDIRECT_URI_SCHEME": True,
     "COMPLIANT_BCP_RFC9700_REDIRECT_URI_MATCHING": True,
     "COMPLIANT_BCP_RFC9700_PKCE_REQUIRED": True,
-    "OIDC_ISS_ENDPOINT": MCP_PUBLIC_URL,
+    "OIDC_ISS_ENDPOINT": MCP_OAUTH_ISSUER,
 }

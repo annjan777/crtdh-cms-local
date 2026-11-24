@@ -9,6 +9,7 @@
 #   ~/.crtdh/crtdh new-site        back to the newest CMS release
 #   ~/.crtdh/crtdh access campus   the CMS opens only from the campus network (default)
 #   ~/.crtdh/crtdh access anywhere the CMS login page opens from anywhere
+#   ~/.crtdh/crtdh claude-access campus|anywhere   who may reach the Claude connector (campus = campus + Anthropic)
 #   ~/.crtdh/crtdh add-user        create another CMS admin (asks for the details)
 #   ~/.crtdh/crtdh import <address> replace the CMS content, photos and users with a staging export, then publish
 #   ~/.crtdh/crtdh logs [web|worker|agent]
@@ -47,9 +48,11 @@ cmd_for() {
 --bind 127.0.0.1:$PORT --workers 3 --timeout 330 --access-logfile - --error-logfile - --capture-output" ;;
     worker) echo "cd '$APP/backend' && exec '$ROOT/venv/bin/python' manage.py run_publish_worker" ;;
     agent) echo "cd '$APP' && exec '$ROOT/venv/bin/python' -m publish_agent -c '$ROOT/agent/config.ini' run" ;;
+    mcp) echo "cd '$APP/backend' && exec '$ROOT/venv/bin/python' -m uvicorn mcp_server.asgi:app \
+--host 127.0.0.1 --port ${CRTDH_MCP_PORT:-0} --no-proxy-headers --timeout-graceful-shutdown 5" ;;
   esac
 }
-SERVICES="web worker agent"
+SERVICES="web worker agent mcp"
 
 # Alive = the recorded process exists AND is ours (after a reboot an old number can belong to anything).
 alive() {
@@ -60,6 +63,7 @@ alive() {
 }
 
 start_one() {
+  [ "$1" = mcp ] && [ -z "${CRTDH_MCP_PORT:-}" ] && return 0   # installed before the Claude connector existed
   alive "$1" && return 0
   mkdir -p "$ROOT/run" "$ROOT/logs"
   setsid nohup bash -c "$(cmd_for "$1")" >>"$ROOT/logs/$1.log" 2>&1 < /dev/null &
@@ -178,9 +182,14 @@ hist = [h for h in (srv.get("history") or []) if not h.startswith("legacy-")]
 print((srv.get("current") or "") if sys.argv[1] == "current" else (hist[-1] if hist else ""))' "$1"
 }
 
+set_claude_access() {
+  sed -i "s/^\$ACCESS = '[a-z]*';/\$ACCESS = '$1';/" "$WEB_ROOT/mcp/index.php" || return 1
+  sed -i '/^claude=/d' "$KEEP/host.conf"; printf 'claude=%s\n' "$1" >> "$KEEP/host.conf"
+}
+
 set_access() {
   sed -i "s/^\$ACCESS = '[a-z]*';/\$ACCESS = '$1';/" "$WEB_ROOT/cms/index.php" || return 1
-  printf 'access=%s\n' "$1" > "$KEEP/host.conf"
+  sed -i '/^access=/d' "$KEEP/host.conf" 2>/dev/null; printf 'access=%s\n' "$1" >> "$KEEP/host.conf"
 }
 
 # ---- commands -------------------------------------------------------------------------------------------------
@@ -196,11 +205,15 @@ case "${1:-status}" in
     cms_answers && say "  CMS answers on 127.0.0.1:$PORT" || say "  CMS does not answer (run: ~/.crtdh/crtdh start)"
     [ -f "$KEEP/old-site-live" ] && say "  live now: the OLD site" || say "  live now: release $(release_of current)"
     say "  CMS access: $(sed -n 's/^access=//p' "$KEEP/host.conf" 2>/dev/null)"
+    say "  Claude connector: $SITE/mcp/index.php/mcp (access: $(sed -n 's/^claude=//p' "$KEEP/host.conf" 2>/dev/null))"
     say "  last data backup: $(ls -1t "$KEEP"/backups/data-*.tar.gz 2>/dev/null | head -1 | xargs -r basename)" ;;
   logs) tail -n 80 "$ROOT/logs/${2:-web}.log" ;;
   access)
     case "${2:-}" in campus|anywhere) ;; *) die "use: crtdh access campus | crtdh access anywhere" ;; esac
     set_access "$2" && say "CMS access: $2" ;;
+  claude-access)
+    case "${2:-}" in campus|anywhere) ;; *) die "use: crtdh claude-access campus (campus + Anthropic's servers) | anywhere" ;; esac
+    set_claude_access "$2" && say "Claude connector access: $2" ;;
   go-live) do_publish && { say "Checking the live site:"; check_live; } ;;
   old-site)
     load_env
@@ -228,5 +241,5 @@ case "${1:-status}" in
     do_publish && { say "Checking the live site:"; check_live; }
     say "To undo: ~/.crtdh/crtdh stop; tar -xzf $PRE -C $ROOT/data; ~/.crtdh/crtdh start; ~/.crtdh/crtdh go-live" ;;
   update) exec bash "$KEEP/install.sh" --update ;;
-  *) sed -n '2,16p' "$0" ;;
+  *) sed -n '2,17p' "$0" ;;
 esac
