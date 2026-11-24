@@ -10,6 +10,7 @@
 #   3. installs Python and Node packages, builds the CMS screens, sets up the database and content
 #   4. starts the CMS; cron restarts it (every 5 minutes, after a reboot) and backs up its data nightly
 #   5. asks for the first admin user, then asks "yes" before the new site goes live
+#   CRTDH_IMPORT=<address>: take content, photos and users from a staging export instead (deploy/staging/export-for-cic.sh)
 # --update: new code, same data.  --repair: rebuild the programs folder, restore data from the nightly backup.
 set -euo pipefail
 
@@ -188,6 +189,12 @@ fi
 FRESH=0; [ -f "$ROOT/data/cms.sqlite3" ] || FRESH=1
 (cd "$APP/backend" && python manage.py migrate --noinput -v 0 && python manage.py createcachetable) || die "database setup failed"
 chmod 600 "$ROOT/data/cms.sqlite3"
+if [ -n "${CRTDH_IMPORT:-}" ]; then
+  step "Copying the content, photos and users from staging"
+  (cd "$APP/backend" && python ../deploy/transfer.py import "$CRTDH_IMPORT" --yes) \
+    || die "copying from staging failed (the message above says why)"
+  FRESH=0
+fi
 if [ "$FRESH" = 1 ]; then
   (cd "$APP/backend" && CRTDH_ALLOW_SEED=1 python manage.py bootstrap_local && python manage.py create_baseline_snapshot) \
     || die "loading the website content failed"

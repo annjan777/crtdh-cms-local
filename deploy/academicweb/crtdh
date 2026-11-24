@@ -10,6 +10,7 @@
 #   ~/.crtdh/crtdh access campus   the CMS opens only from the campus network (default)
 #   ~/.crtdh/crtdh access anywhere the CMS login page opens from anywhere
 #   ~/.crtdh/crtdh add-user        create another CMS admin (asks for the details)
+#   ~/.crtdh/crtdh import <address> replace the CMS content, photos and users with a staging export, then publish
 #   ~/.crtdh/crtdh logs [web|worker|agent]
 #
 # Cron runs "watchdog" every 5 minutes and at reboot (starts what stopped, rebuilds a wiped programs folder)
@@ -213,6 +214,19 @@ case "${1:-status}" in
     stop_one agent; agent rollback --to "$rel" --again; rc=$?; start_one agent
     [ $rc = 0 ] && rm -f "$KEEP/old-site-live" && say "Release $rel is live." ;;
   add-user) load_env; manage createsuperuser ;;
+  import)
+    load_env; SRC="${2:-}"; [ -n "$SRC" ] || die "use: ~/.crtdh/crtdh import <address printed by the homelab export>"
+    [ -f "$APP/deploy/transfer.py" ] || die "this install is too old for import; run: ~/.crtdh/crtdh update"
+    do_nightly >/dev/null || die "the safety backup of the current data failed; nothing was changed"
+    PRE="$KEEP/backups/pre-import-$(date +%Y%m%d-%H%M%S).tar.gz"
+    cp "$(ls -1t "$KEEP"/backups/data-*.tar.gz | head -1)" "$PRE" && chmod 600 "$PRE"
+    say "Saved the current CMS data in $PRE"
+    do_stop
+    (cd "$APP/backend" && "$ROOT/venv/bin/python" ../deploy/transfer.py import "$SRC"); rc=$?
+    do_start || exit 1
+    [ $rc = 0 ] || exit $rc
+    do_publish && { say "Checking the live site:"; check_live; }
+    say "To undo: ~/.crtdh/crtdh stop; tar -xzf $PRE -C $ROOT/data; ~/.crtdh/crtdh start; ~/.crtdh/crtdh go-live" ;;
   update) exec bash "$KEEP/install.sh" --update ;;
-  *) sed -n '2,15p' "$0" ;;
+  *) sed -n '2,16p' "$0" ;;
 esac
