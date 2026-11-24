@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-eq8Gg9lC0CrDhBsp1deeCD2rts6z0t/DDbEviEqj3vM='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>CRTDH CMS sign-in</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:34em;margin:4em auto;padding:0 1em;color:#1b2a3a}</style>
+</head>
+<body>
+<p id="msg">Opening the CRTDH CMS sign-in&hellip;</p>
+<script>
+(function () {
+  // Relay for the CRTDH Claude connector. The IIT web server refuses long query strings, so the sign-in request
+  // Claude sends here is moved into the path and passed to the CRTDH CMS, which checks it.
+  var target = "https://crtdh.iitkgp.ac.in/cms/index.php/oauth/go/";
+  var q = location.search.slice(1);
+  if (!q || q.length > 4096) {
+    document.getElementById("msg").textContent = "Start the connection from Claude (Connect on the CRTDH CMS connector).";
+    return;
+  }
+  var bytes = new TextEncoder().encode(q), bin = "";
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  var b = btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  location.replace(target + b + "/");
+})();
+</script>
+</body>
+</html>
