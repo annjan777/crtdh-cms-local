@@ -28,21 +28,19 @@ handover meeting. To deploy from nothing, use [GO-LIVE.md](GO-LIVE.md). The staf
                 │
    ═════════════╪═════════════ CLOUDFLARE (TLS, Access, WAF, Tunnel) ═══════════════════════════════
      cms.<domain>      Access (email code) ──┐
-     contact.<domain>  WAF rate limit ───────┤          claude.ai (Anthropic cloud)
-     mcp.<domain>      WAF: Anthropic IPs only ◄────────── OAuth + /mcp tool calls
+     contact.<domain>  WAF rate limit ───────┤
                                              │ one outbound tunnel (no inbound port on campus)
    ┌─────────────────────────────────────────┴───────────────────────────────────────────────────┐
    │ LAB SERVER: docker compose project "crtdh-cms" (deploy/docker-compose.yml)                    │
    │                                                                                               │
    │  cloudflared 172.30.80.11 ──► gateway (nginx) 172.30.80.10 ──► cms (gunicorn, Django/DRF :8000)│
-   │        │                       admin SPA, /api/, /oauth/authorize/, /cms/login, /static/      │
-   │        └────────────────────► mcp (uvicorn ASGI :8400): /mcp, OAuth metadata/token/revoke     │
+   │                                admin SPA, /api/, /static/                                     │
    │                                                                                               │
    │  worker: queued publish → snapshot.json → content-hashed media → frontend build → tarball     │
-   │  housekeeping daily: purge_contact_messages, clearsessions, clear_auth_throttles, cleartokens │
+   │  housekeeping daily: purge_contact_messages, clearsessions, clear_auth_throttles              │
    │  migrate (one-shot): migrate, createcachetable, collectstatic                                 │
    │  db: Postgres 16  (volume pgdata)        media (volume media_data)   static (static_data)     │
-   │  networks: internal (no internet, everything)  egress (cloudflared, cms, mcp, worker only)    │
+   │  networks: internal (no internet, everything)  egress (cloudflared, cms, worker only)         │
    └───────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -52,14 +50,13 @@ Key ideas:
   whole site into one snapshot (`apps/publishing`), builds static files from it, and hands a signed tarball to the
   agent. History means past snapshots plus the audit log. "Restore" copies a snapshot back as unpublished changes.
 - **One section registry** (`backend/apps/publishing/registry_data.py`) drives the admin pages and sections, the
-  Claude tools and the public routes. To add a section, edit the registry (see `docs/mcp.md` → "Adding a tool via
-  the registry").
+  public routes. To add a section, edit the registry.
 - **Pull, not push.** Only the campus PC may talk to the CIC server, so it fetches builds. No credential for the
   CIC server exists anywhere except on that PC.
 - **App processes trust only the gateway and cloudflared.** `REQUIRE_TRUSTED_PROXY` and `TRUSTED_PROXY_IPS`
   refuse any other peer, even from the server itself.
-- Detail docs: `deploy/README.md` (stack and network), `publish_agent/README.md` (agent), `docs/mcp.md`
-  (Claude/MCP), `API_CONTRACT.md` and `docs/contracts/` (API), `docs/testing.md` (tests),
+- Detail docs: `deploy/README.md` (stack and network), `publish_agent/README.md` (agent),
+  `API_CONTRACT.md` and `docs/contracts/` (API), `docs/testing.md` (tests),
   `frontend/DESIGN.md` (design rules), `docs/cms-mapping.md` (old admin screens → new editor).
 
 ### Server facts (fill in at go-live, GO-LIVE step 5.3)
@@ -91,9 +88,7 @@ Rule: secrets live only in the places below and in the lab's password manager. N
 | `CMS_INTERNAL_SECRET` | `deploy/.env` | new value or empty, `docker compose up -d` | none for normal use |
 | `TURNSTILE_SECRET` / `TURNSTILE_SITE_KEY` | `deploy/.env` (the site key is baked into the build) | Cloudflare → Turnstile → widget → Rotate secret key; update `.env`; `docker compose up -d`; publish once | messages fail between the two steps |
 | `EMAIL_URL` (SMTP password) | `deploy/.env` | change at the provider, update, `docker compose up -d` | alerts stop until updated |
-| Claude OAuth client secret | hashed in the DB; plaintext only in the password manager and the Claude connector | `docker compose run --rm cms python manage.py create_claude_client --rotate`; remove and re-add the connector in Claude (Team: Owner does it); everyone clicks Connect | existing connections end at their next token refresh |
-| Claude access/refresh tokens | DB (SHA-256 only) | per user: Admin deactivates the user, or revoke (`docs/mcp.md` → Revoking access); everyone: the shell one-liner in `docs/mcp.md` | that user's Claude stops on its next call |
-| Tunnel credentials | `deploy/cloudflared/credentials.json`; account cert `~/.cloudflared/cert.pem` on the lab server | `cloudflared tunnel create` a new tunnel, re-route the 3 DNS names, swap the files, `docker compose up -d cloudflared`, delete the old tunnel | a minute of downtime for cms/mcp/contact |
+| Tunnel credentials | `deploy/cloudflared/credentials.json`; account cert `~/.cloudflared/cert.pem` on the lab server | `cloudflared tunnel create` a new tunnel, re-route the 2 DNS names, swap the files, `docker compose up -d cloudflared`, delete the old tunnel | a minute of downtime for cms/mcp/contact |
 | CIC SFTP key | campus PC `keys/crtdh_publish_ed25519` (+ public line in the server's `~/.ssh/authorized_keys`) | `python -m publish_agent keygen keys/crtdh_publish_ed25519.new`, add the new public line on the server, point `key_file` at it, run `check`, remove the old line | none if done in that order |
 | CIC account password | password manager only | `ssh` from the campus PC, `passwd` | none for the agent if it uses the key |
 | CMS user passwords + TOTP | each person; Admin can reset | **Users** → Reset password / Reset two-step sign-in | that user is signed out |
@@ -149,7 +144,7 @@ docker rm -f crtdh-restore-test
 Pass: the counts look right and the last published date matches **Publish history**. For media:
 `gpg -d media-<date>.tar.gz.gpg | tar tz | head` should list files.
 
-Real restore (disaster): `docker compose stop cms mcp worker housekeeping gateway`, then
+Real restore (disaster): `docker compose stop cms worker housekeeping gateway`, then
 `docker compose exec -T db psql -U crtdh -d postgres -c "DROP DATABASE crtdh;" -c "CREATE DATABASE crtdh OWNER crtdh;"`,
 pipe the decrypted dump into `docker compose exec -T db psql -U crtdh -d crtdh`, untar the media into the
 `crtdh-cms_media_data` volume, then `docker compose up -d`.
@@ -172,7 +167,7 @@ restart the task. If `publish_agent/requirements.txt` changed, run its `install/
 pip-audit -r backend/requirements.txt --require-hashes
 pip-audit -r publish_agent/requirements.txt --require-hashes
 cd frontend && npm audit --omit=dev; cd ../admin && npm audit --omit=dev
-bandit -r backend/apps backend/mcp_server publish_agent -x '*/tests/*,*/migrations/*' -ll -ii
+bandit -r backend/apps publish_agent -x '*/tests/*,*/migrations/*' -ll -ii
 ```
 
 `backend/requirements.txt` is hash-pinned. Edit `requirements.in`, then regenerate with
@@ -185,20 +180,17 @@ and `nginx:1.27-alpine` when they reach end of life. Pin `CLOUDFLARED_IMAGE` to 
 
 ### Certificates, tunnel, domain
 
-- TLS certificates for `cms./mcp./contact.` are Cloudflare edge certificates and renew automatically. There is
+- TLS certificates for `cms./contact.` are Cloudflare edge certificates and renew automatically. There is
   no origin certificate (the tunnel speaks HTTP inside the server).
 - The tunnel credentials don't expire. cloudflared runs with `--no-autoupdate`, so update it by changing the digest.
 - The **domain** registration does expire: put auto-renew on, and the renewal email on a role mailbox.
 - The **public site's** certificate (`crtdh.iitkgp.ac.in`) is the CIC's. Tell them if it lapses.
-- Anthropic's IP ranges: check platform.claude.com/docs/en/api/ip-addresses each term, and update the WAF rule
-  (GO-LIVE 2.6).
 
 ### Other regular jobs
 
-- Expired and revoked Claude (OAuth) tokens are removed daily by `housekeeping` (`cleartokens`).
 - Contact messages are deleted after `CONTACT_RETENTION_DAYS` (365) by `housekeeping`.
 - People: an Admin uses **Users** to add people, reset passwords or two-step sign-in, and deactivate leavers.
-  Deactivating also signs them out and revokes their Claude tokens.
+  Deactivating also signs them out.
 - Logs: `docker compose logs -f cms` (security events: logger `crtdh.security`); agent: `state/logs/agent.log`
   on the campus PC.
 
@@ -214,8 +206,7 @@ and `nginx:1.27-alpine` when they reach end of life. Pin `CLOUDFLARED_IMAGE` to 
 | 6 | Agent: `disk quota is probably full` | CIC quota | `check` shows free space; lower `keep_releases`; delete old `crtdh-releases/releases/legacy-*` only after confirming you have its backup |
 | 7 | Agent: `host key CHANGED` | server reinstalled, or someone in the middle | **Stop.** Confirm with the CIC before trusting the new key; then `check --trust-host-key` and update the fingerprint in §1 |
 | 8 | A staff member is locked out ("Sign-in is paused") or lost their phone | 5 wrong tries (lockout with backoff), or lost authenticator | wait for `locked_until`, or Admin → **Users** → Reset two-step sign-in (also signs them out) |
-| 9 | Claude: can't connect, or 403 | WAF IP rule out of date with Anthropic's ranges; OAuth client secret rotated; the 30-day grant ended | update the WAF rule; re-add the connector with the current secret; the user clicks Connect again |
-| 10 | Contact form shows the mailto link, or messages fail | lab server or tunnel down; `TURNSTILE_SECRET` wrong; CORS origin ≠ public site | `docker compose logs cms \| grep -i turnstile`; check `CORS_ALLOWED_ORIGINS=https://crtdh.iitkgp.ac.in`; the mailto fallback keeps enquiries flowing meanwhile |
+| 9 | Contact form shows the mailto link, or messages fail | lab server or tunnel down; `TURNSTILE_SECRET` wrong; CORS origin ≠ public site | `docker compose logs cms \| grep -i turnstile`; check `CORS_ALLOWED_ORIGINS=https://crtdh.iitkgp.ac.in`; the mailto fallback keeps enquiries flowing meanwhile |
 
 Also check `cms` restart loops after any `.env` edit. The production checks refuse unsafe settings on purpose,
 and the log line names the problem.
@@ -231,7 +222,6 @@ personally. Its 2FA and recovery codes go to the successor and the centre head.
 - [ ] Domain `<domain>`: registrant is the institute; auto-renew on; renewal email is a role mailbox; registrar login in the password manager
 - [ ] GitHub: repo transferred to an institute-owned organisation (or successor added as admin); repo visibility decided (public history contains the old fixture hash); Dependabot and CI secrets reviewed
 - [ ] Email/SMTP used by `EMAIL_URL`: institute-owned
-- [ ] Claude: the Team Owner (if a Team plan) is a staff member who stays; the connector's client secret is in the password manager
 - [ ] AWS (old 5 Sep EC2): confirmed terminated; account closed or handed over
 - [ ] Password manager vault (or sealed document) containing everything in §2, handed to the successor and the centre head
 
@@ -244,14 +234,13 @@ personally. Its 2FA and recovery codes go to the successor and the centre head.
 **Rotation at handover** (everything Annjan saw)
 
 - [ ] `SECRET_KEY`, `AGENT_HMAC_SECRET`, `CMS_INTERNAL_SECRET`, `POSTGRES_PASSWORD`, backup passphrase
-- [ ] Claude OAuth client secret (`create_claude_client --rotate`)
 - [ ] CIC account password; SFTP key if Annjan had a copy
-- [ ] Annjan's CMS account deactivated (revokes his Claude tokens too)
+- [ ] Annjan's CMS account deactivated
 
 **Knowledge**
 
 - [ ] Successor ran one restore drill (§3) and one publish + rollback, with Annjan watching
-- [ ] Successor read `deploy/README.md`, `publish_agent/README.md`, `docs/mcp.md`, this file
+- [ ] Successor read `deploy/README.md`, `publish_agent/README.md`, this file
 - [ ] Real-staff UAT signed off (`docs/uat/README.md`)
 - [ ] Open items from GO-LIVE step 10 and the known gaps below have owners
 
@@ -263,6 +252,4 @@ Signed: outgoing ____________ incoming ____________ centre head ____________ dat
   (deploy/README.md, "Publish agent and Cloudflare Access").
 - No uptime monitor. Nothing alerts anyone if `cms.<domain>` or the public site goes down; add an external check
   (for example a free uptime service watching the public site) when there is an owner for the alerts.
-- No sandbox page for first Claude tries (PLAN WS4.8): new staff try Claude on the real drafts. Drafts are never
-  live until a Publisher publishes, and Discard reverts them, but a dedicated practice page was not built.
 - No `make dev`: use the commands in the root README, `scripts/preprod.sh`, or `docker-compose.local.yml`.

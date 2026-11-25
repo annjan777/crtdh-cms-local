@@ -60,7 +60,7 @@ CMS
 - `GET /api/v1/cms/publish/<id>/` → {status: queued|building|ready_for_upload|uploading|live|failed, step, message, live_at, agent_last_seen}
 - `GET /api/v1/cms/snapshots/` ; `POST /api/v1/cms/snapshots/<id>/restore/` (copies values back as unpublished changes)
 - `GET /api/v1/cms/audit/?item_id=` → audit entries
-- `POST /api/v1/cms/upload-links/` → {url, token, expires_at} (one-time photo upload page; MCP and admin)
+- `POST /api/v1/cms/upload-links/` → {url, token, expires_at} (one-time photo upload page)
 Publish agent (runs on the whitelisted PC; HMAC auth header `X-Agent-Signature`)
 - `GET /api/v1/agent/next/` → 204 or {publish_id, tarball_url, sha256, signature}
 - `GET /api/v1/agent/builds/<publish_id>.tar.gz`
@@ -68,7 +68,7 @@ Publish agent (runs on the whitelisted PC; HMAC auth header `X-Agent-Signature`)
 Public (separate hostname, no session)
 - `POST /api/v1/contact/` (Turnstile token, throttled 5/min/IP) — the only public write.
 
-## 4. Error body (API and MCP structured content)
+## 4. Error body (API)
 ```json
 { "code": "CMS_STALE_VERSION", "message": "home.hero.hero-slides:7 changed since you read it (you sent v7, current v8, edited by priya at 14:02).",
   "fix": "Reload the section and reapply your change.", "retryable": false, "side_effects": "none",

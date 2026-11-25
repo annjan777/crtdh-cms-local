@@ -1,5 +1,5 @@
 """TOTP MFA and recovery codes. `verify_code(user, code)` is the one check used
-by the CMS login and the MCP OAuth authorize step."""
+by the CMS login."""
 import base64
 import hashlib
 import hmac

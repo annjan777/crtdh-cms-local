@@ -30,10 +30,10 @@ export function autoDescription(record, file) {
 const SITE_DEFAULT = [100, 50];
 const WORD = { left: 0, center: 50, right: 100, top: 0, bottom: 100 };
 
-/** "30% 45%" | "right top" | "" -> [across, down] in percent. */
+/** "30% 45%" | "30 45" | "right top" | "" -> [across, down] in percent. */
 function parsePosition(value) {
   if (!value || value === 'center center') return SITE_DEFAULT;
-  const pct = value.match(/^(\d{1,3}(?:\.\d)?)% (\d{1,3}(?:\.\d)?)%$/);
+  const pct = value.match(/^(\d{1,3}(?:\.\d)?)%? (\d{1,3}(?:\.\d)?)%?$/);
   if (pct) return [Math.min(100, +pct[1]), Math.min(100, +pct[2])];
   let [x, y] = [50, 50];
   for (const w of value.split(' ')) {
@@ -54,7 +54,9 @@ function FocusPicker({ url, value, onChange, id }) {
   const setPoint = setDraft;
 
   const save = (p) => {
-    onChange(`${p[0]}% ${p[1]}%`);
+    // Sent as two plain numbers ("30 45"); the CMS stores "30% 45%". A "%" in the request body was refused by
+    // the campus network filter in front of the live server.
+    onChange(`${p[0]} ${p[1]}`);
     setDraft(null);
   };
   const at = (e) => {

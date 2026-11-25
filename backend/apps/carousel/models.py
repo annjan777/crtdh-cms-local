@@ -10,8 +10,22 @@ _POSITION_PCT = r"(?:100|[1-9]?\d)(?:\.\d)?%"
 _POSITION_RE = re.compile(rf"^(?:{_POSITION_WORD} {_POSITION_WORD}|{_POSITION_PCT} {_POSITION_PCT})$")
 
 
+_POSITION_NUM = re.compile(r"^((?:100|[1-9]?\d)(?:\.\d)?) ((?:100|[1-9]?\d)(?:\.\d)?)$")
+
+
+def normalise_image_position(value):
+    """The editor sends a focus point as two plain numbers ("30 45"); store it as the CSS "30% 45%".
+
+    Plain numbers keep the "%" sign out of the request: a network filter in front of the campus server refused
+    requests whose body held "30% 45%", and the editor then reported a role error. Values already in CSS form
+    (and keyword pairs) pass through unchanged."""
+    m = _POSITION_NUM.match((value or "").strip())
+    return f"{m.group(1)}% {m.group(2)}%" if m else value
+
+
 def validate_image_position(value):
-    if value and not _POSITION_RE.match(value):
+    # Plain numbers are accepted here because the serializer turns them into the CSS form before saving.
+    if value and not (_POSITION_RE.match(value) or _POSITION_NUM.match(value)):
         raise ValidationError('Use a focus point such as "30% 45%" (across, down) or "center center".')
 
 

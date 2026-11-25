@@ -8,9 +8,8 @@ uploads to it, just as the campus PC will upload to the CIC server.
 | URL | What | In production this is |
 |---|---|---|
 | https://crtdh.annjan.in | public website (Apache, files uploaded by the agent) | crtdh.iitkgp.ac.in (CIC server) |
-| https://cms-crtdh.annjan.in | admin app + CMS API + OAuth sign-in | cms.&lt;domain&gt; |
+| https://cms-crtdh.annjan.in | admin app + CMS API | cms.&lt;domain&gt; |
 | https://contact-crtdh.annjan.in | contact form relay (POST only) | contact.&lt;domain&gt; |
-| https://mcp-crtdh.annjan.in | Claude connector (MCP) | mcp.&lt;domain&gt; |
 
 Files: `docker-compose.staging.yml` (override), `setup.sh`, `smoke.sh`, `teardown.sh`, `dc.sh` (docker compose
 with the right files), `TUNNEL.md` (Cloudflare dashboard steps), `sftp/`, `site/` and `agent/` (the stand-ins).
@@ -27,7 +26,7 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
 3. **Get the code** on the server: clone the repository and check out the branch you were given (the release or
    staging branch). Run every command below from the repository folder.
 4. **Create the tunnel** in the Cloudflare dashboard and copy its token: `TUNNEL.md` section 1.
-5. **Add the six routes** (public hostnames): `TUNNEL.md` section 2. Bot Fight Mode off: section 3.
+5. **Add the routes** (public hostnames): `TUNNEL.md` section 2. Bot Fight Mode off: section 3.
 6. **Run setup**: `deploy/staging/setup.sh`. It:
    - checks Docker;
    - writes `.env.staging` with new random secrets and asks for the tunnel token (hidden input);
@@ -36,7 +35,6 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
    - runs the migrations;
    - imports the bundled content (no user accounts);
    - asks you to create **your** admin account (you type the password; the script never sees it);
-   - prints the Claude connector's client id and secret **once** (copy them into your password manager);
    - runs the publish agent's server check.
 
    Running it again is safe: it keeps the secrets and the data, and only fills in what's missing.
@@ -47,10 +45,7 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
    building → uploading → **Live**. Then https://crtdh.annjan.in shows the site.
 9. **Run the smoke test** from any computer (it needs only bash and curl): `deploy/staging/smoke.sh`. Every line
    should say PASS. Send the output to whoever is testing.
-10. **Optional extras**: restrict the MCP host to Anthropic's IP ranges (`TUNNEL.md` section 4), put Cloudflare
-    Access in front of the CMS (section 5), or connect Claude: claude.ai → Customize → Connectors → Add custom
-    connector, URL `https://mcp-crtdh.annjan.in/mcp`, and paste the client id and secret from step 6 under
-    Advanced settings. When you're done: `deploy/staging/teardown.sh` stops everything and keeps the data;
+10. **Optional extra**: put Cloudflare Access in front of the CMS (`TUNNEL.md` section 5). When you're done: `deploy/staging/teardown.sh` stops everything and keeps the data;
     `teardown.sh -v` deletes the data as well.
 
 ## Everyday commands
@@ -64,7 +59,6 @@ Everything secret goes into `deploy/staging/.env.staging` and `deploy/staging/se
 | Agent: what's live | `deploy/staging/dc.sh exec publish-agent python -m publish_agent status` |
 | Agent: previous release back | `deploy/staging/dc.sh stop publish-agent && deploy/staging/dc.sh run --rm --no-deps publish-agent rollback && deploy/staging/dc.sh start publish-agent` |
 | Look at the "CIC server" files | `deploy/staging/dc.sh exec site ls -la /srv/www /srv/www/crtdh-releases/releases` |
-| New Claude client secret | `deploy/staging/dc.sh exec cms python manage.py create_claude_client --rotate` |
 | Someone forgot their password | another admin: CMS → Users → Reset password |
 
 ## How staging differs from production

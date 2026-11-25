@@ -83,26 +83,6 @@ PYEOF
   [ -n "$PORT" ] || die "no free local port between 8650 and 8699"
 fi
 ok "CMS will listen on 127.0.0.1:$PORT (this machine only)"
-MCP_PORT="$(sed -n 's/^CRTDH_MCP_PORT=//p' "$KEEP/env" 2>/dev/null || true)"
-if [ -z "$MCP_PORT" ]; then
-  MCP_PORT="$("$PY" - "$PORT" <<'PYEOF'
-import socket, sys
-for port in range(8700, 8750):
-    if str(port) == sys.argv[1]:
-        continue
-    s = socket.socket()
-    try:
-        s.bind(("127.0.0.1", port))
-        print(port)
-        break
-    except OSError:
-        pass
-    finally:
-        s.close()
-PYEOF
-)"
-  [ -n "$MCP_PORT" ] || die "no free local port between 8700 and 8749 for the Claude connector"
-fi
 
 # ---- 2. copy of the current site (one file) ---------------------------------------------------------------------
 if ! ls "$KEEP"/backups/old-site-*.tar.gz >/dev/null 2>&1; then
@@ -178,14 +158,14 @@ LEGACY_PAGES_AS_FILES=1
 TURNSTILE_SITE_KEY=$TS_SITE
 TURNSTILE_SECRET=$TS_SECRET
 CRTDH_PORT=$PORT
-CRTDH_MCP_PORT=$MCP_PORT
 CRTDH_CURL_RESOLVE='$CURL_RESOLVE'
 EOF
   umask 022
   chmod 600 "$KEEP/env"
   ok "settings written to ~/.crtdh/env (readable only by you)"
 fi
-grep -q '^CRTDH_MCP_PORT=' "$KEEP/env" || printf 'CRTDH_MCP_PORT=%s\n' "$MCP_PORT" >> "$KEEP/env"
+# The Claude connector of older installs is gone: drop its setting.
+sed -i '/^CRTDH_MCP_PORT=/d' "$KEEP/env"
 # Where things are on the programs disk: rewritten every run, so a moved or rebuilt folder just works.
 cat > "$ROOT/paths.env" <<EOF
 DATABASE_URL=sqlite:///$ROOT/data/cms.sqlite3
@@ -195,11 +175,6 @@ PUBLISH_ROOT=$ROOT/data/publish
 ADMIN_DIST_DIR=$APP/admin/dist
 FRONTEND_BUILD_CMD='npm --prefix $APP/frontend run build'
 FRONTEND_BUILD_OUTPUT=$APP/frontend/build/client
-MCP_PUBLIC_URL=$SITE/mcp/index.php
-MCP_OAUTH_ISSUER=$SITE
-# This server's firewall refuses query strings over ~270 characters; Claude's sign-in request is longer, so it
-# goes through a static relay page that moves it into the path (apps/oauth/relay.py, gh-pages branch: oauth/).
-MCP_OAUTH_AUTHORIZE_URL=${CRTDH_OAUTH_RELAY:-https://annjan777.github.io/crtdh-cms-local/oauth/}
 EOF
 set -a; . "$KEEP/env"; . "$ROOT/paths.env"; set +a
 
@@ -268,18 +243,12 @@ sed -e "s/^\$CMS_PORT = [0-9]*;/\$CMS_PORT = $PORT;/" -e "s/^\$ACCESS = '[a-z]*'
 printf '<!doctype html><meta charset="utf-8"><title>CRTDH CMS</title><meta http-equiv="refresh" content="0; url=%s/"><a href="%s/">Open the CMS</a>\n' \
     "$CMS_PATH" "$CMS_PATH" > "$WEB_ROOT/cms/index.html"
 printf 'upload_max_filesize = 1100M\npost_max_size = 1100M\nmax_execution_time = 330\n' > "$WEB_ROOT/cms/.user.ini"
-# The Claude connector's address: the same bridge in "mcp" mode, in front of the MCP server.
-MCP_ACCESS="$(sed -n 's/^claude=//p' "$KEEP/host.conf" 2>/dev/null || true)"; MCP_ACCESS="${MCP_ACCESS:-campus}"
-mkdir -p "$WEB_ROOT/mcp"; chmod 755 "$WEB_ROOT/mcp"
-sed -e "s/^\$CMS_PORT = [0-9]*;/\$CMS_PORT = $MCP_PORT;/" -e "s/^\$ACCESS = '[a-z]*';/\$ACCESS = '$MCP_ACCESS';/" \
-    -e "s/^\$MODE = '[a-z]*';/\$MODE = 'mcp';/" "$HERE/cms-bridge.php" > "$WEB_ROOT/mcp/index.php"
-printf 'max_execution_time = 330\n' > "$WEB_ROOT/mcp/.user.ini"
-chmod 644 "$WEB_ROOT/mcp/index.php" "$WEB_ROOT/mcp/.user.ini"
-# The connector's consent page asks for its stylesheet at /static/oauth/ (Apache serves it as a plain file).
-mkdir -p "$WEB_ROOT/static/oauth" && cp "$APP/backend/apps/oauth/static/oauth/consent.css" "$WEB_ROOT/static/oauth/" \
-  && chmod 755 "$WEB_ROOT/static" "$WEB_ROOT/static/oauth" && chmod 644 "$WEB_ROOT/static/oauth/consent.css"
+# Older installs also served a Claude connector (~/mcp/, OAuth files): it has been removed, so remove its files.
+rm -rf "$WEB_ROOT/mcp" "$WEB_ROOT/static/oauth"
+rm -f "$WEB_ROOT/.well-known/oauth-authorization-server" "$WEB_ROOT/.well-known/oauth-protected-resource"
+rmdir "$WEB_ROOT/static" "$WEB_ROOT/.well-known" 2>/dev/null || true
 chmod 644 "$WEB_ROOT/cms/index.php" "$WEB_ROOT/cms/index.html" "$WEB_ROOT/cms/.user.ini"
-printf 'access=%s\nclaude=%s\n' "$ACCESS" "$MCP_ACCESS" > "$KEEP/host.conf"
+printf 'access=%s\n' "$ACCESS" > "$KEEP/host.conf"
 
 export CRTDH_KEEP="$KEEP" CRTDH_INSTALL="$ROOT"
 bash "$CTL" stop >/dev/null 2>&1 || true
@@ -299,23 +268,6 @@ for p in /.crtdh/env /.crtdh/; do
 done
 ok "settings and backups are not reachable from the web"
 
-# Claude connector discovery: clients read the OAuth metadata at the site root, so keep a static copy there.
-mkdir -p "$WEB_ROOT/.well-known"; chmod 755 "$WEB_ROOT/.well-known"
-WK_OK=1
-for doc in oauth-authorization-server oauth-protected-resource/mcp; do
-  out="$WEB_ROOT/.well-known/${doc%/mcp}"
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
-    curl -sf -m 10 -H "Host: $HOSTNAME_SITE" "http://127.0.0.1:$MCP_PORT/.well-known/$doc" -o "$out.part" && break
-    sleep 2
-  done
-  if [ -s "$out.part" ]; then mv -f "$out.part" "$out"; chmod 644 "$out"; else rm -f "$out.part"; WK_OK=0; fi
-done
-code="$(selfcurl -o /dev/null -w '%{http_code}' "$SITE/.well-known/oauth-authorization-server")"
-if [ "$WK_OK" = 1 ] && [ "$code" = 200 ]; then
-  ok "Claude connector: $SITE/mcp/index.php/mcp (campus + Anthropic's servers)"
-else
-  printf '   note the Claude connector is not ready (metadata %s, web %s); the website and CMS are not affected\n' "$WK_OK" "$code"
-fi
 code="$(selfcurl -o /dev/null -w '%{http_code}' "$SITE$CMS_PATH/")"
 case "$code" in 200) ok "CMS opens at $SITE/cms/" ;;
   403) ok "CMS answers at $SITE/cms/ (this server's own address is not on campus, so it got the campus-only page)" ;;

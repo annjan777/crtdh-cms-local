@@ -47,26 +47,12 @@ rules:
   - id: crtdh-requests-without-timeout
     languages: [python]
     severity: WARNING
-    message: outbound HTTP without a timeout can hang a worker (publish worker, MCP fetch, Turnstile).
+    message: outbound HTTP without a timeout can hang a worker (publish worker, Turnstile).
     pattern-either:
       - pattern: requests.$M(...)
       - pattern: httpx.$M(...)
     pattern-not: $X.$M(..., timeout=$T, ...)
     paths: {exclude: ["**/tests/**"]}
-
-  - id: crtdh-mcp-fetch-only-in-fetch-module
-    languages: [python]
-    severity: ERROR
-    message: MCP server must fetch remote URLs only through mcp_server/fetch.py (SSRF guard, no redirects, size/time caps).
-    pattern-either:
-      - pattern: urllib.request.urlopen(...)
-      - pattern: requests.$M(...)
-      - pattern: httpx.$M(...)
-      - pattern: httpx.Client(...)
-      - pattern: httpx.AsyncClient(...)
-    paths:
-      include: ["**/mcp_server/**"]
-      exclude: ["**/mcp_server/fetch.py", "**/mcp_server/evals/**", "**/tests/**"]
 
   - id: crtdh-no-raw-sql
     languages: [python]

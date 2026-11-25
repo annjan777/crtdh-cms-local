@@ -8,11 +8,11 @@
 #   deploy/staging/setup.sh --with-access the CMS host is behind Cloudflare Access: ask for the agent's service token
 #
 # Hostnames (override with environment variables): SITE_HOST=crtdh.annjan.in CMS_HOST=cms-crtdh.annjan.in
-# MCP_HOST=mcp-crtdh.annjan.in CONTACT_HOST=contact-crtdh.annjan.in
+# CONTACT_HOST=contact-crtdh.annjan.in
 #
 # Secrets are written only to deploy/staging/.env.staging and deploy/staging/secrets/ (both git-ignored, 0600/0700).
-# The script prints a secret only where it must be copied once: the Claude OAuth client (printed by the CMS
-# command itself). It never asks for, prints or stores the admin password: you type it into the CMS prompt.
+# The script never prints a secret, and never asks for, prints or stores the admin password: you type it into
+# the CMS prompt.
 set -euo pipefail
 umask 077
 
@@ -22,7 +22,6 @@ REPO=$(dirname "$DEPLOY")
 
 SITE_HOST=${SITE_HOST:-crtdh.annjan.in}
 CMS_HOST=${CMS_HOST:-cms-crtdh.annjan.in}
-MCP_HOST=${MCP_HOST:-mcp-crtdh.annjan.in}
 CONTACT_HOST=${CONTACT_HOST:-contact-crtdh.annjan.in}
 MIN_COMPOSE=2.24.4
 
@@ -288,7 +287,7 @@ POSTGRES_PASSWORD=$pg_pw
 
 # --- Django
 SECRET_KEY=$secret_key
-ALLOWED_HOSTS=$CMS_HOST,$CONTACT_HOST,$MCP_HOST
+ALLOWED_HOSTS=$CMS_HOST,$CONTACT_HOST
 CSRF_TRUSTED_ORIGINS=https://$CMS_HOST
 DATABASE_URL=postgres://crtdh:$pg_pw@db:5432/crtdh
 CORS_ALLOWED_ORIGINS=https://$SITE_HOST
@@ -312,9 +311,6 @@ AGENT_HMAC_SECRET=$hmac
 CMS_INTERNAL_SECRET=$internal
 SITE_URL=https://$SITE_HOST
 CONTACT_API_URL=https://$CONTACT_HOST/api/v1/contact/
-
-# --- Claude connector
-MCP_PUBLIC_URL=https://$MCP_HOST
 
 # --- Cloudflare tunnel (token mode; the token itself is in secrets/tunnel.env, read only by cloudflared)
 CLOUDFLARED_IMAGE=$image
@@ -503,7 +499,6 @@ dry_run_report() {
     info "  ... exec -e CRTDH_ALLOW_SEED=1 cms python manage.py bootstrap_local   (only into an empty database)"
     info "  ... exec cms python manage.py create_baseline_snapshot"
     info "  ... exec cms python manage.py createsuperuser                          (you type the password)"
-    info "  ... exec cms python manage.py create_claude_client                     (prints id + secret once)"
     info "  ... run --rm --no-deps publish-agent check                             (pinned host key, discovery)"
 }
 
@@ -519,10 +514,10 @@ build_and_start() {
     code=$(docker inspect --format '{{.State.ExitCode}}' "$cid")
     [ "$code" = 0 ] || die "migrate exited with $code: deploy/staging/dc.sh logs migrate"
     ok "migrations, cache table and collectstatic done (migrate exited 0)"
-    # nginx looks up "cms" and "mcp" once, when it starts. When `up` recreates those containers (new image) but
+    # nginx looks up "cms" once, when it starts. When `up` recreates those containers (new image) but
     # not the gateway, the gateway keeps their old addresses and every API call fails with 502. Restart it.
     dc restart gateway >/dev/null || die "gateway restart failed: deploy/staging/dc.sh logs gateway"
-    ok "gateway restarted (picks up the new cms and mcp containers)"
+    ok "gateway restarted (picks up the new cms container)"
     local i
     for i in $(seq 1 30); do
         [ "$(django 'print("ready")')" = ready ] && break
@@ -555,7 +550,7 @@ load_content() {
 }
 
 first_admin() {
-    step "8/9 First admin and the Claude connector client"
+    step "8/9 First admin"
     local n; n=$(django 'from django.contrib.auth import get_user_model as g; print(g().objects.filter(is_superuser=True).count())')
     if [ "${n:-0}" != 0 ]; then
         ok "an admin account already exists"
@@ -565,17 +560,6 @@ first_admin() {
         dc exec cms python manage.py createsuperuser || die "createsuperuser failed; run: deploy/staging/dc.sh exec cms python manage.py createsuperuser"
     else
         warn "no terminal: create the admin later with: deploy/staging/dc.sh exec cms python manage.py createsuperuser"
-    fi
-
-    local c; c=$(django 'from oauth2_provider.models import get_application_model as g; print(g().objects.filter(name="Claude", user__isnull=True).count())')
-    if [ "${c:-0}" != 0 ]; then
-        ok "the Claude OAuth client exists (new secret: deploy/staging/dc.sh exec cms python manage.py create_claude_client --rotate)"
-    else
-        echo
-        bold "   Claude connector OAuth client: copy the id and secret into your password manager NOW."
-        bold "   They are shown once and are not saved anywhere by this script. Clear the terminal afterwards."
-        dc exec -T cms python manage.py create_claude_client
-        echo
     fi
 }
 
@@ -612,9 +596,6 @@ checklist() {
        queued -> building -> uploading -> Live (deploy/staging/dc.sh logs -f worker publish-agent).
    [ ] https://$SITE_HOST shows the site (view source: <meta name="crtdh-build" ...>).
    [ ] From any machine: deploy/staging/smoke.sh   (all PASS after the first publish)
-   [ ] Claude connector (optional): claude.ai -> Customize -> Connectors -> Add custom connector,
-       URL https://$MCP_HOST/mcp, Advanced settings -> the client id + secret printed above.
-       Needs the WAF rule open to Anthropic's ranges only (TUNNEL.md section 4).
    [ ] Emails are not sent in staging: they appear in deploy/staging/dc.sh logs cms worker.
    [ ] Contact form uses Cloudflare's TEST Turnstile keys (always passes). Not a real bot check.
    Stop:  deploy/staging/teardown.sh        Wipe everything:  deploy/staging/teardown.sh -v
@@ -623,7 +604,7 @@ EOF
 
 # ----------------------------------------------------------------------------------------------------- main
 bold "CRTDH staging setup$([ "$DRY_RUN" = 1 ] && echo ' (DRY RUN)')"
-info "site https://$SITE_HOST | cms https://$CMS_HOST | mcp https://$MCP_HOST | contact https://$CONTACT_HOST"
+info "site https://$SITE_HOST | cms https://$CMS_HOST | contact https://$CONTACT_HOST"
 preflight
 mkdir -p "$OUT"
 write_env

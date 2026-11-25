@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.carousel.models import normalise_image_position
+
 from .models import Document, ImageGridBlock, ImageGridItem, ImpactFigure, PageHero, ResearchStory, VideoBlock
 
 
@@ -33,6 +35,9 @@ class PageHeroSerializer(serializers.ModelSerializer):
     class Meta:
         model = PageHero
         fields = ["id", "page", "eyebrow", "title", "description", "image", "image_alt", "image_position", "is_published", "version"]
+
+    def validate_image_position(self, value):
+        return normalise_image_position(value)
 
 
 class ResearchStorySerializer(serializers.ModelSerializer):

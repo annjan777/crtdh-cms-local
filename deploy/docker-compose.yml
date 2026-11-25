@@ -1,9 +1,8 @@
 # CRTDH CMS zone - production stack (lab server). See deploy/README.md.
 #
 # Nothing here publishes a host port. The only way in is the Cloudflare tunnel:
-#   cms.<domain>      -> gateway (admin SPA + /api/ + /oauth/authorize/), behind Cloudflare Access
+#   cms.<domain>      -> gateway (admin SPA + /api/), behind Cloudflare Access
 #   contact.<domain>  -> gateway, which allows only POST /api/v1/contact/
-#   mcp.<domain>      -> mcp (only /mcp, OAuth metadata and token paths; WAF: Anthropic range only)
 # Every secret comes from deploy/.env (never committed; copy .env.example).
 # No seeding and no default users: create the first admin as in README step 4.
 #
@@ -88,27 +87,6 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # MCP server (mcp lane): ASGI, so long-lived MCP sessions never hold gunicorn workers.
-  mcp:
-    <<: *backend
-    command: >
-      uvicorn mcp_server.asgi:app --host 0.0.0.0 --port 8400 --no-proxy-headers
-      --forwarded-allow-ips 172.30.80.11 --no-server-header
-    # No uvicorn proxy-header rewriting: the peer must stay cloudflared's address so the
-    # trusted-proxy check holds; Django reads CF-Connecting-IP/X-Forwarded-Proto from that peer only.
-    # Outbound: upload_image_from_url (SSRF-guarded fetch in mcp_server/fetch.py).
-    # cloudflared reaches this as mcp-internal, never plain `mcp`: cloudflared is on egress too, so Docker DNS can
-    # answer `mcp` with the egress address. The request then leaves from cloudflared's egress IP, which isn't in
-    # TRUSTED_PROXY_IPS, and TrustedProxyGuard refuses it with an empty 403. Aliases are per network, so
-    # mcp-internal only ever resolves to the internal address.
-    networks:
-      internal:
-        aliases: [mcp-internal]
-      egress: {}
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-
   # Builds publish tarballs for the campus publish agent (publishing lane). Its own image: the backend plus
   # Node 22 and frontend/ with its build dependencies (deploy/worker/Dockerfile), still read-only and non-root.
   worker:
@@ -136,13 +114,12 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  # Daily housekeeping: contact-message retention (docs/privacy-notice.md), expired sessions, auth throttles and
-  # expired/revoked Claude connector OAuth tokens (django-oauth-toolkit cleartokens).
+  # Daily housekeeping: contact-message retention (docs/privacy-notice.md), expired sessions and auth throttles.
   housekeeping:
     <<: *backend
     command: >
       sh -c "while true; do python manage.py purge_contact_messages && python manage.py clearsessions
-      && python manage.py clear_auth_throttles && python manage.py cleartokens; sleep 86400; done"
+      && python manage.py clear_auth_throttles; sleep 86400; done"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -193,7 +170,6 @@ services:
       - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
     depends_on:
       - gateway
-      - mcp
     security_opt:
       - no-new-privileges:true
     read_only: true
@@ -213,7 +189,7 @@ networks:
       config:
         - subnet: 172.30.80.0/24
           ip_range: 172.30.80.128/25
-  # Outbound only (cloudflared to the Cloudflare edge; cms Turnstile/SMTP; mcp URL fetch; worker SMTP).
+  # Outbound only (cloudflared to the Cloudflare edge; cms Turnstile/SMTP; worker SMTP).
   # Nothing is published on the host. db, migrate, housekeeping and gateway are not on it.
   egress:
     ipam:

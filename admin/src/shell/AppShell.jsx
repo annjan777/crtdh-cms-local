@@ -40,9 +40,6 @@ function UserMenu() {
           <p className="menu-meta">
             Signed in as {user.username} · {role}
           </p>
-          <Link role="menuitem" className="menu-item" to="/claude-access" onClick={() => setOpen(false)}>
-            Claude access
-          </Link>
           <button type="button" role="menuitem" className="menu-item" onClick={logout}>
             Sign out
           </button>
@@ -120,11 +117,6 @@ export function PageNav({ sections, selectedSection, onSelectSection, onNavigate
             </NavLink>
           </li>
         ) : null}
-        <li>
-          <NavLink to="/claude-access" className="nav-link" onClick={onNavigate}>
-            Claude access
-          </NavLink>
-        </li>
         {isAdmin ? (
           <li>
             <NavLink to="/users" className="nav-link" onClick={onNavigate}>

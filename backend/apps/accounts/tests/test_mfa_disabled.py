@@ -63,22 +63,6 @@ def test_password_only_session_stops_working_when_mfa_is_switched_on(browser, ed
         assert browser.get("/api/v1/auth/me/").status_code == 401  # must sign in again, this time with a code
 
 
-def test_password_only_session_cannot_authorize_claude_once_mfa_is_on(browser, editor):
-    from django.test import RequestFactory
-
-    from apps.accounts import mfa
-    from apps.oauth.mfa import session_has_mfa
-
-    _login(browser, editor)
-    req = RequestFactory().get("/oauth/authorize/")
-    req.user = editor
-    req.session = browser.c.session
-    assert session_has_mfa(req) is True  # MFA off: the password sign-in is the CMS sign-in
-    with override_settings(MFA_ENABLED=True):
-        assert mfa.is_verified(req) is False
-        assert session_has_mfa(req) is False
-
-
 def test_session_marked_with_code_still_counts_when_mfa_is_on(editor):
     from django.contrib.sessions.backends.db import SessionStore
 

@@ -17,7 +17,7 @@ describe('contract §4 error mapping', () => {
   it.each([
     [400, 'CMS_VALIDATION'],
     [401, 'CMS_UNAUTHENTICATED'],
-    [403, 'CMS_FORBIDDEN_ROLE'],
+    [403, 'BLOCKED'],
     [404, 'CMS_NOT_FOUND'],
     [409, 'CMS_STALE_VERSION'],
     [422, 'CMS_BUILD_GUARD'],
@@ -29,6 +29,12 @@ describe('contract §4 error mapping', () => {
     expect(e.code).toBe(code);
     expect(e.message.length).toBeGreaterThan(0);
     expect(e.fix.length).toBeGreaterThan(0);
+  });
+
+  it('a 403 without the CMS body is reported as blocked upstream, not as a role problem', () => {
+    const e = mapError(403, null);
+    expect(e.code).toBe('BLOCKED');
+    expect(e.message).toMatch(/not about your role/);
   });
 
   it('ignores codes that are not in the contract', () => {

@@ -78,14 +78,10 @@ class Client:
 
 def main():
     # ---------- direct access to app ports bypassing the gateway
-    for port, path in ((8600, "/api/v1/auth/csrf/"), (8601, "/.well-known/oauth-protected-resource")):
+    for port, path in ((8600, "/api/v1/auth/csrf/"),):
         code = subprocess.run(["curl", "-s", "--cacert", CA, "--interface", "127.0.0.5", "-o", "/dev/null", "-w",
                                "%{http_code}", f"https://localhost:{port}{path}"], capture_output=True, text=True).stdout
         out("PASS" if code == "403" else "FAIL", f"direct request from non-proxy peer to :{port}", f"HTTP {code}")
-    code = subprocess.run(["curl", "-s", "--cacert", CA, "-o", "/dev/null", "-w", "%{http_code}", "-H",
-                           "X-Forwarded-For: 160.79.104.1", "-H", "CF-Connecting-IP: 160.79.104.1",
-                           "https://localhost:8601/mcp"], capture_output=True, text=True).stdout
-    out("PASS" if code == "401" else "FAIL", "spoofed CF-Connecting-IP to MCP still needs OAuth", f"HTTP {code}")
 
     # ---------- MFA bypass
     c = Client()
@@ -186,34 +182,6 @@ def main():
         s, b = Client().req("GET", p, base=SITE)
         leak = isinstance(b, bytes) and b"root:" in b
         out("FAIL" if leak else "PASS", f"static host traversal {p}", s)
-
-    # ---------- SSRF via MCP fetch (in-process, production settings, real resolver, no network egress needed)
-    code = r"""
-import json
-from mcp_server import fetch
-from mcp_server.errors import CmsError
-urls = ["http://127.0.0.1:8600/api/v1/auth/csrf/", "https://127.0.0.1/", "https://localhost/", "https://[::1]/",
-        "https://169.254.169.254/latest/meta-data/", "https://10.0.0.1/x.jpg", "https://0x7f000001/", "https://2130706433/",
-        "https://localtest.me/x.jpg", "file:///etc/passwd", "gopher://127.0.0.1:25/", "https://user@127.0.0.1/"]
-res = {}
-for u in urls:
-    try:
-        fetch.fetch_image_bytes(u)
-        res[u] = "FETCHED"
-    except CmsError as e:
-        res[u] = "blocked: " + str(getattr(e, "code", "")) + " " + str(getattr(e, "message", ""))[:60]
-    except Exception as e:
-        res[u] = "error: " + type(e).__name__
-print(json.dumps(res))
-"""
-    r = subprocess.run([sys.executable, "manage.py", "shell", "-c", code], cwd="backend", capture_output=True, text=True,
-                       env=os.environ)
-    try:
-        res = json.loads(r.stdout.strip().splitlines()[-1])
-        for u, v in res.items():
-            out("FAIL" if v == "FETCHED" else "PASS", f"MCP fetch {u}", v)
-    except Exception:  # noqa: BLE001
-        out("FAIL", "MCP fetch probe could not run", (r.stderr or r.stdout)[-300:])
 
     # ---------- MFA brute force last (it may lock the account): ada_admin
     c = Client()

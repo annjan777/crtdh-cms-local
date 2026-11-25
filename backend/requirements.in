@@ -20,7 +20,3 @@ pikepdf>=10.18,<11
 beautifulsoup4>=4.12
 lxml>=5.3
 
-# MCP server (mcp lane): official SDK, OAuth 2.1 authorization server, ASGI server.
-mcp==2.3.0
-django-oauth-toolkit==3.4.1
-uvicorn==0.54.0

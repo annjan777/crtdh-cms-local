@@ -1,5 +1,5 @@
 # CRTDH CI (owner: QA lane). What each job proves is listed in docs/testing.md.
-# Every job is a merge gate. Nothing here talks to the institute server, claude.ai or real staff.
+# Every job is a merge gate. Nothing here talks to the institute server or real staff.
 name: ci
 
 on:
@@ -22,7 +22,7 @@ env:
 
 jobs:
   backend:
-    name: backend (ruff, pytest + coverage on SQLite and Postgres 16, import contracts, MCP schema)
+    name: backend (ruff, pytest + coverage on SQLite and Postgres 16, write paths)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:
@@ -56,7 +56,7 @@ jobs:
         working-directory: backend
         run: >-
           pytest --integration --create-db
-          --cov=apps --cov=mcp_server --cov-report=xml:../test-results/coverage.xml
+          --cov=apps --cov-report=xml:../test-results/coverage.xml
           --cov-report=term-missing:skip-covered --junitxml=../test-results/backend-sqlite.xml
       - name: pytest (PostgreSQL 16, the production engine)
         working-directory: backend
@@ -65,15 +65,8 @@ jobs:
         run: pytest --integration --create-db -q --junitxml=../test-results/backend-postgres.xml
       - name: publish agent tests
         run: python -m pytest publish_agent/tests -p no:asyncio -q --junitxml=test-results/publish-agent.xml
-      - name: import-linter (MCP writes only through apps.publishing)
-        working-directory: backend
-        env:
-          PYTHONPATH: .  # mcp_server and apps are top-level packages of backend/, not installed
-        run: lint-imports
       - name: views write only through apps.publishing
         run: python tests/tools/write_paths.py
-      - name: MCP tool schema snapshot (diff = review what Claude sees)
-        run: python tests/tools/mcp_schema.py --check
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -100,8 +93,8 @@ jobs:
           pip-audit --strict --require-hashes --disable-pip -r publish_agent/requirements.txt
       - name: bandit (medium+ severity and confidence)
         run: >-
-          bandit -r backend/apps backend/mcp_server backend/config publish_agent
-          -x '*/tests/*,*/migrations/*,*/evals/*' -ll -ii
+          bandit -r backend/apps backend/config publish_agent
+          -x '*/tests/*,*/migrations/*' -ll -ii
       - name: semgrep (project rules + registry packs)
         run: scripts/security/semgrep.sh
       - name: gitleaks (secrets in history)

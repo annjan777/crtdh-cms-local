@@ -12,7 +12,6 @@
 #     -> falls back to SQLite only if Postgres can't start, with ALLOW_SQLITE=1 and a loud label
 #     -> PREPROD_DATABASE_URL=postgres://... uses an existing server instead (CI service container)
 #   gunicorn  CMS API (config.wsgi)                  127.0.0.1:8600
-#   uvicorn   MCP ASGI (mcp_server.asgi:app)         127.0.0.1:8601   (8601: not assigned to any lane; flagged to lead)
 #   publish worker (manage.py run_publish_worker)
 #   fake CIC host: SFTP-only server (publish_agent.tests.fakes) 127.0.0.1:2223
 #   publish agent (python -m publish_agent run) pointed at that SFTP host and the CMS
@@ -27,7 +26,7 @@ REPO=$(cd "$(dirname "$0")/.." && pwd)
 ST=${PREPROD_STATE:-$REPO/.preprod}
 PY=${PY:-/home/claude/venv/bin/python}
 PGBIN=${PGBIN:-$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -1)}
-CMS_PORT=8600 MCP_PORT=8601 ADMIN_PORT=3600 SITE_PORT=3601 SFTP_PORT=2223
+CMS_PORT=8600 ADMIN_PORT=3600 SITE_PORT=3601 SFTP_PORT=2223
 log() { printf '\033[1m[preprod]\033[0m %s\n' "$*"; }
 die() { log "ERROR: $*"; exit 1; }
 
@@ -35,7 +34,6 @@ need_integrated_tree() {
   local missing=()
   [ -d "$REPO/backend/apps/publishing" ] || missing+=("backend/apps/publishing (backend-core)")
   [ -f "$REPO/backend/apps/accounts/mfa.py" ] || missing+=("backend/apps/accounts/mfa.py (backend-security)")
-  [ -d "$REPO/backend/mcp_server" ] || missing+=("backend/mcp_server (mcp)")
   [ -d "$REPO/publish_agent" ] || missing+=("publish_agent/ (publish-agent)")
   [ ${#missing[@]} -eq 0 ] || die "this tree is not integrated yet; missing: ${missing[*]}"
 }
@@ -109,7 +107,6 @@ CONTACT_API_URL=https://localhost:$CMS_PORT/api/v1/contact/
 FRONTEND_BUILD_CMD="sh $REPO/deploy/worker/build-site.sh"
 FRONTEND_DIR=$REPO/frontend
 FRONTEND_BUILD_OUTPUT=$ST/site/build/client
-MCP_PUBLIC_URL=https://localhost:$MCP_PORT
 EMAIL_URL=smtp://127.0.0.1:2525
 AGENT_HMAC_SECRET=$(openssl rand -hex 32)
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
@@ -140,10 +137,6 @@ up() {
     $PY manage.py shell -c "from tests.support.content import *; load_snapshot_into_db(FULL_SNAPSHOT_PATH)"
     touch "$ST/seeded"
   fi
-  if ! grep -q '^E2E_OAUTH_CLIENT_ID=' "$ST/env.oauth" 2>/dev/null; then  # Claude connector client (shown once)
-    $PY manage.py create_claude_client 2>/dev/null | awk '/Client ID:/{print "E2E_OAUTH_CLIENT_ID="$3} /Client secret:/{print "E2E_OAUTH_CLIENT_SECRET="$3}' > "$ST/env.oauth" || true
-    chmod 600 "$ST/env.oauth"
-  fi
   $PY manage.py seed_test_users --rehearsal | tail -1 > "$ST/users.json"; chmod 600 "$ST/users.json"
   $PY manage.py create_baseline_snapshot >/dev/null 2>&1 || log "no baseline snapshot command result (ok on first run)"
 
@@ -156,7 +149,6 @@ up() {
 
   start_bg smtp "$ST/logs/smtp.log" $PY "$REPO/tests/tools/smtp_sink.py" --dir "$ST/mail" --port 2525
   start_bg gunicorn "$ST/logs/gunicorn.log" $PY -m gunicorn config.wsgi:application -b 127.0.0.1:$CMS_PORT -w 3 --timeout 120 --certfile "$ST/tls/cert.pem" --keyfile "$ST/tls/key.pem" --access-logfile -
-  start_bg mcp "$ST/logs/mcp.log" $PY -m uvicorn mcp_server.asgi:app --host 127.0.0.1 --port $MCP_PORT --no-proxy-headers --ssl-certfile "$ST/tls/cert.pem" --ssl-keyfile "$ST/tls/key.pem"
   start_bg worker "$ST/logs/worker.log" $PY manage.py run_publish_worker
   cd "$REPO"
   start_bg sftp "$ST/logs/sftp.log" $PY tests/tools/sftp_host.py --root "$ST/sftp" --port $SFTP_PORT \
@@ -190,19 +182,17 @@ INI
   [ -f "$REPO/admin/dist/index.html" ] && start_bg admin "$ST/logs/admin-static.log" $PY tests/tools/static_server.py --dir "$REPO/admin/dist" --port $ADMIN_PORT --mode spa --proxy https://localhost:$CMS_PORT --static-root "$REPO/backend/staticfiles" $TLS
   # The public site is whatever the agent made live in the SFTP web root (follows its symlink/htaccess switch).
   start_bg site "$ST/logs/site-static.log" $PY tests/tools/static_server.py --dir "$WEBROOT" --port $SITE_PORT --mode static $TLS
-  wait_url "https://localhost:$MCP_PORT/" 30 || true
   log "up. DB: $(cat "$ST/DB_MODE")"
-  log "CMS https://localhost:$ADMIN_PORT  public https://localhost:$SITE_PORT  MCP https://localhost:$MCP_PORT/mcp (self-signed: .preprod/tls/cert.pem)"
+  log "CMS https://localhost:$ADMIN_PORT  public https://localhost:$SITE_PORT (self-signed: .preprod/tls/cert.pem)"
   log "test users in .preprod/users.json; password in .preprod/env (CRTDH_TEST_PASSWORD) — local values only"
 }
 
 smoke() { cd "$REPO" && $PY tests/tools/preprod_smoke.py --state "$ST"; }
 
 e2e() { # Playwright E2E (all levels incl. needs_integration) against this running stack
-  cd "$REPO"; set -a; . "$ST/env"; [ -f "$ST/env.oauth" ] && . "$ST/env.oauth"; set +a
+  cd "$REPO"; set -a; . "$ST/env"; set +a
   E2E_CA_FILE="$ST/tls/cert.pem" E2E_USERS_FILE="$ST/users.json" E2E_PUBLISH_STACK=1 E2E_SEED=full E2E_MAIL_DIR="$ST/mail" \
   E2E_SITE_URL="${E2E_SITE_URL:-https://localhost:$SITE_PORT}" E2E_ADMIN_URL="https://localhost:$ADMIN_PORT" \
-  E2E_MCP_URL="https://localhost:$MCP_PORT/mcp" \
     $PY -m pytest $(printf '%s\n' "$@" | grep -q '^tests/' || echo tests/e2e) --integration --external --output test-results/e2e "$@"
 }
 

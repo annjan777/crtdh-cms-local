@@ -11,7 +11,7 @@ server {
     return 444;
 }
 
-# cms.<domain>: admin SPA + CMS API + OAuth authorize page (Cloudflare Access in front).
+# cms.<domain>: admin SPA + CMS API (Cloudflare Access in front).
 server {
     listen 80;
     server_name ${CMS_HOST};
@@ -44,21 +44,7 @@ server {
         proxy_read_timeout 300s;
     }
 
-    # Sign-in entry for the OAuth authorize step: Django sends an MFA-verified session straight to
-    # ?next=, anyone else to the SPA's /login?next=.
-    location ~ ^/cms/login/?$ {
-        proxy_pass http://cms:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-
-    location /oauth/ {
-        proxy_pass http://cms:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-
-    # Django's collected static files (OAuth consent page CSS, etc.): written by the migrate job's
+    # Django's collected static files: written by the migrate job's
     # collectstatic into the static_data volume, mounted read-only here.
     location /static/ {
         alias /srv/static/;

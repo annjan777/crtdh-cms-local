@@ -3,7 +3,6 @@ pytest>=9,<10
 pytest-django>=4.9
 pytest-cov>=6
 pytest-timeout>=2.3
-pytest-asyncio>=1.0
 factory_boy>=3.3
 freezegun>=1.5
 pytest-playwright>=0.6
@@ -11,4 +10,3 @@ axe-playwright-python==0.1.8  # tests/e2e accessibility checks (helpers.axe_seri
 ruff>=0.8
 bandit>=1.8
 pip-audit>=2.7
-import-linter>=2.1

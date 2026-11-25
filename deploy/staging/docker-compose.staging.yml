@@ -28,9 +28,6 @@ services:
   cms:
     image: crtdh-backend:staging
     env_file: !override [staging/.env.staging]
-  mcp:
-    image: crtdh-backend:staging
-    env_file: !override [staging/.env.staging]
   worker:
     image: crtdh-worker:staging
     env_file: !override [staging/.env.staging]
@@ -45,7 +42,7 @@ services:
     command: tunnel --no-autoupdate run
     env_file: [staging/secrets/tunnel.env]   # TUNNEL_TOKEN=... (0600, git-ignored)
     volumes: !reset []
-    depends_on: [gateway, mcp, site]
+    depends_on: [gateway, site]
 
   # Stand-in for academicweb.iitkgp.ac.in's SFTP account. Only the publish agent talks to it.
   sftp:

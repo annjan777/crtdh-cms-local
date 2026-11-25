@@ -4,7 +4,7 @@ Who this is for: the person deploying (Annjan). Do the steps in order. Each step
 should see, how to check it, and how to undo it. Tick the boxes as you go and paste real outputs into the
 "Record" lines. Those records become the server facts the successor needs (see [HANDOVER.md](HANDOVER.md)).
 
-Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.`, `mcp.` and `contact.`
+Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.` and `contact.`
 (see step 2.1). The public site stays at `https://crtdh.iitkgp.ac.in/` on the CIC server
 `academicweb.iitkgp.ac.in`.
 
@@ -21,9 +21,6 @@ Placeholders: `<domain>` is the Cloudflare-managed domain that will hold `cms.`,
 > 3. **Nothing in `deploy/` has been run under Docker yet.** The sandbox had no Docker daemon (`docs/testing.md`).
 >    The production settings were tested in the rehearsal instead. Expect to fix small issues on the day, and keep
 >    this runbook open to note them.
-> 4. **Anthropic publishes two outbound IPv4 ranges:** `160.79.104.0/21` and `153.61.208.0/20`
->    (platform.claude.com/docs/en/api/ip-addresses, checked 19 Nov 2026). The tunnel template, `docs/mcp.md` and
->    step 2.6 use both. Check the page again on the day you set this up.
 
 ---
 
@@ -168,7 +165,7 @@ Record: `server OS ____, Docker ____, path /srv/crtdh/app, commit ____`.
 
 ---
 
-## 2. Cloudflare: account, tunnel, DNS, Access, WAF (about 60 min)
+## 2. Cloudflare: account, tunnel, DNS, Access, rate limit (about 60 min)
 
 ### 2.1 Account and domain
 
@@ -196,23 +193,21 @@ The container reads the credentials file as user `nonroot`. If it can't read the
 `sudo chown 65532:65532 cloudflared/credentials.json` (65532 is the usual user id of `nonroot` in the
 cloudflared image; check with `docker inspect --format '{{.Config.User}}' <CLOUDFLARED_IMAGE>`).
 
-### 2.3 DNS for the three hostnames
+### 2.3 DNS for the two hostnames
 
 ```bash
 cloudflared tunnel route dns crtdh-cms cms.<domain>
-cloudflared tunnel route dns crtdh-cms mcp.<domain>
 cloudflared tunnel route dns crtdh-cms contact.<domain>
 ```
 
-Each one prints `Added CNAME cms.<domain> which will route to this tunnel`. In DNS → Records you now see three
+Each one prints `Added CNAME cms.<domain> which will route to this tunnel`. In DNS → Records you now see two
 proxied (orange-cloud) CNAMEs to `<TUNNEL_ID>.cfargotunnel.com`.
 
 What each hostname serves is defined in `cloudflared/config.yml` and `nginx/templates/gateway.conf.template`:
 
 | Hostname | Serves | Protection |
 |---|---|---|
-| `cms.<domain>` | admin app, `/api/`, `/oauth/authorize/`, `/cms/login` | Cloudflare Access + CMS password + TOTP |
-| `mcp.<domain>` | only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | WAF IP rule + OAuth |
+| `cms.<domain>` | admin app, `/api/` | Cloudflare Access + CMS password |
 | `contact.<domain>` | only `POST /api/v1/contact/` | Turnstile + 5/min/IP in the app + WAF rate limit |
 
 ### 2.4 Cloudflare Access for `cms.`
@@ -244,23 +239,7 @@ returns `302` or `403` from Access (no token). With the token,
 `curl -s -o /dev/null -w '%{http_code}\n' -H "CF-Access-Client-Id: <id>" -H "CF-Access-Client-Secret: <secret>" https://cms.<domain>/api/v1/agent/next/`
 returns `401` from the CMS (unsigned request). Clear your shell history afterwards if you typed the secret.
 
-### 2.6 WAF rule for `mcp.`
-
-`mcp.` must not be behind Access, because Claude connects from Anthropic's cloud (PLAN WS4.2, a written
-exception). Security → WAF → Custom rules → Create:
-
-- Name `MCP: Anthropic only`
-- Expression (Edit expression):
-  `(http.host eq "mcp.<domain>" and not ip.src in {160.79.104.0/21 153.61.208.0/20})`
-- Action **Block**.
-
-Check platform.claude.com/docs/en/api/ip-addresses and use exactly the outbound IPv4 ranges listed there (on
-19 Nov 2026: `160.79.104.0/21` and `153.61.208.0/20`, as in the expression above).
-
-Verify: from your laptop,
-`curl -s -o /dev/null -w '%{http_code}\n' https://mcp.<domain>/.well-known/oauth-authorization-server` → `403`.
-
-### 2.7 Rate limit for `contact.`
+### 2.6 Rate limit for `contact.`
 
 Security → WAF → Rate limiting rules → Create: if `http.host eq "contact.<domain>"`, count by IP, block.
 The template suggests 10 requests a minute. On the Free plan the counting period may be fixed at 10 seconds; if
@@ -287,7 +266,7 @@ Fill **every** `<...>` value. Here is where each one comes from:
 | `POSTGRES_PASSWORD` | `gen` (avoid characters that need URL-escaping in `DATABASE_URL`; `token_urlsafe` is safe) |
 | `DATABASE_URL` | `postgres://crtdh:<POSTGRES_PASSWORD>@db:5432/crtdh` |
 | `SECRET_KEY` | `gen` |
-| `ALLOWED_HOSTS` | `cms.<domain>,contact.<domain>,mcp.<domain>` |
+| `ALLOWED_HOSTS` | `cms.<domain>,contact.<domain>` |
 | `CSRF_TRUSTED_ORIGINS`, `CMS_PUBLIC_URL` | `https://cms.<domain>` |
 | `CORS_ALLOWED_ORIGINS` | `https://crtdh.iitkgp.ac.in` (the public site calls the contact endpoint) |
 | `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY` | from step 7.1 (fill in now or come back) |
@@ -297,7 +276,6 @@ Fill **every** `<...>` value. Here is where each one comes from:
 | `CMS_INTERNAL_SECRET` | `gen`, or leave empty to turn it off |
 | `PUBLISH_ROOT`, `FRONTEND_BUILD_CMD`, `FRONTEND_BUILD_OUTPUT` | not in `.env` any more: `docker-compose.yml` and the worker image set them. Delete them from an older `.env` |
 | `CONTACT_API_URL` | `https://contact.<domain>/api/v1/contact/` |
-| `MCP_PUBLIC_URL` | `https://mcp.<domain>` |
 | `CLOUDFLARED_IMAGE` | `docker pull cloudflare/cloudflared:<current version>` then `docker inspect --format '{{index .RepoDigests 0}}' cloudflare/cloudflared:<version>` → paste the `cloudflare/cloudflared@sha256:...` value |
 
 Check that nothing is left:
@@ -324,7 +302,7 @@ docker compose up -d --build          # first build: several minutes
 docker compose ps
 ```
 
-Expect `migrate` to show `exited (0)`, and `db`, `cms`, `mcp`, `worker`, `housekeeping`, `gateway` and
+Expect `migrate` to show `exited (0)`, and `db`, `cms`, `worker`, `housekeeping`, `gateway` and
 `cloudflared` to show `running`. `migrate` runs `migrate`, `createcachetable` and `collectstatic`; you don't run
 them by hand.
 
@@ -511,48 +489,11 @@ Then send a real message from the Contact page. Check that the alert arrives at 
 only the message id), and that the message appears in the CMS under **Messages** (Publisher/Admin only).
 If the contact endpoint is down, the form shows a `mailto:` link instead.
 
-Before launch, the privacy notice placeholders must be filled (see step 10).
+Before launch, the privacy notice placeholders must be filled (see step 9).
 
 ---
 
-## 8. Claude connector (about 20 min; optional for launch, cut line 10 Jan 2027)
-
-### 8.1 Create the OAuth client
-
-```bash
-docker compose run --rm cms python manage.py create_claude_client
-```
-
-It prints `Client ID`, `Client secret`, `Redirect URIs` and `Server URL: https://mcp.<domain>/mcp`, **once**.
-Store them in the password manager straight away. To issue a new secret later, use `--rotate`.
-
-### 8.2 Which Claude plan, and who adds it
-
-Checked 19 Nov 2026 (support.claude.com, "Get started with custom connectors using remote MCP"):
-
-- Custom connectors work on Free (only one custom connector), Pro, Max, Team and Enterprise.
-- **Pro / Max:** each person adds it under **Customize → Connectors → Add custom connector**.
-- **Team:** only Owners or Primary Owners can add it, under **Organization settings → Connectors**. Members then
-  click **Connect**. On Enterprise, a custom role with "Manage access to Libraries" can also add it.
-- In the OAuth client step, choose **Use your own OAuth client** and paste the id and secret.
-
-**Unknown:** which Claude plan the editors have. Ask them and record it.
-
-### 8.3 Connect and test
-
-Follow `docs/connect-claude.md` with one editor. Time it with `docs/uat/connect-claude-timing.md` (target ≤ 5
-minutes). The sign-in page opens on `cms.<domain>` (Access, then CMS password and code). The consent screen says
-"Allow Claude to edit drafts as <name> (<role>)".
-
-Verify: ask Claude "What changes are waiting to be published?", then make one change. It appears on **Review &
-publish** under a banner "Claude made 1 change for <name> in one session".
-
-Roll back: remove the connector in Claude, remove the `mcp.` DNS record, and stop the `mcp` service. If MCP isn't
-passing its acceptance test by 10 Jan 2027, launch without it (gate d6).
-
----
-
-## 9. Post-launch checks and rollback
+## 8. Post-launch checks and rollback
 
 Run these on launch day and after every deploy.
 
@@ -564,7 +505,6 @@ Run these on launch day and after every deploy.
 | Sitemap / robots | `curl -s https://crtdh.iitkgp.ac.in/sitemap.xml \| grep -c '<loc>'` and `curl -s https://crtdh.iitkgp.ac.in/robots.txt` | 12 URLs (one per page); robots names the sitemap |
 | No CMS on the public host | `curl -s -o /dev/null -w '%{http_code}' https://crtdh.iitkgp.ac.in/api/v1/` | `404` |
 | CMS gated | `curl -s -o /dev/null -w '%{http_code}' https://cms.<domain>/` | `302` (to Access) |
-| MCP gated | `curl -s -o /dev/null -w '%{http_code}' https://mcp.<domain>/mcp` | `403` from a non-Anthropic IP |
 | Stack healthy | `docker compose ps` | all running, `migrate` exited (0) |
 
 **Uptime check (to set up):** nothing in the repo checks uptime. Add an external HTTP monitor on
@@ -584,7 +524,7 @@ not a personal one.
 
 ---
 
-## 10. What needs a human before launch
+## 9. What needs a human before launch
 
 | Item | Who | Where |
 |---|---|---|
@@ -593,8 +533,7 @@ not a personal one.
 | Is the personal Gmail in the footer meant to be public? | centre head | `docs/content-gaps.md` → Contact |
 | Privacy notice: contact name/role and email, publication date, legal answers Q-01–Q-04 | centre head + institute legal | `docs/privacy-notice.md` |
 | Institute web rules (GIGW, central template)? | centre head | record in HANDOVER |
-| Real-staff UAT: one real run each of the editor, publisher and connect-Claude sheets, no open **must** fail | staff + observer | `docs/uat/README.md` sign-off table |
-| Which Claude plan editors have; who the Team Owner is | Annjan | step 8.2 |
+| Real-staff UAT: one real run each of the editor and publisher sheets, no open **must** fail | staff + observer | `docs/uat/README.md` sign-off table |
 | SMTP provider for alerts | institute mail admin | step 3 |
 | Successor named, and institute-owned accounts | centre head | [HANDOVER.md](HANDOVER.md) sign-off |
 

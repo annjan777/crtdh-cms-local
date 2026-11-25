@@ -10,7 +10,7 @@ JS_READ = re.compile(r"(?:process\.env|import\.meta\.env)\.([A-Z][A-Z0-9_]+)")
 
 def _reads():
     names = set()
-    for base in ("backend/config", "backend/apps", "backend/mcp_server", "publish_agent"):
+    for base in ("backend/config", "backend/apps", "publish_agent"):
         for path in (ROOT / base).rglob("*.py"):
             if "tests" in path.parts or "migrations" in path.parts:
                 continue
@@ -34,5 +34,5 @@ def test_every_env_read_is_documented():
 
 def test_found_the_known_reads():
     """Guard the scanner itself: these are read by the code today."""
-    assert {"SECRET_KEY", "AGENT_HMAC_SECRET", "PUBLISH_ROOT", "MCP_PUBLIC_URL", "TRUSTED_PROXY_IPS",
+    assert {"SECRET_KEY", "AGENT_HMAC_SECRET", "PUBLISH_ROOT", "CMS_PUBLIC_URL", "TRUSTED_PROXY_IPS",
             "CONTACT_API_URL", "TURNSTILE_SITE_KEY"} <= _reads()

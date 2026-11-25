@@ -9,7 +9,7 @@ Options / env:
   --admin-dir  built admin          (default admin/dist; env E2E_ADMIN_DIR)
   --external   don't start anything; use already-running servers on those ports (preprod.sh, staging)
                with E2E_CA_FILE=.preprod/tls/cert.pem E2E_USERS_FILE=.preprod/users.json CRTDH_TEST_PASSWORD=...
-               E2E_SITE_URL / E2E_ADMIN_URL / E2E_MCP_URL, and E2E_PUBLISH_STACK=1 for the publish flow
+               E2E_SITE_URL / E2E_ADMIN_URL, and E2E_PUBLISH_STACK=1 for the publish flow
   E2E_DJANGO_SETTINGS  production settings module (default config.settings + CRTDH_ENV=production)
   CHROME_BIN           used when Playwright's bundled Chromium is not installed (sandbox)
 """
@@ -57,7 +57,7 @@ def browser_type_launch_args(browser_type_launch_args):
     chrome = os.environ.get("CHROME_BIN")
     if not bundled.exists() and chrome and Path(chrome).exists():
         args["executable_path"] = chrome
-    # The browser may only talk to the local stack: OAuth redirects to claude.ai (auth codes!), fonts, analytics
+    # The browser may only talk to the local stack: fonts, analytics
     # and anything else external go to a dead proxy. Playwright's route() does not see redirect hops.
     args["args"] = [*args.get("args", []), "--proxy-server=http://127.0.0.1:9",
                     "--proxy-bypass-list=localhost;127.0.0.1;[::1]"]

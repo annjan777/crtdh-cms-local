@@ -1,7 +1,7 @@
 # Deploying the CRTDH CMS zone (lab server)
 
 The public website is static files on the CIC server (published by the campus publish agent). This
-stack is the private CMS zone: Postgres, the Django CMS API (gunicorn), the MCP server (uvicorn), the
+stack is the private CMS zone: Postgres, the Django CMS API (gunicorn), the
 publish worker, a daily housekeeping job, an nginx gateway serving the admin SPA, and `cloudflared`.
 
 To rehearse this stack on a homelab first (with stand-ins for the CIC server and the campus PC), see
@@ -11,20 +11,18 @@ Nothing publishes a host port. All traffic arrives through one Cloudflare Tunnel
 
 | Hostname | Goes to | Protection |
 |---|---|---|
-| `cms.<domain>` | gateway: admin SPA, `/api/`, `/oauth/authorize/` | Cloudflare Access (SSO) + CMS sign-in with TOTP |
-| `mcp.<domain>` | mcp: only `/mcp`, OAuth metadata, `/oauth/token/`, `/oauth/revoke_token/` | WAF: source IP in `160.79.104.0/21` or `153.61.208.0/20` only + OAuth |
+| `cms.<domain>` | gateway: admin SPA, `/api/` | Cloudflare Access (SSO) + CMS sign-in |
 | `contact.<domain>` | gateway: only `POST /api/v1/contact/` | Turnstile, 5/min/IP in the app, WAF rate limit |
 
 ### Network
 
 - `internal` (172.30.80.0/24, no internet) holds every container. The gateway (172.30.80.10) and
-  cloudflared (172.30.80.11) have fixed addresses; the app processes (`cms`, `mcp`) accept requests only
+  cloudflared (172.30.80.11) have fixed addresses; the app process (`cms`) accepts requests only
   from those two (`REQUIRE_TRUSTED_PROXY`, `TRUSTED_PROXY_IPS`) and honour `CF-Connecting-IP` /
   `X-Forwarded-Proto` only from them. Not publishing ports does not stop a process on the server from
-  reaching a container's bridge address directly; this check is what does. uvicorn runs with
-  `--no-proxy-headers` so the peer stays cloudflared's address.
+  reaching a container's bridge address directly; this check is what does.
 - `egress` (172.30.81.0/24, outbound only) is joined only by what must reach the internet: cloudflared
-  (Cloudflare edge), `cms` (Turnstile siteverify, SMTP), `mcp` (`upload_image_from_url`, SSRF-guarded),
+  (Cloudflare edge), `cms` (Turnstile siteverify, SMTP),
   `worker` (SMTP). `db`, `migrate`, `housekeeping` and `gateway` have no internet. If the lab requires
   it, restrict `egress` further on the host firewall to 443 and the SMTP port.
 - If 172.30.80.0/24 or 172.30.81.0/24 clash with a lab network, change the subnets, the `ip_range`, the two
@@ -57,13 +55,11 @@ cloudflared tunnel create crtdh-cms          # writes <TUNNEL_ID>.json
 cp ~/.cloudflared/<TUNNEL_ID>.json cloudflared/credentials.json && chmod 600 cloudflared/credentials.json
 cp cloudflared/config.yml.template cloudflared/config.yml   # replace <TUNNEL_ID> and <domain>
 cloudflared tunnel route dns crtdh-cms cms.<domain>
-cloudflared tunnel route dns crtdh-cms mcp.<domain>
 cloudflared tunnel route dns crtdh-cms contact.<domain>
 ```
 
-Then, in the Cloudflare dashboard, do the four items listed at the top of `config.yml.template`
-(Access app for `cms.`, WAF IP rule for `mcp.`, rate-limit rule for `contact.`, TLS settings).
-The MCP hostname being outside Access is a deliberate, documented exception (PLAN WS4.2).
+Then, in the Cloudflare dashboard, do the three items listed at the top of `config.yml.template`
+(Access app for `cms.`, rate-limit rule for `contact.`, TLS settings).
 
 ### Publish agent and Cloudflare Access
 
@@ -113,7 +109,7 @@ To import the bundled content once into an empty database (never on a database t
 - **Update**: `git pull && docker compose up -d --build` (migrations run in `migrate` first).
 - **Logs**: `docker compose logs -f cms` (security events are on the `crtdh.security` logger).
 - **Someone lost their phone**: an admin uses "Reset MFA" on the user; that also signs them out.
-- **Someone leaves**: "Deactivate" signs them out everywhere and revokes their MCP tokens.
+- **Someone leaves**: "Deactivate" signs them out everywhere.
 - **Rotate `SECRET_KEY`**: change it in `.env`, `docker compose up -d`. Everyone is signed out.
 - **Backups**: the `pgdata` and `media_data` volumes are the only state. Back them up encrypted, e.g.
   the CMS Backup page (Admins): download content, or content + photos; upload a backup to roll back (docs/HANDOVER.md §3).

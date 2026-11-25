@@ -46,26 +46,6 @@ def test_local_compose_has_no_fixed_admin_password():
     assert "adminpassword" not in text and "DJANGO_SUPERUSER_PASSWORD" not in text
 
 
-def test_tunnel_routes_only_mcp_paths_to_mcp_host():
-    import re
-
-    import yaml
-
-    conf = yaml.safe_load((ROOT / "deploy/cloudflared/config.yml.template").read_text())
-    mcp_rules = [r for r in conf["ingress"] if r.get("hostname") == "mcp.<domain>"]
-    routed = [r for r in mcp_rules if "path" in r]
-    assert len(routed) == 1 and routed[0]["service"] == "http://mcp-internal:8400"
-    assert mcp_rules[-1]["service"] == "http_status:404"  # everything else on the MCP host
-    rx = re.compile(routed[0]["path"])
-    for ok in ["/mcp", "/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp",
-               "/.well-known/oauth-authorization-server", "/oauth/token/", "/oauth/revoke_token/"]:
-        assert rx.search(ok), ok
-    for no in ["/oauth/authorize/", "/oauth/authorize/?x=1", "/api/v1/auth/login/", "/admin/", "/cms/login",
-               "/mcpx", "/oauth/register/", "/oauth/applications/"]:
-        assert not rx.search(no), no
-    assert conf["ingress"][-1]["service"] == "http_status:404"
-
-
 class _ComposeLoader(yaml.SafeLoader):
     """Reads Compose override files: !override / !reset just return the tagged value."""
 
@@ -92,12 +72,11 @@ def test_only_gateway_and_cloudflared_are_trusted_proxies():
     subnet = c["networks"]["internal"]["ipam"]["config"][0]["subnet"]
     import ipaddress
     assert ipaddress.ip_address(gw) in ipaddress.ip_network(subnet) and c["networks"]["internal"]["internal"] is True
-    for name in ("cms", "mcp", "worker", "housekeeping", "migrate"):
+    for name in ("cms", "worker", "housekeeping", "migrate"):
         env = c["services"][name]["environment"]
         assert env["TRUSTED_PROXY_IPS"].split(",") == [gw, cf], name
         assert env["REQUIRE_TRUSTED_PROXY"] == "True", name
-    mcp_cmd = c["services"]["mcp"]["command"]
-    assert "--no-proxy-headers" in mcp_cmd and '"*"' not in mcp_cmd and "--proxy-headers " not in mcp_cmd
+    assert "mcp" not in c["services"], "the Claude connector was removed"
 
 
 def test_fixed_addresses_are_outside_the_dynamic_range():
@@ -150,7 +129,7 @@ def test_publish_agent_dependencies_are_hash_pinned_everywhere():
 def test_internet_egress_is_minimal():
     c = _compose()
     on_egress = {n for n, s in c["services"].items() if "egress" in _nets(s)}
-    assert on_egress == {"cms", "mcp", "worker", "cloudflared"}
+    assert on_egress == {"cms", "worker", "cloudflared"}
     assert "egress" not in _nets(c["services"]["db"])
 
 
@@ -246,7 +225,7 @@ def test_cms_gateway_answers_404_for_dot_paths():
     pattern = re.compile(rule.group(1).replace("\\.", "\\."))
     for path in ("/.env", "/.git/config", "/backend/.env", "/x/.htpasswd"):
         assert pattern.search(path), path
-    for path in ("/pages/home", "/assets/app.js", "/.well-known/oauth-authorization-server", "/review"):
+    for path in ("/pages/home", "/assets/app.js", "/.well-known/security.txt", "/review"):
         assert not pattern.search(path), path
     assert cms.index("return 404; }", cms.index("location ~ /")) < cms.index("    location / {")
 
@@ -262,52 +241,13 @@ def test_worker_build_ships_the_privacy_notice():
     assert (ROOT / "docs/privacy-notice.md").is_file()
 
 
-# ---- Anthropic outbound ranges for the mcp. WAF rule (platform.claude.com/docs/en/api/ip-addresses, 19 Nov 2026) ---
-ANTHROPIC_OUTBOUND = ("160.79.104.0/21", "153.61.208.0/20")
-WAF_EXPRESSION = "not ip.src in {160.79.104.0/21 153.61.208.0/20}"
-
-
-def test_every_place_that_names_the_anthropic_ranges_names_both():
-    import re
-
-    # the phased-out single addresses must not come back
-    phased_out = ("34.162.46.92", "34.162.102.82", "34.162.136.91", "34.162.142.92", "34.162.183.95")
-    for rel in ("deploy/cloudflared/config.yml.template", "docs/mcp.md", "docs/GO-LIVE.md", "deploy/README.md"):
-        text = (ROOT / rel).read_text()
-        for cidr in ANTHROPIC_OUTBOUND:
-            assert cidr in text, f"{rel} does not name {cidr}"
-        assert not any(ip in text for ip in phased_out), rel
-        for expr in re.findall(r"not ip\.src in \{[^}]*\}", text):
-            assert expr == WAF_EXPRESSION, f"{rel}: {expr}"
-    assert WAF_EXPRESSION in (ROOT / "deploy/cloudflared/config.yml.template").read_text()
-    assert WAF_EXPRESSION in (ROOT / "docs/GO-LIVE.md").read_text()
-
-
 def test_housekeeping_runs_every_daily_cleanup():
     import re
 
     cmd = " ".join(_compose()["services"]["housekeeping"]["command"].split())
     jobs = re.findall(r"python manage\.py (\w+)", cmd)
-    assert jobs == ["purge_contact_messages", "clearsessions", "clear_auth_throttles", "cleartokens"]
+    assert jobs == ["purge_contact_messages", "clearsessions", "clear_auth_throttles"]
     assert "sleep 86400" in cmd and " && " in cmd
     from django.core.management import get_commands
 
     assert set(jobs) <= set(get_commands())  # each one exists in this codebase
-
-
-def test_tunnel_reaches_mcp_over_internal_network_only():
-    """cloudflared sits on internal and egress. If the tunnel used plain `mcp`, Docker DNS could answer with
-    mcp's egress address, the request would come from cloudflared's egress IP (not in TRUSTED_PROXY_IPS) and
-    TrustedProxyGuard would 403 every Claude call. The tunnel must use an alias that exists only on internal."""
-    import yaml
-
-    compose = yaml.safe_load((ROOT / "deploy/docker-compose.yml").read_text())
-    nets = compose["services"]["mcp"]["networks"]
-    assert isinstance(nets, dict), "mcp networks must be a mapping so internal can carry the alias"
-    assert "mcp-internal" in (nets["internal"] or {}).get("aliases", [])
-    for name, cfg in nets.items():
-        if name != "internal":
-            assert "mcp-internal" not in ((cfg or {}).get("aliases") or [])
-    conf = yaml.safe_load((ROOT / "deploy/cloudflared/config.yml.template").read_text())
-    services = {r["service"] for r in conf["ingress"] if "mcp:" in r.get("service", "") or "mcp-" in r.get("service", "")}
-    assert services == {"http://mcp-internal:8400"}

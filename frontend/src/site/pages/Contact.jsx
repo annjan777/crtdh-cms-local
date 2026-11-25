@@ -6,7 +6,7 @@ import { useApi } from '../hooks/useApi'
 import { fetchOne } from '../api/client'
 import { usePageData } from '../api/data.jsx'
 import ContactForm from '../components/ContactForm.jsx'
-import { FullNotice, ShortNotice } from '../components/PrivacyNotice.jsx'
+import { ShortNotice } from '../components/PrivacyNotice.jsx'
 import PageHero from '../components/PageHero'
 import { Spinner } from '../components/StateBlock'
 import './Contact.css'
@@ -92,7 +92,6 @@ function ContactView() {
           </div>
         </div>
       </section>
-      <FullNotice privacy={privacy} />
     </div>
   )
 }

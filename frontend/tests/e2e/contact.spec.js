@@ -33,11 +33,12 @@ test('send with empty fields reports every problem and focuses the first; button
   await expect(page.locator('.field__error')).toHaveCount(3)
 })
 
-test('shows the privacy notice above Send and the full notice at #privacy', async ({ page }) => {
+test('shows the short notice above Send, without the full "How we use your message" section', async ({ page }) => {
   await page.goto('/contact/')
   await expect(page.locator('#contact-notice')).toBeVisible()
-  const full = page.locator('#privacy')
-  if (await full.count()) await expect(full.locator('h2')).toBeVisible()
+  await expect(page.locator('#contact-notice a[href*="#privacy"]')).toHaveCount(0)
+  await expect(page.locator('#privacy')).toHaveCount(0)
+  await expect(page.getByText('How we use your message')).toHaveCount(0)
 })
 
 test('sending → sent, with the relay message, form cleared', async ({ page }) => {

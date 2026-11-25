@@ -2,17 +2,14 @@
 # CRTDH staging smoke test. Run from ANY machine with bash and curl (no repo checkout or Docker needed):
 #
 #   deploy/staging/smoke.sh
-#   SITE_HOST=... CMS_HOST=... MCP_HOST=... CONTACT_HOST=... deploy/staging/smoke.sh
+#   SITE_HOST=... CMS_HOST=... CONTACT_HOST=... deploy/staging/smoke.sh
 #
 # Prints PASS / FAIL / SKIP per check and exits 1 if anything FAILed.
 # Before the first publish the public-site checks that need the built site are SKIPped (the placeholder is live).
-# If the WAF rule restricting the MCP host to Anthropic's ranges is on (TUNNEL.md section 4), the MCP checks expect
-# 403 from your IP instead; run them from a machine in those ranges, or turn the rule off, to test the app.
 set -uo pipefail
 
 SITE=https://${SITE_HOST:-crtdh.annjan.in}
 CMS=https://${CMS_HOST:-cms-crtdh.annjan.in}
-MCP=https://${MCP_HOST:-mcp-crtdh.annjan.in}
 CONTACT=https://${CONTACT_HOST:-contact-crtdh.annjan.in}
 
 command -v curl >/dev/null 2>&1 || { echo "smoke.sh needs curl" >&2; exit 2; }
@@ -66,7 +63,7 @@ security_headers() { # $1 = label; the response must already be in $TMP/h
     check_header "$1: Cross-Origin-Opener-Policy" Cross-Origin-Opener-Policy same-origin
 }
 
-echo "CRTDH staging smoke: site $SITE | cms $CMS | mcp $MCP | contact $CONTACT"
+echo "CRTDH staging smoke: site $SITE | cms $CMS | contact $CONTACT"
 
 # ------------------------------------------------------------------------------------------------ public site
 section "Public site ($SITE)"
@@ -144,7 +141,6 @@ else
     check_code "API root needs a session: GET /api/v1/" GET "$CMS/api/v1/" 401 403
     check_code "agent API refuses unsigned calls" GET "$CMS/api/v1/agent/next/" 401 403
     check_code "Django admin is not exposed" GET "$CMS/admin/" 404
-    check_code "OAuth sign-in entry /cms/login redirects to the SPA" GET "$CMS/cms/login" 302
 fi
 
 # ------------------------------------------------------------------------------------------------ contact
@@ -161,39 +157,6 @@ if check_code "CORS preflight from another origin" OPTIONS "$CONTACT/api/v1/cont
     -H 'Origin: https://evil.example' -H 'Access-Control-Request-Method: POST'; then
     if [ -n "$(hdr Access-Control-Allow-Origin)" ]; then fail "CORS other origin" "Access-Control-Allow-Origin: $(hdr Access-Control-Allow-Origin)"
     else pass "no CORS grant for another origin"; fi
-fi
-
-# ------------------------------------------------------------------------------------------------ MCP
-section "Claude MCP ($MCP)"
-req GET "$MCP/.well-known/oauth-protected-resource/mcp"
-if [ "$CODE" = 403 ]; then
-    skip "MCP app checks" "403: the WAF rule blocks your IP (expected when it is on; only Anthropic's ranges get through)"
-    pass "MCP host is closed to non-Anthropic IPs (403)"
-    check_code "WAF also covers /mcp" POST "$MCP/mcp" 403
-else
-    if [ "$CODE" = 200 ]; then
-        pass "GET /.well-known/oauth-protected-resource/mcp (200)"
-        if body_has '"resource"'; then pass "protected-resource metadata names the resource"; else fail "PRM body" 'no "resource" field'; fi
-    else
-        fail "GET /.well-known/oauth-protected-resource/mcp" "got $CODE, want 200"
-    fi
-    check_code "GET /.well-known/oauth-protected-resource" GET "$MCP/.well-known/oauth-protected-resource" 200
-    if check_code "GET /.well-known/oauth-authorization-server" GET "$MCP/.well-known/oauth-authorization-server" 200; then
-        if grep -q "\"authorization_endpoint\": *\"$CMS/oauth/authorize/\"" "$TMP/b"; then pass "authorize endpoint is on the CMS host"
-        else fail "authorization_endpoint" "$(grep -o '"authorization_endpoint": *"[^"]*"' "$TMP/b")"; fi
-        if grep -q "\"token_endpoint\": *\"$MCP/oauth/token/\"" "$TMP/b"; then pass "token endpoint is on the MCP host"
-        else fail "token_endpoint" "$(grep -o '"token_endpoint": *"[^"]*"' "$TMP/b")"; fi
-    fi
-    if check_code "POST /mcp without a token" POST "$MCP/mcp" 401 -- \
-        -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-        --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'; then
-        check_header "401 points at the resource metadata" WWW-Authenticate "resource_metadata="
-    fi
-    check_code "POST /oauth/token/ reaches the OAuth server" POST "$MCP/oauth/token/" 400 401 -- \
-        -H 'Content-Type: application/x-www-form-urlencoded' --data 'grant_type=authorization_code'
-    for p in / /oauth/authorize/ /api/v1/ /admin/ /mcp/extra /.well-known/openid-configuration /cms/login; do
-        check_code "MCP host: $p is 404" GET "$MCP$p" 404
-    done
 fi
 
 # ------------------------------------------------------------------------------------------------ summary

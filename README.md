@@ -7,13 +7,12 @@ The public site at https://crtdh.iitkgp.ac.in/ is **static files only**: no serv
 writable. Staff edit a private copy in the CMS and publish. A publish builds the whole site and an agent on the
 one allowed campus PC uploads it.
 
-## The four parts
+## The three parts
 
 | Part | Folder | What it is |
 |---|---|---|
 | **Public site** | `frontend/` | React Router 7, prerendered to static HTML from a published snapshot. Design rules: `frontend/DESIGN.md` |
 | **CMS** | `backend/` + `admin/` | Django 5 / DRF API with Postgres, session + TOTP sign-in, drafts, snapshots and audit log (`backend/apps/publishing`). React admin that edits the real page section by section |
-| **Claude connector (MCP)** | `backend/mcp_server/`, `backend/apps/oauth/` | Remote MCP server with OAuth. Lets a signed-in editor ask Claude for changes, which are saved as unpublished drafts only |
 | **Publish agent** | `publish_agent/` | Small Python program on campus PC 10.111.26.20. Fetches signed builds from the CMS, uploads them to `academicweb.iitkgp.ac.in` over SFTP, switches atomically, can roll back |
 
 Production layout (lab server, Cloudflare Tunnel, no inbound ports): `deploy/`. The diagram is in
@@ -26,10 +25,8 @@ Production layout (lab server, Cloudflare Tunnel, no inbound ports): `deploy/`. 
 | [docs/GO-LIVE.md](docs/GO-LIVE.md) | deploying from zero to live (ordered runbook, with checks and rollbacks) |
 | [docs/HANDOVER.md](docs/HANDOVER.md) | the developer who runs it after 31 Jan 2027: architecture, secrets, backups, incidents, sign-off |
 | [docs/STAFF-GUIDE.md](docs/STAFF-GUIDE.md) | lab staff editing the website |
-| [docs/connect-claude.md](docs/connect-claude.md) | staff connecting Claude to the CMS |
 | [deploy/README.md](deploy/README.md) | operating the Docker stack on the lab server |
 | [publish_agent/README.md](publish_agent/README.md) | installing or fixing the campus publish agent |
-| [docs/mcp.md](docs/mcp.md) | maintaining the Claude/MCP server |
 | [docs/testing.md](docs/testing.md), [docs/uat/](docs/uat/README.md) | testing, and user acceptance runs |
 | [API_CONTRACT.md](API_CONTRACT.md), [docs/contracts/](docs/contracts/) | the API |
 | [docs/cms-mapping.md](docs/cms-mapping.md) | moving from the old admin screens |
@@ -66,7 +63,7 @@ from a CMS publish: the worker writes `builds/<publish id>/snapshot.json` under 
 `backend/var/publish`). Start a publish in the admin, then run
 `cd backend && python manage.py run_publish_worker --once`.
 
-**Whole stack with production settings** (Postgres, gunicorn, MCP, worker, fake CIC SFTP host, publish agent,
+**Whole stack with production settings** (Postgres, gunicorn, worker, fake CIC SFTP host, publish agent,
 HTTPS):
 
 ```bash

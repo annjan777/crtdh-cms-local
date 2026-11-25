@@ -40,7 +40,7 @@ media_dir() {
 }
 
 diagnose() {
-  echo "--- for Claude: what the web server holds" >&2
+  echo "--- what the web server holds" >&2
   "$DC" exec -T sftp sh -c 'ls -la /home/crtdh/www /home/crtdh/www/public_html 2>&1 | head -40; echo; head -30 /home/crtdh/www/public_html/.htaccess 2>&1' </dev/null >&2 || true
   echo "--- photo addresses on the home page:" >&2
   curl -s -m 30 "$PUBLIC/" | grep -o '/_media/[A-Za-z0-9._/-]*' | head -3 >&2 || true

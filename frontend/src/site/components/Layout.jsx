@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CurrentPathProvider, NavLink, useLocation } from '../router.jsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown, Mail, Menu, MapPin, Phone, X } from 'lucide-react'
+import { ArrowUp, ChevronDown, Mail, Menu, MapPin, Phone, X } from 'lucide-react'
 import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon } from './SocialIcons'
 import { PageDataProvider, usePageData } from '../api/data.jsx'
 import { PAGES } from '../registry.js'
@@ -64,10 +64,46 @@ function LayoutView({ children }) {
           siteSettings={siteSettings}
           navItems={navToRender}
           publishedAt={data?.meta?.published_at}
-          privacyNotice={Boolean(data?.meta?.privacy_notice)}
         />
+        <BackToTop />
       </div>
     </>
+  )
+}
+
+/** Round button, bottom right, that appears once the reader has scrolled down and takes them back to the top. */
+function BackToTop() {
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        setShown(window.scrollY > window.innerHeight * 0.8)
+        ticking = false
+      })
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  const toTop = () => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+  }
+  return (
+    <button
+      type="button"
+      className={`back-to-top ${shown ? 'is-shown' : ''}`}
+      aria-label="Back to top"
+      title="Back to top"
+      tabIndex={shown ? 0 : -1}
+      aria-hidden={!shown}
+      onClick={toTop}
+    >
+      <ArrowUp size={22} strokeWidth={2.25} aria-hidden="true" />
+    </button>
   )
 }
 
@@ -250,7 +286,8 @@ function SiteHeader({ navItems, siteSettings, menuOpen, setMenuOpen }) {
               animate="show"
               variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } } }}
             >
-              {navItems.map((item) => (
+              {/* Contact us is the button beside the menu toggle, so it is not repeated in the list. */}
+              {navItems.filter((item) => slugOf(item.url) !== CONTACT_SLUG).map((item) => (
                 <motion.li
                   key={item.id ?? item.label}
                   variants={{ hidden: { opacity: 0, x: -12 }, show: { opacity: 1, x: 0 } }}
@@ -273,7 +310,7 @@ function isActivePath(pathname, route) {
   return pathname.startsWith(route)
 }
 
-function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
+function SiteFooter({ siteSettings, navItems, publishedAt }) {
   // From the published snapshot, so the prerendered page and the browser agree.
   const year = (publishedAt ? new Date(publishedAt) : new Date()).getUTCFullYear()
   const socialLinks = siteSettings
@@ -365,7 +402,7 @@ function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
         <div className="container site-footer__bottom-row">
           <span>&copy; {year} CRTDH, IIT Kharagpur. All rights reserved.</span>
           <span className="site-footer__legal">
-            <SiteLink to={privacyNotice ? '/contact/#privacy' : '/contact/#contact-notice'}>How we use contact messages</SiteLink>
+            <SiteLink to="/contact/#contact-notice">How we use contact messages</SiteLink>
             {publishedAt && <span> · Last updated: {formatDate(publishedAt)}</span>}
           </span>
         </div>

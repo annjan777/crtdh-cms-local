@@ -1,4 +1,4 @@
-"""Preprod smoke: edit -> publish -> the 'live' folder on the fake CIC host changed. Plus header/MCP checks.
+"""Preprod smoke: edit -> publish -> the 'live' folder on the fake CIC host changed. Plus header checks.
 
   python tests/tools/preprod_smoke.py --state .preprod
 Exit 0 = pass. Prints one line per check.
@@ -46,7 +46,6 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--state", default=".preprod")
     ap.add_argument("--site", default="https://localhost:3601")
-    ap.add_argument("--mcp", default="https://localhost:8601/mcp")
     ap.add_argument("--timeout", type=int, default=900)
     a = ap.parse_args()
     state = Path(a.state)
@@ -63,14 +62,6 @@ def main():
     h = {k.lower(): v for k, v in r.headers.items()}
     check("CSP header on CMS", "content-security-policy" in h)
     check("nosniff on CMS", h.get("x-content-type-options") == "nosniff")
-    try:
-        urllib.request.urlopen(urllib.request.Request(a.mcp, data=b"{}", method="POST",
-                                                      headers={"Content-Type": "application/json"}), timeout=5)
-        check("MCP requires OAuth", False, "200 without token")
-    except urllib.error.HTTPError as e:
-        check("MCP requires OAuth", e.code == 401 and "resource_metadata" in e.headers.get("WWW-Authenticate", ""), str(e.code))
-    except Exception as e:  # noqa: BLE001
-        check("MCP requires OAuth", False, f"MCP not reachable: {e}")
 
     # 2. edit as publisher
     call = api_session(st, "priya")

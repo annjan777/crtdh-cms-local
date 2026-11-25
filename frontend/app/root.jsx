@@ -1,4 +1,5 @@
-import { Link, Links, Meta, Outlet, Scripts, ScrollRestoration, isRouteErrorResponse, useLoaderData, useLocation, useRouteError } from 'react-router'
+import { useLayoutEffect } from 'react'
+import { Link, Links, Meta, Outlet, Scripts, ScrollRestoration, isRouteErrorResponse, useLoaderData, useLocation, useNavigationType, useRouteError } from 'react-router'
 import SiteLayout from '../src/site/components/Layout.jsx'
 import { LinkProvider } from '../src/site/link.jsx'
 import '../src/site/styles/index.css'
@@ -35,7 +36,14 @@ export function Layout({ children }) {
 
 export default function App() {
   const data = useLoaderData()
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
+  const navType = useNavigationType()
+  // A new page opens at the top. The site scrolls smoothly (html { scroll-behavior: smooth }), and on phones
+  // the closing menu interrupted that smooth scroll, so the new page opened where the old one was.
+  // Jump instantly instead; Back/Forward (POP) and #anchors are left to ScrollRestoration.
+  useLayoutEffect(() => {
+    if (navType !== 'POP' && !hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname, hash, navType])
   return (
     <LinkProvider component={Link}>
       <SiteLayout data={data} currentPath={pathname}>

@@ -82,8 +82,6 @@ function buildSeed() {
   const published = clone(rows);
   const db = {
     users: clone(USERS),
-    // Live Claude connections by user id (GET /cms/claude-access/; revoke clears them).
-    claude: { 1: [{ client: 'Claude', connected_at: '2026-11-18T09:15:00Z' }], 2: [{ client: 'Claude', connected_at: '2026-11-17T14:02:00Z' }] },
     rows,
     published,
     meta: {},
@@ -717,32 +715,6 @@ async function route(method, path, body) {
     if (!f || !/\.zip$/i.test(f.name || '')) return fail(400, 'CMS_VALIDATION', 'This file is not a CRTDH backup (it is not a zip file).', 'Download a new backup from this CMS and upload that file.');
     if (/damaged/i.test(f.name)) return fail(400, 'CMS_VALIDATION', 'This backup is damaged or was changed after it was downloaded (content checksum does not match).', 'Download a new backup from this CMS and upload that file.');
     return json(200, { restored: 3, photos_written: 0, photos_already_present: 0, backup_created_at: '2026-11-19T10:00:00Z', includes_media: false, pending: 3 });
-  }
-  // Claude connector access (backend apps/oauth ClaudeAccessView / ClaudeAccessRevokeView).
-  if (path === '/cms/claude-access/' && method === 'GET') {
-    db.claude ||= {};
-    const own = db.claude[user.id] || [];
-    const out = { connected: own.length > 0, connections: own, setup: { server_url: 'https://mcp.crtdh.test/mcp', client_id: db.claudeClientId || null } };
-    if (can(user, 'admin'))
-      out.users = db.users
-        .filter((u) => (db.claude[u.id] || []).length)
-        .map((u) => ({ user_id: u.id, username: u.username, name: u.name, connections: db.claude[u.id] }));
-    return json(200, out);
-  }
-  if (path === '/cms/claude-access/new-secret/' && method === 'POST') {
-    if (!can(user, 'admin')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only an Admin can create the Claude client secret.', 'Ask an Admin.');
-    db.claudeClientId = db.claudeClientId || 'mock-client-id-4f2a9c';
-    return json(200, { server_url: 'https://mcp.crtdh.test/mcp', client_id: db.claudeClientId, client_secret: `mock-secret-${Date.now().toString(36)}` });
-  }
-  if (path === '/cms/claude-access/revoke/' && method === 'POST') {
-    db.claude ||= {};
-    const target = body.data?.user_id ?? user.id;
-    if (target !== user.id && !can(user, 'admin'))
-      return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only an Admin can disconnect Claude for another person.', 'Ask an Admin, or omit user_id to disconnect your own access.');
-    const revoked = (db.claude[target] || []).length * 2;
-    delete db.claude[target];
-    save();
-    return json(200, { revoked, user_id: target });
   }
   if (path.startsWith('/contact-messages/')) {
     if (!can(user, 'publisher')) return fail(403, 'CMS_FORBIDDEN_ROLE', 'Only Publishers and Admins can read messages.', 'Ask a Publisher.');

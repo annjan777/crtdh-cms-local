@@ -6,12 +6,12 @@ Assessment record: `.dpdp/assessment.yaml` (scope: the public contact form only)
 
 ## Where it goes
 - **Short notice**: directly above the Send button of the contact form, always visible (not behind a toggle). No checkbox: the lawful ground is the person's own voluntary message for a stated purpose (DPDP Act s.7(a)), not consent, so a consent tick box would be misleading.
-- **Full notice**: a "How we use your message" section on the Contact page (anchor `#privacy`), linked from the short notice and from the site footer.
+- **Full notice**: not shown on the site (removed from the Contact page on 2026-11-26 at the centre's request). The text below is kept for reference and for answering requests by email. The footer link "How we use contact messages" points to the short notice.
 - Both in English first. Hindi and Bengali versions are a decision for the centre (open question Q-03).
 
 ## Short notice (above the Send button)
 
-> We use your name, email, phone (if you give it) and message only to reply to you. Messages are deleted after 12 months. [How we use your message](#privacy)
+> We use your name, email, phone (if you give it) and message only to reply to you. Messages are deleted after 12 months.
 
 ## Full notice (Contact page, `#privacy`)
 

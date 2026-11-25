@@ -8,7 +8,7 @@ spa:    unknown non-file paths -> index.html (admin router).
 --cert/--key: serve HTTPS (production settings refuse http origins).
 spa also sends the security headers the nginx gateway sends on the CMS origin (CSP values read from
 deploy/nginx/templates/gateway.conf.template, so the two never drift).
---proxy: /api/, /admin/, /media/, /mcp, /.well-known/, /oauth/, /upload/ are forwarded so the admin
+--proxy: /api/, /admin/, /media/, /upload/, /static/ are forwarded so the admin
          is same-origin with the CMS API (as in production behind one hostname).
 """
 import argparse
@@ -21,8 +21,7 @@ import urllib.request
 from functools import partial
 from pathlib import Path
 
-PROXY_PREFIXES = ("/api/", "/admin/", "/media/", "/mcp", "/.well-known/", "/oauth/", "/o/", "/upload/", "/static/",
-                  "/cms/login")  # as deploy/nginx gateway: Django owns /cms/login (OAuth sign-in entry)
+PROXY_PREFIXES = ("/api/", "/admin/", "/media/", "/upload/", "/static/")  # as deploy/nginx gateway
 GATEWAY_TEMPLATE = Path(__file__).resolve().parents[2] / "deploy" / "nginx" / "templates" / "gateway.conf.template"
 HSTS = ("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 

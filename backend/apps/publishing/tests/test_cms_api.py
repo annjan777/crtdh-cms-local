@@ -264,3 +264,19 @@ def test_upload_page_styles_come_from_static_and_hint_shows_real_cap(client, edi
     assert "up to 15 MB" in html and "20 MB" not in html and "At least 1600 px wide" in html
     assert "style-src 'self'" in resp["Content-Security-Policy"]
     assert finders.find("publishing/upload.css")
+
+
+@pytest.mark.parametrize("who", ["editor", "admin", "superuser"])
+def test_focus_point_sent_as_plain_numbers_is_stored_as_css(api_as, content, who):
+    """The editor sends "30 45" (no "%": the campus network filter refused bodies holding "30% 45%")."""
+    from apps.carousel.models import HeroSlide
+    slide = HeroSlide.objects.get(pk=18)
+    r = api_as(who).patch(f"/api/v1/hero-slides/{slide.pk}/", {"image_position": "30 45",
+                                                                "expected_version": slide.version}, format="json")
+    assert r.status_code == 200, r.content
+    assert r.json()["image_position"] == "30% 45%"
+    slide.refresh_from_db()
+    assert slide.image_position == "30% 45%"
+    bad = api_as(who).patch(f"/api/v1/hero-slides/{slide.pk}/", {"image_position": "300 45",
+                                                                 "expected_version": slide.version}, format="json")
+    assert bad.status_code == 400

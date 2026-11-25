@@ -117,11 +117,6 @@ def test_every_route_enforces_roles(role, api_as, baseline, publish_env, publish
     # private media (apps.common.media_views): editors and up; a missing file is 404
     go("get", "media-file", 1, path="nope.jpg")
 
-    # Claude connector access (apps.oauth): any editor manages their own connection
-    go("get", "claude-access", 1)
-    go("post", "claude-access-revoke", 1, {})
-    go("post", "claude-access-new-secret", 3, {})
-
     # user administration (backend-security): admin only
     from django.contrib.auth import get_user_model
     target = get_user_model().objects.create_user("rbac.target", "t@example.test", "x-Not-a-real-pw-123")

@@ -14,13 +14,16 @@ export const CODES = [
   'CMS_IMAGE_TOO_SMALL',
   'CMS_FETCH_BLOCKED',
   'CMS_RATE_LIMITED',
-  'CMS_SESSION_LIMIT',
+  'CMS_OFF_CAMPUS',
   'CMS_BUILD_GUARD',
   'CMS_INTERNAL',
 ];
 
 // Client-side codes (never sent by the server).
 export const NETWORK = 'NETWORK';
+// A 403 without the CMS's own error body: something in front of the CMS (a campus firewall, the web server)
+// refused the request. Saying "your role can't do this" there sent admins looking in the wrong place.
+export const BLOCKED = 'BLOCKED';
 
 const STATUS_FALLBACK = {
   400: 'CMS_VALIDATION',
@@ -45,7 +48,8 @@ const DEFAULT_MESSAGE = {
   CMS_IMAGE_TOO_SMALL: 'This photo is too small.',
   CMS_FETCH_BLOCKED: 'That address can’t be fetched.',
   CMS_RATE_LIMITED: 'Too many attempts in a short time.',
-  CMS_SESSION_LIMIT: 'This Claude session has reached its change limit.',
+  CMS_OFF_CAMPUS: 'The website editor opens only from the IIT Kharagpur campus network.',
+  BLOCKED: 'The request was stopped before it reached the CMS, so this is not about your role.',
   CMS_BUILD_GUARD: 'The build stopped before anything was uploaded.',
   CMS_INTERNAL: 'Something went wrong on the server.',
   NETWORK: 'The CMS can’t be reached.',
@@ -63,7 +67,8 @@ const DEFAULT_FIX = {
   CMS_IMAGE_TOO_SMALL: 'Choose a larger photo.',
   CMS_FETCH_BLOCKED: 'Upload the file instead.',
   CMS_RATE_LIMITED: 'Wait a minute and try again.',
-  CMS_SESSION_LIMIT: 'Review and publish, or discard, the changes so far.',
+  CMS_OFF_CAMPUS: 'Connect to the campus network (or the IIT VPN) and try again.',
+  BLOCKED: 'A network filter or the web server refused it. Copy the error details for the site maintainer; your change is kept here.',
   CMS_BUILD_GUARD: 'Check the changes, then confirm to publish anyway.',
   CMS_INTERNAL: 'Try again. If it keeps happening, copy the error details for support.',
   NETWORK: 'Check the connection. Your text is kept on this computer and saves when you’re back.',
@@ -103,6 +108,7 @@ export class ApiError extends Error {
 export function mapError(status, body) {
   const b = body && typeof body === 'object' ? body : {};
   let code = typeof b.code === 'string' && CODES.includes(b.code) ? b.code : null;
+  if (!code && status === 403 && typeof b.code !== 'string') code = BLOCKED;
   if (!code) code = STATUS_FALLBACK[status] || (status >= 500 ? 'CMS_INTERNAL' : 'CMS_INTERNAL');
   // A 409 that names a publish is a running publish, whatever the body says.
   if (status === 409 && !b.code && b.publish_id) code = 'CMS_PUBLISH_RUNNING';

@@ -81,21 +81,12 @@ function apiPath(url) {
   const i = u.pathname.indexOf('/api/v1/');
   return i === -1 ? null : u.pathname.slice(i + '/api/v1'.length) + u.search;
 }
-// Claude connector access (apps.oauth). Admins also get `users` (everyone with a live connection).
 export const backups = {
   restore: (file) => {
     const form = new FormData();
     form.append('file', file);
     return request('POST', '/cms/backup/restore/', { form });
   },
-};
-
-export const claudeAccess = {
-  get: () => api.get('/cms/claude-access/'),
-  // {} = your own; {user_id} = someone else's (Admins only). Effective on Claude's next call.
-  revoke: (userId) => api.post('/cms/claude-access/revoke/', userId == null ? {} : { user_id: userId }),
-  // Admins: create the Claude client or give it a new secret; the secret comes back this once.
-  newSecret: () => api.post('/cms/claude-access/new-secret/', {}),
 };
 
 export const messages = {

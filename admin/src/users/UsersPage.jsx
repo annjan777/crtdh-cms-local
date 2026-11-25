@@ -156,7 +156,7 @@ export default function UsersPage() {
           <header className="page-head with-action">
             <div>
               <h1>Users</h1>
-              <p className="lead">People who can sign in to the website editor. Deactivated users can’t sign in, and their Claude connections stop working.</p>
+              <p className="lead">People who can sign in to the website editor. Deactivated users can’t sign in.</p>
             </div>
             <button type="button" className="btn btn-primary" onClick={() => setAdding(true)}>
               Add user
@@ -339,7 +339,7 @@ export default function UsersPage() {
           </>
         }
       >
-        <p>{confirm?.name} won’t be able to sign in, and any Claude connection they set up stops working within a minute. Their past edits stay in the history. To undo this, ask the server administrator.</p>
+        <p>{confirm?.name} won’t be able to sign in. Their past edits stay in the history. To undo this, ask the server administrator.</p>
       </Dialog>
     </AppShell>
   );

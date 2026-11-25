@@ -7,7 +7,7 @@
 Run from the backend folder (where manage.py is), with the CMS's settings in the environment.
 The file is encrypted (scrypt + AES-256-GCM in authenticated chunks), so it can travel through a public address;
 the pass phrase is shown once on export and typed on import. Not carried: sessions, sign-in throttles, publish
-jobs and agent state (each install has its own), contact-form messages, and OAuth/Claude-connector data.
+jobs and agent state (each install has its own), and contact-form messages.
 Import replaces the target's CMS data in one database transaction; nothing changes if any check fails.
 """
 import getpass
@@ -171,7 +171,6 @@ def export():
     django_up()
     from django.conf import settings
     from django.core.management import call_command
-    from django.apps import apps
 
     buf = io.StringIO()
     call_command("dumpdata", *labels(), natural_foreign=True, natural_primary=True, indent=None, stdout=buf)

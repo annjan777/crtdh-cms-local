@@ -178,32 +178,14 @@ Discarding can't be undone. Your other changes stay.
 ## 11. See history, and bring back an old version
 
 - **One item's history:** open the item and click **Edit history** at the bottom of the fields. You see who
-  changed it, when, and whether it was done in the CMS or by Claude.
+  changed it and when.
 - **The whole site (Publishers):** open **Publish history**. Every publish is kept as a numbered version. Click
   **Restore** next to a version and confirm. Its content comes back as **unpublished changes**. Check them in
   Preview, then publish. Until then, the live site doesn't change.
 
 ---
 
-## 12. Ask Claude to make changes
-
-You can ask Claude (claude.ai) in plain English, for example "Change Prof. Sharma's designation to Professor and
-Head". Your admin sets this up once. The steps are in **[Connect Claude to the CRTDH website CMS](connect-claude.md)**.
-
-Good to know:
-
-- Claude asks before each change. It saves changes as **unpublished**, exactly like you do. It can't publish,
-  delete, or change user accounts.
-- Claude gives you a preview link after each change. Open it to check.
-- Need to add photos? Ask Claude for an **upload link**, then open it on your phone or computer.
-- Changed your mind? Say "undo that" or "undo everything you did in this chat".
-- On **Review & publish**, Claude's changes are marked, for example "Claude made 3 changes for Priya in one
-  session". A Publisher can **Discard all from this Claude session** in one click.
-- One chat can make up to 25 changes.
-
----
-
-## 13. Quick answers
+## 12. Quick answers
 
 | Question | Answer |
 |---|---|

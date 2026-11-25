@@ -36,7 +36,6 @@ export const router = createBrowserRouter([
       { path: '/history', lazy: page(() => import('./history/HistoryPage.jsx')) },
       { path: '/users', lazy: page(() => import('./users/UsersPage.jsx')) },
       { path: '/messages', lazy: page(() => import('./messages/MessagesPage.jsx')) },
-      { path: '/claude-access', lazy: page(() => import('./claude/ClaudeAccessPage.jsx')) },
       { path: '/backup', lazy: page(() => import('./backup/BackupPage.jsx')) },
       { path: '/shot-list', lazy: page(() => import('./help/ShotListPage.jsx')) },
       { path: '*', element: <Navigate to="/pages/home" replace /> },

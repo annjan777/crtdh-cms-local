@@ -1,7 +1,6 @@
 import pytest
 from django.core.management import call_command
 from apps.facilities.models import Equipment
-from apps.media_gallery.models import MediaCoverageLink
 
 @pytest.mark.django_db
 def test_copy_fixes_change_only_exact_old_text():
