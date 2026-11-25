@@ -17,9 +17,9 @@ test('home: headline, figures, membership, home-page texts and the visit block',
   for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers & staff', 'Years sponsored by DSIR']) expect(t).toContain(label)
   expect(t).toContain(s['home-page'].enterprises_text.slice(0, 60))
   expect(t).toContain(s['home-page'].women_text_1.slice(0, 60))
-  // The news ticker repeats its items to loop; each published item is in the page.
-  const ticker = await page.locator('.news-marquee').innerText()
-  for (const n of visible(c['news-items'])) expect(ticker).toContain(n.text)
+  // Every published news item is listed under Latest Updates.
+  const updates = await page.locator('[data-block="home.news"]').innerText()
+  for (const n of visible(c['news-items'])) expect(updates).toContain(n.text)
 })
 
 test('about: programme, mission, focus areas, objectives, timeline, institutions', async ({ page }) => {

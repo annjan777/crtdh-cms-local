@@ -8,6 +8,7 @@ import { PAGES } from '../registry.js'
 import { safeHref } from '../util.js'
 import SiteLink from '../link.jsx'
 import './Layout.css'
+import './Header4.css'
 
 // Fallback nav used only while nav-items are loading/unreachable, so the
 // header never renders completely empty (and the site stays navigable
@@ -149,7 +150,7 @@ function SiteHeader({ navItems, siteSettings, menuOpen, setMenuOpen }) {
   const moreActive = more.some((item) => isActivePath(location.pathname, toRoute(item.url)))
 
   return (
-    <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
+    <header className={`site-header v4 ${scrolled ? 'is-scrolled' : ''} ${!scrolled && location.pathname === '/' ? 'is-over-hero' : ''}`}>
       <div className="container site-header__bar">
         {siteSettings?.logo_left && (
           <img className="site-header__crest" src={siteSettings.logo_left} alt="IIT Kharagpur" />

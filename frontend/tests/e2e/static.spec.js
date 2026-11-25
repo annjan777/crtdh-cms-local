@@ -12,7 +12,8 @@ for (const route of ROUTES) {
       const res = await request.get(route)
       expect(res.status()).toBe(200)
       const html = await res.text()
-      expect(html).toMatch(/<h1[^>]*>[^<]+/)
+      // The h1 may wrap its lines in spans (home hero); what matters is text in the HTML.
+      expect(html).toMatch(/<h1[^>]*>(?:<span[^>]*>)*[^<]+/)
       expect(html).toMatch(/<meta name="crtdh-build" content="[^"]+"/)
       expect(html).toMatch(/<meta name="crtdh-snapshot" content="[^"]+"/)
       expect(html).toMatch(/<link rel="canonical" href="https:\/\/[^"]+"/)
@@ -72,8 +73,8 @@ test('font families are limited to the approved set', async ({ page }) => {
     const fams = await page.evaluate(() => [...document.querySelectorAll('body *:not(source):not(track):not(script):not(style)')].map((el) => getComputedStyle(el).fontFamily.split(',')[0].replace(/["']/g, '').trim()))
     fams.forEach((f) => used.add(f))
   }
-  // The previous design's faces, self-hosted. 'Caveat' is the Team page quote's decorative face (falls back to cursive).
-  expect([...used].filter((f) => !['Open Sans', 'Montserrat', 'Caveat'].includes(f))).toEqual([])
+  // The previous design's faces, plus the v4 redesign's Alegreya and Atkinson Hyperlegible Next; all self-hosted. 'Caveat' is the Team page quote's decorative face (falls back to cursive).
+  expect([...used].filter((f) => !['Open Sans', 'Montserrat', 'Caveat', 'Alegreya', 'Atkinson Hyperlegible Next'].includes(f))).toEqual([])
 })
 
 test('unknown paths get the 404 page (status 404) and it hydrates without errors', async ({ page }) => {

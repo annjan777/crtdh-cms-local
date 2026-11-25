@@ -1,10 +1,17 @@
 /* Site stylesheet entry (the public app's root and the CMS canvas both load this file).
    Fonts are self-hosted (the site CSP allows fonts only from its own origin): Montserrat for
-   headings, Open Sans for body text, the same faces and weights the previous site used. */
+   headings, Open Sans for body text, the same faces and weights the previous site used.
+   Redesigned (.v4) pages use Alegreya for headlines and Atkinson Hyperlegible Next for text. */
 @import '@fontsource/montserrat/latin-500.css';
 @import '@fontsource/montserrat/latin-600.css';
 @import '@fontsource/montserrat/latin-700.css';
 @import '@fontsource/open-sans/latin-400.css';
 @import '@fontsource/open-sans/latin-500.css';
 @import '@fontsource/open-sans/latin-600.css';
+@import '@fontsource/alegreya/latin-500.css';
+@import '@fontsource/alegreya/latin-700.css';
+@import '@fontsource/atkinson-hyperlegible-next/latin-400.css';
+@import '@fontsource/atkinson-hyperlegible-next/latin-500.css';
+@import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
 @import './global.css';
+@import './tokens-v4.css';

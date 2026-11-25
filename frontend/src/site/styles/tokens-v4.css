@@ -1,0 +1,67 @@
+/* CRTDH design tokens v4 (style guide v1 + the approved home reference).
+   Scoped to `.v4`: pages move to it one by one, so a page that has not been redesigned keeps the old tokens. */
+.v4 {
+  /* colour: primitives */
+  --forest-950: #16221D;
+  --forest-900: #1C2E27;
+  --forest-800: #263C34;
+  --forest-700: #2F4A3E;
+  --sage-700: #55695C;
+  --sage-600: #7A8B80;
+  --sage-500: #7F9688;
+  --sage-400: #9DB7A5;
+  --sage-300: #B5C8B9;
+  --sage-100: #DCE5DD;
+  --sage-50: #ECF0EA;
+  --ivory: #F4F2EC;
+  --white: #FFFFFF;
+  --charcoal: #232826;
+  --ink-2: #505B55;
+  --ember-300: #E9A867;
+  --ember-500: #BF7329;
+  --ember-700: #9C5B1F;
+
+  /* colour: roles */
+  --bg: var(--ivory);
+  --bg-alt: var(--sage-50);
+  --surface: var(--sage-100);
+  --text: var(--charcoal);
+  --text-2: var(--ink-2);
+  --heading: var(--forest-800);
+  --line: var(--sage-300);
+  --action: var(--forest-800);
+  --mark: var(--ember-500);
+  --on-band: var(--ivory);
+  --on-band-2: #C9D6CC;
+
+  /* type */
+  --serif: "Alegreya", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --fs-hero: clamp(2.25rem, 1.2rem + 2.4vw, 3.6rem);
+  --fs-1: clamp(2.25rem, 1.6rem + 2.4vw, 3.5rem);
+  --fs-2: clamp(1.875rem, 1.45rem + 1.5vw, 2.75rem);
+  --fs-3: clamp(1.5rem, 1.3rem + .6vw, 1.875rem);
+  --fs-4: 1.25rem;
+  --fs-body: 1.0625rem;
+  --fs-ui: 1rem;
+  --fs-small: .875rem;
+
+  /* space and frame */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px;
+  --s-7: 48px; --s-8: 64px; --s-9: 96px; --s-10: 128px;
+  --gap-section: clamp(72px, 7.5vw, 124px);
+  --gutter: clamp(20px, 6.6vw, 112px);
+  --wide: 106rem;
+  --r-1: 2px; --r-2: 4px; --r-tile: 14px; --r-pill: 999px;
+
+  /* motion */
+  --ease: cubic-bezier(.2, .7, .1, 1);
+  --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: 180ms;
+  --t-base: 360ms;
+  --t-reveal: 1000ms;
+  --t-curtain: 1300ms;
+
+  font-family: var(--sans);
+  color: var(--text);
+}

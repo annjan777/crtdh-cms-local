@@ -27,7 +27,7 @@ export const LAYOUT_NEEDS = {
 export const PAGE_NEEDS = {
   home: {
     singletons: ['home-page', 'site-settings'],
-    collections: ['hero-slides', 'enterprises', 'products', 'innovations', 'news-items', 'documents', 'media-events', 'equipment', 'team-members'],
+    collections: ['hero-slides', 'enterprises', 'products', 'innovations', 'news-items', 'documents', 'media-events', 'media-event-images', 'gallery-images', 'equipment', 'team-members'],
   },
   about: {
     singletons: ['about-page'],

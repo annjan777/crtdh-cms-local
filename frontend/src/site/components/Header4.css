@@ -1,0 +1,56 @@
+/* Header, v4 language. Solid ivory everywhere; on the home page, before scrolling, it sits over the hero photo:
+   transparent, white links, and the logos (used exactly as supplied) on small light plates so they stay legible. */
+.site-header.v4 {
+  --hdr-h: 88px;
+  background: rgba(244, 242, 236, .97);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-bottom: 1px solid transparent; box-shadow: none;
+  transition: background-color 420ms cubic-bezier(.2, .7, .1, 1), border-color 420ms, box-shadow 420ms;
+}
+.site-header.v4.is-scrolled { background: rgba(244, 242, 236, .97); border-bottom-color: #D9DED6; box-shadow: 0 10px 30px rgba(22, 34, 29, .06); }
+.site-header.v4 .site-header__bar { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); min-height: var(--hdr-h); padding-block: 12px; gap: 18px; }
+.site-header.v4 .site-header__crest { height: 48px; width: auto; border-radius: 10px; padding: 3px; transition: background-color 420ms; }
+.site-header.v4 .brand__logo { height: 54px; max-width: none; border-radius: 10px; padding: 3px 5px; transition: background-color 420ms; }
+.site-header.v4 .brand__mark { font-family: var(--serif); font-weight: 700; font-size: 1.65rem; letter-spacing: 0; color: var(--forest-800); }
+.site-header.v4 .brand__sub { font-family: var(--sans); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.site-header.v4 .site-nav a,
+.site-header.v4 .nav-more__trigger { position: relative; font-family: var(--sans); font-weight: 500; font-size: 1rem; color: var(--forest-800); background: none; border-radius: 0; padding: 10px 12px; }
+.site-header.v4 .site-nav a::after,
+.site-header.v4 .nav-more__trigger::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 2px; height: 3px; border-radius: 3px; background: var(--ember-500); transform: scaleX(0); transform-origin: left; transition: transform 360ms cubic-bezier(.2, .7, .1, 1); }
+.site-header.v4 .site-nav a:hover,
+.site-header.v4 .nav-more__trigger:hover { background: none; color: var(--forest-900); }
+.site-header.v4 .site-nav a:hover::after { transform: scaleX(.4); }
+.site-header.v4 .site-nav a.active { background: none; color: var(--forest-900); box-shadow: none; }
+.site-header.v4 .site-nav a.active::after,
+.site-header.v4 .nav-more__trigger.active::after { transform: scaleX(1); }
+.site-header.v4 .site-header__cta { border-radius: 999px; background: var(--forest-800); color: #F4F2EC; border: 1.5px solid var(--forest-800); box-shadow: none; font-family: var(--sans); font-weight: 700; padding: 10px 20px; }
+.site-header.v4 .site-header__cta:hover { background: var(--forest-900); border-color: var(--forest-900); }
+.site-header.v4 .nav-toggle { color: var(--forest-800); border-radius: 50%; }
+
+/* over the home hero */
+.site-header.v4.is-over-hero { background: transparent; border-bottom-color: transparent; box-shadow: none; }
+.site-header.v4.is-over-hero .site-header__crest,
+.site-header.v4.is-over-hero .brand__logo { background: rgba(244, 242, 236, .94); }
+.site-header.v4.is-over-hero .brand__mark { color: #F7F5EF; }
+.site-header.v4.is-over-hero .brand__sub { color: #CFDCD3; }
+.site-header.v4.is-over-hero .site-nav a,
+.site-header.v4.is-over-hero .nav-more__trigger { color: #F1F4EF; }
+.site-header.v4.is-over-hero .site-nav a.active,
+.site-header.v4.is-over-hero .site-nav a:hover { color: #FFFFFF; }
+.site-header.v4.is-over-hero .site-nav a::after,
+.site-header.v4.is-over-hero .nav-more__trigger::after { background: #9DC2A6; }
+.site-header.v4.is-over-hero .site-header__cta { background: transparent; border-color: rgba(247, 245, 239, .75); color: #F7F5EF; }
+.site-header.v4.is-over-hero .site-header__cta:hover { background: #F7F5EF; color: var(--forest-800); }
+.site-header.v4.is-over-hero .nav-toggle { color: #F7F5EF; }
+.site-header.v4 :focus-visible { outline: 3px solid var(--ember-300); outline-offset: 2px; }
+
+@media (max-width: 520px) {
+  .site-header.v4 .site-header__bar { gap: 10px; padding-inline: 16px; }
+  .site-header.v4 .brand__logo { height: 44px; }
+  .site-header.v4 .brand { gap: 8px; }
+  .site-header.v4 .site-header__actions { gap: 6px; }
+  .site-header.v4 .site-header__cta { padding: 8px 14px; font-size: .875rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header.v4, .site-header.v4 * { transition: none !important; }
+}
