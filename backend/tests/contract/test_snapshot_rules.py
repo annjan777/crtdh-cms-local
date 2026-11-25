@@ -62,7 +62,7 @@ def test_every_public_route_has_registry_page():
     from apps.publishing.registry import export_registry
     pages = {p["path"] for p in export_registry()["pages"]}
     assert pages == {"/", "/about", "/team", "/innovations", "/facilities", "/services", "/product", "/enterprises",
-                     "/social-impact", "/covid-19", "/media", "/contact"}
+                     "/social-impact", "/covid-19", "/research", "/research-translation", "/media", "/contact"}
 
 
 def test_same_snapshot_twice_same_content(sample_content):

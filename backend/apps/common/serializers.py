@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Document, ImageGridBlock, ImageGridItem, VideoBlock
+from .models import Document, ImageGridBlock, ImageGridItem, ImpactFigure, PageHero, ResearchStory, VideoBlock
 
 
 class ImageGridItemSerializer(serializers.ModelSerializer):
@@ -27,3 +27,21 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ["id", "title", "file", "category", "order", "is_published", "version"]
+
+
+class PageHeroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PageHero
+        fields = ["id", "page", "eyebrow", "title", "description", "image", "image_alt", "image_position", "is_published", "version"]
+
+
+class ResearchStorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResearchStory
+        fields = ["id", "page", "stage", "title", "summary", "body", "image", "image_alt", "link_url", "order", "is_published", "version"]
+
+
+class ImpactFigureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImpactFigure
+        fields = ["id", "page", "value", "label", "source", "order", "is_published", "version"]

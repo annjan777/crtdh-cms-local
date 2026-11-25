@@ -11,6 +11,8 @@ PAGES = [
     ("enterprises", "/enterprises", "Enterprises"),
     ("social-impact", "/social-impact", "Social Impact"),
     ("covid-19", "/covid-19", "Covid-19"),
+    ("research", "/research", "Research"),
+    ("research-translation", "/research-translation", "Research translation"),
     ("media", "/media", "Media"),
     ("contact", "/contact", "Contact"),
 ]

@@ -89,7 +89,7 @@ for (const [route, { html }] of pages) {
 }
 
 if (!pages.has('/404')) findings.push('404.html is missing')
-const expected = ['/', '/about', '/team', '/innovations', '/facilities', '/services', '/product', '/enterprises', '/social-impact', '/covid-19', '/media', '/contact']
+const expected = ['/', '/about', '/team', '/innovations', '/facilities', '/services', '/product', '/enterprises', '/social-impact', '/covid-19', '/research', '/research-translation', '/media', '/contact']
 for (const r of expected) if (!pages.has(r)) findings.push(`${r}: page not built`)
 
 if (findings.length) {

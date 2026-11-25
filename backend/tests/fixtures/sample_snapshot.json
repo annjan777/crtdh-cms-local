@@ -1128,6 +1128,206 @@
     "caption": "",
     "order": 0
    }
+  ],
+  "research-stories": [
+   {
+    "id": 1,
+    "page": "research",
+    "stage": "",
+    "title": "Point-of-care diagnostics",
+    "summary": "Paper and microfluidic tests read with a smartphone.",
+    "body": "<p>Sample research theme.</p>",
+    "image": null,
+    "image_alt": "",
+    "link_url": "/innovations",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 2,
+    "page": "research-translation",
+    "stage": "prototype",
+    "title": "From strip to detection box",
+    "summary": "Sample translation step.",
+    "body": "",
+    "image": null,
+    "image_alt": "",
+    "link_url": "",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   }
+  ],
+  "impact-figures": [
+   {
+    "id": 1,
+    "page": "social-impact",
+    "value": "12",
+    "label": "Sample figure",
+    "source": "Test fixture",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   }
+  ],
+  "page-heroes": [
+   {
+    "id": 1,
+    "page": "about",
+    "eyebrow": "About CRTDH",
+    "title": "About CRTDH",
+    "description": "A DSIR-sponsored initiative at IIT Kharagpur translating research in basic sciences, sensors and digital health into affordable, deployable healthcare technology.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 2,
+    "page": "team",
+    "eyebrow": "Team",
+    "title": "The people behind CRTDH",
+    "description": "Principal investigators, research members, project staff and medical collaborators.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 3,
+    "page": "innovations",
+    "eyebrow": "Innovations",
+    "title": "Our technology portfolio",
+    "description": "Medical devices, diagnostics and digital health tools developed at CRTDH for real-world, resource-constrained settings.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 4,
+    "page": "facilities",
+    "eyebrow": "Facilities",
+    "title": "Our facilities",
+    "description": "Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 5,
+    "page": "services",
+    "eyebrow": "Services",
+    "title": "What CRTDH offers",
+    "description": "Testing, prototyping, certification support and technology transfer services for healthcare innovators.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 6,
+    "page": "product",
+    "eyebrow": "Product",
+    "title": "From prototype to product",
+    "description": "Flagship products developed and manufactured under CRTDH, along with our commercialisation partners.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 7,
+    "page": "enterprises",
+    "eyebrow": "Industry & MSMEs",
+    "title": "Collaborate with CRTDH",
+    "description": "The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 8,
+    "page": "social-impact",
+    "eyebrow": "Social Impact",
+    "title": "Impact in rural India",
+    "description": "Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 9,
+    "page": "covid-19",
+    "eyebrow": "Covid-19 Response",
+    "title": "CRTDH's response to the pandemic",
+    "description": "Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 10,
+    "page": "media",
+    "eyebrow": "Media",
+    "title": "News & updates",
+    "description": "Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 11,
+    "page": "contact",
+    "eyebrow": "Contact",
+    "title": "Get in touch",
+    "description": "Questions about our research, facilities, or partnering with CRTDH? Send us a message.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 12,
+    "page": "research",
+    "eyebrow": "Research",
+    "title": "Research at CRTDH",
+    "description": "Interdisciplinary research for affordable and deployable healthcare solutions.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 13,
+    "page": "research-translation",
+    "eyebrow": "Research translation",
+    "title": "From the lab to the field",
+    "description": "The journey from discovery to prototype, validation and translation.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   }
   ]
  }
 }

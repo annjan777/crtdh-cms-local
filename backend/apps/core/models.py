@@ -206,6 +206,28 @@ class HomePage(VersionedModel):
     membership_heading = models.CharField(max_length=255, blank=True, default="Annual Membership for MSME / Startup")
     membership_pdf = models.FileField(upload_to="home/", blank=True, null=True)
 
+    # The three pathways under the home hero (title, one line, link, icon).
+    PATHWAY_ICONS = [
+        ("technology", "Technology (chip)"),
+        ("research", "Research (flask)"),
+        ("rural", "Communities (people)"),
+        ("facilities", "Facilities (microscope)"),
+        ("industry", "Industry (handshake)"),
+        ("training", "Training (cap)"),
+    ]
+    pathway_1_title = models.CharField(max_length=60, blank=True, default="Technology")
+    pathway_1_text = models.CharField(max_length=140, blank=True, default="Indigenous, affordable and ready-to-deploy healthcare solutions.")
+    pathway_1_link = models.CharField(max_length=255, blank=True, default="/innovations")
+    pathway_1_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="technology")
+    pathway_2_title = models.CharField(max_length=60, blank=True, default="Research Translation")
+    pathway_2_text = models.CharField(max_length=140, blank=True, default="From lab innovation to real-world healthcare technologies.")
+    pathway_2_link = models.CharField(max_length=255, blank=True, default="/enterprises")
+    pathway_2_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="research")
+    pathway_3_title = models.CharField(max_length=60, blank=True, default="Rural Impact")
+    pathway_3_text = models.CharField(max_length=140, blank=True, default="Taking healthcare innovation to last-mile and resource-limited settings.")
+    pathway_3_link = models.CharField(max_length=255, blank=True, default="/social-impact")
+    pathway_3_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="rural")
+
     class Meta:
         verbose_name = "Home page"
         verbose_name_plural = "Home page"

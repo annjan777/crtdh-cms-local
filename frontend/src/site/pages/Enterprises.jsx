@@ -39,6 +39,7 @@ function EnterprisesView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="enterprises"
         eyebrow="Industry & MSMEs"
         title="Collaborate with CRTDH"
         description="The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing."

@@ -63,6 +63,7 @@ function ProductView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="product"
         eyebrow="Product"
         title="From prototype to product"
         description="Flagship products developed and manufactured under CRTDH, along with our commercialisation partners."

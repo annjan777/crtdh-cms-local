@@ -80,6 +80,7 @@ function FacilitiesView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="facilities"
         eyebrow="Facilities"
         title="Our facilities"
         description="Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises."

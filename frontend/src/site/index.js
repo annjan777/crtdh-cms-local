@@ -16,6 +16,8 @@ import Product from './pages/Product.jsx'
 import Enterprises from './pages/Enterprises.jsx'
 import SocialImpact from './pages/SocialImpact.jsx'
 import Covid19 from './pages/Covid19.jsx'
+import Research from './pages/Research.jsx'
+import ResearchTranslation from './pages/ResearchTranslation.jsx'
 import Media from './pages/Media.jsx'
 import Contact from './pages/Contact.jsx'
 import NotFound from './pages/NotFound.jsx'
@@ -32,6 +34,8 @@ export const pages = {
   enterprises: Enterprises,
   'social-impact': SocialImpact,
   'covid-19': Covid19,
+  research: Research,
+  'research-translation': ResearchTranslation,
   media: Media,
   contact: Contact,
 }

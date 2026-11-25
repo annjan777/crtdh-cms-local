@@ -43,7 +43,7 @@ describe('section map', () => {
 
   it('maps only real registry sections of known pages', () => {
     const known = new Set(['home', 'about', 'team', 'innovations', 'facilities', 'services', 'product', 'enterprises',
-      'social-impact', 'covid-19', 'media', 'contact', 'site']);
+      'social-impact', 'covid-19', 'research', 'research-translation', 'media', 'contact', 'site']);
     for (const [page, entries] of Object.entries(SECTION_MAP)) {
       expect(known.has(page)).toBe(true);
       for (const [, id] of entries) expect(known.has(ownerPage(id))).toBe(true);

@@ -4,7 +4,7 @@ import { safeHref } from '../util.js'
 import { MapFacade, directionsUrl } from '../components/ClickToLoad.jsx'
 import SiteLink from '../link.jsx'
 import { Link } from '../router.jsx'
-import { ArrowRight, Cpu, FlaskConical, Users, Pause, Play } from 'lucide-react'
+import { ArrowRight, Cpu, FlaskConical, Users, Microscope, Handshake, GraduationCap, Pause, Play } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
 import { fetchList, fetchOne } from '../api/client'
 import VideoBlock from '../components/VideoBlock'
@@ -20,6 +20,8 @@ function focusStyle(position) {
 
 // The three pathways under the hero. The CMS has no fields for them yet (see docs: proposed
 // HomePage.pathway_*), so the wording lives here, next to the links it describes.
+const PATHWAY_ICONS = { technology: Cpu, research: FlaskConical, rural: Users, facilities: Microscope, industry: Handshake, training: GraduationCap }
+// Built-in wording, used where the CMS pathway fields (home-page pathway_N_*) are empty.
 const PATHWAYS = [
   { title: 'Technology', text: 'Indigenous, affordable and ready-to-deploy healthcare solutions.', to: '/innovations', Icon: Cpu },
   { title: 'Research Translation', text: 'From lab innovation to real-world healthcare technologies.', to: '/enterprises', Icon: FlaskConical },
@@ -101,19 +103,28 @@ function Hero({ slides }) {
 }
 
 /* ---------------------------------------------------------------- D: pathways */
-function Pathways() {
+function Pathways({ home }) {
+  const items = PATHWAYS.map((d, k) => {
+    const n = k + 1
+    return {
+      title: home?.[`pathway_${n}_title`] || d.title,
+      text: home?.[`pathway_${n}_text`] || d.text,
+      to: home?.[`pathway_${n}_link`] || d.to,
+      Icon: PATHWAY_ICONS[home?.[`pathway_${n}_icon`]] || d.Icon,
+    }
+  })
   return (
-    <section className="h4-paths" aria-label="What CRTDH does">
+    <section className="h4-paths" aria-label="What CRTDH does" data-block="home.pathways">
       <div className="h4-wrap h4-paths__row">
-        {PATHWAYS.map(({ title, text, to, Icon }, n) => (
-          <Link key={title} to={to} className="h4-path" data-rv style={{ '--d': `${n * 120}ms` }}>
+        {items.map(({ title, text, to, Icon }, n) => (
+          <SiteLink key={n} to={to} className="h4-path" data-rv style={{ '--d': `${n * 120}ms` }}>
             <span className="h4-path__icon"><Icon size={30} strokeWidth={1.6} aria-hidden="true" /></span>
             <span className="h4-path__body">
               <span className="h4-path__title">{title}</span>
               <span className="h4-path__text">{text}</span>
             </span>
             <span className="h4-circle" aria-hidden="true"><Arrow size={16} /></span>
-          </Link>
+          </SiteLink>
         ))}
       </div>
     </section>
@@ -378,7 +389,7 @@ function HomeView() {
   return (
     <div className="v4 h4" ref={ref}>
       <Hero slides={slides} />
-      <Pathways />
+      <Pathways home={home} />
       <Showcase gallery={gallery || []} news={news || []} eventThumb={eventThumb} />
       <Figures items={figures} />
       {home && (

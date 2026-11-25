@@ -68,3 +68,18 @@
 @media (prefers-reduced-motion: reduce) {
   .tech-index__preview, .tech-index__preview img, .tech-index__row, .tech-index__go { transition: none; }
 }
+
+/* categories, stage and summary (CMS fields) */
+.tech-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.tech-filter button { padding: 9px 16px; border: 1px solid var(--sage-300); border-radius: 999px; background: none; font: 700 .9375rem/1 var(--sans); color: var(--forest-800); cursor: pointer; transition: background-color 250ms, color 250ms, border-color 250ms; }
+.tech-filter button:hover { border-color: var(--forest-800); }
+.tech-filter button[aria-pressed="true"] { background: var(--forest-800); border-color: var(--forest-800); color: #F4F2EC; }
+.tech-index__text { display: grid; gap: 6px; }
+.tech-index__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .9375rem; color: var(--ink-2); }
+.tech-index__cat { font-weight: 700; color: var(--sage-700); }
+.tech-status { display: inline-block; padding: 3px 9px; border-radius: 999px; background: var(--sage-100); color: var(--forest-800); font: 700 .8125rem/1.3 var(--sans); }
+.tech-status--deployed, .tech-status--commercialised { background: var(--forest-800); color: #F4F2EC; }
+.tech-status--field-evaluation { background: #F3E3D2; color: var(--ember-700); }
+.tech-index__sum { flex-basis: 100%; }
+.tech__tags { display: flex; gap: 10px; align-items: center; margin: 0 0 10px; }
+.tech__summary { margin: -8px 0 18px; font-size: 1.1875rem; line-height: 1.55; color: var(--forest-800); }

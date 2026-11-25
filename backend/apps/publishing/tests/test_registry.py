@@ -24,7 +24,7 @@ def frontend_routes():
 @pytest.mark.contract
 def test_every_frontend_route_has_a_registry_page_and_vice_versa():
     routes = frontend_routes()
-    assert len(routes) == 12
+    assert len(routes) == 14
     assert routes == {p["path"] for p in registry.REGISTRY["pages"]}
 
 
@@ -118,4 +118,5 @@ def test_page_normalising_migration():
     assert mig.normalise(" Facilities ") == "facilities"
     assert mig.normalise("Index") == "home"
     assert mig.normalise("something-else") is None
-    assert mig.PAGE_IDS == PAGE_IDS
+    # The migration froze the page list of its day; pages added later (research, research-translation) come after.
+    assert mig.PAGE_IDS == [p for p in PAGE_IDS if p not in ('research', 'research-translation')]

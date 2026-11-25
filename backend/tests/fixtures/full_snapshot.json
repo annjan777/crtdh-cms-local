@@ -21,20 +21,20 @@
   },
   "about-page": {
    "id": 1,
-   "intro": "Innovation plays a critical role in shaping the industrial competitiveness of any nation. India, being a developing nation, has its own set of unique situations and challenges that impede the innovation potential of MSMEs operating in it. Many of these challenges are related to public policy, funding constraints, access to suitable equipment, shortage of skilled R&D workforce and weak linkages between institutions and industry. DSIR has therefore initiated a program aimed at the creation of Common Research & Technology Development Hubs (CRTDHs) to encourage research and technology development by MSMEs and develop synergy between academia and industry, facilitating hands-on training, skill development and R&D infrastructure.\n\nDSIR-CRTDH is now a strong family of 18 CRTDHs located across the country, working in sectors such as electronics/renewable energy, affordable health, environmental interventions, low-cost machining and new materials/chemical processes \u2014 all engaged in R&D activity with real societal impact, helping MSMEs remain competitive while DSIR expands the network across every state and Union Territory.",
-   "mission_vision": "Almost half of the world's population is forced to live without access to basic healthcare, health education and public health measures \u2014 a cycle that pushes millions below the poverty line every year through health-related expenses. Breaking that cycle means intermingling advances in healthcare technology, including digital healthcare, with value-added human resource development \u2014 the central principle behind CRTDH's vision at IIT Kharagpur.\n\nThe CRTDH for Affordable Health at IIT Kharagpur was established in 2019 to support MSMEs, startups and entrepreneurs working in the healthcare domain, offering R&D support, state-of-the-art facilities, a manufacturing plant and licensing support. In spite of the constraints of the COVID-19 pandemic, CRTDH developed several point-of-care technologies, trained community health workers, ran medical and validation camps in remote settings, and set up a Pathology and Imaging Lab in collaboration with an NGO \u2014 continuing to make healthcare accessible to the last-mile population.",
+   "intro": "Innovation plays a critical role in shaping the industrial competitiveness of any nation. India, being a developing nation, has its own set of unique situations and challenges that impede the innovation potential of MSMEs operating in it. Many of these challenges are related to public policy, funding constraints, access to suitable equipment, shortage of skilled R&D workforce and weak linkages between institutions and industry. DSIR has therefore initiated a program aimed at the creation of Common Research & Technology Development Hubs (CRTDHs) to encourage research and technology development by MSMEs and develop synergy between academia and industry, facilitating hands-on training, skill development and R&D infrastructure.\n\nDSIR-CRTDH is now a strong family of 18 CRTDHs located across the country, working in sectors such as electronics/renewable energy, affordable health, environmental interventions, low-cost machining and new materials/chemical processes — all engaged in R&D activity with real societal impact, helping MSMEs remain competitive while DSIR expands the network across every state and Union Territory.",
+   "mission_vision": "Almost half of the world's population is forced to live without access to basic healthcare, health education and public health measures — a cycle that pushes millions below the poverty line every year through health-related expenses. Breaking that cycle means intermingling advances in healthcare technology, including digital healthcare, with value-added human resource development — the central principle behind CRTDH's vision at IIT Kharagpur.\n\nThe CRTDH for Affordable Health at IIT Kharagpur was established in 2019 to support MSMEs, startups and entrepreneurs working in the healthcare domain, offering R&D support, state-of-the-art facilities, a manufacturing plant and licensing support. In spite of the constraints of the COVID-19 pandemic, CRTDH developed several point-of-care technologies, trained community health workers, ran medical and validation camps in remote settings, and set up a Pathology and Imaging Lab in collaboration with an NGO — continuing to make healthcare accessible to the last-mile population.",
    "focus_intro": "Affordable healthcare for a billion people\nDiligence in Basic Sciences and Mathematical Modelling",
    "ecosystem_heading": "An Advanced Institute of Medical Science and Research",
    "ecosystem_image": "http://localhost:8000/media/about/eco-system.jpg",
    "pi_desk_image": "http://localhost:8000/media/about/from-pi-desk.jpg",
    "pi_desk_document": null,
-   "dsir_about": "The Department of Scientific and Industrial Research (DSIR) is part of the Ministry of Science and Technology, established through a Presidential Notification dated January 4, 1985, under the 164th Amendment of the Government of India (Allocation of Business) Rules, 1961. DSIR carries out activities relating to indigenous technology promotion, development, utilisation and transfer.\n\nIts primary endeavour is to promote R&D by industry, support small and medium industrial units in developing globally competitive technologies, catalyse faster commercialisation of lab-scale R&D, and strengthen industrial consultancy and technology management capabilities \u2014 linking scientific laboratories with industrial establishments through the National Research Development Corporation (NRDC) and facilitating R&D investment through Central Electronics Limited (CEL). dsir.gov.in",
+   "dsir_about": "The Department of Scientific and Industrial Research (DSIR) is part of the Ministry of Science and Technology, established through a Presidential Notification dated January 4, 1985, under the 164th Amendment of the Government of India (Allocation of Business) Rules, 1961. DSIR carries out activities relating to indigenous technology promotion, development, utilisation and transfer.\n\nIts primary endeavour is to promote R&D by industry, support small and medium industrial units in developing globally competitive technologies, catalyse faster commercialisation of lab-scale R&D, and strengthen industrial consultancy and technology management capabilities — linking scientific laboratories with industrial establishments through the National Research Development Corporation (NRDC) and facilitating R&D investment through Central Electronics Limited (CEL). dsir.gov.in",
    "iitkgp_about": "The Indian Institute of Technology Kharagpur (IIT Kharagpur) is a public institute of technology and research university established by the Government of India in Kharagpur, West Bengal. Established in 1951, it is the first of the IITs and is recognised as an Institute of National Importance."
   },
   "home-page": {
    "id": 1,
    "objective_text": "Access to health is one of the fundamental rights enshrined in the constitution over the world. However, almost 50% of the world's 7.5 billion people is forced to live at underserved locations without access to basic healthcare and health education and public health measures, due to a multitude of reasons. This results in accumulation of diseases among the most vulnerable segment, delayed presentation and intervention, and consequent need of specialty treatment at high secondary and tertiary cost and health-related poverty shocks.",
-   "enterprises_text": "One key area of focus of the CRTDH is supporting the growth and development of precision manufacturing of innovative medical devices through emerging micro-small-medium scale Industrial enterprises so that India can reduce their massive burden of imported healthcare technologies and spread the technology availability in the last-mile. The CRTDH has already established a template pilot plant to promote indigenously developed healthcare technologies for rural healthcare \u2014 solving a major problem for the common people, fostering manufacturing growth, creating rural jobs, and introducing advanced technologies into the ambit of public health.",
+   "enterprises_text": "One key area of focus of the CRTDH is supporting the growth and development of precision manufacturing of innovative medical devices through emerging micro-small-medium scale Industrial enterprises so that India can reduce their massive burden of imported healthcare technologies and spread the technology availability in the last-mile. The CRTDH has already established a template pilot plant to promote indigenously developed healthcare technologies for rural healthcare — solving a major problem for the common people, fostering manufacturing growth, creating rural jobs, and introducing advanced technologies into the ambit of public health.",
    "enterprises_image_1": "http://localhost:8000/media/home/enterprises-engagement01.jpg",
    "enterprises_image_2": "http://localhost:8000/media/home/enterprises-engagement02.jpg",
    "msme_map_image": "http://localhost:8000/media/home/msmemap.png",
@@ -151,7 +151,7 @@
   "news-items": [
    {
     "id": 1,
-    "text": "CRTDH-supported Pathology and Eye Clinic \u2014 visit by the CRTDH team at Rural Healthcare Foundation",
+    "text": "CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation",
     "link_url": "/media#pathologyandeyeclinic",
     "order": 0
    },
@@ -181,7 +181,7 @@
    },
    {
     "id": 6,
-    "text": "IIT Kharagpur launches COVIRAP diagnostic technology \u2014 The Hindu",
+    "text": "IIT Kharagpur launches COVIRAP diagnostic technology — The Hindu",
     "link_url": "https://www.thehindu.com/sci-tech/health/iit-kharagpur-launches-covirap-diagnostic-technology/article34376251.ece",
     "order": 5
    }
@@ -357,7 +357,7 @@
    {
     "id": 18,
     "image": "http://localhost:8000/media/hero_slides/banner06.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -373,7 +373,7 @@
    {
     "id": 19,
     "image": "http://localhost:8000/media/hero_slides/banner11.JPG",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -389,7 +389,7 @@
    {
     "id": 20,
     "image": "http://localhost:8000/media/hero_slides/banner12.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -405,7 +405,7 @@
    {
     "id": 35,
     "image": "http://localhost:8000/media/hero_slides/ChatGPT_Image_Sep_4_2026_at_11_23_17_PM.png",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -421,7 +421,7 @@
    {
     "id": 21,
     "image": "http://localhost:8000/media/hero_slides/banner13.jpeg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -437,7 +437,7 @@
    {
     "id": 22,
     "image": "http://localhost:8000/media/hero_slides/banner14.jpeg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -453,7 +453,7 @@
    {
     "id": 23,
     "image": "http://localhost:8000/media/hero_slides/banner15.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -469,7 +469,7 @@
    {
     "id": 24,
     "image": "http://localhost:8000/media/hero_slides/banner16.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -485,7 +485,7 @@
    {
     "id": 25,
     "image": "http://localhost:8000/media/hero_slides/banner17.jpeg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -501,7 +501,7 @@
    {
     "id": 26,
     "image": "http://localhost:8000/media/hero_slides/banner08.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -517,7 +517,7 @@
    {
     "id": 27,
     "image": "http://localhost:8000/media/hero_slides/banner07.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -533,7 +533,7 @@
    {
     "id": 28,
     "image": "http://localhost:8000/media/hero_slides/banner01.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -549,7 +549,7 @@
    {
     "id": 29,
     "image": "http://localhost:8000/media/hero_slides/banner02.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -565,7 +565,7 @@
    {
     "id": 30,
     "image": "http://localhost:8000/media/hero_slides/banner03.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -581,7 +581,7 @@
    {
     "id": 31,
     "image": "http://localhost:8000/media/hero_slides/banner04.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -597,7 +597,7 @@
    {
     "id": 32,
     "image": "http://localhost:8000/media/hero_slides/banner05.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -613,7 +613,7 @@
    {
     "id": 33,
     "image": "http://localhost:8000/media/hero_slides/banner09.jpg",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -629,7 +629,7 @@
    {
     "id": 34,
     "image": "http://localhost:8000/media/hero_slides/banner10.JPG",
-    "eyebrow": "DSIR \u00b7 GOVERNMENT OF INDIA",
+    "eyebrow": "DSIR · GOVERNMENT OF INDIA",
     "heading": "Common Research &",
     "highlight_heading": "Technology Development",
     "heading_end": "Hub",
@@ -3568,7 +3568,7 @@
     "page": "covid-19",
     "section_title": "Combating the pandemic",
     "anchor_slug": "",
-    "intro": "In response to COVID-19, the CRTDH team developed PINAT \u2014 a piece-wise isothermal nucleic acid test platform for diagnosing pathogen-associated infections \u2014 an ultra-low-cost, accurate point-of-care nucleic acid test with the simplicity of a common rapid test. CRTDH also trained community health workers to prepare masks and sanitisers and ran medical/validation camps in remote settings during the pandemic.",
+    "intro": "In response to COVID-19, the CRTDH team developed PINAT — a piece-wise isothermal nucleic acid test platform for diagnosing pathogen-associated infections — an ultra-low-cost, accurate point-of-care nucleic acid test with the simplicity of a common rapid test. CRTDH also trained community health workers to prepare masks and sanitisers and ran medical/validation camps in remote settings during the pandemic.",
     "items": [
      {
       "id": 171,
@@ -4075,6 +4075,206 @@
     "file": "http://localhost:8000/media/home/Membership-CDH.pdf",
     "category": "membership",
     "order": 2
+   }
+  ],
+  "research-stories": [
+   {
+    "id": 1,
+    "page": "research",
+    "stage": "",
+    "title": "Point-of-care diagnostics",
+    "summary": "Paper and microfluidic tests read with a smartphone.",
+    "body": "<p>Sample research theme.</p>",
+    "image": null,
+    "image_alt": "",
+    "link_url": "/innovations",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 2,
+    "page": "research-translation",
+    "stage": "prototype",
+    "title": "From strip to detection box",
+    "summary": "Sample translation step.",
+    "body": "",
+    "image": null,
+    "image_alt": "",
+    "link_url": "",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   }
+  ],
+  "impact-figures": [
+   {
+    "id": 1,
+    "page": "social-impact",
+    "value": "12",
+    "label": "Sample figure",
+    "source": "Test fixture",
+    "order": 0,
+    "is_published": true,
+    "version": 1
+   }
+  ],
+  "page-heroes": [
+   {
+    "id": 1,
+    "page": "about",
+    "eyebrow": "About CRTDH",
+    "title": "About CRTDH",
+    "description": "A DSIR-sponsored initiative at IIT Kharagpur translating research in basic sciences, sensors and digital health into affordable, deployable healthcare technology.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 2,
+    "page": "team",
+    "eyebrow": "Team",
+    "title": "The people behind CRTDH",
+    "description": "Principal investigators, research members, project staff and medical collaborators.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 3,
+    "page": "innovations",
+    "eyebrow": "Innovations",
+    "title": "Our technology portfolio",
+    "description": "Medical devices, diagnostics and digital health tools developed at CRTDH for real-world, resource-constrained settings.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 4,
+    "page": "facilities",
+    "eyebrow": "Facilities",
+    "title": "Our facilities",
+    "description": "Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 5,
+    "page": "services",
+    "eyebrow": "Services",
+    "title": "What CRTDH offers",
+    "description": "Testing, prototyping, certification support and technology transfer services for healthcare innovators.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 6,
+    "page": "product",
+    "eyebrow": "Product",
+    "title": "From prototype to product",
+    "description": "Flagship products developed and manufactured under CRTDH, along with our commercialisation partners.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 7,
+    "page": "enterprises",
+    "eyebrow": "Industry & MSMEs",
+    "title": "Collaborate with CRTDH",
+    "description": "The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 8,
+    "page": "social-impact",
+    "eyebrow": "Social Impact",
+    "title": "Impact in rural India",
+    "description": "Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 9,
+    "page": "covid-19",
+    "eyebrow": "Covid-19 Response",
+    "title": "CRTDH's response to the pandemic",
+    "description": "Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 10,
+    "page": "media",
+    "eyebrow": "Media",
+    "title": "News & updates",
+    "description": "Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 11,
+    "page": "contact",
+    "eyebrow": "Contact",
+    "title": "Get in touch",
+    "description": "Questions about our research, facilities, or partnering with CRTDH? Send us a message.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 12,
+    "page": "research",
+    "eyebrow": "Research",
+    "title": "Research at CRTDH",
+    "description": "Interdisciplinary research for affordable and deployable healthcare solutions.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
+   },
+   {
+    "id": 13,
+    "page": "research-translation",
+    "eyebrow": "Research translation",
+    "title": "From the lab to the field",
+    "description": "The journey from discovery to prototype, validation and translation.",
+    "image": null,
+    "image_alt": "",
+    "image_position": "center center",
+    "is_published": true,
+    "version": 1
    }
   ]
  }

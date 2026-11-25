@@ -76,6 +76,9 @@ class HomePageSerializer(serializers.ModelSerializer):
             "office_image", "office_image_alt",
             "membership_heading",
             "membership_pdf",
+            "pathway_1_title", "pathway_1_text", "pathway_1_link", "pathway_1_icon",
+            "pathway_2_title", "pathway_2_text", "pathway_2_link", "pathway_2_icon",
+            "pathway_3_title", "pathway_3_text", "pathway_3_link", "pathway_3_icon",
             "version",
         ]
         read_only_fields = ["id"]

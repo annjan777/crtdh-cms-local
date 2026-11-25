@@ -83,6 +83,9 @@ RESOURCES = dict([
     _r("image-grid-items", "common.ImageGridItem", "apps.common.serializers.ImageGridItemSerializer", parents=("block",)),
     _r("video-blocks", "common.VideoBlock", "apps.common.serializers.VideoBlockSerializer"),
     _r("documents", "common.Document", "apps.common.serializers.DocumentSerializer"),
+    _r("page-heroes", "common.PageHero", "apps.common.serializers.PageHeroSerializer"),
+    _r("research-stories", "common.ResearchStory", "apps.common.serializers.ResearchStorySerializer"),
+    _r("impact-figures", "common.ImpactFigure", "apps.common.serializers.ImpactFigureSerializer"),
 ])
 SINGLETONS = [n for n, r in RESOURCES.items() if r.kind == "singleton"]
 COLLECTIONS = [n for n, r in RESOURCES.items() if r.kind == "collection"]

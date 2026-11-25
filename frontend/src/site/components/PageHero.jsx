@@ -1,24 +1,33 @@
 import { useRef } from 'react'
 import { useParallax } from './motion4.js'
+import { usePageData } from '../api/data.jsx'
 import './PageHero.css'
 
 // Inner-page hero in the home page's language: a forest-green panel with the title on the left, an optional
-// CMS photo that starts where the copy ends and fades out of the green, and the sage + ivory wave below.
-// `image` is always a photo the page already has from the CMS; without one the panel stands alone.
-export default function PageHero({ eyebrow, title, description, image, imagePosition }) {
+// photo that starts where the copy ends and fades out of the green, and the sage + ivory wave below.
+// With `page`, the CMS page header for that page (collection "page-heroes") wins field by field; the props are
+// the built-in wording and the page's own photo choice, used where the CMS field is empty.
+export default function PageHero({ page, eyebrow, title, description, image, imagePosition }) {
   const ref = useRef(null)
-  useParallax(ref, [image])
+  const data = usePageData()
+  const cms = page ? (data?.collections?.['page-heroes'] || []).find((h) => h && h.page === page && h.is_published !== false) : null
+  const e = cms?.eyebrow || eyebrow
+  const t = cms?.title || title
+  const d = cms?.description || description
+  const img = cms?.image || image
+  const pos = (cms?.image && cms?.image_position) || imagePosition
+  useParallax(ref, [img])
   return (
-    <div className={`page-hero${image ? ' page-hero--photo' : ''}`} ref={ref}>
-      {image && (
+    <div className={`page-hero${img ? ' page-hero--photo' : ''}`} ref={ref} data-block={page ? `${page}.hero` : undefined}>
+      {img && (
         <div className="page-hero__media" data-px="0.12" aria-hidden="true">
-          <img src={image} alt="" style={imagePosition ? { objectPosition: imagePosition } : undefined} fetchPriority="high" />
+          <img src={img} alt="" style={pos ? { objectPosition: pos } : undefined} fetchPriority="high" />
         </div>
       )}
       <div className="container page-hero__inner">
-        {eyebrow && <span className="eyebrow eyebrow--on-dark">{eyebrow}</span>}
-        <h1 className="page-hero__title">{title}</h1>
-        {description && <p className="page-hero__desc">{description}</p>}
+        {e && <span className="eyebrow eyebrow--on-dark">{e}</span>}
+        <h1 className="page-hero__title">{t}</h1>
+        {d && <p className="page-hero__desc">{d}</p>}
       </div>
       <svg className="page-hero__wave" viewBox="0 0 1600 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
         <path className="page-hero__wave-sage" d="M0 40 C 160 96 330 112 560 92 L 560 120 L 0 120 Z" />

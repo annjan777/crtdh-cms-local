@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
+import ImpactFigures from '../components/ImpactFigures'
 import PageHero, { firstBlockImage } from '../components/PageHero'
 import VideoBlock from '../components/VideoBlock'
 import Lightbox from '../components/Lightbox'
@@ -74,11 +75,13 @@ function SocialImpactView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="social-impact"
         eyebrow="Social Impact"
         title="Impact in rural India"
         description="Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
         image={firstBlockImage(impactBlocks)}
       />
+      <ImpactFigures page="social-impact" />
 
       <section data-block="social-impact.story" className="ri-story">
         <div className="container">

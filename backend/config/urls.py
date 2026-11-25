@@ -21,6 +21,9 @@ from apps.common.views import (
     DocumentViewSet,
     ImageGridBlockViewSet,
     ImageGridItemViewSet,
+    ImpactFigureViewSet,
+    PageHeroViewSet,
+    ResearchStoryViewSet,
     VideoBlockViewSet,
 )
 from apps.contact.views import ContactCreateView, ContactMessageViewSet
@@ -93,6 +96,9 @@ router.register("image-grid-blocks", ImageGridBlockViewSet, basename="image-grid
 router.register("image-grid-items", ImageGridItemViewSet, basename="image-grid-item")
 router.register("video-blocks", VideoBlockViewSet, basename="video-block")
 router.register("documents", DocumentViewSet, basename="document")
+router.register("page-heroes", PageHeroViewSet, basename="page-hero")
+router.register("research-stories", ResearchStoryViewSet, basename="research-story")
+router.register("impact-figures", ImpactFigureViewSet, basename="impact-figure")
 
 # contact (admin-facing read/delete side; public POST is a separate APIView below)
 router.register("contact-messages", ContactMessageViewSet, basename="contact-message")

@@ -75,6 +75,7 @@ def load_snapshot_into_db(path=SAMPLE_SNAPSHOT_PATH, exclude=()):
         if key in exclude or key not in mapping:
             continue
         model = mapping[key]
+        model.objects.all().delete()  # rows a data migration seeded (page heroes) are replaced by the snapshot's
         objs = [model(**_kwargs(model, row)) for row in data["collections"][key]]
         model.objects.bulk_create(objs)
         counts[key] = len(objs)

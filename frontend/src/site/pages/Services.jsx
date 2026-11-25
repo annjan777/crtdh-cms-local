@@ -23,6 +23,7 @@ function ServicesView() {
   return (
     <div>
       <PageHero
+        page="services"
         eyebrow="Services"
         title="What CRTDH offers"
         description="Testing, prototyping, certification support and technology transfer services for healthcare innovators."

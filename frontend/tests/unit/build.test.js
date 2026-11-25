@@ -33,8 +33,8 @@ describe('build guard', () => {
 })
 
 describe('registry', () => {
-  it('has the 12 public pages, each with declared data needs', () => {
-    expect(PAGES.map((p) => p.id)).toEqual(['home', 'about', 'team', 'innovations', 'facilities', 'services', 'product', 'enterprises', 'social-impact', 'covid-19', 'media', 'contact'])
+  it('has the 14 public pages, each with declared data needs', () => {
+    expect(PAGES.map((p) => p.id)).toEqual(['home', 'about', 'team', 'innovations', 'facilities', 'services', 'product', 'enterprises', 'social-impact', 'covid-19', 'research', 'research-translation', 'media', 'contact'])
     for (const p of PAGES) expect(PAGE_NEEDS[p.id]).toBeTruthy()
   })
   it('selectData drops unpublished rows', () => {
@@ -43,7 +43,7 @@ describe('registry', () => {
   })
   it('selectData keeps the snapshot shape and only referenced media', () => {
     const d = selectData(stub, PAGE_NEEDS.team)
-    expect(Object.keys(d.collections)).toEqual(['team-categories', 'team-members'])
+    expect(Object.keys(d.collections)).toEqual(['team-categories', 'team-members', 'page-heroes'])
     for (const url of Object.keys(d.media)) expect(JSON.stringify(d.collections)).toContain(url)
   })
 })

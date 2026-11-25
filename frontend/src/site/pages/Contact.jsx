@@ -22,6 +22,7 @@ function ContactView() {
   return (
     <div>
       <PageHero
+        page="contact"
         eyebrow="Contact"
         title="Get in touch"
         description="Questions about our research, facilities, or partnering with CRTDH? Send us a message."

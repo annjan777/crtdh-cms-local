@@ -14,4 +14,4 @@ class InnovationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Innovation
-        fields = ["id", "title", "body", "video_url", "order", "images", "is_published", "version"]
+        fields = ["id", "title", "category", "status", "summary", "body", "video_url", "order", "images", "is_published", "version"]

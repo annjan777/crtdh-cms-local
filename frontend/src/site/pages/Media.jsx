@@ -121,6 +121,7 @@ function MediaView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="media"
         eyebrow="Media"
         title="News &amp; updates"
         description="Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage."

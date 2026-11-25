@@ -4,7 +4,18 @@ from apps.common.versioning import VersionedModel
 
 
 class Innovation(VersionedModel):
+    class Status(models.TextChoices):
+        NONE = "", "Not shown"
+        RESEARCH = "research", "Research"
+        PROTOTYPE = "prototype", "Prototype"
+        FIELD = "field-evaluation", "Field evaluation"
+        DEPLOYED = "deployed", "Deployed"
+        COMMERCIALISED = "commercialised", "Commercialised"
+
     title = models.CharField(max_length=255)
+    category = models.CharField(max_length=60, blank=True, help_text="Groups technologies for the filter, e.g. Diagnostics.")
+    status = models.CharField(max_length=20, choices=Status.choices, blank=True, default="")
+    summary = models.CharField(max_length=220, blank=True, help_text="One or two lines for the portfolio list.")
     body = models.TextField(blank=True)
     video_url = models.URLField(blank=True, null=True)
     order = models.IntegerField(default=0)

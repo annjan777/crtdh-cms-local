@@ -35,6 +35,7 @@ function Covid19View() {
   return (
     <div ref={ref}>
       <PageHero
+        page="covid-19"
         eyebrow="Covid-19 Response"
         title="CRTDH's response to the pandemic"
         description="Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic."

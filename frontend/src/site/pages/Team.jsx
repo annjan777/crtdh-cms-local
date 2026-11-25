@@ -35,6 +35,7 @@ function TeamView() {
   return (
     <div className="team-page" ref={ref}>
       <PageHero
+        page="team"
         eyebrow="Team"
         title="The people behind CRTDH"
         description="Principal investigators, research members, project staff and medical collaborators."

@@ -12,6 +12,8 @@ export default [
   route('enterprises', 'routes/enterprises.jsx'),
   route('social-impact', 'routes/social-impact.jsx'),
   route('covid-19', 'routes/covid-19.jsx'),
+  route('research', 'routes/research.jsx'),
+  route('research-translation', 'routes/research-translation.jsx'),
   route('media', 'routes/media.jsx'),
   route('contact', 'routes/contact.jsx'),
   route('*', 'routes/not-found.jsx'),

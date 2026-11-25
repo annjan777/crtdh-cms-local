@@ -3,6 +3,7 @@ import RichText from '../components/RichText.jsx'
 import { useMemo, useRef } from 'react'
 import { fetchList, fetchOne } from '../api/client'
 import { useApi } from '../hooks/useApi'
+import ImpactFigures from '../components/ImpactFigures'
 import PageHero from '../components/PageHero'
 import { DataState } from '../components/StateBlock'
 import { usePageMotion } from '../components/motion4.js'
@@ -48,11 +49,13 @@ function AboutView() {
   return (
     <div ref={ref}>
       <PageHero
+        page="about"
         eyebrow="About CRTDH"
         title="About CRTDH"
         description="A DSIR-sponsored initiative at IIT Kharagpur translating research in basic sciences, sensors and digital health into affordable, deployable healthcare technology."
         image={heroImage}
       />
+      <ImpactFigures page="about" />
 
       {!aboutLoading && about?.intro && (
         <section data-block="about.intro" className="ab-intro">

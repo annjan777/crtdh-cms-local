@@ -11,7 +11,7 @@ pytestmark = pytest.mark.django_db
 def test_pages_list_with_has_changes(api_as, baseline):
     client = api_as("editor")
     pages = client.get("/api/v1/cms/pages/").json()["pages"]
-    assert [p["id"] for p in pages][:3] == ["home", "about", "team"] and len(pages) == 12
+    assert [p["id"] for p in pages][:3] == ["home", "about", "team"] and len(pages) == 14
     assert not any(p["has_changes"] for p in pages)
     member = client.get("/api/v1/team-members/").json()["results"][0]
     client.patch(f"/api/v1/team-members/{member['id']}/", {"name": "Prof. New", "expected_version": member["version"]},

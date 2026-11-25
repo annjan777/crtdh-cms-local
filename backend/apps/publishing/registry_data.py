@@ -158,16 +158,21 @@ PAGE_SECTIONS = {'home': [{'id': 'home.hero',
             'resource': 'focus-areas',
             'item_label': ['title'],
             'add_label': 'focus area',
-            'description': 'The coloured focus-area tiles.',
+            'description': 'The focus areas listed under “Where we work”, each with a small colour marker.',
             'fields': [{'name': 'title', 'type': 'text', 'label': 'Title', 'max': 60, 'required': True},
                        {'name': 'color',
                         'type': 'select',
-                        'label': 'Tile colour',
-                        'choices': [{'value': '#0f4c75', 'label': 'Navy'},
-                                    {'value': '#1a8a8a', 'label': 'Teal'},
-                                    {'value': '#520000', 'label': 'Maroon'},
-                                    {'value': '#3d4a1f', 'label': 'Olive'},
-                                    {'value': '#4a3b2a', 'label': 'Brown'}]}]},
+                        'label': 'Marker colour',
+                        'choices': [{'value': '#263C34', 'label': 'Forest'},
+                                    {'value': '#7F9688', 'label': 'Sage'},
+                                    {'value': '#BF7329', 'label': 'Ember'},
+                                    {'value': '#55695C', 'label': 'Moss'},
+                                    {'value': '#9C5B1F', 'label': 'Clay'},
+                                    {'value': '#0f4c75', 'label': 'Navy (previous design)'},
+                                    {'value': '#1a8a8a', 'label': 'Teal (previous design)'},
+                                    {'value': '#520000', 'label': 'Maroon (previous design)'},
+                                    {'value': '#3d4a1f', 'label': 'Olive (previous design)'},
+                                    {'value': '#4a3b2a', 'label': 'Brown (previous design)'}]}]},
            {'id': 'about.support',
             'label': 'How CRTDH supports MSMEs',
             'kind': 'collection',
@@ -711,3 +716,129 @@ GLOBAL_SECTIONS = [{'id': 'site.nav',
              {'name': 'logo_left', 'type': 'image', 'label': 'Left partner logo', 'alt_field': 'logo_left_alt'},
              {'name': 'logo_right', 'type': 'image', 'label': 'Right partner logo', 'alt_field': 'logo_right_alt'}]}]
 # fmt: on
+
+
+# ---- v4 redesign additions (Nov 2026) --------------------------------------------------------------------
+# Kept below the generated block so the additions are easy to review. They extend PAGE_SECTIONS in place.
+
+def _hero_section(page_id, label):
+    return {'id': f'{page_id}.hero',
+            'label': 'Page header',
+            'kind': 'collection',
+            'resource': 'page-heroes',
+            'filter': {'page': page_id},
+            'item_label': ['title'],
+            'add_label': 'page header',
+            'description': f'The photo and headline at the top of the {label} page. Leave a field empty to keep '
+                           'the built-in wording; without a photo the page picks one of its own.',
+            'fields': [{'name': 'image',
+                        'type': 'image',
+                        'label': 'Photo',
+                        'alt_field': 'image_alt',
+                        'min_width': 1600,
+                        'position_field': 'image_position'},
+                       {'name': 'eyebrow', 'type': 'text', 'label': 'Small line above the headline', 'max': 40},
+                       {'name': 'title', 'type': 'text', 'label': 'Headline', 'max': 80},
+                       {'name': 'description', 'type': 'textarea', 'label': 'Supporting line', 'max': 220}]}
+
+
+def _figures_section(page_id, where):
+    return {'id': f'{page_id}.figures',
+            'label': 'Figures',
+            'kind': 'collection',
+            'resource': 'impact-figures',
+            'filter': {'page': page_id},
+            'item_label': ['value', 'label'],
+            'add_label': 'figure',
+            'description': f'Numbers shown {where}. Each one must say where it comes from; nothing shows until '
+                           'you add one.',
+            'fields': [{'name': 'value', 'type': 'text', 'label': 'Number', 'max': 12, 'required': True,
+                        'help': 'As it should read, e.g. 10,000+'},
+                       {'name': 'label', 'type': 'text', 'label': 'What it counts', 'max': 48, 'required': True},
+                       {'name': 'source', 'type': 'text', 'label': 'Source', 'max': 160, 'required': True,
+                        'help': 'Where this number comes from, e.g. "Clinic register, March 2026".'}]}
+
+
+_STORY_FIELDS = [{'name': 'title', 'type': 'text', 'label': 'Title', 'max': 100, 'required': True},
+                 {'name': 'summary', 'type': 'textarea', 'label': 'Summary', 'max': 280},
+                 {'name': 'body', 'type': 'richtext', 'label': 'Full story'},
+                 {'name': 'image', 'type': 'image', 'label': 'Photo', 'alt_field': 'image_alt'},
+                 {'name': 'link_url', 'type': 'url', 'label': 'Read more link',
+                  'help': 'Optional. A page on this site such as /innovations, or a full web address.'}]
+
+_HERO_PAGES = [('about', 'About'), ('team', 'Team'), ('innovations', 'Innovations'), ('facilities', 'Facilities'),
+               ('services', 'Services'), ('product', 'Product'), ('enterprises', 'Enterprises'),
+               ('social-impact', 'Social impact'), ('covid-19', 'Covid-19'), ('media', 'Media'),
+               ('contact', 'Contact')]
+
+PAGE_SECTIONS['research'] = [
+    {'id': 'research.themes',
+     'label': 'Research themes',
+     'kind': 'collection',
+     'resource': 'research-stories',
+     'filter': {'page': 'research'},
+     'item_label': ['title'],
+     'add_label': 'research theme',
+     'description': 'Research themes and projects, each told as a short story with a photo.',
+     'fields': _STORY_FIELDS},
+]
+PAGE_SECTIONS['research-translation'] = [
+    {'id': 'research-translation.journey',
+     'label': 'Lab to field',
+     'kind': 'collection',
+     'resource': 'research-stories',
+     'filter': {'page': 'research-translation'},
+     'item_label': ['title'],
+     'add_label': 'step or example',
+     'description': 'Steps from discovery to translation, with the evidence and examples for each.',
+     'fields': [{'name': 'stage',
+                 'type': 'select',
+                 'label': 'Stage',
+                 'choices': [{'value': 'discovery', 'label': 'Discovery'},
+                             {'value': 'prototype', 'label': 'Prototype'},
+                             {'value': 'validation', 'label': 'Validation'},
+                             {'value': 'translation', 'label': 'Translation'}],
+                 'required': True}] + _STORY_FIELDS},
+]
+_HERO_PAGES += [('research', 'Research'), ('research-translation', 'Research translation')]
+
+for _pid, _label in _HERO_PAGES:
+    PAGE_SECTIONS[_pid].insert(0, _hero_section(_pid, _label))
+
+PAGE_SECTIONS['social-impact'].insert(1, _figures_section('social-impact', 'on the Social impact page'))
+PAGE_SECTIONS['about'].insert(1, _figures_section('about', 'on the About page'))
+
+# Home: the three pathways under the hero (listed after the opening statement so its section ids stay first).
+PAGE_SECTIONS['home'].insert(3, {
+    'id': 'home.pathways',
+    'label': 'Pathways',
+    'kind': 'singleton',
+    'resource': 'home-page',
+    'description': 'The three links under the hero: a title, one line and where each goes.',
+    'fields': [f for n in (1, 2, 3) for f in (
+        {'name': f'pathway_{n}_title', 'type': 'text', 'label': f'Pathway {n} title', 'max': 30},
+        {'name': f'pathway_{n}_text', 'type': 'textarea', 'label': f'Pathway {n} line', 'max': 90},
+        {'name': f'pathway_{n}_link', 'type': 'url', 'label': f'Pathway {n} link'},
+        {'name': f'pathway_{n}_icon', 'type': 'select', 'label': f'Pathway {n} icon',
+         'choices': [{'value': v, 'label': lab} for v, lab in (
+             ('technology', 'Technology (chip)'), ('research', 'Research (flask)'),
+             ('rural', 'Communities (people)'), ('facilities', 'Facilities (microscope)'),
+             ('industry', 'Industry (handshake)'), ('training', 'Training (cap)'))]})]})
+
+# Innovations: category (filter), status and a one-line summary.
+for _s in PAGE_SECTIONS['innovations']:
+    if _s['id'] == 'innovations.list':
+        _s['fields'][1:1] = [
+            {'name': 'category', 'type': 'text', 'label': 'Category', 'max': 40,
+             'help': 'Groups technologies for the filter on the page, e.g. Diagnostics. Use the same word for '
+                     'technologies that belong together.'},
+            {'name': 'status', 'type': 'select', 'label': 'Stage reached',
+             'choices': [{'value': '', 'label': 'Not shown'},
+                         {'value': 'research', 'label': 'Research'},
+                         {'value': 'prototype', 'label': 'Prototype'},
+                         {'value': 'field-evaluation', 'label': 'Field evaluation'},
+                         {'value': 'deployed', 'label': 'Deployed'},
+                         {'value': 'commercialised', 'label': 'Commercialised'}]},
+            {'name': 'summary', 'type': 'textarea', 'label': 'Summary', 'max': 220,
+             'help': 'One or two lines shown in the portfolio list.'},
+        ]

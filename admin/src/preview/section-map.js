@@ -25,29 +25,33 @@ const block = (id, label) => [`[data-block="${id}"]`, id, label];
 
 export const SECTION_MAP = {
   home: [
-    block('home.hero'), block('home.news'), block('home.membership'), block('home.objective'),
+    block('home.hero'), block('home.pathways'), block('home.news'), block('home.membership'), block('home.objective'),
     block('home.enterprises'), block('home.rural'), block('home.facilities'), block('home.videos'), block('home.visit'),
   ],
   about: [
-    block('about.intro'), block('about.focus'), block('about.support'), block('about.ecosystem'),
+    block('about.hero'), block('about.figures'), block('about.intro'), block('about.focus'), block('about.support'), block('about.ecosystem'),
     block('about.timeline'), block('about.pi-note'), block('about.partners'),
   ],
-  team: [block('team.members')],
-  innovations: [block('innovations.spotlight'), block('innovations.list')],
-  facilities: [block('facilities.equipment'), block('facilities.photo-sections')],
-  services: [block('services.list')],
-  product: [block('product.list')],
-  enterprises: [block('enterprises.list'), block('enterprises.photo-sections'), block('enterprises.videos')],
+  team: [block('team.hero'), block('team.members')],
+  innovations: [block('innovations.hero'), block('innovations.spotlight'), block('innovations.list')],
+  facilities: [block('facilities.hero'), block('facilities.equipment'), block('facilities.photo-sections')],
+  services: [block('services.hero'), block('services.list')],
+  product: [block('product.hero'), block('product.list')],
+  enterprises: [block('enterprises.hero'), block('enterprises.list'), block('enterprises.photo-sections'), block('enterprises.videos')],
   'social-impact': [
+    block('social-impact.hero'), block('social-impact.figures'),
     ['[data-block="social-impact.story"]', 'home.rural', 'Rural women (Home page)'],
     block('social-impact.photo-sections'), block('social-impact.videos'),
   ],
   'covid-19': [
+    block('covid-19.hero'),
     ['[data-block="covid-19.story"]', 'covid-19.photo-sections'],
     block('covid-19.photo-sections'), block('covid-19.videos'),
   ],
-  media: [block('media.events'), block('media.gallery'), block('media.coverage'), block('media.documents')],
-  contact: [block('contact.details')],
+  research: [block('research.hero'), block('research.themes')],
+  'research-translation': [block('research-translation.hero'), block('research-translation.journey')],
+  media: [block('media.hero'), block('media.events'), block('media.gallery'), block('media.coverage'), block('media.documents')],
+  contact: [block('contact.hero'), block('contact.details')],
 };
 
 /** The page that edits a section: "site" for site-wide sections, else the id's first part. */

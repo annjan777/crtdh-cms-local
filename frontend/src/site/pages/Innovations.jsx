@@ -12,9 +12,11 @@ import { usePageMotion } from '../components/motion4.js'
 import './Innovations.css'
 
 const anchor = (t) => `technology-${t.id}`
+const STATUS = { research: 'Research', prototype: 'Prototype', 'field-evaluation': 'Field evaluation', deployed: 'Deployed', commercialised: 'Commercialised' }
+const Status = ({ t }) => (STATUS[t.status] ? <span className={`tech-status tech-status--${t.status}`}>{STATUS[t.status]}</span> : null)
 
 /* Portfolio index: every technology as a row; on a pointer device the row's first photo previews beside the list. */
-function PortfolioIndex({ items }) {
+function PortfolioIndex({ items, all, cat, setCat, cats }) {
   const [hover, setHover] = useState(null)
   const preview = items.find((t) => t.id === hover)
   const previewImg = preview?.images?.[0]?.image
@@ -23,7 +25,7 @@ function PortfolioIndex({ items }) {
       <div className="container tech-index__grid">
         <div className="tech-index__aside">
           <span className="eyebrow">Portfolio</span>
-          <h2 className="section-title" id="tech-index-title">{items.length} technologies, from the lab bench to the clinic</h2>
+          <h2 className="section-title" id="tech-index-title">{all.length} technologies, from the lab bench to the clinic</h2>
           <p className="tech-index__lead">Choose a technology to read how it works, what it is for and how far it has come.</p>
           <div className={`tech-index__preview${previewImg ? ' is-on' : ''}`} aria-hidden="true">
             {items.map((t) => t.images?.[0]?.image && (
@@ -31,7 +33,15 @@ function PortfolioIndex({ items }) {
             ))}
           </div>
         </div>
-        <ol className="tech-index__list">
+        <div>
+        {cats.length > 1 && (
+          <div className="tech-filter" role="toolbar" aria-label="Show technologies">
+            {['All', ...cats].map((c) => (
+              <button type="button" key={c} aria-pressed={cat === c} onClick={() => setCat(c)}>{c}</button>
+            ))}
+          </div>
+        )}
+        <ol className="tech-index__list" aria-live="polite">
           {items.map((t, k) => (
             <li key={t.id} data-rv style={{ '--d': `${Math.min(k, 8) * 50}ms` }}>
               <a
@@ -43,12 +53,22 @@ function PortfolioIndex({ items }) {
                 onBlur={() => setHover(null)}
               >
                 <span className="tech-index__thumb">{t.images?.[0]?.image && <img src={t.images[0].image} alt="" loading="lazy" />}</span>
-                <span className="tech-index__name">{t.title}</span>
+                <span className="tech-index__text">
+                  <span className="tech-index__name">{t.title}</span>
+                  {(t.summary || t.category || STATUS[t.status]) && (
+                    <span className="tech-index__meta">
+                      {t.category && <span className="tech-index__cat">{t.category}</span>}
+                      <Status t={t} />
+                      {t.summary && <span className="tech-index__sum">{t.summary}</span>}
+                    </span>
+                  )}
+                </span>
                 <ArrowRight className="tech-index__go" size={20} aria-hidden="true" />
               </a>
             </li>
           ))}
         </ol>
+        </div>
       </div>
     </section>
   )
@@ -90,7 +110,11 @@ function Technology({ t, flip }) {
         </div>
       )}
       <div className="tech__copy" data-rv>
+        {(t.category || STATUS[t.status]) && (
+          <p className="tech__tags">{t.category && <span className="tech-index__cat">{t.category}</span>}<Status t={t} /></p>
+        )}
         <h2 className="tech__title" id={`${anchor(t)}-h`}>{t.title}</h2>
+        {t.summary && <p className="tech__summary">{t.summary}</p>}
         {t.body && (
           <div className={`tech__body${long && !open ? ' is-clamped' : ''}`} ref={bodyRef} id={`${anchor(t)}-body`}>
             <RichText html={t.body} className="rich-text" />
@@ -114,13 +138,16 @@ function InnovationsView() {
   const { data: innovations, loading, error } = useApi(() => fetchList('/innovations/'), [], [])
   const { data: projectSlides, loading: slidesLoading } = useApi(() => fetchList('/project-slides/'), [], [])
   const ref = useRef(null)
+  const [cat, setCat] = useState('All')
   usePageMotion(ref, [innovations, projectSlides])
+  const cats = [...new Set((innovations || []).map((t) => (t.category || '').trim()).filter(Boolean))]
   const heroImg = (innovations || []).find((t) => /covirap/i.test(t.title) && t.images?.length)?.images?.[0]?.image
     || (innovations || []).find((t) => t.images?.length)?.images?.[0]?.image
 
   return (
     <div ref={ref} className="tech-page">
       <PageHero
+        page="innovations"
         eyebrow="Innovations"
         title="Our technology portfolio"
         description="Medical devices, diagnostics and digital health tools developed at CRTDH for real-world, resource-constrained settings."
@@ -136,7 +163,7 @@ function InnovationsView() {
         >
           {(items) => (
             <>
-              <PortfolioIndex items={items} />
+              <PortfolioIndex items={cat === 'All' ? items : items.filter((t) => (t.category || '').trim() === cat)} all={items} cat={cat} setCat={setCat} cats={cats} />
               {!slidesLoading && projectSlides && projectSlides.length > 0 && (
                 <section data-block="innovations.spotlight" className="tech-spot" aria-labelledby="tech-spot-title">
                   <div className="container tech-spot__grid">
@@ -161,7 +188,11 @@ function InnovationsView() {
                 </section>
               )}
               <div className="container tech-list">
-                {items.map((t, k) => <Technology t={t} flip={k % 2 === 1} key={t.id} />)}
+                {items.map((t, k) => (
+                  <div key={t.id} hidden={cat !== 'All' && (t.category || '').trim() !== cat}>
+                    <Technology t={t} flip={k % 2 === 1} />
+                  </div>
+                ))}
               </div>
             </>
           )}
