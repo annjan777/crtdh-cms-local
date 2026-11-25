@@ -120,3 +120,24 @@ def test_page_normalising_migration():
     assert mig.normalise("something-else") is None
     # The migration froze the page list of its day; pages added later (research, research-translation) come after.
     assert mig.PAGE_IDS == [p for p in PAGE_IDS if p not in ('research', 'research-translation')]
+
+
+def _all_sections():
+    for page in registry.REGISTRY["pages"]:
+        for section in page["sections"]:
+            yield section
+            yield from section.get("children", [])
+
+
+@pytest.mark.contract
+def test_item_label_is_a_list_of_field_names_and_choices_are_value_label_pairs():
+    # The admin calls item_label.map(...) and takes a choice as a plain string or {value, label}: a dict
+    # item_label or a list-shaped choice crashes the editor page (seen 25 Nov 2026 on staging).
+    for section in _all_sections():
+        label = section.get("item_label")
+        if label is not None:
+            assert isinstance(label, list) and all(isinstance(n, str) for n in label), section.get("id") or section.get("resource")
+        for field in section.get("fields", []):
+            for choice in field.get("choices", []):
+                ok = isinstance(choice, str) or (isinstance(choice, dict) and set(choice) >= {"value", "label"})
+                assert ok, (section.get("id"), field["name"])
