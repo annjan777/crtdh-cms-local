@@ -9,6 +9,7 @@ import { safeHref } from '../util.js'
 import SiteLink from '../link.jsx'
 import './Layout.css'
 import './Header4.css'
+import './Footer4.css'
 
 // Fallback nav used only while nav-items are loading/unreachable, so the
 // header never renders completely empty (and the site stays navigable
@@ -285,7 +286,7 @@ function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
     : []
 
   return (
-    <footer className="site-footer">
+    <footer className="site-footer v4">
       <div className="site-footer__glow" aria-hidden="true" />
       <div className="container site-footer__grid">
         <div className="site-footer__about">

@@ -1,0 +1,20 @@
+/* v4 footer: forest green band, the same colours as the home hero and rural band.
+   The logos keep their original colours on a light plate, as in the header over the hero. */
+.site-footer.v4 { background: var(--forest-900); color: #C9D6CD; border-top: 0; font-family: var(--sans); }
+.site-footer.v4 .site-footer__grid { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); padding-block: clamp(56px, 6vw, 96px) clamp(40px, 4vw, 64px); gap: clamp(32px, 5vw, 88px); }
+.site-footer.v4 h4 { font: 700 1.25rem/1.2 var(--serif); text-transform: none; letter-spacing: 0; color: #F4F2EC; margin-bottom: var(--s-4, 16px); }
+.site-footer.v4 p { font-size: 1rem; line-height: 1.6; color: #C9D6CD; }
+.site-footer.v4 .brand__logo { background: rgba(244, 242, 236, .94); border-radius: 10px; padding: 3px 5px; height: 54px; width: auto; }
+.site-footer.v4 .brand__mark { font-family: var(--serif); color: #F4F2EC; }
+.site-footer.v4 .brand__sub { color: var(--sage-400); }
+.site-footer.v4 .site-footer__col ul, .site-footer.v4 .footer-contact { font-size: 1rem; gap: 12px; }
+.site-footer.v4 a { color: #E6EDE8; }
+.site-footer.v4 .site-footer__col a:hover, .site-footer.v4 .footer-contact a:hover { color: #FFFFFF; text-decoration: underline; text-decoration-color: var(--ember-300); text-underline-offset: 4px; }
+.site-footer.v4 .site-footer__col a.active { color: #FFFFFF; font-weight: 700; }
+.site-footer.v4 .footer-contact svg { color: var(--sage-400); }
+.site-footer.v4 .social-links a { background: transparent; border-color: rgba(201, 214, 205, .4); color: #E6EDE8; }
+.site-footer.v4 .social-links a:hover { background: rgba(244, 242, 236, .1); border-color: #E6EDE8; }
+.site-footer.v4 .site-footer__bottom { background: var(--forest-950); border-top: 1px solid rgba(201, 214, 205, .14); color: #A9B9AE; font-size: .875rem; }
+.site-footer.v4 .site-footer__bottom-row { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); }
+.site-footer.v4 .site-footer__legal a { color: #E6EDE8; }
+.site-footer.v4 a:focus-visible { outline: 2px solid var(--ember-300); outline-offset: 3px; border-radius: 2px; }
