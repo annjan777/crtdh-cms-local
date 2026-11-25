@@ -264,3 +264,6 @@
 .v4 .ctl-map__pin { background: var(--forest-800); color: #F7F5EF; }
 .v4 .ctl-map__btn { background: var(--forest-800); border-color: var(--forest-800); border-radius: var(--r-pill); color: #F7F5EF; }
 .v4 .ctl-map__link { color: var(--forest-800); }
+
+/* The home page ends on its own section; no white strip before the (not yet restyled) footer. */
+.app-main:has(.h4) + .site-footer { margin-top: 0; }
