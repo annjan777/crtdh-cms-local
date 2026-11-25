@@ -519,6 +519,10 @@ build_and_start() {
     code=$(docker inspect --format '{{.State.ExitCode}}' "$cid")
     [ "$code" = 0 ] || die "migrate exited with $code: deploy/staging/dc.sh logs migrate"
     ok "migrations, cache table and collectstatic done (migrate exited 0)"
+    # nginx looks up "cms" and "mcp" once, when it starts. When `up` recreates those containers (new image) but
+    # not the gateway, the gateway keeps their old addresses and every API call fails with 502. Restart it.
+    dc restart gateway >/dev/null || die "gateway restart failed: deploy/staging/dc.sh logs gateway"
+    ok "gateway restarted (picks up the new cms and mcp containers)"
     local i
     for i in $(seq 1 30); do
         [ "$(django 'print("ready")')" = ready ] && break
