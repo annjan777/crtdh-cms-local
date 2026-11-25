@@ -114,6 +114,8 @@ FIXES = [
     ("core.NewsItem", "text", 'CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation',
      "CRTDH-supported pathology and eye clinic: visit to the Rural Healthcare Foundation"),
     ("core.NewsItem", "text", 'Health Awareness Programme and Conclave', "Health awareness programme and conclave"),
+    # Review 25 Nov: the "Research translation" pathway now has its own page.
+    ("core.HomePage", "pathway_2_link", "/enterprises", "/research-translation"),
 ]
 
 

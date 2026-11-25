@@ -27,7 +27,7 @@ Release candidate: branch `v3/remediation`. Production = lab server (CMS, MCP, w
 
 ## 2. Verify (each needs output or a screenshot)
 - [ ] `/contact/#privacy` shows "How we use your message"; the footer shows "How we use contact messages".
-- [ ] Map and videos show "Show the map" / "Play video" and load only after the click.
+- [ ] Map and videos show "Show the map" / "Watch" and load only after the click.
 - [ ] `python3 tests/tools/check_headers.py --site https://<site>`: 0 FAIL (CIC must honour the `.htaccess`).
 - [ ] `curl -s https://<site>/_media/`: no file listing. `/does-not-exist/` gives a 404 page.
 - [ ] `python3 tests/tools/check_headers.py --cms https://<cms>`: 0 FAIL. `https://<cms>/.env` returns 404.

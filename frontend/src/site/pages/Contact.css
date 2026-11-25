@@ -126,3 +126,6 @@
   .ct__details { order: 2; padding-top: 0; }
 }
 .ct__map { width: 100%; max-width: none; }
+
+/* Contact links and the map's directions link: at least 24px tall to tap (WCAG 2.5.8). */
+.v4 .ct__details a { display: inline-block; padding-block: 2px; min-height: 24px; }

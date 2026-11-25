@@ -59,22 +59,34 @@
   z-index: 2;
 }
 
+/* The dot is drawn small, but the button is 24 x 24px so it can be tapped (WCAG 2.5.8). */
 .carousel__dot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
+  position: relative;
+  min-width: 24px;
+  height: 24px;
   border: none;
-  background: rgba(255, 255, 255, 0.55);
+  background: none;
   cursor: pointer;
   padding: 0;
 }
-
-.carousel__dot.is-active {
-  background: var(--color-white);
-  width: 1.4rem;
+.carousel__dot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  transform: translate(-50%, -50%);
   transition: width 0.2s ease;
 }
+
+.carousel__dot.is-active::before {
+  background: var(--color-white);
+  width: 1.4rem;
+}
+.carousel__dot.is-active { min-width: 32px; }
 
 /* Phones: the hero text covers the arrows, and swiping is the natural way to change slides there.
    Keep the dots, which stay tappable below the text. */

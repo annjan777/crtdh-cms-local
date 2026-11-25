@@ -258,3 +258,6 @@
   .h4-focus__grid { grid-template-columns: minmax(0, 1fr); }
   .h4-focus__media { order: -1; aspect-ratio: 3 / 2; border-radius: 4px 4px 4px 120px; }
 }
+
+/* Hero text link: at least 24px tall to tap (WCAG 2.5.8). */
+.h4-hero__second { display: inline-block; padding-block: 6px; }

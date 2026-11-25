@@ -25,7 +25,7 @@ export default function PageHero({ page, eyebrow, title, description, image, ima
         </div>
       )}
       <div className="container page-hero__inner">
-        {e && <span className="eyebrow eyebrow--on-dark">{e}</span>}
+        {e && e.trim().toLowerCase() !== String(t || '').trim().toLowerCase() && <span className="eyebrow eyebrow--on-dark">{e}</span>}
         <h1 className="page-hero__title">{t}</h1>
         {d && <p className="page-hero__desc">{d}</p>}
       </div>

@@ -18,3 +18,7 @@
 .site-footer.v4 .site-footer__bottom-row { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); }
 .site-footer.v4 .site-footer__legal a { color: #E6EDE8; }
 .site-footer.v4 a:focus-visible { outline: 2px solid var(--ember-300); outline-offset: 3px; border-radius: 2px; }
+
+/* Footer links: at least 24px tall to tap (WCAG 2.5.8). */
+.site-footer.v4 .site-footer__col li a, .site-footer.v4 .footer-contact a { display: inline-block; padding-block: 2px; min-height: 24px; }
+.site-footer.v4 .site-footer__bottom a { display: inline-block; padding-block: 3px; }

@@ -24,7 +24,7 @@ const PATHWAY_ICONS = { technology: Cpu, research: FlaskConical, rural: Users, f
 // Built-in wording, used where the CMS pathway fields (home-page pathway_N_*) are empty.
 const PATHWAYS = [
   { title: 'Technology', text: 'Developing indigenous, affordable healthcare solutions for practical use.', to: '/innovations', Icon: Cpu },
-  { title: 'Research translation', text: 'Moving healthcare innovations from the laboratory towards practical use.', to: '/enterprises', Icon: FlaskConical },
+  { title: 'Research translation', text: 'Moving healthcare innovations from the laboratory towards practical use.', to: '/research-translation', Icon: FlaskConical },
   { title: 'Rural impact', text: 'Bringing healthcare innovations closer to underserved communities.', to: '/social-impact', Icon: Users },
 ]
 
@@ -308,7 +308,7 @@ function Facilities({ home }) {
           <h2 className="h4-h2">Pilot plant and laboratories</h2>
           <Link to="/facilities" className="h4-textlink">All facilities <Arrow size={16} /></Link>
         </div>
-        {home.location_description && <p className="h4-lead" data-rv>{home.location_description}.</p>}
+        {home.location_description && <p className="h4-lead" data-rv>{home.location_description.replace(/\.*\s*$/, '')}.</p>}
         <ul className="h4-fac">
           {cards.map((c, n) => {
             const inner = (

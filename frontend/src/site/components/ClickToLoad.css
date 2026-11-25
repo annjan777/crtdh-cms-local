@@ -117,3 +117,4 @@
 .ctl-poster p {
   text-align: center;
 }
+.ctl-map__link { display: inline-block; padding-block: 2px; min-height: 24px; }

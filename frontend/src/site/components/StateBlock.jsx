@@ -11,12 +11,14 @@ export function Spinner({ label = 'Loading…' }) {
   )
 }
 
-export function EmptyState({ icon = '🗂️', title = 'Nothing here yet', message }) {
+export function EmptyState({ icon = null, title = 'Nothing here yet', message }) {
   return (
     <div className="state-block">
-      <div className="state-block__icon" aria-hidden="true">
-        {icon}
-      </div>
+      {icon ? (
+        <div className="state-block__icon" aria-hidden="true">
+          {icon}
+        </div>
+      ) : null}
       <strong>{title}</strong>
       {message ? <p className="mt-0">{message}</p> : null}
     </div>
@@ -27,7 +29,7 @@ export function ErrorState({ title = "Couldn't load this content", message = 'Pl
   return (
     <div className="state-block">
       <div className="state-block__icon" aria-hidden="true">
-        ⚠️
+        !
       </div>
       <strong>{title}</strong>
       <p className="mt-0">{message}</p>

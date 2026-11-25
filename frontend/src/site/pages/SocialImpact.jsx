@@ -6,6 +6,7 @@ import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import ImpactFigures from '../components/ImpactFigures'
 import PageHero, { firstBlockImage } from '../components/PageHero'
+import { usePageData } from '../api/data.jsx'
 import VideoBlock from '../components/VideoBlock'
 import Lightbox from '../components/Lightbox'
 import { DataState } from '../components/StateBlock'
@@ -26,8 +27,10 @@ const STRANDS = [
   { Icon: BookOpen, title: 'Health awareness and training' },
 ]
 
+const HERO_TEXT = 'Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most.'
+
 /* Field photographs as a photo essay: varied sizes, captions under each, opening in a lightbox. */
-function PhotoEssay({ block }) {
+function PhotoEssay({ block, heroText }) {
   const items = (block.items || []).filter((it, i, self) => it.image && self.findIndex((t) => t.image === it.image && t.caption === it.caption) === i)
   const [at, setAt] = useState(-1)
   return (
@@ -35,7 +38,8 @@ function PhotoEssay({ block }) {
       <div className="ri-essay__head" data-rv>
         <span className="eyebrow">In the field</span>
         <h2 className="section-title">{block.section_title || 'Community outreach'}</h2>
-        {block.intro && <p>{block.intro}</p>}
+        {/* Skip the intro when it only repeats the page introduction above. */}
+        {block.intro && block.intro.trim() !== heroText && <p>{block.intro}</p>}
       </div>
       <ul className="ri-essay__grid">
         {items.map((it, k) => (
@@ -82,6 +86,9 @@ function SocialImpactView() {
   const ref = useRef(null)
   usePageMotion(ref, [blocks, videos, home])
   const story = [home?.women_text_1, home?.women_text_2, CLOSING].filter(Boolean)
+  const pageData = usePageData()
+  const hero = (pageData?.collections?.['page-heroes'] || []).find((h) => h && h.page === 'social-impact')
+  const heroText = (hero?.description || HERO_TEXT).trim()
   const storyImgs = [firstBlockImage(impactBlocks, 1), firstBlockImage(impactBlocks, 2), firstBlockImage(impactBlocks, 3)]
 
   return (
@@ -90,7 +97,7 @@ function SocialImpactView() {
         page="social-impact"
         eyebrow="Social Impact"
         title="Impact in rural India"
-        description="Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
+        description={HERO_TEXT}
         image={firstBlockImage(impactBlocks)}
       />
       <ul className="ri-strands" aria-label="What the programme does">
@@ -121,7 +128,7 @@ function SocialImpactView() {
       <section data-block="social-impact.photo-sections" className="ri-field">
         <div className="container">
           <DataState loading={loading} error={error} data={impactBlocks} emptyProps={{ title: 'Outreach gallery coming soon' }}>
-            {(items) => items.map((block) => <PhotoEssay block={block} key={block.id} />)}
+            {(items) => items.map((block) => <PhotoEssay block={block} heroText={heroText} key={block.id} />)}
           </DataState>
         </div>
       </section>

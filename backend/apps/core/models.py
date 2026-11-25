@@ -221,7 +221,7 @@ class HomePage(VersionedModel):
     pathway_1_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="technology")
     pathway_2_title = models.CharField(max_length=60, blank=True, default="Research translation")
     pathway_2_text = models.CharField(max_length=140, blank=True, default="Moving healthcare innovations from the laboratory towards practical use.")
-    pathway_2_link = models.CharField(max_length=255, blank=True, default="/enterprises")
+    pathway_2_link = models.CharField(max_length=255, blank=True, default="/research-translation")
     pathway_2_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="research")
     pathway_3_title = models.CharField(max_length=60, blank=True, default="Rural impact")
     pathway_3_text = models.CharField(max_length=140, blank=True, default="Bringing healthcare innovations closer to underserved communities.")
