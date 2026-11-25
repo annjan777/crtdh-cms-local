@@ -57,7 +57,7 @@ export default defineConfig(() => ({
     alias: [
       { find: '@site-styles', replacement: path.join(siteDir, 'styles/index.css') },
       { find: '@site', replacement: sitePath() },
-      { find: /^@fontsource\/(open-sans|montserrat)\//, replacement: path.join(here, 'node_modules/@fontsource/$1/') },
+      { find: /^@fontsource\/(open-sans|montserrat|alegreya|atkinson-hyperlegible-next)\//, replacement: path.join(here, 'node_modules/@fontsource/$1/') },
     ],
     dedupe: SHARED,
   },
