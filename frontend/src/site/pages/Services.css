@@ -1,0 +1,28 @@
+/* Services catalogue (Blueprint V2, Services): one row per service, by what the visitor needs. */
+.v4 .sv-filter { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 var(--s-6, 32px); }
+.v4 .sv-filter button { min-height: 44px; padding: 10px 18px; border: 1px solid var(--sage-300); border-radius: 999px; background: transparent; color: var(--forest-800); font: 600 var(--fs-ui, .95rem)/1.2 var(--sans); cursor: pointer; }
+.v4 .sv-filter button[aria-pressed="true"] { background: var(--forest-800); border-color: var(--forest-800); color: #F6F5F0; }
+.v4 .sv-filter button:focus-visible { outline: 3px solid var(--ember-500); outline-offset: 2px; }
+
+.v4 .sv-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--sage-300); }
+.v4 .sv { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; gap: clamp(20px, 3vw, 48px); align-items: start; padding-block: clamp(24px, 2.6vw, 36px); border-bottom: 1px solid var(--sage-300); }
+.v4 .sv__head { display: flex; gap: 18px; align-items: flex-start; }
+.v4 .sv__icon { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--r-tile, 10px); background: var(--sage-100); color: var(--forest-800); }
+.v4 .sv__title { margin: 6px 0 0; font: 700 clamp(1.25rem, 1rem + .6vw, 1.6rem)/1.2 var(--serif); color: var(--forest-800); }
+.v4 .sv__for { margin: 6px 0 0; font: 600 .9rem/1.4 var(--sans); color: var(--ember-700); }
+.v4 .sv__body { color: var(--ink-2); font: 400 1.02rem/1.6 var(--sans); max-width: 60ch; }
+.v4 .sv__desc { margin: 0 0 12px; color: var(--text); }
+.v4 .sv__offer { margin: 0 0 12px; padding-left: 1.1em; }
+.v4 .sv__offer li { margin-block: 4px; }
+.v4 .sv__how { margin: 0; }
+.v4 .sv__cta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 0; color: var(--forest-800); font: 700 var(--fs-ui, .95rem)/1.2 var(--sans); text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; }
+.v4 .sv__cta:hover { border-bottom-color: currentColor; }
+.v4 .sv__cta:focus-visible { outline: 3px solid var(--ember-500); outline-offset: 2px; }
+/* A row with only a title (no description yet) keeps the head and the button on one line. */
+.v4 .sv:not(:has(.sv__body)) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+@media (max-width: 860px) {
+  .v4 .sv, .v4 .sv:not(:has(.sv__body)) { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .v4 .sv__cta { justify-self: start; }
+}
+.v4 .sv:not(:has(.sv__body)) .sv__head { align-items: center; }
+.v4 .sv:not(:has(.sv__body)) .sv__title { margin-top: 0; }

@@ -25,7 +25,7 @@ HEROES = [
     ("social-impact", "Social Impact", "Impact in rural India",
      "Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them "
      "most."),
-    ("covid-19", "Covid-19 Response", "CRTDH's response to the pandemic",
+    ("covid-19", "Archive · Covid-19 response", "CRTDH's response to the pandemic",
      "Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic."),
     ("media", "Media", "News & updates",
      "Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage."),

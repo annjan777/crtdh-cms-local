@@ -128,7 +128,7 @@ describe('previous design, built from the snapshot', async () => {
   it('Home shows the hero, the four figures and the membership and visit sections', () => {
     const html = render('home')
     for (const s of ['home.hero', 'home.membership', 'home.objective', 'home.visit']) expect(html).toContain(`data-block="${s}"`)
-    for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers &amp; staff', 'Years sponsored by DSIR']) expect(html).toContain(label)
+    for (const label of ['technologies in the portfolio', 'enterprises engaged', 'team members', 'established at IIT Kharagpur']) expect(html).toContain(label)
   })
   it('the menu marks the current page and links carry the trailing slash', () => {
     const html = render('team')

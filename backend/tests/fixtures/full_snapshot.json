@@ -58,7 +58,14 @@
    "viksit_bharat_youtube_id": "62PfmqDvzG4",
    "office_image": "http://localhost:8000/media/home/office.png",
    "membership_heading": "Annual Membership for MSME / Startup",
-   "membership_pdf": "http://localhost:8000/media/home/Membership-CDH.pdf"
+   "membership_pdf": "http://localhost:8000/media/home/Membership-CDH.pdf",
+   "focus_eyebrow": "Our focus",
+   "focus_heading": "From lab to last mile.",
+   "focus_text": "Developing, validating and translating healthcare technologies that are practical, scalable and relevant to real-world needs.",
+   "focus_image": "http://localhost:8000/media/home/enterprises-engagement01.jpg",
+   "focus_image_alt": "The building that houses CRTDH at IIT Kharagpur",
+   "focus_link_label": "Know more about CRTDH",
+   "focus_link": "/about"
   }
  },
  "collections": {
@@ -4219,7 +4226,7 @@
    {
     "id": 9,
     "page": "covid-19",
-    "eyebrow": "Covid-19 Response",
+    "eyebrow": "Archive · Covid-19 response",
     "title": "CRTDH's response to the pandemic",
     "description": "Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic.",
     "image": null,

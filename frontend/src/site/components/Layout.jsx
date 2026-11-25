@@ -300,8 +300,8 @@ function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
             </span>
           </span>
           <p>
-            Common Research and Technology Development Hub on Affordable Healthcare — an initiative sponsored by
-            DSIR, Government of India, hosted at IIT Kharagpur.
+            Common Research and Technology Development Hub on Affordable Healthcare, IIT Kharagpur. Supported by the
+            Department of Scientific and Industrial Research (DSIR), Government of India.
           </p>
           {socialLinks.length > 0 && (
             <ul className="social-links">
@@ -366,7 +366,7 @@ function SiteFooter({ siteSettings, navItems, publishedAt, privacyNotice }) {
           <span>&copy; {year} CRTDH, IIT Kharagpur. All rights reserved.</span>
           <span className="site-footer__legal">
             <SiteLink to={privacyNotice ? '/contact/#privacy' : '/contact/#contact-notice'}>How we use contact messages</SiteLink>
-            {publishedAt && <span> · Last updated {formatDate(publishedAt)}</span>}
+            {publishedAt && <span> · Last updated: {formatDate(publishedAt)}</span>}
           </span>
         </div>
       </div>
@@ -389,7 +389,7 @@ function toRoute(url) {
 
 function formatDate(iso) {
   const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })
 }
 
 /**

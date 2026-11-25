@@ -74,6 +74,46 @@ FIXES = [
     ("media_gallery.MediaCoverageLink", "title",
      "http://pib.nic.in/PressReleseDetail.aspx?PRID=1562295",
      "PIB: Government press release"),
+
+    # ---- Content refresh (audit IDs C-xx; see the remediation log). Only items that need no outside verification.
+    # C-34 (supersedes C-02): hero statement on every slide that still carries the old line.
+    ("carousel.HeroSlide", "description", 'Building affordable healthcare technology for a billion people, at IIT Kharagpur.',
+     "Affordable healthcare technology research, development and translation at IIT Kharagpur."),
+    # C-14 + C-15, merged so the second sentence does not repeat the first; the old population figure is dropped.
+    ("core.HomePage", "objective_text", "Access to health is one of the fundamental rights enshrined in the constitution over the world. However, almost 50% of the world's 7.5 billion people is forced to live at underserved locations without access to basic healthcare and health education and public health measures, due to a multitude of reasons. This results in accumulation of diseases among the most vulnerable segment, delayed presentation and intervention, and consequent need of specialty treatment at high secondary and tertiary cost and health-related poverty shocks.",
+     "Access to healthcare is a fundamental human right. Yet many communities continue to face barriers to basic "
+     "healthcare, health education and preventive services. These barriers can delay diagnosis and treatment, "
+     "increase the risk of complications and contribute to financial hardship."),
+    # C-16
+    ("core.HomePage", "membership_heading", 'Annual Membership for MSME / Startup', "Annual membership for MSMEs and startups"),
+    # C-18 + C-19
+    ("core.HomePage", "enterprises_text", 'One key area of focus of the CRTDH is supporting the growth and development of precision manufacturing of innovative medical devices through emerging micro-small-medium scale Industrial enterprises so that India can reduce their massive burden of imported healthcare technologies and spread the technology availability in the last-mile. The CRTDH has already established a template pilot plant to promote indigenously developed healthcare technologies for rural healthcare — solving a major problem for the common people, fostering manufacturing growth, creating rural jobs, and introducing advanced technologies into the ambit of public health.',
+     "CRTDH supports MSMEs in developing and manufacturing affordable medical technologies. By helping enterprises "
+     "build manufacturing capabilities, the Hub aims to improve access to indigenous healthcare technologies. "
+     "CRTDH's pilot-plant facilities support the development and manufacturing of indigenous healthcare "
+     "technologies. These capabilities aim to help innovators and enterprises translate research into solutions "
+     "for healthcare delivery."),
+    # C-20 + C-21 + C-22 (softer wording: claims reduced, nothing added)
+    ("core.HomePage", "women_text_1", "The CRTDH & its implementation partner, FIH, has pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centers do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process.",
+     "CRTDH, in collaboration with its implementation partner, FIH, has supported technology-enabled healthcare "
+     "services in rural communities where access to healthcare facilities may be limited. The initiative supports "
+     "community health workers in delivering healthcare services to underserved rural communities. Rural women have "
+     "been trained to support patients and coordinate with remote healthcare professionals using affordable "
+     "diagnostic technologies. The programme also aims to create opportunities for skills development and "
+     "livelihoods."),
+    # C-23 + C-24 (the claim about spurious medicines is removed: C-42)
+    ("core.HomePage", "women_text_2", "Empowered by a 'primary-care software', this has led to all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc.",
+     "The clinics use a primary-care software platform to support patient screening and risk assessment. Where "
+     "applicable, remote healthcare professionals review the information and provide guidance. The centres may also "
+     "provide access to medicines, basic physiotherapy, health education and community awareness activities. Some "
+     "activities may include the production of essential health-related products, where applicable."),
+    # C-25
+    ("core.HomePage", "location_description", 'Available pilot plant and laboratories at CRTDH facility for research, MSME training and prototype development',
+     "Pilot-plant and laboratory facilities at CRTDH support research, training and prototype development."),
+    # C-06 and C-09 (C-07 and C-08 wait for verification)
+    ("core.NewsItem", "text", 'CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation',
+     "CRTDH-supported pathology and eye clinic: visit to the Rural Healthcare Foundation"),
+    ("core.NewsItem", "text", 'Health Awareness Programme and Conclave', "Health awareness programme and conclave"),
 ]
 
 

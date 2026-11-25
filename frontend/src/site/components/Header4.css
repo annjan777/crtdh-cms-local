@@ -2,12 +2,12 @@
    transparent, white links, and the logos (used exactly as supplied) on small light plates so they stay legible. */
 .site-header.v4 {
   --hdr-h: 88px;
-  background: rgba(244, 242, 236, .97);
+  background: rgba(246, 245, 240, .97);
   backdrop-filter: none; -webkit-backdrop-filter: none;
   border-bottom: 1px solid transparent; box-shadow: none;
   transition: background-color 420ms cubic-bezier(.2, .7, .1, 1), border-color 420ms, box-shadow 420ms;
 }
-.site-header.v4.is-scrolled { background: rgba(244, 242, 236, .97); border-bottom-color: #D9DED6; box-shadow: 0 10px 30px rgba(22, 34, 29, .06); }
+.site-header.v4.is-scrolled { background: rgba(246, 245, 240, .97); border-bottom-color: #D9DED6; box-shadow: 0 10px 30px rgba(12, 38, 33, .06); }
 .site-header.v4 .site-header__bar { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); min-height: var(--hdr-h); padding-block: 12px; gap: 12px; }
 /* Nav sits next to Contact Us; the space before the button matches the space between items (12px + 12px padding). */
 .site-header.v4 .site-nav { justify-content: flex-end; }
@@ -28,14 +28,14 @@
 .site-header.v4 .site-nav a.active { background: none; color: var(--forest-900); box-shadow: none; }
 .site-header.v4 .site-nav a.active::after,
 .site-header.v4 .nav-more__trigger.active::after { transform: scaleX(1); }
-.site-header.v4 .site-header__cta { border-radius: 999px; background: var(--forest-800); color: #F4F2EC; border: 1.5px solid var(--forest-800); box-shadow: none; font-family: var(--sans); font-weight: 700; padding: 10px 20px; }
+.site-header.v4 .site-header__cta { border-radius: 999px; background: var(--forest-800); color: #F6F5F0; border: 1.5px solid var(--forest-800); box-shadow: none; font-family: var(--sans); font-weight: 700; padding: 10px 20px; }
 .site-header.v4 .site-header__cta:hover { background: var(--forest-900); border-color: var(--forest-900); }
 .site-header.v4 .nav-toggle { color: var(--forest-800); border-radius: 50%; }
 
 /* over the home hero */
 .site-header.v4.is-over-hero { background: transparent; border-bottom-color: transparent; box-shadow: none; }
 .site-header.v4.is-over-hero .site-header__crest,
-.site-header.v4.is-over-hero .brand__logo { background: rgba(244, 242, 236, .94); }
+.site-header.v4.is-over-hero .brand__logo { background: rgba(246, 245, 240, .94); }
 .site-header.v4.is-over-hero .brand__mark { color: #F7F5EF; }
 .site-header.v4.is-over-hero .brand__sub { color: #CFDCD3; }
 .site-header.v4.is-over-hero .site-nav a,
@@ -55,6 +55,13 @@
   .site-header.v4 .brand { gap: 8px; }
   .site-header.v4 .site-header__actions { gap: 6px; }
   .site-header.v4 .site-header__cta { padding: 8px 14px; font-size: .875rem; }
+}
+/* Very narrow phones (320px): drop the "IIT Kharagpur" line under the logo so the bar fits. */
+@media (max-width: 359px) {
+  .site-header.v4 .site-header__bar { gap: 8px; padding-inline: 12px; }
+  .site-header.v4 .brand__sub { display: none; }
+  .site-header.v4 .brand__logo { height: 40px; }
+  .site-header.v4 .site-header__cta { padding: 8px 12px; font-size: .8125rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .site-header.v4, .site-header.v4 * { transition: none !important; }

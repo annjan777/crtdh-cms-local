@@ -13,7 +13,7 @@ export function youtubeEmbedUrl(url, { autoplay = false } = {}) {
   return `https://www.youtube-nocookie.com/embed/${id}?rel=0${autoplay ? '&autoplay=1' : ''}`
 }
 
-/** YouTube player behind a "Play video" poster. Renders nothing for a URL that is not a YouTube video. */
+/** YouTube player behind a "Watch" poster. Renders nothing for a URL that is not a YouTube video. */
 export function YouTubeFacade({ url, title }) {
   const [playing, setPlaying] = useState(false)
   const src = youtubeEmbedUrl(url, { autoplay: true })
@@ -41,7 +41,7 @@ export function YouTubeFacade({ url, title }) {
           <Play size={18} fill="currentColor" />
         </span>
         <span>
-          Play video<span className="visually-hidden">{title ? `: ${title}` : ''}</span>
+          Watch<span className="visually-hidden">{title ? `: ${title}` : ' video'}</span>
         </span>
       </span>
       <span className="ctl-poster__note">Plays from YouTube</span>

@@ -2,10 +2,10 @@
    Scoped to `.v4`: pages move to it one by one, so a page that has not been redesigned keeps the old tokens. */
 .v4 {
   /* colour: primitives */
-  --forest-950: #16221D;
-  --forest-900: #1C2E27;
-  --forest-800: #263C34;
-  --forest-700: #2F4A3E;
+  --forest-950: #0C2621;
+  --forest-900: #11302A;
+  --forest-800: #163A32;
+  --forest-700: #22493F;
   --sage-700: #55695C;
   --sage-600: #7A8B80;
   --sage-500: #7F9688;
@@ -13,9 +13,9 @@
   --sage-300: #B5C8B9;
   --sage-100: #DCE5DD;
   --sage-50: #ECF0EA;
-  --ivory: #F4F2EC;
+  --ivory: #F6F5F0;
   --white: #FFFFFF;
-  --charcoal: #232826;
+  --charcoal: #1E2724;
   --ink-2: #505B55;
   --ember-300: #E9A867;
   --ember-500: #BF7329;

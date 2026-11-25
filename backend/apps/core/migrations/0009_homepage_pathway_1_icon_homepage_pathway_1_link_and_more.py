@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             name="pathway_1_text",
             field=models.CharField(
                 blank=True,
-                default="Indigenous, affordable and ready-to-deploy healthcare solutions.",
+                default="Developing indigenous, affordable healthcare solutions for practical use.",
                 max_length=140,
             ),
         ),
@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
             name="pathway_2_text",
             field=models.CharField(
                 blank=True,
-                default="From lab innovation to real-world healthcare technologies.",
+                default="Moving healthcare innovations from the laboratory towards practical use.",
                 max_length=140,
             ),
         ),
@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
             model_name="homepage",
             name="pathway_2_title",
             field=models.CharField(
-                blank=True, default="Research Translation", max_length=60
+                blank=True, default="Research translation", max_length=60
             ),
         ),
         migrations.AddField(
@@ -110,13 +110,13 @@ class Migration(migrations.Migration):
             name="pathway_3_text",
             field=models.CharField(
                 blank=True,
-                default="Taking healthcare innovation to last-mile and resource-limited settings.",
+                default="Bringing healthcare innovations closer to underserved communities.",
                 max_length=140,
             ),
         ),
         migrations.AddField(
             model_name="homepage",
             name="pathway_3_title",
-            field=models.CharField(blank=True, default="Rural Impact", max_length=60),
+            field=models.CharField(blank=True, default="Rural impact", max_length=60),
         ),
     ]

@@ -5,9 +5,9 @@
 .figs__item { display: flex; flex-direction: column; gap: 6px; padding: 24px 24px 24px 0; border-bottom: 1px solid var(--sage-300); }
 .figs__item + .figs__item { padding-left: 24px; border-left: 1px solid var(--sage-300); }
 .figs__value { order: -1; margin: 0; font: 700 clamp(2.25rem, 1.6rem + 1.8vw, 3.25rem)/1 var(--serif); color: var(--forest-800); }
-.figs__label { font: 700 1rem/1.3 var(--sans); color: #26302B; }
+.figs__label { font: 700 1rem/1.3 var(--sans); color: #1E2724; }
 .figs__source { margin: 0; font-size: .8125rem; color: var(--sage-700); }
-.figs--dark .figs__value, .figs--dark .figs__label { color: #F4F2EC; }
+.figs--dark .figs__value, .figs--dark .figs__label { color: #F6F5F0; }
 .figs--dark .figs__source { color: #B9CABF; }
 .figs--dark .figs__item, .figs--dark .figs__item + .figs__item { border-color: rgba(201, 214, 205, .3); }
 @media (max-width: 700px) { .figs__item + .figs__item { padding-left: 0; border-left: 0; } }

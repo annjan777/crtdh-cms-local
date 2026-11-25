@@ -79,6 +79,8 @@ class HomePageSerializer(serializers.ModelSerializer):
             "pathway_1_title", "pathway_1_text", "pathway_1_link", "pathway_1_icon",
             "pathway_2_title", "pathway_2_text", "pathway_2_link", "pathway_2_icon",
             "pathway_3_title", "pathway_3_text", "pathway_3_link", "pathway_3_icon",
+            "focus_eyebrow", "focus_heading", "focus_text", "focus_image", "focus_image_alt", "focus_link_label",
+            "focus_link",
             "version",
         ]
         read_only_fields = ["id"]

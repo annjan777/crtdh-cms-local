@@ -216,17 +216,30 @@ class HomePage(VersionedModel):
         ("training", "Training (cap)"),
     ]
     pathway_1_title = models.CharField(max_length=60, blank=True, default="Technology")
-    pathway_1_text = models.CharField(max_length=140, blank=True, default="Indigenous, affordable and ready-to-deploy healthcare solutions.")
+    pathway_1_text = models.CharField(max_length=140, blank=True, default="Developing indigenous, affordable healthcare solutions for practical use.")
     pathway_1_link = models.CharField(max_length=255, blank=True, default="/innovations")
     pathway_1_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="technology")
-    pathway_2_title = models.CharField(max_length=60, blank=True, default="Research Translation")
-    pathway_2_text = models.CharField(max_length=140, blank=True, default="From lab innovation to real-world healthcare technologies.")
+    pathway_2_title = models.CharField(max_length=60, blank=True, default="Research translation")
+    pathway_2_text = models.CharField(max_length=140, blank=True, default="Moving healthcare innovations from the laboratory towards practical use.")
     pathway_2_link = models.CharField(max_length=255, blank=True, default="/enterprises")
     pathway_2_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="research")
-    pathway_3_title = models.CharField(max_length=60, blank=True, default="Rural Impact")
-    pathway_3_text = models.CharField(max_length=140, blank=True, default="Taking healthcare innovation to last-mile and resource-limited settings.")
+    pathway_3_title = models.CharField(max_length=60, blank=True, default="Rural impact")
+    pathway_3_text = models.CharField(max_length=140, blank=True, default="Bringing healthcare innovations closer to underserved communities.")
     pathway_3_link = models.CharField(max_length=255, blank=True, default="/social-impact")
     pathway_3_icon = models.CharField(max_length=20, choices=PATHWAY_ICONS, default="rural")
+
+    # "Our focus": the short mission story under the pathways, with a photo in a curved frame.
+    focus_eyebrow = models.CharField(max_length=40, blank=True, default="Our focus")
+    focus_heading = models.CharField(max_length=80, blank=True, default="From lab to last mile.")
+    focus_text = models.TextField(
+        blank=True,
+        default="Developing, validating and translating healthcare technologies that are practical, scalable and "
+        "relevant to real-world needs.",
+    )
+    focus_image = models.ImageField(upload_to="home/", blank=True, null=True)
+    focus_image_alt = models.CharField(max_length=255, blank=True, help_text="Describe the photo for screen readers.")
+    focus_link_label = models.CharField(max_length=40, blank=True, default="Know more about CRTDH")
+    focus_link = models.CharField(max_length=255, blank=True, default="/about")
 
     class Meta:
         verbose_name = "Home page"

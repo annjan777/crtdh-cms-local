@@ -25,7 +25,7 @@ const block = (id, label) => [`[data-block="${id}"]`, id, label];
 
 export const SECTION_MAP = {
   home: [
-    block('home.hero'), block('home.pathways'), block('home.news'), block('home.membership'), block('home.objective'),
+    block('home.hero'), block('home.pathways'), block('home.focus'), block('home.news'), block('home.membership'), block('home.objective'),
     block('home.enterprises'), block('home.rural'), block('home.facilities'), block('home.videos'), block('home.visit'),
   ],
   about: [

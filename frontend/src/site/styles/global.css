@@ -142,7 +142,7 @@ p {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, var(--bg-page) 0%, rgba(244, 242, 236, 0.35) 35%, var(--bg-page) 100%);
+  background: linear-gradient(180deg, var(--bg-page) 0%, rgba(246, 245, 240, 0.35) 35%, var(--bg-page) 100%);
   pointer-events: none;
 }
 
@@ -248,18 +248,18 @@ p {
 
 .btn--primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(22, 34, 29, 0.18);
+  box-shadow: 0 10px 24px rgba(12, 38, 33, 0.18);
 }
 
 .btn--accent {
   background: var(--gradient-accent);
-  color: #F4F2EC;
+  color: #F6F5F0;
   box-shadow: none;
 }
 
 .btn--accent:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(22, 34, 29, 0.18);
+  box-shadow: 0 10px 24px rgba(12, 38, 33, 0.18);
 }
 
 .btn--ghost {

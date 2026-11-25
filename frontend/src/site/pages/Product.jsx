@@ -9,6 +9,8 @@ import { usePageMotion } from '../components/motion4.js'
 import './Product.css'
 
 const slug = (p) => `product-${p.id}`
+// CMS Product.status, shown as a tag only when the editor has set it.
+const STATUS = { market: 'On the market', licensed: 'Licensed to an enterprise', field: 'In field use', archived: 'No longer offered' }
 
 /* A product on its own stage: the photo on a light plinth with a photo switcher, the name and its partners. */
 function ProductStage({ product, flip }) {
@@ -35,8 +37,10 @@ function ProductStage({ product, flip }) {
         )}
       </div>
       <div className="pr__copy" data-rv style={{ '--d': '150ms' }}>
-        <span className="eyebrow">Product</span>
+        {STATUS[product.status] ? <span className={`pr__status pr__status--${product.status}`}>{STATUS[product.status]}</span> : <span className="eyebrow">Product</span>}
         <h2 className="pr__name" id={`${slug(product)}-h`}>{product.name}</h2>
+        {product.summary && <p className="pr__summary">{product.summary}</p>}
+        {product.use_case && <p className="pr__use"><span>Use</span> {product.use_case}</p>}
         {product.partners && product.partners.length > 0 && (
           <div className="pr__partners">
             <h3 className="pr__partners-label">Commercialisation partners</h3>

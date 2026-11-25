@@ -1,6 +1,6 @@
 /* Product: a sticky product bar, then each product on its own stage, alternating sides. */
 .pr-page { padding-bottom: clamp(56px, 6vw, 104px); }
-.pr-nav { position: sticky; top: var(--hdr-h, 88px); z-index: 20; background: rgba(244, 242, 236, .96); border-bottom: 1px solid var(--sage-300); }
+.pr-nav { position: sticky; top: var(--hdr-h, 88px); z-index: 20; background: rgba(246, 245, 240, .96); border-bottom: 1px solid var(--sage-300); }
 .pr-nav__row { display: flex; gap: 4px; overflow-x: auto; }
 .pr-nav a { flex: none; padding: 16px 14px; font: 700 1.0625rem/1 var(--serif); color: var(--forest-800); text-decoration: none; border-bottom: 3px solid transparent; transition: border-color 300ms; }
 .pr-nav a:hover, .pr-nav a:focus-visible { border-bottom-color: var(--ember-500); }
@@ -18,7 +18,7 @@
 .pr__name { margin: 6px 0 24px; font: 700 clamp(2.25rem, 1.5rem + 2.4vw, 3.75rem)/1 var(--serif); color: var(--forest-800); letter-spacing: -.01em; }
 .pr__partners-label { margin: 0 0 10px; font: 700 .9375rem/1 var(--sans); color: var(--sage-700); }
 .pr__partners ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--sage-300); }
-.pr__partners li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--sage-300); font-weight: 700; color: #26302B; }
+.pr__partners li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--sage-300); font-weight: 700; color: #1E2724; }
 .pr__logo { display: grid; place-items: center; height: 36px; }
 .pr__logo img { max-height: 36px; max-width: 64px; object-fit: contain; mix-blend-mode: multiply; }
 .pr__ask { display: inline-flex; align-items: center; gap: 6px; margin-top: 24px; font-weight: 700; color: var(--forest-800); text-decoration: none; border-bottom: 1.5px solid var(--sage-400); padding-bottom: 4px; }
@@ -30,3 +30,10 @@
 @media (prefers-reduced-motion: reduce) { .pr__photo img { transition: none; } }
 .pr--flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
 @media (max-width: 900px) { .pr--flip { grid-template-columns: minmax(0, 1fr); } }
+
+/* Status tag, summary and use case (CMS Product.status / summary / use_case). */
+.v4 .pr__status { display: inline-block; margin-bottom: 10px; padding: 5px 12px; border-radius: 999px; background: var(--sage-100); color: var(--forest-800); font: 700 .85rem/1.2 var(--sans); }
+.v4 .pr__status--archived { background: transparent; border: 1px solid var(--sage-300); color: var(--ink-2); }
+.v4 .pr__summary { margin: 12px 0 0; font: 400 1.05rem/1.6 var(--sans); color: var(--text); max-width: 46ch; }
+.v4 .pr__use { margin: 10px 0 0; font: 400 1rem/1.5 var(--sans); color: var(--ink-2); }
+.v4 .pr__use span { font-weight: 700; color: var(--forest-800); margin-right: 6px; }

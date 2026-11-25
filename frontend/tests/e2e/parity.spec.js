@@ -14,7 +14,7 @@ const text = async (page, route) => {
 test('home: headline, figures, membership, home-page texts and the visit block', async ({ page }) => {
   const t = await text(page, '/')
   await expect(page.locator('h1')).toHaveCount(1)
-  for (const label of ['Innovations developed', 'Enterprises incubated', 'Researchers & staff', 'Years sponsored by DSIR']) expect(t).toContain(label)
+  for (const label of ['technologies in the portfolio', 'enterprises engaged', 'team members', 'established at IIT Kharagpur']) expect(t).toContain(label)
   expect(t).toContain(s['home-page'].enterprises_text.slice(0, 60))
   expect(t).toContain(s['home-page'].women_text_1.slice(0, 60))
   // Every published news item is listed under Latest Updates.

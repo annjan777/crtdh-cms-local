@@ -36,7 +36,7 @@ function Covid19View() {
     <div ref={ref}>
       <PageHero
         page="covid-19"
-        eyebrow="Covid-19 Response"
+        eyebrow="Archive · Covid-19 response"
         title="CRTDH's response to the pandemic"
         description="Diagnostics, PPE and community relief efforts undertaken by CRTDH during the Covid-19 pandemic."
         image={firstBlockImage(covidBlocks)}
@@ -44,17 +44,31 @@ function Covid19View() {
 
       <section data-block="covid-19.story" className="section">
         <div className="container story" data-rv>
+          <p className="cv-archive" role="note">
+            <strong>Archive.</strong> This page records CRTDH&apos;s work during the Covid-19 pandemic, from 2020. The
+            products and services it describes may no longer be offered; for current technologies, see{' '}
+            <a href="/innovations/">Innovations</a>.
+          </p>
           <span className="eyebrow">Covid-19</span>
           <h2>Turning a crisis into an opportunity</h2>
           <p>
-            Came the year 2020 — the beginning of a year that would throw the entire world into a tumult, the likes of which this century had not yet seen. Outside the initial, hushed-up outbreak in China, talk of a virus was akin to whispered rumours — nothing like the fevered discussion that came to the fore of the public consciousness a few months later. But for the CRTDH research group, this triggered all their endeavours to rise to the occasion — and they were all working on making a breakthrough, turning the challenge of COVID-19 into an opportunity, by architecting a unique diagnostic device that has attempted to redefine the manner in which nucleic acid-based tests may be conducted outside structured laboratory ambience. In response to this challenge, the CRTDH team developed a new piece-wise isothermal nucleic acid test (PINAT) as a platform technology for diagnosing pathogen-associated infections, including but not limited to COVID-19. Disrupting the perception that high-quality molecular diagnostics necessarily demands sophisticated technological and human resources, this diagnostic procedure is the first of its kind, highly accurate ultra-low-cost point-of-care nucleic acid-based test having the simplicity and user-friendliness of a common rapid test.
+            In 2020, Covid-19 turned the world upside down. The CRTDH research group set out to turn the crisis into an
+            opportunity: a diagnostic device that could run nucleic-acid tests outside a structured laboratory. The team
+            developed a piece-wise isothermal nucleic acid test (PINAT), a platform technology for diagnosing
+            pathogen-associated infections, including but not limited to Covid-19. PINAT was designed to give the
+            accuracy of a molecular test at a very low cost, with the simplicity of a common rapid test.
           </p>
-
           <p>
-            The ongoing pandemic has exposed the challenges due to scarcity of technology-enabled healthcare solutions that are accurate yet low cost, accessible, user-friendly and amenable to massive manufacturing scale-up and parallelization. The availability of easy-to-use and reasonably sensitive detection methods for community level testing, in such a backdrop, for example, holds the potential of capturing the commonly missed cases of early infection and asymptomatic disease presentation and reducing the opportunity for community-level transmission. Such compelling needs, along with other prevailing public health challenges, have paved a clear way forward of the technology wing of the CRTDH towards advancing further on novel diagnostic technologies that essentially offer an amalgamated approach with a trade-off between the scientific standards of high-end laboratory-based tests with the elegance of common rapid tests. This paradigm appears to be the future of diagnostics, targeting specific public health measures towards catering the underserved, with no distinction between consumers having expected variabilities in economic barrier, and in the process 'democratize' disease diagnostics by bringing high-end lab tests to the ambit of the bottom of the community pyramid in the green field with no differential treatment of the rich and the poor. Further, by engaging women power as frontline health workers in a sustainable ecosystem and bringing them in the ambit of rural employment generation, the CRTDH has shown a specific approach of establishing gender equality in the underserved community by promoting healthy and economically-supportive livelihood for all.
+            The pandemic showed how scarce accurate, low-cost and easy-to-use diagnostics were, and how hard they were to
+            manufacture at scale. Simple, reasonably sensitive tests for community-level testing can catch early and
+            asymptomatic infections and reduce community transmission. CRTDH&apos;s technology work therefore focused on
+            diagnostics that combine the standards of laboratory tests with the convenience of rapid tests, so that
+            people with the least access to healthcare get the same quality of testing. By engaging women as frontline
+            health workers, the work also aimed to create rural employment and livelihoods.
           </p>
           <p>
-            In addition, the empowerment of micro, small and medium enterprises towards participating in manufacturing the most technologically advanced yet deceptively simple medical products has opened up a new paradigm of employment generation under difficult circumstances.
+            The effort also involved micro, small and medium enterprises in manufacturing these products, which opened
+            new employment opportunities during a difficult period.
           </p>
         </div>
       </section>

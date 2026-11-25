@@ -41,7 +41,7 @@ test('the map loads only after "Show the map"', async ({ page }) => {
   expect((await page.locator('.contact-map').boundingBox()).height).toBe(box.height) // no layout jump
 })
 
-test('a video loads only after "Play video"', async ({ page }) => {
+test('a video loads only after "Watch"', async ({ page }) => {
   await page.route(/youtube-nocookie\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>player</p>' }))
   let found = null
   for (const route of ['/', '/covid-19/', '/social-impact/', '/enterprises/', '/innovations/']) {
@@ -53,7 +53,7 @@ test('a video loads only after "Play video"', async ({ page }) => {
   }
   test.skip(!found, 'no YouTube video in this snapshot')
   const poster = page.locator('button[data-youtube]').first()
-  await expect(poster).toHaveAccessibleName(/^Play video/)
+  await expect(poster).toHaveAccessibleName(/^Watch/)
   await poster.click()
   await expect(page.locator('iframe[src^="https://www.youtube-nocookie.com/embed/"]').first()).toBeVisible()
 })

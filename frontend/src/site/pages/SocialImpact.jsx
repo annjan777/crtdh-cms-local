@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import { BookOpen, HeartHandshake, Home, Stethoscope } from 'lucide-react'
+import { fetchOne } from '../api/client'
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
@@ -10,10 +12,18 @@ import { DataState } from '../components/StateBlock'
 import { usePageMotion } from '../components/motion4.js'
 import './SocialImpact.css'
 
-// The story told on the previous site (not a CMS field): two paragraphs, each set beside a field photograph.
-const STORY = [
-  "CRTDH and its implementation partner, FIH, have pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centres do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process. Empowered by a 'primary-care software', this has led to an all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as sanitiser, face masks, oral rehydration salts and sanitary napkins.",
-  'The various initiatives under CRTDH have thus promised to create a variety of new jobs and self-employment opportunities locally, thereby reducing the need for mass migration of population to centralized hotspots for machinery manufacturing, consumables and pharmaceutics, software, information systems and analytics. Reduction in job associated migrant population would also allow for local and regional developments when people tend to stay longer in the places where they grew up, arresting the need for mitigating migrant population movement during times of crisis. Further, this will generate local small-scale enterprises, strengthening a distributed local ecosystem of micro, small and medium enterprises for serving healthcare needs, thereby strengthening self-reliant local economic growth. This will further stimulate localized economy of small-scale jobs across spectrum of skills, fostering locally sustained economy, minimizing the variance in spectrum of regional per capita income across the country.',
+// The rural-health story comes from the CMS (Home page, "Rural healthcare" section: two paragraphs), followed by
+// one closing paragraph on local livelihoods that has no CMS field yet.
+const CLOSING = "CRTDH's initiatives aim to create local jobs and self-employment, so that fewer people need to leave " +
+  'their home regions for work in manufacturing, pharmaceuticals, software or analytics. Small local enterprises in ' +
+  'healthcare can strengthen regional economies and support self-reliant growth across a range of skills.'
+
+// What the programme does, as named in the story (no counts: figures come only from the CMS with a source).
+const STRANDS = [
+  { Icon: Home, title: 'Rural e-health clinics' },
+  { Icon: HeartHandshake, title: 'Community health workers' },
+  { Icon: Stethoscope, title: 'Screening and remote advice' },
+  { Icon: BookOpen, title: 'Health awareness and training' },
 ]
 
 /* Field photographs as a photo essay: varied sizes, captions under each, opening in a lightbox. */
@@ -68,9 +78,11 @@ function SocialImpactView() {
   const impactVideos = (videos || [])
     .filter((v) => !v.page || v.page === 'social-impact')
     .filter((video, index, self) => self.findIndex((t) => t.title === video.title) === index)
+  const { data: home } = useApi(() => fetchOne('/home-page/'), [], null)
   const ref = useRef(null)
-  usePageMotion(ref, [blocks, videos])
-  const storyImgs = [firstBlockImage(impactBlocks, 1), firstBlockImage(impactBlocks, 2)]
+  usePageMotion(ref, [blocks, videos, home])
+  const story = [home?.women_text_1, home?.women_text_2, CLOSING].filter(Boolean)
+  const storyImgs = [firstBlockImage(impactBlocks, 1), firstBlockImage(impactBlocks, 2), firstBlockImage(impactBlocks, 3)]
 
   return (
     <div ref={ref}>
@@ -81,11 +93,19 @@ function SocialImpactView() {
         description="Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
         image={firstBlockImage(impactBlocks)}
       />
+      <ul className="ri-strands" aria-label="What the programme does">
+        {STRANDS.map(({ Icon, title }, k) => (
+          <li key={title} data-rv style={{ '--d': `${k * 80}ms` }}>
+            <span className="ri-strands__icon" aria-hidden="true"><Icon size={24} strokeWidth={1.6} /></span>
+            <span>{title}</span>
+          </li>
+        ))}
+      </ul>
       <ImpactFigures page="social-impact" />
 
       <section data-block="social-impact.story" className="ri-story">
         <div className="container">
-          {STORY.map((text, k) => (
+          {story.map((text, k) => (
             <div className={`ri-story__row${k % 2 ? ' ri-story__row--flip' : ''}`} key={k}>
               {storyImgs[k] && (
                 <figure className="ri-story__img" data-rv="mask">

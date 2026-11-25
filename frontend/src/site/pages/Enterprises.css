@@ -12,7 +12,7 @@
 .ent-entry:hover .ent-entry__go { transform: translateX(5px); color: var(--ember-500); }
 .ent-why { padding-block: clamp(56px, 6vw, 104px); }
 .ent-why__grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 5vw, 96px); align-items: center; }
-.ent-why__text { margin: 18px 0 0; font-size: 1.125rem; line-height: 1.75; color: #26302B; max-width: 60ch; }
+.ent-why__text { margin: 18px 0 0; font-size: 1.125rem; line-height: 1.75; color: #1E2724; max-width: 60ch; }
 .ent-why__map { margin: 0; background: #FFFFFF; border-radius: 2px; padding: 16px; }
 .ent-why__map img { width: 100%; height: auto; display: block; }
 .ent-why__map figcaption { margin-top: 10px; font-size: .9375rem; color: var(--ink-2); }

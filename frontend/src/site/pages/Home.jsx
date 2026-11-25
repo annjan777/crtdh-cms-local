@@ -23,9 +23,9 @@ function focusStyle(position) {
 const PATHWAY_ICONS = { technology: Cpu, research: FlaskConical, rural: Users, facilities: Microscope, industry: Handshake, training: GraduationCap }
 // Built-in wording, used where the CMS pathway fields (home-page pathway_N_*) are empty.
 const PATHWAYS = [
-  { title: 'Technology', text: 'Indigenous, affordable and ready-to-deploy healthcare solutions.', to: '/innovations', Icon: Cpu },
-  { title: 'Research Translation', text: 'From lab innovation to real-world healthcare technologies.', to: '/enterprises', Icon: FlaskConical },
-  { title: 'Rural Impact', text: 'Taking healthcare innovation to last-mile and resource-limited settings.', to: '/social-impact', Icon: Users },
+  { title: 'Technology', text: 'Developing indigenous, affordable healthcare solutions for practical use.', to: '/innovations', Icon: Cpu },
+  { title: 'Research translation', text: 'Moving healthcare innovations from the laboratory towards practical use.', to: '/enterprises', Icon: FlaskConical },
+  { title: 'Rural impact', text: 'Bringing healthcare innovations closer to underserved communities.', to: '/social-impact', Icon: Users },
 ]
 
 const firstSentence = (t) => {
@@ -65,7 +65,7 @@ function Hero({ slides }) {
           {s.eyebrow && <p className="h4-hero__eyebrow"><span aria-hidden="true" />{s.eyebrow}</p>}
           <h1 className="h4-hero__title">
             <span className="h4-line"><span>{s.heading}</span></span>
-            {line2 && <span className="h4-line"><span>{line2}</span></span>}
+            {line2 && <>{' '}<span className="h4-line"><span>{line2}</span></span></>}
           </h1>
           {s.description && <p className="h4-hero__lede">{s.description}</p>}
           <div className="h4-hero__actions">
@@ -131,6 +131,30 @@ function Pathways({ home }) {
   )
 }
 
+/* ---------------------------------------------------------------- "Our focus": mission story, photo in a curved frame */
+function Focus({ home }) {
+  if (!home || (!home.focus_heading && !home.focus_text)) return null
+  return (
+    <section className="h4-focus" data-block="home.focus" aria-labelledby="h4-focus-title">
+      <div className="h4-wrap h4-focus__grid">
+        <div className="h4-focus__copy" data-rv>
+          {home.focus_eyebrow && <p className="h4-focus__eyebrow">{home.focus_eyebrow}</p>}
+          <h2 id="h4-focus-title" className="h4-focus__title">{home.focus_heading}</h2>
+          {home.focus_text && <p className="h4-focus__text">{home.focus_text}</p>}
+          {home.focus_link && home.focus_link_label && (
+            <SiteLink to={home.focus_link} className="h4-textlink">{home.focus_link_label} <Arrow size={16} /></SiteLink>
+          )}
+        </div>
+        {home.focus_image && (
+          <figure className="h4-focus__media" data-rv="mask">
+            <img src={home.focus_image} alt={home.focus_image_alt || ''} loading="lazy" data-px="0.06" />
+          </figure>
+        )}
+      </div>
+    </section>
+  )
+}
+
 /* ---------------------------------------------------------------- E: gallery + latest updates */
 function fmtDate(iso) {
   const d = new Date(`${iso}T00:00:00`)
@@ -164,8 +188,8 @@ function Showcase({ gallery, news, eventThumb }) {
       {items.length > 0 && (
         <div data-block="home.news" className="h4-show__news" data-rv>
           <div className="h4-show__head">
-            <h2 className="h4-rule-title"><span aria-hidden="true" />Latest Updates</h2>
-            <Link to="/media" className="h4-textlink">View All <Arrow size={16} /></Link>
+            <h2 className="h4-rule-title"><span aria-hidden="true" />Latest updates</h2>
+            <Link to="/media" className="h4-textlink">View all <Arrow size={16} /></Link>
           </div>
           <ul className="h4-updates">
             {items.map((n, k) => {
@@ -198,7 +222,7 @@ function Figures({ items }) {
         {items.map((f, k) => (
           <div className="h4-fig" key={f.label} data-rv style={{ '--d': `${k * 90}ms` }}>
             <dt className="h4-fig__label">{f.label}</dt>
-            <dd className="h4-fig__value">{f.value}+</dd>
+            <dd className="h4-fig__value">{f.value}</dd>
           </div>
         ))}
       </dl>
@@ -221,8 +245,8 @@ function Objective({ home }) {
         )}
         {(home.membership_heading || home.membership_pdf) && (
           <div data-block="home.membership" className="h4-member" data-rv style={{ '--d': '120ms' }}>
-            <h2 className="h4-h3">{home.membership_heading || 'Annual Membership for MSME / Startup'}</h2>
-            <p className="h4-body">R&amp;D support, the pilot plant, validation and licensing for MSMEs and startups.</p>
+            <h2 className="h4-h3">{home.membership_heading || 'Annual membership for MSMEs and startups'}</h2>
+            <p className="h4-body">Access to R&amp;D support, pilot-scale facilities, testing and validation, and technology-transfer support for MSMEs and startups.</p>
             {home.membership_pdf && (
               <a className="h4-pill h4-pill--forest" href={safeHref(home.membership_pdf)} target="_blank" rel="noreferrer">
                 Membership details <Arrow />
@@ -315,7 +339,7 @@ function Facilities({ home }) {
             <h3 className="h4-h3">See CRTDH in action</h3>
             <div className="h4-videos__row">
               {home.chintan_shivir_youtube_id && (
-                <VideoBlock block={{ title: 'Chintan Shivir', youtube_url: `https://www.youtube.com/watch?v=${home.chintan_shivir_youtube_id}` }} />
+                <VideoBlock block={{ title: 'Chintan Shivir at CRTDH', youtube_url: `https://www.youtube.com/watch?v=${home.chintan_shivir_youtube_id}` }} />
               )}
               {home.viksit_bharat_youtube_id && (
                 <VideoBlock block={{ title: 'Viksit Bharat Abhiyan', youtube_url: `https://www.youtube.com/watch?v=${home.viksit_bharat_youtube_id}` }} />
@@ -360,12 +384,13 @@ function HomeView() {
   const { data: innovations } = useApi(() => fetchList('/innovations/'), [], [])
   const { data: enterprises } = useApi(() => fetchList('/enterprises/'), [], [])
   const { data: team } = useApi(() => fetchList('/team-members/'), [], [])
-  // Counted from the CMS lists, as before; the DSIR figure is the one fixed number.
+  // Counts of what the CMS lists, labelled by what is counted (C-10 to C-12, C-35 to C-37): no "+", no
+  // "incubated". The year is the one fixed figure: the About page text gives 2019 as the year CRTDH was set up (C-13).
   const figures = [
-    { label: 'Innovations developed', value: innovations?.length ?? 0 },
-    { label: 'Enterprises incubated', value: enterprises?.length ?? 0 },
-    { label: 'Researchers & staff', value: team?.length ?? 0 },
-    { label: 'Years sponsored by DSIR', value: 8 },
+    { label: 'technologies in the portfolio', value: innovations?.length ?? 0 },
+    { label: 'enterprises engaged', value: enterprises?.length ?? 0 },
+    { label: 'team members', value: team?.length ?? 0 },
+    { label: 'established at IIT Kharagpur', value: 2019 },
   ]
   const slides = useMemo(() => (slidesRaw || []).filter((s) => s.image), [slidesRaw])
 
@@ -390,6 +415,7 @@ function HomeView() {
     <div className="v4 h4" ref={ref}>
       <Hero slides={slides} />
       <Pathways home={home} />
+      <Focus home={home} />
       <Showcase gallery={gallery || []} news={news || []} eventThumb={eventThumb} />
       <Figures items={figures} />
       {home && (
