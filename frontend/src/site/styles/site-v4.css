@@ -21,7 +21,7 @@
 .v4 .section-subtitle { font-size: 1.0625rem; color: var(--ink-2); max-width: 62ch; }
 .v4 h2, .v4 h3 { font-family: var(--serif); color: var(--forest-800); }
 .v4 .eyebrow { color: var(--sage-700); }
-.v4 .prose-block p, .v4 .rich-text p { font-size: 1.0625rem; line-height: 1.75; color: #26302B; max-width: 72ch; }
+.v4 .prose-block p, .v4 .rich-text p { text-align: left; hyphens: manual; font-size: 1.0625rem; line-height: 1.75; color: #26302B; max-width: 72ch; }
 
 /* --- cards: ivory tiles, hairline sage border, no drop shadow; media get the organic top-right corner ------ */
 .v4 .card { background: #FBFAF6; border: 1px solid #DDE3DA; border-radius: var(--r-tile); box-shadow: none; }
@@ -104,6 +104,46 @@
 .v4 .svc__icon { flex: none; display: grid; place-items: center; width: 64px; height: 56px; border-radius: var(--r-tile); background: var(--sage-100); color: var(--forest-800); }
 .v4 .svc__title { margin: 0; font: 700 clamp(1.2rem, 1rem + .5vw, 1.45rem)/1.2 var(--serif); color: var(--forest-800); }
 @media (max-width: 900px) {
-  .v4 .svc-list { grid-template-columns: 1fr; }
+  .v4 .svc-list { grid-template-columns: minmax(0, 1fr); }
   .v4 .svc + .svc:not(:nth-child(3n + 1)) { padding-left: 0; border-left: 0; }
 }
+
+/* --- motion vocabulary for inner pages (armed only by JS for below-the-fold content; see motion4.js) ------------
+   data-rv           rise:    text and rows
+   data-rv="mask"    curtain: large photos open from the bottom edge
+   data-rv="wipe"    wipe:    wide photos open from the left
+   data-rv="fade"    fade:    quiet supporting content                                                             */
+.v4 [data-rv].rv-armed { opacity: 0; transform: translate3d(0, 32px, 0); }
+.v4 [data-rv].rv-armed.rv-in { opacity: 1; transform: none; transition: opacity 900ms var(--ease) var(--d, 0ms), transform 900ms var(--ease) var(--d, 0ms); }
+.v4 [data-rv="mask"].rv-armed { opacity: 1; transform: none; clip-path: inset(100% 0 0 0); }
+.v4 [data-rv="mask"].rv-armed.rv-in { clip-path: inset(0); transition: clip-path 1200ms var(--ease-io) var(--d, 0ms); }
+.v4 [data-rv="wipe"].rv-armed { opacity: 1; transform: none; clip-path: inset(0 100% 0 0); }
+.v4 [data-rv="wipe"].rv-armed.rv-in { clip-path: inset(0); transition: clip-path 1300ms var(--ease-io) var(--d, 0ms); }
+.v4 [data-rv="fade"].rv-armed { transform: none; }
+.v4 [data-rv="fade"].rv-armed.rv-in { transition: opacity 1100ms var(--ease) var(--d, 0ms); }
+/* hero: the photo settles in, the copy rises */
+.page-hero__media img { animation: ph-settle 1800ms var(--ease) both; }
+.page-hero__inner > * { animation: ph-rise 900ms var(--ease) both; }
+.page-hero__inner > :nth-child(2) { animation-delay: 90ms; }
+.page-hero__inner > :nth-child(3) { animation-delay: 180ms; }
+@keyframes ph-settle { from { transform: scale(1.08); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes ph-rise { from { transform: translate3d(0, 22px, 0); opacity: 0; } to { transform: none; opacity: 1; } }
+/* photos that respond to the pointer */
+.v4 .zoom { overflow: hidden; }
+.v4 .zoom img { transition: transform 900ms var(--ease); }
+.v4 .zoom:hover img, .v4 a:hover > .zoom img, .v4 button:hover > .zoom img { transform: scale(1.045); }
+@media (prefers-reduced-motion: reduce) {
+  .v4 [data-rv].rv-armed { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+  .page-hero__media img, .page-hero__inner > * { animation: none; }
+  .v4 .zoom img { transition: none; }
+}
+
+/* --- Covid-19 photos ------------------------------------------------------------------------------------------ */
+.v4 .cv-photos { padding-block: clamp(24px, 3vw, 48px) clamp(56px, 6vw, 104px); }
+.v4 .cv-photos__head { max-width: 46rem; margin-bottom: clamp(24px, 3vw, 40px); }
+.v4 .cv-photos__head p { margin: 12px 0 0; color: var(--ink-2); line-height: 1.65; }
+
+.v4 .svc-cta { background: var(--sage-50); padding-block: clamp(48px, 5vw, 80px); border-top: 1px solid var(--sage-300); }
+.v4 .svc-cta__row { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.v4 .svc-cta .svc-cta__title { margin: 0 0 6px; font: 700 clamp(1.4rem, 1.1rem + 1vw, 2rem)/1.15 var(--serif); }
+.v4 .svc-cta p { margin: 0; color: var(--ink-2); }

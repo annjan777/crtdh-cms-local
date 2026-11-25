@@ -68,3 +68,9 @@ export function useParallax(rootRef, deps = []) {
 }
 
 export const prefersReducedMotion = reduced
+
+/** Scroll reveals + parallax for one page root. */
+export function usePageMotion(rootRef, deps = []) {
+  useReveals(rootRef, deps)
+  useParallax(rootRef, deps)
+}

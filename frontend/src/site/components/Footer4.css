@@ -1,6 +1,6 @@
 /* v4 footer: forest green band, the same colours as the home hero and rural band.
    The logos keep their original colours on a light plate, as in the header over the hero. */
-.site-footer.v4 { background: var(--forest-900); color: #C9D6CD; border-top: 0; font-family: var(--sans); }
+.site-footer.v4 { margin-top: 0; background: var(--forest-900); color: #C9D6CD; border-top: 0; font-family: var(--sans); }
 .site-footer.v4 .site-footer__grid { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); padding-block: clamp(56px, 6vw, 96px) clamp(40px, 4vw, 64px); gap: clamp(32px, 5vw, 88px); }
 .site-footer.v4 h4 { font: 700 1.25rem/1.2 var(--serif); text-transform: none; letter-spacing: 0; color: #F4F2EC; margin-bottom: var(--s-4, 16px); }
 .site-footer.v4 p { font-size: 1rem; line-height: 1.6; color: #C9D6CD; }

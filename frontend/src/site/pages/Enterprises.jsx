@@ -1,16 +1,18 @@
+import { useRef } from 'react'
+import { ArrowRight, ArrowUpRight, Cpu, FileText, Microscope, Handshake } from 'lucide-react'
 import { PageDataProvider } from '../api/data.jsx'
-import { Factory } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
-import { fetchList } from '../api/client'
+import { fetchList, fetchOne } from '../api/client'
 import PageHero, { firstBlockImage } from '../components/PageHero'
-import ImageGridBlockSection from '../components/ImageGridBlockSection'
+import PhotoMosaic from '../components/PhotoMosaic'
 import VideoBlock from '../components/VideoBlock'
 import { DataState } from '../components/StateBlock'
-import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
+import { usePageMotion } from '../components/motion4.js'
 import './Enterprises.css'
 
 function EnterprisesView() {
   const { data: enterprises, loading, error } = useApi(() => fetchList('/enterprises/'), [], [])
+  const { data: home } = useApi(() => fetchOne('/home-page/'), [], null)
   const { data: blocks, loading: blocksLoading } = useApi(
     () => fetchList('/image-grid-blocks/', { params: { page: 'enterprises' } }),
     [],
@@ -23,47 +25,97 @@ function EnterprisesView() {
   )
   const enterpriseBlocks = (blocks || []).filter((b) => !b.page || b.page === 'enterprises')
   const enterpriseVideos = (videoBlocks || []).filter((v) => !v.page || v.page === 'enterprises')
+  const ref = useRef(null)
+  usePageMotion(ref, [enterprises, blocks, home])
+
+  // Ways in for an enterprise: each goes to a real page or the CMS membership document.
+  const entries = [
+    { icon: Microscope, title: 'Use our facilities', text: 'Sterile rooms, pilot plants and test equipment.', href: '/facilities/' },
+    { icon: Cpu, title: 'License a technology', text: 'Devices and diagnostics developed at CRTDH.', href: '/innovations/' },
+    { icon: Handshake, title: 'Get support', text: 'R&D, prototyping, regulatory and market access.', href: '/services/' },
+    home?.membership_pdf && { icon: FileText, title: home.membership_heading || 'Annual membership', text: 'Membership details for MSMEs and startups (PDF).', href: home.membership_pdf, external: true },
+  ].filter(Boolean)
 
   return (
-    <div>
+    <div ref={ref}>
       <PageHero
-        eyebrow="Enterprises"
-        title="MSMEs &amp; startups engaged with CRTDH"
+        eyebrow="Industry & MSMEs"
+        title="Collaborate with CRTDH"
         description="The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing."
         image={firstBlockImage(enterpriseBlocks, 1)}
       />
 
-      <section data-block="enterprises.list" className="section">
+      <nav className="ent-entries" aria-label="Ways to work with CRTDH">
+        <ul className="container ent-entries__row">
+          {entries.map(({ icon: Icon, title, text, href, external }, k) => (
+            <li key={title} data-rv style={{ '--d': `${k * 80}ms` }}>
+              <a className="ent-entry" href={href} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>
+                <span className="ent-entry__icon" aria-hidden="true"><Icon size={26} strokeWidth={1.6} /></span>
+                <span className="ent-entry__body">
+                  <span className="ent-entry__title">{title}</span>
+                  <span className="ent-entry__text">{text}</span>
+                </span>
+                {external ? <ArrowUpRight className="ent-entry__go" size={18} aria-hidden="true" /> : <ArrowRight className="ent-entry__go" size={18} aria-hidden="true" />}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {home?.enterprises_text && (
+        <section className="ent-why">
+          <div className="container ent-why__grid">
+            <div data-rv>
+              <span className="eyebrow">Why MSMEs</span>
+              <h2 className="section-title">Manufacturing healthcare technology in India</h2>
+              <p className="ent-why__text">{home.enterprises_text}</p>
+            </div>
+            {home.msme_map_image && (
+              <figure className="ent-why__map" data-rv="mask">
+                <img src={home.msme_map_image} alt={home.msme_caption || 'MSME cluster map'} loading="lazy" />
+                {home.msme_caption && <figcaption>{home.msme_caption}</figcaption>}
+              </figure>
+            )}
+          </div>
+        </section>
+      )}
+
+      <section data-block="enterprises.list" className="ent-wall">
         <div className="container">
-          <Reveal className="section-head">
+          <div className="ent-wall__head" data-rv>
             <span className="eyebrow">Cluster</span>
-            <h2 className="section-title">Enterprises engagement</h2>
-          </Reveal>
+            <h2 className="section-title">Enterprises we work with</h2>
+          </div>
           <DataState loading={loading} error={error} data={enterprises} emptyProps={{ title: 'Enterprise directory coming soon' }}>
             {(items) => (
-              <Stagger className="grid grid--4">
-                {items.map((ent) => (
-                  <StaggerItem key={ent.id}>
-                    <div className="card enterprise-card">
-                      <div className="enterprise-card__logo">
-                        {ent.logo ? <img src={ent.logo} alt={ent.name} loading="lazy" /> : <Factory size={26} aria-hidden="true" />}
-                      </div>
-                      <p className="enterprise-card__name">{ent.name}</p>
-                      {ent.subtitle && <p className="enterprise-card__subtitle">{ent.subtitle}</p>}
-                    </div>
-                  </StaggerItem>
+              <ul className="ent-wall__grid">
+                {items.map((ent, k) => (
+                  <li className="ent-logo" key={ent.id} data-rv="fade" style={{ '--d': `${(k % 6) * 50}ms` }}>
+                    <span className="ent-logo__mark">
+                      {ent.logo ? <img src={ent.logo} alt="" loading="lazy" /> : <span className="ent-logo__initials" aria-hidden="true">{ent.name.replace(/^M\/s\s+/i, '').split(/\s+/).slice(0, 2).map((w) => w[0]).join('')}</span>}
+                    </span>
+                    <span className="ent-logo__name">{ent.name}</span>
+                    {ent.subtitle && <span className="ent-logo__sub">{ent.subtitle}</span>}
+                  </li>
                 ))}
-              </Stagger>
+              </ul>
             )}
           </DataState>
         </div>
       </section>
 
       {!blocksLoading && enterpriseBlocks.length > 0 && (
-        <section data-block="enterprises.photo-sections" className="section section--alt">
+        <section data-block="enterprises.photo-sections" className="ent-photos">
           <div className="container">
             {enterpriseBlocks.map((block) => (
-              <ImageGridBlockSection block={block} key={block.id} columns={4} />
+              <div className="ent-photos__block" id={block.anchor_slug || undefined} key={block.id}>
+                <div className="ent-photos__head" data-rv>
+                  <span className="eyebrow">Engagement</span>
+                  {block.section_title && <h2 className="section-title">{block.section_title}</h2>}
+                  {block.intro && <p>{block.intro}</p>}
+                </div>
+                <PhotoMosaic items={block.items} label={block.section_title} />
+              </div>
             ))}
           </div>
         </section>
@@ -72,18 +124,23 @@ function EnterprisesView() {
       {!videoLoading && enterpriseVideos.length > 0 && (
         <section data-block="enterprises.videos" className="section">
           <div className="container">
-            <Reveal className="section-head">
+            <div className="section-head" data-rv>
               <span className="eyebrow">In focus</span>
               <h2 className="section-title">Enterprise stories</h2>
-            </Reveal>
+            </div>
             <div className="grid grid--2">
-              {enterpriseVideos.map((block) => (
-                <VideoBlock block={block} key={block.id} />
-              ))}
+              {enterpriseVideos.map((block) => <VideoBlock block={block} key={block.id} />)}
             </div>
           </div>
         </section>
       )}
+
+      <section className="ent-cta">
+        <div className="container ent-cta__row" data-rv>
+          <h2 className="ent-cta__title">Bring us your device, process or idea.</h2>
+          <a className="btn btn--primary" href="/contact/">Start a conversation <ArrowUpRight size={18} aria-hidden="true" /></a>
+        </div>
+      </section>
     </div>
   )
 }

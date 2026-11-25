@@ -51,6 +51,16 @@ function ServicesView() {
           </DataState>
         </div>
       </section>
+
+      <section className="svc-cta">
+        <div className="container svc-cta__row">
+          <div>
+            <h2 className="svc-cta__title">Not sure which service you need?</h2>
+            <p>Tell us about your device, test or idea and we will point you to the right people.</p>
+          </div>
+          <a className="btn btn--primary" href="/contact/">Send an enquiry</a>
+        </div>
+      </section>
     </div>
   )
 }

@@ -1,12 +1,14 @@
+import { useRef } from 'react'
 import { PageDataProvider } from '../api/data.jsx'
+import { usePageMotion } from '../components/motion4.js'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero, { firstBlockImage } from '../components/PageHero'
 import VideoBlock from '../components/VideoBlock'
 import { DataState } from '../components/StateBlock'
-import Reveal from '../components/Reveal'
+import './SocialImpact.css'
 
-import Carousel from '../components/Carousel'
+import PhotoMosaic from '../components/PhotoMosaic'
 
 function Covid19View() {
   const { data: blocks, loading, error } = useApi(
@@ -27,8 +29,11 @@ function Covid19View() {
     .filter((v) => !v.page || v.page === 'covid-19')
     .filter((video, index, self) => self.findIndex(t => t.title === video.title) === index)
 
+  const ref = useRef(null)
+  usePageMotion(ref, [blocks, videos])
+
   return (
-    <div>
+    <div ref={ref}>
       <PageHero
         eyebrow="Covid-19 Response"
         title="CRTDH's response to the pandemic"
@@ -36,10 +41,10 @@ function Covid19View() {
         image={firstBlockImage(covidBlocks)}
       />
 
-      <section data-block="covid-19.story" className="section" style={{ paddingBottom: '0' }}>
-        <div className="container story">
+      <section data-block="covid-19.story" className="section">
+        <div className="container story" data-rv>
           <span className="eyebrow">Covid-19</span>
-          <h2>Combating the pandemic</h2>
+          <h2>Turning a crisis into an opportunity</h2>
           <p>
             Came the year 2020 — the beginning of a year that would throw the entire world into a tumult, the likes of which this century had not yet seen. Outside the initial, hushed-up outbreak in China, talk of a virus was akin to whispered rumours — nothing like the fevered discussion that came to the fore of the public consciousness a few months later. But for the CRTDH research group, this triggered all their endeavours to rise to the occasion — and they were all working on making a breakthrough, turning the challenge of COVID-19 into an opportunity, by architecting a unique diagnostic device that has attempted to redefine the manner in which nucleic acid-based tests may be conducted outside structured laboratory ambience. In response to this challenge, the CRTDH team developed a new piece-wise isothermal nucleic acid test (PINAT) as a platform technology for diagnosing pathogen-associated infections, including but not limited to COVID-19. Disrupting the perception that high-quality molecular diagnostics necessarily demands sophisticated technological and human resources, this diagnostic procedure is the first of its kind, highly accurate ultra-low-cost point-of-care nucleic acid-based test having the simplicity and user-friendliness of a common rapid test.
           </p>
@@ -53,37 +58,30 @@ function Covid19View() {
         </div>
       </section>
 
-      <section data-block="covid-19.photo-sections" className="section">
+      <section data-block="covid-19.photo-sections" className="cv-photos">
         <div className="container">
           <DataState loading={loading} error={error} data={covidBlocks} emptyProps={{ title: 'Response gallery coming soon' }}>
-            {(items) => items.map((block) => {
-              const uniqueItems = block.items.filter((item, i, self) => self.findIndex(t => t.image === item.image && t.caption === item.caption) === i)
-              return (
-                <div className="image-grid-block" id={block.anchor_slug || undefined} key={block.id} style={{ marginBottom: 'var(--space-8)' }}>
-                  <Carousel
-                    items={uniqueItems}
-                    ariaLabel={block.section_title || 'Image carousel'}
-                    renderItem={(item) => (
-                      <div className="project-slide project-slide--auto">
-                        <img src={item.image} alt={item.caption || ''} style={{ objectFit: 'contain', width: '100%', height: 'auto', maxHeight: '500px', display: 'block', margin: '0 auto' }} />
-                        {item.caption && <div className="project-slide__caption">{item.caption}</div>}
-                      </div>
-                    )}
-                  />
+            {(items) => items.map((block) => (
+              <div className="cv-photos__block" id={block.anchor_slug || undefined} key={block.id}>
+                <div className="cv-photos__head" data-rv>
+                  <span className="eyebrow">In pictures</span>
+                  {block.section_title && <h2 className="section-title">{block.section_title}</h2>}
+                  {block.intro && <p>{block.intro}</p>}
                 </div>
-              )
-            })}
+                <PhotoMosaic items={block.items} label={block.section_title} />
+              </div>
+            ))}
           </DataState>
         </div>
       </section>
 
       {!videoLoading && covidVideos.length > 0 && (
-        <section data-block="covid-19.videos" className="section section--alt">
+        <section data-block="covid-19.videos" className="ri-videos">
           <div className="container">
-            <Reveal className="section-head">
-              <span className="eyebrow">Coverage</span>
-              <h2 className="section-title">Response in action</h2>
-            </Reveal>
+            <div className="ri-videos__head" data-rv>
+              <span className="eyebrow eyebrow--on-dark">Coverage</span>
+              <h2 className="ri-videos__title">Response in action</h2>
+            </div>
             <div className="grid grid--2">
               {covidVideos.map((block) => (
                 <VideoBlock block={block} key={block.id} />

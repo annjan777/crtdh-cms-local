@@ -31,7 +31,7 @@ export const PAGE_NEEDS = {
   },
   about: {
     singletons: ['about-page'],
-    collections: ['focus-areas', 'objective-rows', 'timeline-entries'],
+    collections: ['focus-areas', 'objective-rows', 'timeline-entries', 'hero-slides'],
   },
   team: { singletons: [], collections: ['team-categories', 'team-members'] },
   innovations: { singletons: [], collections: ['innovations', 'project-slides'] },

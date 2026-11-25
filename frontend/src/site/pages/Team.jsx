@@ -1,182 +1,106 @@
 import { PageDataProvider } from '../api/data.jsx'
-import { User, Users, Settings, Users2, ArrowRight, Mail } from 'lucide-react'
+import { useRef } from 'react'
+import { User, ArrowRight, Mail } from 'lucide-react'
 import { Link } from '../router.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero from '../components/PageHero'
 import { DataState, Spinner } from '../components/StateBlock'
-import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
-import TiltCard from '../components/TiltCard'
+import { usePageMotion } from '../components/motion4.js'
 import './Team.css'
 
-function getCategoryMeta(name) {
-  const n = (name || '').toLowerCase()
-  if (n.includes('principal investigator') && !n.includes('co-')) {
-    return {
-      icon: User,
-      layout: 'featured',
-      desc: "Providing leadership and strategic direction to CRTDH's research, innovation and technology development initiatives.",
-    }
-  }
-  if (n.includes('co-principal')) {
-    return {
-      icon: Users,
-      layout: 'grid-3',
-      desc: 'Supporting CRTDH through their expertise across research, development and collaboration.',
-    }
-  }
-  if (n.includes('other')) {
-    return {
-      icon: Users,
-      layout: 'grid-2',
-      desc: "Researchers and collaborators contributing to CRTDH's mission.",
-    }
-  }
-  if (n.includes('manager')) {
-    return {
-      icon: Settings,
-      layout: 'featured',
-      desc: 'Coordinating project activities and ensuring effective execution.',
-    }
-  }
-  if (n.includes('staff')) {
-    return {
-      icon: Users2,
-      layout: 'grid-4',
-      desc: 'Dedicated staff members supporting research, development and day-to-day operations.',
-    }
-  }
-  return {
-    icon: Users,
-    layout: 'grid-4',
-    desc: 'Team members contributing to the success of CRTDH.',
-  }
+// Singular role label for a member of a category (the CMS stores category names, often plural).
+function roleFor(member, categoryName) {
+  if (member.designation) return member.designation
+  const n = categoryName || ''
+  if (/^other members?$/i.test(n)) return 'Research member'
+  return n.replace(/s$/, '')
+}
+
+function Portrait({ member, size }) {
+  return (
+    <span className={`tm-portrait tm-portrait--${size}`}>
+      {member.photo ? <img src={member.photo} alt="" loading="lazy" /> : <User size={size === 'lead' ? 56 : 32} aria-hidden="true" />}
+    </span>
+  )
 }
 
 function TeamView() {
   const { data: categories, loading: catLoading, error: catError } = useApi(() => fetchList('/team-categories/'), [], [])
   const { data: members, loading: memberLoading } = useApi(() => fetchList('/team-members/'), [], [])
-
   const loading = catLoading || memberLoading
+  const ref = useRef(null)
+  usePageMotion(ref, [categories, members])
 
   return (
-    <div className="team-page bg-page">
+    <div className="team-page" ref={ref}>
       <PageHero
         eyebrow="Team"
-        title="PI, Co-PIs and Research Team"
-        description="The people behind CRTDH — principal investigators, project staff and medical collaborators."
+        title="The people behind CRTDH"
+        description="Principal investigators, research members, project staff and medical collaborators."
       />
-
-      <section data-block="team.members" className="section team-main">
+      <section data-block="team.members" className="tm">
         <div className="container">
           {loading ? (
             <Spinner />
           ) : (
             <DataState loading={false} error={catError} data={categories} emptyProps={{ title: 'Team members coming soon' }}>
-              {(cats) => (
-                <div className="team-sections">
-                  {cats.map((category, catIndex) => {
-                    const categoryMembers = (members || []).filter((m) => m.category === category.id)
-                    if (categoryMembers.length === 0) return null
-
-                    const meta = getCategoryMeta(category.name)
-                    const Icon = meta.icon
-
+              {(cats) => {
+                const groups = cats.map((c) => ({ c, list: (members || []).filter((m) => m.category === c.id) })).filter((g) => g.list.length)
+                const hasLead = groups[0]?.list.length === 1
+                const rendered = groups.map(({ c, list }, gi) => {
+                  const lead = gi === 0 && list.length === 1
+                  if (lead) {
+                    const m = list[0]
                     return (
-                      <Reveal key={category.id} className="team-section-wrap" delay={0.05 * catIndex}>
-                        <div className="team-section">
-                          <div className="team-section__sidebar">
-                            <div className="team-section__icon">
-                              <Icon size={24} aria-hidden="true" />
-                            </div>
-                            <h2>{category.name}</h2>
-                            <p>{meta.desc}</p>
-                          </div>
-                          
-                          <div className="team-section__content">
-                            {/* One person gets the featured card; if a featured group has more, all show as cards. */}
-                            {meta.layout === 'featured' && categoryMembers.length === 1 ? (
-                              <div className="team-featured-card card shadow-sm">
-                                <div className="team-featured__photo">
-                                  {categoryMembers[0].photo ? (
-                                    <img src={categoryMembers[0].photo} alt={categoryMembers[0].name} loading="lazy" />
-                                  ) : (
-                                    <User size={40} aria-hidden="true" />
-                                  )}
-                                </div>
-                                <div className="team-featured__info">
-                                  <div className="team-featured__header">
-                                    <h3>{categoryMembers[0].name}</h3>
-                                    <span className="team-badge">{category.name.includes('Principal') ? 'Principal Investigator' : category.name}</span>
-                                  </div>
-                                  <p className="team-institution">Indian Institute of Technology Kharagpur</p>
-                                  {categoryMembers[0].email && (
-                                    <div className="team-featured__extra">
-                                      <Mail size={16} /> <span>{categoryMembers[0].email}</span>
-                                    </div>
-                                  )}
-                                  <div className="team-featured__desc">
-                                    <h4>Research Leadership</h4>
-                                    <p>Guiding CRTDH's vision for affordable healthcare technologies.</p>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <Stagger className={`grid team-grid team-grid--${meta.layout === 'featured' ? 'grid-3' : meta.layout}`}>
-                                {categoryMembers.map((member) => (
-                                  <StaggerItem key={member.id} className="team-card-wrap">
-                                    <TiltCard max={4} className="h-100">
-                                      <div className="team-card card shadow-sm h-100">
-                                        <div className="team-card__photo">
-                                          {member.photo ? (
-                                            <img src={member.photo} alt={member.name} loading="lazy" />
-                                          ) : (
-                                            <User size={28} aria-hidden="true" />
-                                          )}
-                                        </div>
-                                        <div className="team-card__info">
-                                          <h3 className="team-card__name">{member.name}</h3>
-                                          <span className="team-badge">
-                                            {category.name.includes('Co-Principal') ? 'Co-Principal Investigator' :
-                                              category.name.includes('Staff') ? 'Project Staff' :
-                                                category.name.includes('Other') ? 'Research Member' : category.name}
-                                          </span>
-                                          <p className="team-card__inst">Indian Institute of Technology Kharagpur</p>
-                                        </div>
-                                      </div>
-                                    </TiltCard>
-                                  </StaggerItem>
-                                ))}
-                              </Stagger>
-                            )}
-                          </div>
+                      <article className="tm-lead" key={c.id} aria-labelledby={`tm-${m.id}`}>
+                        <div className="tm-lead__photo" data-rv="mask"><Portrait member={m} size="lead" /></div>
+                        <div className="tm-lead__copy" data-rv style={{ '--d': '150ms' }}>
+                          <span className="eyebrow">{c.name}</span>
+                          <h2 className="tm-lead__name" id={`tm-${m.id}`}>{m.name}</h2>
+                          <p className="tm-lead__role">{m.designation || c.name}{m.institution ? `, ${m.institution}` : ''}</p>
+                          {m.description && <p className="tm-lead__desc">{m.description}</p>}
+                          {m.email && <a className="tm-mail" href={`mailto:${m.email}`}><Mail size={16} aria-hidden="true" /> {m.email}</a>}
                         </div>
-                      </Reveal>
+                      </article>
                     )
-                  })}
-                </div>
-              )}
+                  }
+                  return (
+                    <section className="tm-group" key={c.id} aria-labelledby={`tmc-${c.id}`} style={{ '--n': Math.min(list.length, 4) }}>
+                      <div className="tm-group__head" data-rv>
+                        <h2 id={`tmc-${c.id}`}>{c.name}</h2>
+                        {list.length > 1 && <span className="tm-group__count">{list.length} people</span>}
+                      </div>
+                      <ul className="tm-grid">
+                        {list.map((m, k) => (
+                          <li className="tm-person" key={m.id} data-rv="mask" style={{ '--d': `${(k % 4) * 90}ms` }}>
+                            <Portrait member={m} size="std" />
+                            <h3 className="tm-person__name">{m.name}</h3>
+                            <p className="tm-person__role">{roleFor(m, c.name)}</p>
+                            {m.institution && <p className="tm-person__inst">{m.institution}</p>}
+                            {m.description && <p className="tm-person__desc">{m.description}</p>}
+                            {m.email && <a className="tm-mail" href={`mailto:${m.email}`}><Mail size={14} aria-hidden="true" /> Email</a>}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )
+                })
+                return (
+                  <>
+                    {hasLead && rendered[0]}
+                    <div className="tm-groups">{hasLead ? rendered.slice(1) : rendered}</div>
+                  </>
+                )
+              }}
             </DataState>
           )}
         </div>
       </section>
-
-      <section className="section team-cta-section">
-        <div className="container">
-          <Reveal className="team-cta card">
-            <div className="team-cta__left">
-              <div className="team-cta__icon"><Users size={32} /></div>
-              <div>
-                <h2>A multidisciplinary team working towards<br/>innovative healthcare solutions</h2>
-                <p>Research. Innovation. Collaboration. Impact.</p>
-              </div>
-            </div>
-            <div className="team-cta__right">
-              <Link to="/contact" className="btn btn--primary">
-                Get in Touch <ArrowRight size={17} />
-              </Link>
-            </div>
-          </Reveal>
+      <section className="tm-cta">
+        <div className="container tm-cta__row" data-rv>
+          <h2 className="tm-cta__title">Want to work with the team?</h2>
+          <Link to="/contact" className="btn btn--primary">Get in touch <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </section>
     </div>

@@ -39,7 +39,7 @@ test('team: categories with published members, members in order, nobody unpublis
 
 test('innovations: every innovation, in order, with its body text', async ({ page }) => {
   await page.goto('/innovations/')
-  await expect(page.locator('article.innovation h2')).toHaveText(visible(c.innovations).map((i) => i.title))
+  await expect(page.locator('article.tech h2')).toHaveText(visible(c.innovations).map((i) => i.title))
   const t = await page.locator('main').innerText()
   expect(t).toContain('Portable and thus spot diagnosis is possible')
   expect(await page.locator('main').innerHTML()).not.toMatch(/&lt;(p|strong|ul)&gt;/) // rich text is rendered, not shown as tags
@@ -76,7 +76,11 @@ test('media: every event with photos in order, deep-link anchors, coverage and n
   const events = visible(c['media-events']).filter((e) => e.images.length)
   expectInOrder(expect, t, events.map((e) => e.title), 'events')
   for (const e of events) await expect(page.locator(`#${e.slug}`)).toHaveCount(1)
-  for (const link of visible(c['media-coverage-links'])) expect(t).toContain(link.title)
+  // A title that is just the address is shown as "publication — headline"; every link is present either way.
+  for (const link of visible(c['media-coverage-links'])) {
+    if (!/^https?:\/\//i.test(link.title)) expect(t).toContain(link.title)
+    await expect(page.locator(`main a[href="${link.url}"]`)).toHaveCount(1)
+  }
   expectInOrder(expect, t, visible(c.documents).map((d) => d.title), 'newsletters')
 })
 

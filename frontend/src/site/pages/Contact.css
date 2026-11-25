@@ -105,3 +105,24 @@
 .contact-form-wrap .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 #privacy .container { max-width: 760px; }
 .contact-form-wrap .hp input { font: inherit; }
+
+/* ---------------- v4 Contact: the form rises over the hero's wave; office details beside it, then the map */
+.ct { padding-bottom: clamp(56px, 6vw, 104px); }
+.ct__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(28px, 5vw, 88px); align-items: start; }
+.ct__form { order: 2; position: relative; z-index: 3; margin-top: calc(-1 * clamp(80px, 9vw, 150px)); padding: clamp(24px, 3vw, 40px); background: #FBFAF6; border: 1px solid var(--sage-300); border-radius: 4px; box-shadow: 0 24px 60px rgba(22, 34, 29, .14); }
+.ct__details { order: 1; padding-top: clamp(32px, 4vw, 56px); }
+.ct__details h2 { font: 700 clamp(1.5rem, 1.15rem + 1vw, 2rem)/1.15 var(--serif); color: var(--forest-800); margin: 0 0 20px; }
+.ct__list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--sage-300); }
+.ct__list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--sage-300); }
+.ct__list svg { margin-top: 3px; color: var(--sage-700); }
+.ct__list strong { display: block; font-size: .875rem; color: var(--sage-700); margin-bottom: 4px; }
+.ct__list span { font-size: 1.0625rem; line-height: 1.5; color: #26302B; }
+.ct__list a { color: var(--forest-800); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--sage-400); }
+.ct__list a:hover { text-decoration-color: var(--ember-500); }
+.ct__map { position: relative; margin-top: 28px; aspect-ratio: 16 / 10; border-radius: 2px; overflow: hidden; }
+@media (max-width: 900px) {
+  .ct__grid { grid-template-columns: minmax(0, 1fr); }
+  .ct__form { order: 1; margin-top: -40px; }
+  .ct__details { order: 2; padding-top: 0; }
+}
+.ct__map { width: 100%; max-width: none; }

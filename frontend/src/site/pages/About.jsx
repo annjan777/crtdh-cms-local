@@ -1,11 +1,11 @@
 import { PageDataProvider } from '../api/data.jsx'
 import RichText from '../components/RichText.jsx'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { fetchList, fetchOne } from '../api/client'
 import { useApi } from '../hooks/useApi'
 import PageHero from '../components/PageHero'
 import { DataState } from '../components/StateBlock'
-import Reveal, { Stagger, StaggerItem } from '../components/Reveal'
+import { usePageMotion } from '../components/motion4.js'
 import './About.css'
 
 function AboutView() {
@@ -40,87 +40,116 @@ function AboutView() {
   const focusTaglines = (about?.focus_intro || '').split('\n').filter(Boolean)
   const groupedObjectives = useGroupedObjectives(objectiveRows)
 
+  const { data: slides } = useApi(() => fetchList('/hero-slides/'), [], [])
+  const ref = useRef(null)
+  usePageMotion(ref, [about, focusAreas, objectiveRows, rawTimeline])
+  const heroImage = (slides || []).find((sl) => sl.image)?.image
+
   return (
-    <div>
+    <div ref={ref}>
       <PageHero
         eyebrow="About CRTDH"
-        title="Mission &amp; Vision"
+        title="About CRTDH"
         description="A DSIR-sponsored initiative at IIT Kharagpur translating research in basic sciences, sensors and digital health into affordable, deployable healthcare technology."
+        image={heroImage}
       />
 
       {!aboutLoading && about?.intro && (
-        <section data-block="about.intro" className="section">
-          <div className="container">
-
-            <Reveal delay={0.08}>
+        <section data-block="about.intro" className="ab-intro">
+          <div className="container ab-split">
+            <div className="ab-split__label" data-rv>
+              <span className="eyebrow">Why CRTDH</span>
+              <h2 className="section-title">Why CRTDH exists</h2>
+            </div>
+            <div className="ab-split__body" data-rv style={{ '--d': '120ms' }}>
               <ProseBlock text={about.intro} />
-            </Reveal>
+            </div>
           </div>
         </section>
       )}
 
       {!aboutLoading && about?.mission_vision && (
-        <section data-block="about.intro" className="section section--alt">
-          <div className="container">
-            <Reveal className="section-head text-center">
-              <span className="eyebrow">Mission &amp; Vision</span>
-            </Reveal>
-            <Reveal delay={0.08}>
+        <section data-block="about.intro" className="ab-mission">
+          <div className="container ab-split">
+            <div className="ab-split__label" data-rv>
+              <span className="eyebrow eyebrow--on-dark">Mission &amp; vision</span>
+              <h2 className="ab-mission__title">Our mission</h2>
+            </div>
+            <div className="ab-split__body ab-mission__body" data-rv style={{ '--d': '120ms' }}>
               <ProseBlock text={about.mission_vision} />
-            </Reveal>
+            </div>
           </div>
         </section>
       )}
 
-      <section data-block="about.focus" className="section">
+      <section data-block="about.focus" className="ab-focus">
         <div className="container">
-          <Reveal className="section-head text-center">
-            <span className="eyebrow">Focus areas</span>
-            <h2 className="section-title">Where we work</h2>
-            {focusTaglines.map((line) => (
-              <p className="focus-tagline" key={line}>
-                {line}
-              </p>
-            ))}
-          </Reveal>
-          <DataState
-            loading={focusLoading}
-            error={focusError}
-            data={focusAreas}
-            emptyProps={{ title: 'Focus areas coming soon' }}
-          >
+          <div className="ab-focus__head" data-rv>
+            <div>
+              <span className="eyebrow">Focus areas</span>
+              <h2 className="section-title">Where we work</h2>
+            </div>
+            {focusTaglines.length > 0 && (
+              <div className="ab-focus__taglines">
+                {focusTaglines.map((line) => <p className="focus-tagline" key={line}>{line}</p>)}
+              </div>
+            )}
+          </div>
+          <DataState loading={focusLoading} error={focusError} data={focusAreas} emptyProps={{ title: 'Focus areas coming soon' }}>
             {(areas) => (
-              <Stagger as="ul" className="focus-grid">
-                {areas.map((area) => (
-                  <StaggerItem
-                    as="li"
-                    key={area.id}
-                    className="focus-chip"
-                    style={{ '--chip-color': area.color || 'var(--brand-primary)' }}
-                  >
+              <ul className="focus-grid">
+                {areas.map((area, k) => (
+                  <li key={area.id} className="focus-chip" data-rv style={{ '--chip-color': area.color || 'var(--forest-800)', '--d': `${k * 60}ms` }}>
                     {area.title}
-                  </StaggerItem>
+                  </li>
                 ))}
-              </Stagger>
+              </ul>
             )}
           </DataState>
         </div>
       </section>
 
-      <section data-block="about.support" className="section section--alt">
+      <section data-block="about.timeline" className="ab-journey">
+        <div className="container ab-journey__grid">
+          <div className="ab-journey__head" data-rv>
+            <span className="eyebrow">Journey</span>
+            <h2 className="section-title">Healthcare ecosystem at IIT Kharagpur</h2>
+          </div>
+          <DataState loading={timelineLoading} error={timelineError} data={timeline} emptyProps={{ title: 'Timeline coming soon' }}>
+            {(entries) => (
+              <ol className="ab-timeline">
+                {entries.map((entry, k) => (
+                  <li className="ab-timeline__entry" key={entry.id} data-rv style={{ '--d': `${k * 120}ms` }}>
+                    <span className="ab-timeline__year">{entry.year}</span>
+                    <div className="ab-timeline__body">
+                      <h3>{entry.title}</h3>
+                      {entry.image && <img src={entry.image} alt="" loading="lazy" />}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </DataState>
+        </div>
+        {!aboutLoading && about?.ecosystem_image && (
+          <div className="container">
+            <figure data-block="about.ecosystem" className="ab-eco" data-rv="wipe">
+              <img src={about.ecosystem_image} alt={about.ecosystem_heading || 'Healthcare ecosystem at IIT Kharagpur'} loading="lazy" />
+              {about.ecosystem_heading && <figcaption>{about.ecosystem_heading}</figcaption>}
+            </figure>
+          </div>
+        )}
+      </section>
+
+      <section data-block="about.support" className="ab-support">
         <div className="container">
-          <Reveal className="section-head text-center">
+          <div className="ab-support__head" data-rv>
             <span className="eyebrow">Objectives</span>
             <h2 className="section-title">How CRTDH supports MSMEs</h2>
-          </Reveal>
-          <DataState
-            loading={objLoading}
-            error={objError}
-            data={objectiveRows}
-            emptyProps={{ title: 'Objectives coming soon' }}
-          >
+          </div>
+          <DataState loading={objLoading} error={objError} data={objectiveRows} emptyProps={{ title: 'Objectives coming soon' }}>
             {() => (
-              <Reveal delay={0.1} className="table-wrap card" tabIndex={0} role="region" aria-label="How CRTDH supports MSMEs (table, scrolls sideways on small screens)">
+              <div className="table-wrap card" tabIndex={0} role="region" aria-label="How CRTDH supports MSMEs (table, scrolls sideways on small screens)" data-rv>
                 <table className="objective-table">
                   <thead>
                     <tr>
@@ -139,79 +168,33 @@ function AboutView() {
                     ))}
                   </tbody>
                 </table>
-              </Reveal>
+              </div>
             )}
           </DataState>
         </div>
       </section>
 
-      <section data-block="about.timeline" className="section">
-        <div className="container">
-          <Reveal className="section-head text-center">
-            <span className="eyebrow">Journey</span>
-            <h2 className="section-title">Healthcare ecosystem at IIT Kharagpur</h2>
-          </Reveal>
-          <DataState
-            loading={timelineLoading}
-            error={timelineError}
-            data={timeline}
-            emptyProps={{ title: 'Timeline coming soon' }}
-          >
-            {(entries) => (
-              <Stagger as="ol" className="timeline" stagger={0.12}>
-                {entries.map((entry) => (
-                  <StaggerItem as="li" className="timeline__entry" key={entry.id}>
-                    <div className="timeline__marker">{entry.year}</div>
-                    <div className="timeline__body card">
-                      {entry.image && <img src={entry.image} alt="" loading="lazy" />}
-                      <h3>{entry.title}</h3>
-                    </div>
-                  </StaggerItem>
-                ))}
-              </Stagger>
+      {!aboutLoading && (about?.pi_desk_image || about?.dsir_about || about?.iitkgp_about) && (
+        <section data-block="about.partners" className="ab-orgs">
+          <div className="container ab-orgs__grid">
+            {about.pi_desk_image && (
+              <figure data-block="about.pi-note" className="ab-pi" data-rv>
+                <span className="eyebrow">From the PI&apos;s desk</span>
+                <img src={about.pi_desk_image} alt="Note from the PI's desk" loading="lazy" />
+              </figure>
             )}
-          </DataState>
-
-          {!aboutLoading && about?.ecosystem_image && (
-            <Reveal data-block="about.ecosystem" delay={0.15} className="ecosystem-panel card">
-              <img src={about.ecosystem_image} alt="" loading="lazy" />
-              {about.ecosystem_heading && <p>{about.ecosystem_heading}</p>}
-            </Reveal>
-          )}
-        </div>
-      </section>
-
-      {!aboutLoading && about?.pi_desk_image && (
-        <section data-block="about.pi-note" className="section section--alt">
-          <div className="container">
-            <Reveal className="section-head text-center">
-              <span className="eyebrow">From the PI's desk</span>
-              <h2 className="section-title">A note from our Principal Investigator</h2>
-            </Reveal>
-            <Reveal delay={0.1} className="pi-desk card">
-              <img src={about.pi_desk_image} alt="Note from the PI's desk" loading="lazy" />
-            </Reveal>
-          </div>
-        </section>
-      )}
-
-      {!aboutLoading && (about?.dsir_about || about?.iitkgp_about) && (
-        <section data-block="about.partners" className="section">
-          <div className="container">
-            <div className="about-orgs">
-              {about.dsir_about && (
-                <Reveal className="card about-orgs__card">
-                  <h3>About DSIR, Govt. of India</h3>
-                  <ProseBlock text={about.dsir_about} />
-                </Reveal>
-              )}
-              {about.iitkgp_about && (
-                <Reveal delay={0.1} className="card about-orgs__card">
-                  <h3>About IIT Kharagpur</h3>
-                  <ProseBlock text={about.iitkgp_about} />
-                </Reveal>
-              )}
-            </div>
+            {about.dsir_about && (
+              <div className="ab-org" data-rv style={{ '--d': '100ms' }}>
+                <h3>About DSIR, Govt. of India</h3>
+                <ProseBlock text={about.dsir_about} />
+              </div>
+            )}
+            {about.iitkgp_about && (
+              <div className="ab-org" data-rv style={{ '--d': '200ms' }}>
+                <h3>About IIT Kharagpur</h3>
+                <ProseBlock text={about.iitkgp_about} />
+              </div>
+            )}
           </div>
         </section>
       )}

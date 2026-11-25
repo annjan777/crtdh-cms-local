@@ -104,7 +104,7 @@ describe('rich text', () => {
     const src = fs.readFileSync('src/site/pages/About.jsx', 'utf8')
     for (const f of ['intro', 'mission_vision', 'dsir_about', 'iitkgp_about']) expect(src).toContain(`<ProseBlock text={about.${f}}`)
     expect(src).toMatch(/function ProseBlock\(\{ text \}\) \{\n  return <RichText html=\{text\}/)
-    expect(fs.readFileSync('src/site/pages/Innovations.jsx', 'utf8')).toContain('<RichText html={innovation.body}')
+    expect(fs.readFileSync('src/site/pages/Innovations.jsx', 'utf8')).toContain('<RichText html={t.body}')
     for (const f of fs.readdirSync('src/site/pages')) {
       if (f.endsWith('.jsx')) expect(fs.readFileSync(`src/site/pages/${f}`, 'utf8')).not.toContain('dangerouslySetInnerHTML')
     }

@@ -112,9 +112,9 @@ test('client-side navigation loads static .data files only', async ({ page, base
   })
   await page.goto('/')
   await page.locator('footer').getByRole('link', { name: 'Team' }).click()
-  await expect(page.locator('h1')).toHaveText('PI, Co-PIs and Research Team')
+  await expect(page.locator('h1')).toHaveText('The people behind CRTDH')
   await page.locator('footer').getByRole('link', { name: 'Innovations' }).click()
-  await expect(page.locator('h1')).toHaveText('Devices & diagnostics from the lab bench to the clinic')
+  await expect(page.locator('h1')).toHaveText('Our technology portfolio')
   expect(bad).toEqual([])
 })
 
@@ -190,7 +190,7 @@ test('mobile menu opens from the header and closes on navigation', async ({ page
   const link = page.locator('#mobile-nav').getByRole('link', { name: 'Team' })
   await expect(link).toBeVisible()
   await link.click()
-  await expect(page.locator('h1')).toHaveText('PI, Co-PIs and Research Team')
+  await expect(page.locator('h1')).toHaveText('The people behind CRTDH')
   await expect(page.locator('#mobile-nav')).toHaveCount(0)
 })
 

@@ -9,7 +9,6 @@ import ContactForm from '../components/ContactForm.jsx'
 import { FullNotice, ShortNotice } from '../components/PrivacyNotice.jsx'
 import PageHero from '../components/PageHero'
 import { Spinner } from '../components/StateBlock'
-import Reveal from '../components/Reveal'
 import './Contact.css'
 
 function ContactView() {
@@ -28,25 +27,25 @@ function ContactView() {
         description="Questions about our research, facilities, or partnering with CRTDH? Send us a message."
       />
 
-      <section data-block="contact.details" className="section">
-        <div className="container contact-layout">
-          <Reveal direction="left" className="card contact-form-wrap">
+      <section data-block="contact.details" className="ct">
+        <div className="container ct__grid">
+          <div className="card contact-form-wrap ct__form">
             <ContactForm
               email={siteSettings?.email_primary}
               phone={siteSettings?.phone_primary}
               notice={<ShortNotice privacy={privacy} />}
             />
-          </Reveal>
+          </div>
 
-          <Reveal direction="right" delay={0.1} className="contact-details">
+          <div className="contact-details ct__details">
             <h2>Our office</h2>
             {settingsLoading ? (
               <Spinner />
             ) : siteSettings ? (
-              <ul className="contact-details__list">
+              <ul className="ct__list">
                 {siteSettings.address && (
                   <li>
-                    <MapPin size={18} aria-hidden="true" />
+                    <MapPin size={20} aria-hidden="true" />
                     <div>
                       <strong>Address</strong>
                       <span>{siteSettings.address}</span>
@@ -55,22 +54,26 @@ function ContactView() {
                 )}
                 {(siteSettings.phone_primary || siteSettings.phone_secondary) && (
                   <li>
-                    <Phone size={18} aria-hidden="true" />
+                    <Phone size={20} aria-hidden="true" />
                     <div>
                       <strong>Phone</strong>
                       <span>
-                        {[siteSettings.phone_primary, siteSettings.phone_secondary].filter(Boolean).join(', ')}
+                        {[siteSettings.phone_primary, siteSettings.phone_secondary].filter(Boolean).map((ph, k) => (
+                          <span key={ph}>{k > 0 && ', '}<a href={`tel:${ph.replace(/[^+\d]/g, '')}`}>{ph}</a></span>
+                        ))}
                       </span>
                     </div>
                   </li>
                 )}
                 {(siteSettings.email_primary || siteSettings.email_secondary) && (
                   <li>
-                    <Mail size={18} aria-hidden="true" />
+                    <Mail size={20} aria-hidden="true" />
                     <div>
                       <strong>Email</strong>
                       <span>
-                        {[siteSettings.email_primary, siteSettings.email_secondary].filter(Boolean).join(', ')}
+                        {[siteSettings.email_primary, siteSettings.email_secondary].filter(Boolean).map((em, k) => (
+                          <span key={em}>{k > 0 && ', '}<a href={`mailto:${em}`}>{em}</a></span>
+                        ))}
                       </span>
                     </div>
                   </li>
@@ -81,11 +84,11 @@ function ContactView() {
             )}
 
             {mapEmbedUrl(siteSettings?.map_embed_url) && (
-              <div className="map-embed card contact-map">
+              <div className="map-embed contact-map ct__map">
                 <MapFacade src={siteSettings.map_embed_url} address={siteSettings.address} />
               </div>
             )}
-          </Reveal>
+          </div>
         </div>
       </section>
       <FullNotice privacy={privacy} />
