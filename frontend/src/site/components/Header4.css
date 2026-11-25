@@ -8,9 +8,14 @@
   transition: background-color 420ms cubic-bezier(.2, .7, .1, 1), border-color 420ms, box-shadow 420ms;
 }
 .site-header.v4.is-scrolled { background: rgba(244, 242, 236, .97); border-bottom-color: #D9DED6; box-shadow: 0 10px 30px rgba(22, 34, 29, .06); }
-.site-header.v4 .site-header__bar { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); min-height: var(--hdr-h); padding-block: 12px; gap: 18px; }
-.site-header.v4 .site-header__crest { height: 48px; width: auto; border-radius: 10px; padding: 3px; transition: background-color 420ms; }
-.site-header.v4 .brand__logo { height: 54px; max-width: none; border-radius: 10px; padding: 3px 5px; transition: background-color 420ms; }
+.site-header.v4 .site-header__bar { max-width: 106rem; margin-inline: auto; padding-inline: clamp(20px, 5.6vw, 96px); min-height: var(--hdr-h); padding-block: 12px; gap: 12px; }
+/* Nav sits next to Contact Us; the space before the button matches the space between items (12px + 12px padding). */
+.site-header.v4 .site-nav { justify-content: flex-end; }
+.site-header.v4 .site-nav > ul { gap: 0; }
+.site-header.v4 .site-header__actions { margin-left: 0; gap: 12px; }
+/* All three logos share one plate height (54px, 3px inset) so none looks smaller than the others. */
+.site-header.v4 .site-header__crest { box-sizing: border-box; height: 54px; width: auto; max-width: none; border-radius: 10px; padding: 3px 5px; transition: background-color 420ms; }
+.site-header.v4 .brand__logo { box-sizing: border-box; height: 54px; max-width: none; border-radius: 10px; padding: 3px 5px; transition: background-color 420ms; }
 .site-header.v4 .brand__mark { font-family: var(--serif); font-weight: 700; font-size: 1.65rem; letter-spacing: 0; color: var(--forest-800); }
 .site-header.v4 .brand__sub { font-family: var(--sans); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .site-header.v4 .site-nav a,
