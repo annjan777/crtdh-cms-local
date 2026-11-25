@@ -52,7 +52,7 @@ function LayoutView({ children }) {
 
   return (
     <>
-      <div className="app-shell">
+      <div className="app-shell v4">
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>

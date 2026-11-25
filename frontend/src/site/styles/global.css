@@ -142,7 +142,7 @@ p {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, var(--bg-page) 0%, rgba(247, 249, 250, 0.35) 35%, var(--bg-page) 100%);
+  background: linear-gradient(180deg, var(--bg-page) 0%, rgba(244, 242, 236, 0.35) 35%, var(--bg-page) 100%);
   pointer-events: none;
 }
 
@@ -172,25 +172,25 @@ p {
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  gap: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--brand-primary-dark);
-  background: var(--color-brand-100);
-  padding: 0.6rem 1.2rem;
-  border-radius: 999px;
+  color: var(--color-brand-600);
+  background: none;
+  padding: 0;
+  border-radius: 0;
   margin-bottom: var(--space-4);
 }
 
 .eyebrow::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--brand-primary);
+  width: 28px;
+  height: 1.5px;
+  border-radius: 0;
+  background: currentColor;
   flex: none;
 }
 
@@ -220,10 +220,10 @@ p {
   gap: var(--space-2);
   border-radius: 999px;
   padding: 0.85rem 1.6rem;
-  font-weight: 600;
   font-size: 0.95rem;
-  font-family: var(--font-heading);
-  letter-spacing: 0.01em;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0;
   border: 1px solid transparent;
   cursor: pointer;
   position: relative;
@@ -243,23 +243,23 @@ p {
 .btn--primary {
   background: var(--brand-primary-dark);
   color: var(--color-white);
-  box-shadow: 0 10px 26px rgba(15, 76, 117, 0.32);
+  box-shadow: none;
 }
 
 .btn--primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(15, 76, 117, 0.4);
+  box-shadow: 0 10px 24px rgba(22, 34, 29, 0.18);
 }
 
 .btn--accent {
   background: var(--gradient-accent);
-  color: var(--color-ink-900);
-  box-shadow: 0 10px 26px rgba(169, 129, 42, 0.3);
+  color: #F4F2EC;
+  box-shadow: none;
 }
 
 .btn--accent:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(169, 129, 42, 0.38);
+  box-shadow: 0 10px 24px rgba(22, 34, 29, 0.18);
 }
 
 .btn--ghost {

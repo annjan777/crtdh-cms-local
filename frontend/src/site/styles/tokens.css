@@ -1,46 +1,47 @@
 :root {
-  /* --- Brand palette: Clean, light, professional lab/institution --- */
-  --color-paper: #ffffff;
-  --color-paper-dim: #f5f7fa;
-  --color-paper-deep: #e4e7eb;
+  /* --- Brand palette, v4: forest green, sage, ivory (the redesign's colours; same names as before so every
+     page that uses these tokens takes the new look). Orange stays a tiny accent: see --rule-gold. --- */
+  --color-paper: #F4F2EC;
+  --color-paper-dim: #ECF0EA;
+  --color-paper-deep: #DCE5DD;
 
-  --color-ink-900: #1a202c;
-  --color-ink-800: #2d3748;
-  --color-ink-700: #4a5568;
-  --color-ink-600: #718096;
+  --color-ink-900: #1F2B26;
+  --color-ink-800: #2B3631;
+  --color-ink-700: #4A5650;
+  --color-ink-600: #66736C;
 
-  --color-brand-900: #0f4c75;
-  --color-brand-800: #1a6b9c;
-  --color-brand-700: #3282b8;
-  --color-brand-600: #479ed3;
-  --color-brand-500: #bbe1fa;
-  --color-brand-300: #d6ecfc;
-  --color-brand-100: #eaf5ff;
-  --color-brand-50: #f4fafe;
+  --color-brand-900: #1C2E27;
+  --color-brand-800: #263C34;
+  --color-brand-700: #2F4A3E;
+  --color-brand-600: #55695C;
+  --color-brand-500: #9DB7A5;
+  --color-brand-300: #B5C8B9;
+  --color-brand-100: #DCE5DD;
+  --color-brand-50: #ECF0EA;
 
-  --color-accent-700: #2d6a4f;
-  --color-accent-600: #40916c;
-  --color-accent-500: #52b788;
-  --color-accent-300: #74c69d;
-  --color-accent-100: #d8f3dc;
+  --color-accent-700: #2F4A3E;
+  --color-accent-600: #55695C;
+  --color-accent-500: #7F9688;
+  --color-accent-300: #9DC2A6;
+  --color-accent-100: #DCE5DD;
 
-  --color-white: #ffffff;
-  --color-gray-50: #f7fafc;
-  --color-gray-100: #edf2f7;
-  --color-gray-200: #e2e8f0;
-  --color-gray-300: #cbd5e0;
-  --color-gray-400: #a0aec0;
-  --color-gray-500: #718096;
-  --color-gray-600: #4a5568;
-  --color-gray-700: #2d3748;
-  --color-gray-800: #1a202c;
+  --color-white: #FFFFFF;
+  --color-gray-50: #F6F5F0;
+  --color-gray-100: #EEEDE6;
+  --color-gray-200: #E1E3DC;
+  --color-gray-300: #CDD3CB;
+  --color-gray-400: #A3ADA6;
+  --color-gray-500: #737E77;
+  --color-gray-600: #55605A;
+  --color-gray-700: #36403B;
+  --color-gray-800: #1F2B26;
 
-  --color-success: #38a169;
-  --color-error: #e53e3e;
+  --color-success: #2E7D4F;
+  --color-error: #B42318;
 
   /* Semantic tokens */
   --bg-page: var(--color-paper);
-  --bg-surface: var(--color-white);
+  --bg-surface: #FBFAF6;
   --bg-surface-alt: var(--color-paper-dim);
   --bg-inverse: var(--color-brand-900);
   --text-primary: var(--color-ink-800);
@@ -56,16 +57,16 @@
   /* Flat brand fills */
   --fill-inverse: linear-gradient(135deg, var(--color-brand-900) 0%, var(--color-brand-800) 100%);
   --fill-brand: var(--color-brand-700);
-  --rule-gold: linear-gradient(90deg, var(--color-accent-600), var(--color-brand-600));
+  --rule-gold: linear-gradient(90deg, #BF7329, #E9A867);
 
-  --glass-bg: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(203, 213, 224, 0.5);
-  --glass-bg-light: rgba(255, 255, 255, 0.96);
-  --glass-border-light: rgba(226, 232, 240, 0.8);
+  --glass-bg: rgba(251, 250, 246, 0.94);
+  --glass-border: rgba(181, 200, 185, 0.5);
+  --glass-bg-light: rgba(251, 250, 246, 0.97);
+  --glass-border-light: rgba(205, 211, 203, 0.8);
 
   /* Typography */
-  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Alegreya', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-body: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
 
   /* Spacing scale - Compacted */
   --space-1: 0.15rem;
@@ -80,16 +81,16 @@
   --space-10: 5rem;
 
   /* Radii / shadows */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-  --shadow-glow: 0 0 0 1px rgba(50, 130, 184, 0.1), 0 10px 25px rgba(50, 130, 184, 0.2);
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 1px 2px rgba(22, 34, 29, 0.05);
+  --shadow-md: 0 6px 18px rgba(22, 34, 29, 0.06);
+  --shadow-lg: 0 14px 34px rgba(22, 34, 29, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(38, 60, 52, 0.12), 0 12px 28px rgba(38, 60, 52, 0.14);
 
-  --content-max: 1240px;
+  --content-max: 1280px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: light;
 
@@ -108,7 +109,7 @@
   --color-amber-600: var(--color-accent-600);
   --color-amber-500: var(--color-accent-500);
   --color-amber-400: var(--color-accent-500);
-  --color-amber-300: var(--color-accent-300);
+  --color-amber-300: #E9A867;
   --color-amber-100: var(--color-accent-100);
 
   --color-violet-500: var(--color-brand-600);
@@ -116,7 +117,7 @@
 
   --gradient-hero: var(--fill-inverse);
   --gradient-brand: linear-gradient(135deg, var(--color-brand-800) 0%, var(--color-brand-700) 100%);
-  --gradient-accent: linear-gradient(120deg, var(--color-accent-600) 0%, var(--color-brand-600) 100%);
+  --gradient-accent: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-700) 100%);
   --gradient-mesh: none;
-  --gradient-text: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 100%);
+  --gradient-text: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-700) 100%);
 }

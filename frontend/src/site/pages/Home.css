@@ -254,24 +254,5 @@
   [data-px] { transform: none !important; }
 }
 
-/* ---------------------------------------------------------------- click-to-load posters inside v4
-   Same privacy behaviour (nothing loads from YouTube or Google until pressed); only the look changes. */
-.v4 .video-block { border: 0; box-shadow: none; background: none; border-radius: 0; }
-.v4 .video-block__frame { border-radius: 4px 48px 4px 4px; overflow: hidden; background: var(--forest-900); }
-.v4 .video-block__title { padding: var(--s-3) 0 0; font: 700 1.125rem/1.3 var(--serif); color: var(--heading); }
-.v4 .ctl-poster, .v4 .ctl-map { background: linear-gradient(150deg, var(--forest-800) 0%, var(--forest-900) 100%); color: #E4ECE6; }
-.v4 .ctl-poster__title { font-family: var(--serif); color: #F7F5EF; }
-.v4 .ctl-poster__action { color: #F7F5EF; font-family: var(--sans); }
-.v4 .ctl-poster__icon { background: #9DC2A6; color: var(--forest-900); box-shadow: none; }
-.v4 .ctl-poster:hover .ctl-poster__icon, .v4 .ctl-poster:focus-visible .ctl-poster__icon { background: #F7F5EF; }
-.v4 .ctl-poster__note { color: #B9CABF; }
-.v4 .ctl-map__note { color: var(--text-2); }
-.v4 .ctl-map { background: var(--surface); color: var(--text); }
-.v4 .ctl-map__label { font-family: var(--serif); color: var(--heading); }
-.v4 .ctl-map__address { color: var(--text-2); }
-.v4 .ctl-map__pin { background: var(--forest-800); color: #F7F5EF; }
-.v4 .ctl-map__btn { background: var(--forest-800); border-color: var(--forest-800); border-radius: var(--r-pill); color: #F7F5EF; }
-.v4 .ctl-map__link { color: var(--forest-800); }
-
 /* The home page ends on its own section; no white strip before the (not yet restyled) footer. */
 .app-main:has(.h4) + .site-footer { margin-top: 0; }

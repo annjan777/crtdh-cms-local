@@ -73,6 +73,7 @@ function MediaView() {
         eyebrow="Media"
         title="Events, camps &amp; coverage"
         description="Photo galleries from CRTDH events, health camps and outreach programmes, plus press coverage."
+        image={galleryImages?.[0]?.image}
       />
 
       <section data-block="media.events" className="section">

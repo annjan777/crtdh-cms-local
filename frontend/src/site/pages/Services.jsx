@@ -2,9 +2,20 @@ import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero from '../components/PageHero'
-import ImageGrid from '../components/ImageGrid'
+import { FlaskConical, Wrench, ShieldCheck, GraduationCap, Store, TrendingUp, Sparkles } from 'lucide-react'
 import { DataState } from '../components/StateBlock'
 import Reveal from '../components/Reveal'
+
+// Icon for a service, from words in its CMS title (the stock illustrations read as dated; the icon is decoration only).
+const ICONS = [
+  [/r\s*&?\s*d|research/i, FlaskConical],
+  [/prototyp|testing/i, Wrench],
+  [/regulat|certif|guidance/i, ShieldCheck],
+  [/train|capacity|skill/i, GraduationCap],
+  [/market|access/i, Store],
+  [/scal|sustain/i, TrendingUp],
+]
+const iconFor = (title) => (ICONS.find(([re]) => re.test(title || '')) || [null, Sparkles])[1]
 
 function ServicesView() {
   const { data: services, loading, error } = useApi(() => fetchList('/services/'), [], [])
@@ -24,7 +35,19 @@ function ServicesView() {
             <h2 className="section-title">Services for healthcare innovators</h2>
           </Reveal>
           <DataState loading={loading} error={error} data={services} emptyProps={{ title: 'Services list coming soon' }}>
-            {(items) => <ImageGrid items={items.map(i => ({ ...i, title: i.title?.replace('R & D', 'R&D') }))} labelKey="title" columns={3} aspect="wide" headingLevel={3} />}
+            {(items) => (
+              <ul className="svc-list">
+                {items.map((i) => {
+                  const Icon = iconFor(i.title)
+                  return (
+                    <li className="svc" key={i.id}>
+                      <span className="svc__icon" aria-hidden="true"><Icon size={28} strokeWidth={1.6} /></span>
+                      <h3 className="svc__title">{(i.title || '').replace('R & D', 'R&D')}</h3>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
           </DataState>
         </div>
       </section>

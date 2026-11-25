@@ -1,7 +1,7 @@
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
-import PageHero from '../components/PageHero'
+import PageHero, { firstBlockImage } from '../components/PageHero'
 import VideoBlock from '../components/VideoBlock'
 import { DataState } from '../components/StateBlock'
 import Reveal from '../components/Reveal'
@@ -33,15 +33,16 @@ function SocialImpactView() {
         eyebrow="Social Impact"
         title="Technology reaching communities"
         description="Health camps, rural clinics and outreach programmes bringing CRTDH innovations to the people who need them most."
+        image={firstBlockImage(impactBlocks)}
       />
 
       <section data-block="social-impact.story" className="section" style={{ paddingBottom: '0' }}>
-        <div className="container" style={{ maxWidth: '900px', margin: '0 auto', fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--text-secondary)' }}>
-          <p style={{ marginBottom: '1.5rem' }}>
-            The CRTDH & its implementation partner, FIH, has pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centers do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process. Empowered by a 'primary-care software', this has led to an all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as Sanitizer, Face mask, Oral Rehydration Salts, Sanitary Napkins etc.
+        <div className="container story">
+          <p>
+            CRTDH and its implementation partner, FIH, have pioneered clusters of technology-enabled e-health clinics in remote villages where even primary healthcare centres do not function. This has fostered a silent socio-economic revolution where certified community health-workers deliver healthcare-support to last-mile populations. Large numbers of rural women have been trained to work as an interface between the patient, 'remote' doctor and the invented frugal diagnostic-technologies, enabling the establishment of their self-esteem and sustainable livelihood in the process. Empowered by a 'primary-care software', this has led to an all-in-one real-time data-driven clinical decision support system allowing for screening and risk-assessment of patients vetted by remote doctors to ensure high-quality evidence-based tailor-made advice. These centres make genuine medicines available to the rural population (where spurious medicines are sold in an unchecked manner), deliver basic physiotherapy services, undertake school & community-based health education and awareness activities; including manufacturing of simple health products such as sanitiser, face masks, oral rehydration salts and sanitary napkins.
           </p>
           <p>
-            The various initiatives under CRTDH have thus promised to create variety of new jobs and self-employment opportunities locally, thereby reducing the need for mass migration of population to centralized hotspots for machinery manufacturing, consumables and pharmaceutics, software, information systems and analytics etc. Reduction in job associated migrant population would also allow for local and regional developments when people tend to stay longer in their place of bringing up, arresting the need for mitigating migrant population movement during times of crisis. Further, this will generate local small scale enterprises, strengthening a distributed local ecosystem of micro, small and medium enterprises for serving healthcare needs, thereby strengthening self-reliant local economic growth. This will further stimulate localized economy of small scale jobs across spectrum of skills, fostering locally sustained economy, minimizing the variance in spectrum of regional per capita income across the country.
+            The various initiatives under CRTDH have thus promised to create a variety of new jobs and self-employment opportunities locally, thereby reducing the need for mass migration of population to centralized hotspots for machinery manufacturing, consumables and pharmaceutics, software, information systems and analytics. Reduction in job associated migrant population would also allow for local and regional developments when people tend to stay longer in the places where they grew up, arresting the need for mitigating migrant population movement during times of crisis. Further, this will generate local small-scale enterprises, strengthening a distributed local ecosystem of micro, small and medium enterprises for serving healthcare needs, thereby strengthening self-reliant local economic growth. This will further stimulate localized economy of small-scale jobs across spectrum of skills, fostering locally sustained economy, minimizing the variance in spectrum of regional per capita income across the country.
           </p>
         </div>
       </section>

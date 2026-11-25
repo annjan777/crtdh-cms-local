@@ -1,0 +1,109 @@
+/* Site-wide v4: the home page's design language applied to every page (header, dropdown, mobile menu, sections,
+   cards, tables, timeline, carousels, click-to-load posters). Loaded after global.css and the page styles' base. */
+
+/* --- dropdown + mobile menu ---------------------------------------------------------------------------- */
+.site-header.v4 .nav-more__panel { top: calc(100% + 14px); min-width: 220px; padding: 8px; border-radius: 4px 18px 4px 4px; background: #FBFAF6; border: 1px solid var(--sage-300); box-shadow: 0 18px 40px rgba(22, 34, 29, .14); backdrop-filter: none; }
+.site-header.v4 .nav-more__panel a { padding: 10px 14px; border-radius: 4px; font-size: .9375rem; color: var(--forest-800); }
+.site-header.v4 .nav-more__panel a::after { display: none; }
+.site-header.v4 .nav-more__panel a:hover { background: var(--sage-50); color: var(--forest-900); }
+.site-header.v4 .nav-more__panel a.active { background: var(--sage-100); color: var(--forest-900); font-weight: 700; box-shadow: inset 3px 0 0 var(--ember-500); }
+.site-header.v4.is-over-hero .nav-more__panel a { color: var(--forest-800); }
+.site-header.v4 .mobile-nav { background: #FBFAF6; border-top: 1px solid var(--sage-300); box-shadow: 0 18px 36px rgba(22, 34, 29, .12); }
+.site-header.v4 .mobile-nav a { padding: 14px 16px; font-size: 1.0625rem; color: var(--forest-800); border-radius: 4px; }
+.site-header.v4 .mobile-nav a:hover { background: var(--sage-50); }
+.site-header.v4 .mobile-nav a.active { background: var(--sage-100); color: var(--forest-900); font-weight: 700; box-shadow: inset 3px 0 0 var(--ember-500); }
+
+/* --- sections and headings ----------------------------------------------------------------------------- */
+.v4 .section { padding-block: clamp(56px, 6.5vw, 104px); }
+.v4 .section--alt { background: var(--sage-50); }
+.v4 .section-head { margin-bottom: clamp(28px, 3vw, 44px); }
+.v4 .section-title { font-family: var(--serif); font-weight: 700; font-size: clamp(1.75rem, 1.2rem + 1.5vw, 2.6rem); line-height: 1.1; color: var(--forest-800); letter-spacing: -.005em; margin: 0; text-wrap: balance; }
+.v4 .section-subtitle { font-size: 1.0625rem; color: var(--ink-2); max-width: 62ch; }
+.v4 h2, .v4 h3 { font-family: var(--serif); color: var(--forest-800); }
+.v4 .eyebrow { color: var(--sage-700); }
+.v4 .prose-block p, .v4 .rich-text p { font-size: 1.0625rem; line-height: 1.75; color: #26302B; max-width: 72ch; }
+
+/* --- cards: ivory tiles, hairline sage border, no drop shadow; media get the organic top-right corner ------ */
+.v4 .card { background: #FBFAF6; border: 1px solid #DDE3DA; border-radius: var(--r-tile); box-shadow: none; }
+.v4 a.card:hover, .v4 .card:has(a):hover { border-color: var(--sage-400); transform: translateY(-3px); box-shadow: 0 14px 32px rgba(22, 34, 29, .08); }
+.v4 .card img { border-radius: 4px 28px 4px 4px; }
+.v4 .badge { background: var(--sage-100); color: var(--forest-800); border: 0; border-radius: 999px; letter-spacing: .04em; }
+
+/* --- buttons ---------------------------------------------------------------------------------------------- */
+.v4 .btn--primary, .v4 .btn--accent { background: var(--forest-800); border-color: var(--forest-800); color: #F4F2EC; }
+.v4 .btn--primary:hover, .v4 .btn--accent:hover { background: var(--forest-900); }
+.v4 .btn--outline, .v4 .btn--ghost { background: transparent; border: 1.5px solid var(--forest-800); color: var(--forest-800); }
+.v4 .btn--outline:hover, .v4 .btn--ghost:hover { background: var(--forest-800); color: #F4F2EC; }
+
+/* --- About: focus areas as pathway tiles (the CMS colour stays, as a small marker) ------------------------ */
+.v4 .focus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0; border-top: 1px solid var(--sage-300); }
+.v4 .focus-chip { display: flex; align-items: center; gap: 14px; padding: 20px 18px 20px 0; background: none; color: var(--forest-800); border-bottom: 1px solid var(--sage-300); border-radius: 0; box-shadow: none; font: 700 1.125rem/1.3 var(--serif); }
+.v4 .focus-chip::before { content: ""; flex: none; width: 12px; height: 12px; border-radius: 3px 8px 3px 3px; background: var(--chip-color, var(--forest-800)); }
+.v4 .focus-tagline { font-family: var(--serif); font-style: italic; color: var(--sage-700); }
+
+/* --- About: objectives table ---------------------------------------------------------------------------- */
+.v4 .table-wrap.card { border-radius: 4px 28px 4px 4px; }
+.v4 .objective-table thead th { background: var(--forest-800); color: #F4F2EC; font: 700 1rem/1.2 var(--serif); text-transform: none; letter-spacing: 0; padding-block: 16px; }
+.v4 .objective-table tbody th { background: var(--sage-50); font: 700 1rem/1.3 var(--serif); text-transform: none; letter-spacing: 0; color: var(--forest-800); }
+.v4 .objective-table td { font-size: .9688rem; line-height: 1.55; color: #26302B; border-bottom-color: #E1E6DE; }
+
+/* --- About: timeline ------------------------------------------------------------------------------------- */
+.v4 .timeline { border-left: 2px solid var(--sage-300); padding-left: 44px; }
+.v4 .timeline__marker { left: -45px; background: var(--forest-800); color: #F4F2EC; font: 700 .875rem/1 var(--sans); padding: 8px 12px; }
+.v4 .timeline__body { padding: 14px; gap: 22px; }
+.v4 .timeline__body img { width: 120px; height: 90px; border-radius: 4px 22px 4px 4px; }
+.v4 .timeline__body h3 { font-size: 1.25rem; }
+.v4 .ecosystem-panel img { border-radius: 4px 28px 4px 4px; }
+
+/* --- carousels (Innovations spotlight, Social impact, Covid-19, Product) ----------------------------------- */
+.v4 .carousel, .v4 .project-carousel { border-radius: 4px 36px 4px 4px; }
+.v4 .carousel__btn, .v4 .carousel-btn, .v4 [class*="carousel"] button[aria-label*="revious"], .v4 [class*="carousel"] button[aria-label*="ext"] { background: rgba(244, 242, 236, .92); color: var(--forest-800); border: 1px solid var(--sage-300); box-shadow: none; }
+.v4 .project-slide__caption { font-family: var(--sans); }
+
+/* --- story pages (Social impact, Covid-19) ---------------------------------------------------------------- */
+.v4 .story { max-width: 46rem; margin-inline: auto; }
+.v4 .story h2 { font-size: clamp(1.75rem, 1.2rem + 1.5vw, 2.6rem); margin: 0 0 24px; }
+.v4 .story p { font-size: 1.0938rem; line-height: 1.8; color: #26302B; margin: 0 0 1.4em; text-align: left; hyphens: manual; }
+.v4 .story p:first-of-type::first-line { font-weight: 700; color: var(--forest-800); }
+
+/* --- Team ---------------------------------------------------------------------------------------------------- */
+.v4 .team-cta { border: 1px solid var(--sage-300); background: var(--sage-50); border-radius: 4px 36px 4px 4px; }
+.v4 .team-section__icon { background: var(--sage-100); color: var(--forest-800); border-radius: 4px 12px 4px 4px; }
+.v4 .team-featured-card, .v4 .team-card { border-radius: var(--r-tile); }
+.v4 .team-featured__photo img, .v4 .team-card__photo img { border-radius: 4px 28px 4px 4px; }
+
+/* --- Contact form ----------------------------------------------------------------------------------------- */
+.v4 .field input, .v4 .field textarea, .v4 .field select { border: 1px solid #CDD3CB; border-radius: 6px; background: #FFFFFF; font-family: var(--sans); font-size: 1rem; }
+.v4 .field input:focus, .v4 .field textarea:focus { border-color: var(--forest-800); outline: 3px solid rgba(191, 115, 41, .35); outline-offset: 1px; }
+.v4 .field label { font-weight: 700; color: var(--forest-800); }
+
+/* ---------------------------------------------------------------- click-to-load posters inside v4
+   Same privacy behaviour (nothing loads from YouTube or Google until pressed); only the look changes. */
+.v4 .video-block { border: 0; box-shadow: none; background: none; border-radius: 0; }
+.v4 .video-block__frame { border-radius: 4px 48px 4px 4px; overflow: hidden; background: var(--forest-900); }
+.v4 .video-block__title { padding: var(--s-3) 0 0; font: 700 1.125rem/1.3 var(--serif); color: var(--heading); }
+.v4 .ctl-poster, .v4 .ctl-map { background: linear-gradient(150deg, var(--forest-800) 0%, var(--forest-900) 100%); color: #E4ECE6; }
+.v4 .ctl-poster__title { font-family: var(--serif); color: #F7F5EF; }
+.v4 .ctl-poster__action { color: #F7F5EF; font-family: var(--sans); }
+.v4 .ctl-poster__icon { background: #9DC2A6; color: var(--forest-900); box-shadow: none; }
+.v4 .ctl-poster:hover .ctl-poster__icon, .v4 .ctl-poster:focus-visible .ctl-poster__icon { background: #F7F5EF; }
+.v4 .ctl-poster__note { color: #B9CABF; }
+.v4 .ctl-map__note { color: var(--text-2); }
+.v4 .ctl-map { background: var(--surface); color: var(--text); }
+.v4 .ctl-map__label { font-family: var(--serif); color: var(--heading); }
+.v4 .ctl-map__address { color: var(--text-2); }
+.v4 .ctl-map__pin { background: var(--forest-800); color: #F7F5EF; }
+.v4 .ctl-map__btn { background: var(--forest-800); border-color: var(--forest-800); border-radius: var(--r-pill); color: #F7F5EF; }
+.v4 .ctl-map__link { color: var(--forest-800); }
+
+
+/* --- Services: the home page's pathway rows ------------------------------------------------------------- */
+.v4 .svc-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--sage-300); }
+.v4 .svc { display: flex; align-items: center; gap: 20px; padding: 28px 24px 28px 0; border-bottom: 1px solid var(--sage-300); }
+.v4 .svc + .svc:not(:nth-child(3n + 1)) { padding-left: 24px; border-left: 1px solid var(--sage-300); }
+.v4 .svc__icon { flex: none; display: grid; place-items: center; width: 64px; height: 56px; border-radius: var(--r-tile); background: var(--sage-100); color: var(--forest-800); }
+.v4 .svc__title { margin: 0; font: 700 clamp(1.2rem, 1rem + .5vw, 1.45rem)/1.2 var(--serif); color: var(--forest-800); }
+@media (max-width: 900px) {
+  .v4 .svc-list { grid-template-columns: 1fr; }
+  .v4 .svc + .svc:not(:nth-child(3n + 1)) { padding-left: 0; border-left: 0; }
+}

@@ -2,7 +2,7 @@ import { PageDataProvider } from '../api/data.jsx'
 import { Factory } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
-import PageHero from '../components/PageHero'
+import PageHero, { firstBlockImage } from '../components/PageHero'
 import ImageGridBlockSection from '../components/ImageGridBlockSection'
 import VideoBlock from '../components/VideoBlock'
 import { DataState } from '../components/StateBlock'
@@ -30,6 +30,7 @@ function EnterprisesView() {
         eyebrow="Enterprises"
         title="MSMEs &amp; startups engaged with CRTDH"
         description="The enterprise cluster CRTDH supports — from women-led rural livelihood ventures to medtech startups scaling manufacturing."
+        image={firstBlockImage(enterpriseBlocks, 1)}
       />
 
       <section data-block="enterprises.list" className="section">

@@ -1,7 +1,7 @@
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
-import PageHero from '../components/PageHero'
+import PageHero, { firstBlockImage } from '../components/PageHero'
 import ImageGrid from '../components/ImageGrid'
 import ImageGridBlockSection from '../components/ImageGridBlockSection'
 import { DataState } from '../components/StateBlock'
@@ -22,6 +22,7 @@ function FacilitiesView() {
         eyebrow="Facilities"
         title="Equipment &amp; manufacturing infrastructure"
         description="Instrumentation, pilot manufacturing and sterile facilities available to CRTDH researchers and partner enterprises."
+        image={firstBlockImage(blocks)}
       />
 
       <section data-block="facilities.equipment" id="equipment" className="section">
