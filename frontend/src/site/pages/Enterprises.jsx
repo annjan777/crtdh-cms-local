@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ArrowRight, ArrowUpRight, Cpu, FileText, Microscope, Handshake } from 'lucide-react'
+import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList, fetchOne } from '../api/client'
@@ -30,10 +30,10 @@ function EnterprisesView() {
 
   // Ways in for an enterprise: each goes to a real page or the CMS membership document.
   const entries = [
-    { icon: Microscope, title: 'Use our facilities', text: 'Sterile rooms, pilot plants and test equipment.', href: '/facilities/' },
-    { icon: Cpu, title: 'License a technology', text: 'Devices and diagnostics developed at CRTDH.', href: '/innovations/' },
-    { icon: Handshake, title: 'Get support', text: 'R&D, prototyping, regulatory and market access.', href: '/services/' },
-    home?.membership_pdf && { icon: FileText, title: home.membership_heading || 'Annual membership', text: 'Membership details for MSMEs and startups (PDF).', href: home.membership_pdf, external: true },
+    { title: 'Use our facilities', text: 'Sterile rooms, pilot plants and test equipment.', href: '/facilities/' },
+    { title: 'License a technology', text: 'Devices and diagnostics developed at CRTDH.', href: '/innovations/' },
+    { title: 'Get support', text: 'R&D, prototyping, regulatory and market access.', href: '/services/' },
+    home?.membership_pdf && { title: home.membership_heading || 'Annual membership', text: 'Membership details for MSMEs and startups (PDF).', href: home.membership_pdf, external: true },
   ].filter(Boolean)
 
   return (
@@ -48,10 +48,9 @@ function EnterprisesView() {
 
       <nav className="ent-entries" aria-label="Ways to work with CRTDH">
         <ul className="container ent-entries__row">
-          {entries.map(({ icon: Icon, title, text, href, external }, k) => (
-            <li key={title} data-rv style={{ '--d': `${k * 80}ms` }}>
+          {entries.map(({ title, text, href, external }, k) => (
+            <li key={title} style={{ '--d': `${k * 80}ms` }}>
               <a className="ent-entry" href={href} {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}>
-                <span className="ent-entry__icon" aria-hidden="true"><Icon size={26} strokeWidth={1.6} /></span>
                 <span className="ent-entry__body">
                   <span className="ent-entry__title">{title}</span>
                   <span className="ent-entry__text">{text}</span>
@@ -66,8 +65,7 @@ function EnterprisesView() {
       {home?.enterprises_text && (
         <section className="ent-why">
           <div className="container ent-why__grid">
-            <div data-rv>
-              <span className="eyebrow">Why MSMEs</span>
+            <div>
               <h2 className="section-title">Manufacturing healthcare technology in India</h2>
               <p className="ent-why__text">{home.enterprises_text}</p>
             </div>
@@ -83,8 +81,7 @@ function EnterprisesView() {
 
       <section data-block="enterprises.list" className="ent-wall">
         <div className="container">
-          <div className="ent-wall__head" data-rv>
-            <span className="eyebrow">Cluster</span>
+          <div className="ent-wall__head">
             <h2 className="section-title">Enterprises we work with</h2>
           </div>
           <DataState loading={loading} error={error} data={enterprises} emptyProps={{ title: 'Enterprise directory coming soon' }}>
@@ -110,8 +107,7 @@ function EnterprisesView() {
           <div className="container">
             {enterpriseBlocks.map((block) => (
               <div className="ent-photos__block" id={block.anchor_slug || undefined} key={block.id}>
-                <div className="ent-photos__head" data-rv>
-                  <span className="eyebrow">Engagement</span>
+                <div className="ent-photos__head">
                   {block.section_title && <h2 className="section-title">{block.section_title}</h2>}
                   {block.intro && <p>{block.intro}</p>}
                 </div>
@@ -125,8 +121,7 @@ function EnterprisesView() {
       {!videoLoading && enterpriseVideos.length > 0 && (
         <section data-block="enterprises.videos" className="section">
           <div className="container">
-            <div className="section-head" data-rv>
-              <span className="eyebrow">In focus</span>
+            <div className="section-head">
               <h2 className="section-title">Enterprise stories</h2>
             </div>
             <div className="grid grid--2">
@@ -137,7 +132,7 @@ function EnterprisesView() {
       )}
 
       <section className="ent-cta">
-        <div className="container ent-cta__row" data-rv>
+        <div className="container ent-cta__row">
           <h2 className="ent-cta__title">Bring us your device, process or idea.</h2>
           <a className="btn btn--primary" href="/contact/">Start a conversation <ArrowUpRight size={18} aria-hidden="true" /></a>
         </div>

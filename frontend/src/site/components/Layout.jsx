@@ -26,7 +26,7 @@ const FALLBACK_NAV = [
   { id: 'media', label: 'Media & Gallery', url: '/media', in_more: false },
   { id: 'social-impact', label: 'Social Outreach', url: '/social-impact', in_more: true },
   { id: 'covid-19', label: 'Covid-19', url: '/covid-19', in_more: true },
-  { id: 'contact', label: 'Contact Us', url: '/contact', in_more: false },
+  { id: 'contact', label: 'Contact us', url: '/contact', in_more: false },
 ]
 
 const CONTACT_SLUG = 'contact'

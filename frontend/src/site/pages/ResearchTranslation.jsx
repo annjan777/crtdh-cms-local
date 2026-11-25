@@ -79,7 +79,7 @@ function TranslationView() {
               if (!here.length) return null
               return (
                 <div className="rt-group" id={`stage-${st.id}`} data-stage-index={k} key={st.id}>
-                  <div className="rt-group__head" data-rv>
+                  <div className="rt-group__head">
                     <span className="rt-group__n" aria-hidden="true">{k + 1}</span>
                     <h2 className="rt-group__title">{st.title}</h2>
                   </div>

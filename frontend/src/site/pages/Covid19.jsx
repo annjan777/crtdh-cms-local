@@ -43,14 +43,13 @@ function Covid19View() {
       />
 
       <section data-block="covid-19.story" className="section">
-        <div className="container story" data-rv>
+        <div className="container story">
           <p className="cv-archive" role="note">
             <strong>Archive.</strong> This page records CRTDH&apos;s work during the Covid-19 pandemic, from 2020. The
             products and services it describes may no longer be offered; for current technologies, see{' '}
             <a href="/innovations/">Innovations</a>.
           </p>
-          <span className="eyebrow">Covid-19</span>
-          <h2>Turning a crisis into an opportunity</h2>
+          <h2>A nucleic-acid test outside the laboratory</h2>
           <p>
             In 2020, Covid-19 turned the world upside down. The CRTDH research group set out to turn the crisis into an
             opportunity: a diagnostic device that could run nucleic-acid tests outside a structured laboratory. The team
@@ -78,8 +77,7 @@ function Covid19View() {
           <DataState loading={loading} error={error} data={covidBlocks} emptyProps={{ title: 'Response gallery coming soon' }}>
             {(items) => items.map((block) => (
               <div className="cv-photos__block" id={block.anchor_slug || undefined} key={block.id}>
-                <div className="cv-photos__head" data-rv>
-                  <span className="eyebrow">In pictures</span>
+                <div className="cv-photos__head">
                   {block.section_title && <h2 className="section-title">{block.section_title}</h2>}
                   {block.intro && <p>{block.intro}</p>}
                 </div>
@@ -93,8 +91,7 @@ function Covid19View() {
       {!videoLoading && covidVideos.length > 0 && (
         <section data-block="covid-19.videos" className="ri-videos">
           <div className="container">
-            <div className="ri-videos__head" data-rv>
-              <span className="eyebrow eyebrow--on-dark">Coverage</span>
+            <div className="ri-videos__head">
               <h2 className="ri-videos__title">Response in action</h2>
             </div>
             <div className="grid grid--2">

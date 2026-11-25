@@ -36,3 +36,10 @@
 }
 .fac-equip__item--text { cursor: default; }
 .fac-equip__img--none { display: grid; place-items: center; background: var(--sage-100); color: var(--sage-700); }
+
+/* Instruments without a photo: a plain list, not placeholder tiles. */
+.v4 .fac-also { margin-top: clamp(28px, 3vw, 44px); padding-top: 18px; border-top: 1px solid var(--sage-300); display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 12px 32px; }
+.v4 .fac-also__title { margin: 0; font-size: 1.05rem; }
+.v4 .fac-also__list { margin: 0; padding: 0; list-style: none; columns: 2 220px; column-gap: 32px; }
+.v4 .fac-also__list li { padding: 6px 0; break-inside: avoid; border-bottom: 1px solid var(--sage-200, #DCE4DE); }
+@media (max-width: 700px) { .v4 .fac-also { grid-template-columns: minmax(0, 1fr); } }

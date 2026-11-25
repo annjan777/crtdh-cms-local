@@ -28,7 +28,7 @@
 .site-header.v4 .site-nav a.active { background: none; color: var(--forest-900); box-shadow: none; }
 .site-header.v4 .site-nav a.active::after,
 .site-header.v4 .nav-more__trigger.active::after { transform: scaleX(1); }
-.site-header.v4 .site-header__cta { border-radius: 999px; background: var(--forest-800); color: #F6F5F0; border: 1.5px solid var(--forest-800); box-shadow: none; font-family: var(--sans); font-weight: 700; padding: 10px 20px; }
+.site-header.v4 .site-header__cta { border-radius: 4px; background: var(--forest-800); color: #F6F5F0; border: 1.5px solid var(--forest-800); box-shadow: none; font-family: var(--sans); font-weight: 700; padding: 10px 20px; }
 .site-header.v4 .site-header__cta:hover { background: var(--forest-900); border-color: var(--forest-900); }
 .site-header.v4 .nav-toggle { color: var(--forest-800); border-radius: 50%; }
 

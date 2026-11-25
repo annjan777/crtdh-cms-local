@@ -3,7 +3,7 @@ import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
 import PageHero from '../components/PageHero'
-import { FlaskConical, Wrench, ShieldCheck, GraduationCap, Store, TrendingUp, Sparkles, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { DataState } from '../components/StateBlock'
 import Reveal from '../components/Reveal'
 import './Services.css'
@@ -12,24 +12,25 @@ import './Services.css'
 const AUDIENCES = { startups: 'Startups and MSMEs', researchers: 'Researchers and academic groups', industry: 'Industry', health: 'Health workers and providers' }
 const lines = (t) => String(t || '').split('\n').map((l) => l.replace(/^[-•*]\s*/, '').trim()).filter(Boolean)
 
-// Icon for a service, from words in its CMS title (the stock illustrations read as dated; the icon is decoration only).
-const ICONS = [
-  [/r\s*&?\s*d|research/i, FlaskConical],
-  [/prototyp|testing/i, Wrench],
-  [/regulat|certif|guidance/i, ShieldCheck],
-  [/train|capacity|skill/i, GraduationCap],
-  [/market|access/i, Store],
-  [/scal|sustain/i, TrendingUp],
+// What a visitor does next for each kind of service; the CMS button text and link win when they are set.
+const ACTIONS = [
+  [/prototyp|testing|facilit/i, 'Request facility access', '/facilities/#use-a-facility'],
+  [/r\s*&?\s*d|research/i, 'Discuss a prototype', '/contact/'],
+  [/regulat|certif/i, 'Ask about regulatory guidance', '/contact/'],
+  [/train|capacity/i, 'Ask about training', '/contact/'],
+  [/market|scal|sustain/i, 'Explore collaboration', '/contact/'],
 ]
-const iconFor = (title) => (ICONS.find(([re]) => re.test(title || '')) || [null, Sparkles])[1]
+const actionFor = (item) => {
+  const [, label, to] = ACTIONS.find(([re]) => re.test(item.title || '')) || [null, 'Ask about this', '/contact/']
+  return { label: item.cta_label || label, to: item.cta_link || to }
+}
 
 function Service({ item }) {
-  const Icon = iconFor(item.title)
   const offer = lines(item.includes)
+  const act = actionFor(item)
   return (
     <li className="sv" id={`service-${item.id}`}>
       <div className="sv__head">
-        <span className="sv__icon" aria-hidden="true"><Icon size={26} strokeWidth={1.6} /></span>
         <div>
           <h3 className="sv__title">{(item.title || '').replace('R & D', 'R&D')}</h3>
           {AUDIENCES[item.audience] && <p className="sv__for">For {AUDIENCES[item.audience].toLowerCase()}</p>}
@@ -46,8 +47,8 @@ function Service({ item }) {
           {item.how_to_access && <p className="sv__how"><strong>How to get it.</strong> {item.how_to_access}</p>}
         </div>
       )}
-      <a className="sv__cta" href={item.cta_link || '/contact/'}>
-        {item.cta_label || 'Ask about this'}<span className="visually-hidden">: {(item.title || '').replace('R & D', 'R&D')}</span> <ArrowRight size={16} aria-hidden="true" />
+      <a className="sv__cta" href={act.to}>
+        {act.label}<span className="visually-hidden">: {(item.title || '').replace('R & D', 'R&D')}</span> <ArrowRight size={16} aria-hidden="true" />
       </a>
     </li>
   )
@@ -75,8 +76,40 @@ function Catalogue({ items }) {
   )
 }
 
+/* How CRTDH works with an MSME: the stages and tasks from the CMS objectives table (also on the About page). */
+function Process({ rows }) {
+  const stages = []
+  for (const r of rows || []) {
+    if (!r.category) continue
+    let st = stages.find((x) => x.name === r.category)
+    if (!st) stages.push((st = { name: r.category, tasks: [] }))
+    if (r.task && !st.tasks.includes(r.task)) st.tasks.push(r.task)
+  }
+  if (stages.length < 3) return null
+  return (
+    <section className="sv-process" aria-labelledby="sv-process-title">
+      <div className="container sv-process__grid">
+        <div className="sv-process__head">
+          <h2 className="section-title" id="sv-process-title">How CRTDH works with an MSME</h2>
+          <p>From an idea to the first sales, in the order CRTDH supports it.</p>
+          <a className="sv__cta" href="/about/#objectives">See the full table on the About page <ArrowRight size={16} aria-hidden="true" /></a>
+        </div>
+        <ol className="sv-process__list">
+          {stages.map((st) => (
+            <li key={st.name}>
+              <h3>{st.name}</h3>
+              <ul>{st.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
 function ServicesView() {
   const { data: services, loading, error } = useApi(() => fetchList('/services/'), [], [])
+  const { data: rows } = useApi(() => fetchList('/objective-rows/'), [], [])
 
   return (
     <div>
@@ -97,6 +130,8 @@ function ServicesView() {
           </DataState>
         </div>
       </section>
+
+      <Process rows={rows} />
 
       <section className="svc-cta">
         <div className="container svc-cta__row">

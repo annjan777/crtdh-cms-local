@@ -150,7 +150,7 @@ function MediaView() {
                         <img src={featured.images[0].image} alt={featured.images[0].caption || ''} />
                         <span className="visually-hidden">Open the photos of {featured.title}</span>
                       </button>
-                      <div className="news-feature__copy" data-rv>
+                      <div className="news-feature__copy">
                         <Meta event={featured} />
                         <h2 className="news-feature__title">{featured.title}</h2>
                         {featured.description && <p className="news-desc">{featured.description}</p>}
@@ -159,7 +159,7 @@ function MediaView() {
                     </article>
                     <div className="news-side">
                       {side.map((ev, k) => (
-                        <article className="news-side__item" id={ev.slug} key={ev.id} data-rv style={{ '--d': `${k * 120}ms` }}>
+                        <article className="news-side__item" id={ev.slug} key={ev.id} style={{ '--d': `${k * 120}ms` }}>
                           <button type="button" className="news-side__img zoom" onClick={() => openLightbox(ev.images, 0)}>
                             <img src={ev.images[0].image} alt="" loading="lazy" />
                             <span className="visually-hidden">Open the photos of {ev.title}</span>
@@ -177,7 +177,7 @@ function MediaView() {
                   {more.length > 0 && (
                     <ol className="news-list">
                       {more.map((ev) => (
-                        <li className="news-row" id={ev.slug} key={ev.id} data-rv>
+                        <li className="news-row" id={ev.slug} key={ev.id}>
                           <button type="button" className="news-row__img zoom" onClick={() => openLightbox(ev.images, 0)}>
                             <img src={ev.images[0].image} alt="" loading="lazy" />
                             <span className="visually-hidden">Open the photos of {ev.title}</span>
@@ -202,8 +202,7 @@ function MediaView() {
       {show('events') && !galleryLoading && galleryImages && galleryImages.length > 0 && (
         <section data-block="media.gallery" className="news-more">
           <div className="container">
-            <div className="news-sec-head" data-rv>
-              <span className="eyebrow">Gallery</span>
+            <div className="news-sec-head">
               <h2 className="section-title">More from CRTDH</h2>
             </div>
             <PhotoMosaic items={galleryImages} label="More from CRTDH" />
@@ -216,13 +215,12 @@ function MediaView() {
           <div className="container news-docs__grid">
             {show('press') && !coverageLoading && coverageLinks && coverageLinks.length > 0 && (
               <div data-block="media.coverage">
-                <div className="news-sec-head" data-rv>
-                  <span className="eyebrow">Press</span>
+                <div className="news-sec-head">
                   <h2 className="section-title">Media coverage</h2>
                 </div>
                 <ul className="news-links">
                   {coverageLinks.map((link, k) => (
-                    <li key={link.id} data-rv style={{ '--d': `${k * 50}ms` }}>
+                    <li key={link.id} style={{ '--d': `${k * 50}ms` }}>
                       <a href={safeHref(link.url)} target="_blank" rel="noreferrer">
                         <span>{linkLabel(link)}</span>
                         <ExternalLink size={16} aria-hidden="true" />
@@ -234,13 +232,12 @@ function MediaView() {
             )}
             {show('newsletters') && documents.length > 0 && (
               <div data-block="media.documents" id="newsletters">
-                <div className="news-sec-head" data-rv>
-                  <span className="eyebrow">Newsletters</span>
+                <div className="news-sec-head">
                   <h2 className="section-title">Newsletters &amp; documents</h2>
                 </div>
                 <ul className="news-links">
                   {documents.map((doc, k) => (
-                    <li key={doc.id} data-rv style={{ '--d': `${k * 50}ms` }}>
+                    <li key={doc.id} style={{ '--d': `${k * 50}ms` }}>
                       <PlainLink href={doc.file}>
                         <span>{doc.title}</span>
                         <FileText size={16} aria-hidden="true" />

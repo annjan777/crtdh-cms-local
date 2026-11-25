@@ -26,7 +26,7 @@ export function Story({ s, flip, eyebrow }) {
           <img src={s.image} alt={s.image_alt || ''} loading="lazy" />
         </figure>
       )}
-      <div className="rs-story__copy" data-rv style={{ '--d': '140ms' }}>
+      <div className="rs-story__copy" style={{ '--d': '140ms' }}>
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <h2 className="rs-story__title">{s.title}</h2>
         {s.summary && <p className="rs-story__summary">{s.summary}</p>}
@@ -54,7 +54,7 @@ function ResearchView() {
       <nav className="rs-modes" aria-label="Kinds of work">
         <ul className="container rs-modes__row">
           {MODES.map(({ Icon, title, text }, k) => (
-            <li key={title} data-rv style={{ '--d': `${k * 100}ms` }}>
+            <li key={title} style={{ '--d': `${k * 100}ms` }}>
               <span className="rs-modes__icon" aria-hidden="true"><Icon size={26} strokeWidth={1.6} /></span>
               <span className="rs-modes__title">{title}</span>
               <span className="rs-modes__text">{text}</span>

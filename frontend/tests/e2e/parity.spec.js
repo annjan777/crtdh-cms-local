@@ -11,10 +11,10 @@ const text = async (page, route) => {
   return page.locator('main').innerText()
 }
 
-test('home: headline, figures, membership, home-page texts and the visit block', async ({ page }) => {
+test('home: headline, membership, home-page texts and the visit block', async ({ page }) => {
   const t = await text(page, '/')
   await expect(page.locator('h1')).toHaveCount(1)
-  for (const label of ['technologies in the portfolio', 'enterprises engaged', 'team members', 'established at IIT Kharagpur']) expect(t).toContain(label)
+  expect(t).toContain('Work with CRTDH')
   expect(t).toContain(s['home-page'].enterprises_text.slice(0, 60))
   expect(t).toContain(s['home-page'].women_text_1.slice(0, 60))
   // Every published news item is listed under Latest Updates.
@@ -47,7 +47,9 @@ test('innovations: every innovation, in order, with its body text', async ({ pag
 
 test('facilities: equipment in order and the manufacturing anchor', async ({ page }) => {
   const t = await text(page, '/facilities/')
-  expectInOrder(expect, t, visible(c.equipment).map((e) => e.name), 'equipment')
+  // Photographed instruments first, then the ones without a photo; CMS order within each.
+  expectInOrder(expect, t, visible(c.equipment).filter((e) => e.image).map((e) => e.name), 'equipment with photos')
+  expectInOrder(expect, t, visible(c.equipment).filter((e) => !e.image).map((e) => e.name), 'equipment without photos')
   await expect(page.locator('#manufacturing-plants')).toHaveCount(1)
 })
 

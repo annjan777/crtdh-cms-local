@@ -60,11 +60,10 @@ function AboutView() {
       {!aboutLoading && about?.intro && (
         <section data-block="about.intro" className="ab-intro">
           <div className="container ab-split">
-            <div className="ab-split__label" data-rv>
-              <span className="eyebrow">Why CRTDH</span>
+            <div className="ab-split__label">
               <h2 className="section-title">Why CRTDH exists</h2>
             </div>
-            <div className="ab-split__body" data-rv style={{ '--d': '120ms' }}>
+            <div className="ab-split__body" style={{ '--d': '120ms' }}>
               <ProseBlock text={about.intro} />
             </div>
           </div>
@@ -74,11 +73,10 @@ function AboutView() {
       {!aboutLoading && about?.mission_vision && (
         <section data-block="about.intro" className="ab-mission">
           <div className="container ab-split">
-            <div className="ab-split__label" data-rv>
-              <span className="eyebrow eyebrow--on-dark">Mission &amp; vision</span>
+            <div className="ab-split__label">
               <h2 className="ab-mission__title">Our mission</h2>
             </div>
-            <div className="ab-split__body ab-mission__body" data-rv style={{ '--d': '120ms' }}>
+            <div className="ab-split__body ab-mission__body" style={{ '--d': '120ms' }}>
               <ProseBlock text={about.mission_vision} />
             </div>
           </div>
@@ -87,9 +85,8 @@ function AboutView() {
 
       <section data-block="about.focus" className="ab-focus">
         <div className="container">
-          <div className="ab-focus__head" data-rv>
+          <div className="ab-focus__head">
             <div>
-              <span className="eyebrow">Focus areas</span>
               <h2 className="section-title">Where we work</h2>
             </div>
             {focusTaglines.length > 0 && (
@@ -102,7 +99,7 @@ function AboutView() {
             {(areas) => (
               <ul className="focus-grid">
                 {areas.map((area, k) => (
-                  <li key={area.id} className="focus-chip" data-rv style={{ '--chip-color': area.color || 'var(--forest-800)', '--d': `${k * 60}ms` }}>
+                  <li key={area.id} className="focus-chip" style={{ '--chip-color': area.color || 'var(--forest-800)', '--d': `${k * 60}ms` }}>
                     {area.title}
                   </li>
                 ))}
@@ -114,15 +111,14 @@ function AboutView() {
 
       <section data-block="about.timeline" className="ab-journey">
         <div className="container ab-journey__grid">
-          <div className="ab-journey__head" data-rv>
-            <span className="eyebrow">Journey</span>
+          <div className="ab-journey__head">
             <h2 className="section-title">Healthcare ecosystem at IIT Kharagpur</h2>
           </div>
           <DataState loading={timelineLoading} error={timelineError} data={timeline} emptyProps={{ title: 'Timeline coming soon' }}>
             {(entries) => (
               <ol className="ab-timeline">
                 {entries.map((entry, k) => (
-                  <li className="ab-timeline__entry" key={entry.id} data-rv style={{ '--d': `${k * 120}ms` }}>
+                  <li className="ab-timeline__entry" key={entry.id} style={{ '--d': `${k * 120}ms` }}>
                     <span className="ab-timeline__year">{entry.year}</span>
                     <div className="ab-timeline__body">
                       <h3>{entry.title}</h3>
@@ -144,15 +140,14 @@ function AboutView() {
         )}
       </section>
 
-      <section data-block="about.support" className="ab-support">
+      <section data-block="about.support" className="ab-support" id="objectives">
         <div className="container">
-          <div className="ab-support__head" data-rv>
-            <span className="eyebrow">Objectives</span>
+          <div className="ab-support__head">
             <h2 className="section-title">How CRTDH supports MSMEs</h2>
           </div>
           <DataState loading={objLoading} error={objError} data={objectiveRows} emptyProps={{ title: 'Objectives coming soon' }}>
             {() => (
-              <div className="table-wrap card" tabIndex={0} role="region" aria-label="How CRTDH supports MSMEs (table, scrolls sideways on small screens)" data-rv>
+              <div className="table-wrap card" tabIndex={0} role="region" aria-label="How CRTDH supports MSMEs (table, scrolls sideways on small screens)">
                 <table className="objective-table">
                   <thead>
                     <tr>
@@ -181,19 +176,19 @@ function AboutView() {
         <section data-block="about.partners" className="ab-orgs">
           <div className="container ab-orgs__grid">
             {about.pi_desk_image && (
-              <figure data-block="about.pi-note" className="ab-pi" data-rv>
+              <figure data-block="about.pi-note" className="ab-pi">
                 <span className="eyebrow">From the PI&apos;s desk</span>
                 <img src={about.pi_desk_image} alt="Note from the PI's desk" loading="lazy" />
               </figure>
             )}
             {about.dsir_about && (
-              <div className="ab-org" data-rv style={{ '--d': '100ms' }}>
+              <div className="ab-org" style={{ '--d': '100ms' }}>
                 <h3>About DSIR, Govt. of India</h3>
                 <ProseBlock text={about.dsir_about} />
               </div>
             )}
             {about.iitkgp_about && (
-              <div className="ab-org" data-rv style={{ '--d': '200ms' }}>
+              <div className="ab-org" style={{ '--d': '200ms' }}>
                 <h3>About IIT Kharagpur</h3>
                 <ProseBlock text={about.iitkgp_about} />
               </div>

@@ -114,6 +114,14 @@ FIXES = [
     ("core.NewsItem", "text", 'CRTDH-supported Pathology and Eye Clinic — visit by the CRTDH team at Rural Healthcare Foundation',
      "CRTDH-supported pathology and eye clinic: visit to the Rural Healthcare Foundation"),
     ("core.NewsItem", "text", 'Health Awareness Programme and Conclave', "Health awareness programme and conclave"),
+    # Redesign brief 26 Nov: the approved hero headline, one button, and a short institutional label (see C-33).
+    ("carousel.HeroSlide", "heading", "Common Research &", "Affordable Healthcare."),
+    ("carousel.HeroSlide", "highlight_heading", "Technology Development", "Engineered for Impact."),
+    ("carousel.HeroSlide", "heading_end", "Hub", ""),
+    ("carousel.HeroSlide", "eyebrow", "DSIR · GOVERNMENT OF INDIA", "CRTDH, IIT Kharagpur"),
+    ("carousel.HeroSlide", "primary_button_label", "Explore Innovations", "See the technologies"),
+    ("carousel.HeroSlide", "secondary_button_label", "About CRTDH", ""),
+    ("core.NavItem", "label", "Contact Us", "Contact us"),
     # Review 25 Nov: the "Research translation" pathway now has its own page.
     ("core.HomePage", "pathway_2_link", "/enterprises", "/research-translation"),
 ]

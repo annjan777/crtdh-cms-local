@@ -36,8 +36,8 @@ function ProductStage({ product, flip }) {
           </div>
         )}
       </div>
-      <div className="pr__copy" data-rv style={{ '--d': '150ms' }}>
-        {STATUS[product.status] ? <span className={`pr__status pr__status--${product.status}`}>{STATUS[product.status]}</span> : <span className="eyebrow">Product</span>}
+      <div className="pr__copy" style={{ '--d': '150ms' }}>
+        {STATUS[product.status] ? <span className={`pr__status pr__status--${product.status}`}>{STATUS[product.status]}</span> : null}
         <h2 className="pr__name" id={`${slug(product)}-h`}>{product.name}</h2>
         {product.summary && <p className="pr__summary">{product.summary}</p>}
         {product.use_case && <p className="pr__use"><span>Use</span> {product.use_case}</p>}

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ArrowUpRight, Wrench } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import { PageDataProvider } from '../api/data.jsx'
 import { useApi } from '../hooks/useApi'
 import { fetchList } from '../api/client'
@@ -28,7 +28,7 @@ function useLightbox(list) {
 function PlantBlock({ block }) {
   return (
     <div className="fac-plants" id={block.anchor_slug || undefined}>
-      <div className="fac-plants__head" data-rv>
+      <div className="fac-plants__head">
         {block.section_title && <h3 className="fac-plants__title">{block.section_title}</h3>}
         {block.intro && <p className="fac-plants__intro">{block.intro}</p>}
       </div>
@@ -37,30 +37,31 @@ function PlantBlock({ block }) {
   )
 }
 
-// Every instrument in CMS order; one without a photo keeps its place as a named tile.
+// Instruments with a photo as a photo grid (CMS order); those without one are listed by name below it,
+// so no placeholder tile is ever shown.
 function Equipment({ items }) {
   const withPhoto = items.filter((e) => e.image)
+  const noPhoto = items.filter((e) => !e.image)
   const [open, box] = useLightbox(withPhoto.map((e) => ({ ...e, caption: e.name })))
   return (
     <>
       <ul className="fac-equip">
-        {items.map((e, k) => (
-          <li key={e.id} data-rv style={{ '--d': `${(k % 4) * 70}ms` }}>
-            {e.image ? (
-              <button type="button" className="fac-equip__item" onClick={() => open(withPhoto.indexOf(e))}>
-                <span className="fac-equip__img zoom"><img src={e.image} alt="" loading="lazy" /></span>
-                <h3 className="fac-equip__name">{e.name}</h3>
-                <span className="visually-hidden">Open a larger photo</span>
-              </button>
-            ) : (
-              <div className="fac-equip__item fac-equip__item--text">
-                <span className="fac-equip__img fac-equip__img--none" aria-hidden="true"><Wrench size={30} strokeWidth={1.5} /></span>
-                <h3 className="fac-equip__name">{e.name}</h3>
-              </div>
-            )}
+        {withPhoto.map((e, k) => (
+          <li key={e.id} style={{ '--d': `${(k % 4) * 70}ms` }}>
+            <button type="button" className="fac-equip__item" onClick={() => open(k)}>
+              <span className="fac-equip__img zoom"><img src={e.image} alt="" loading="lazy" /></span>
+              <h3 className="fac-equip__name">{e.name}</h3>
+              <span className="visually-hidden">Open a larger photo</span>
+            </button>
           </li>
         ))}
       </ul>
+      {noPhoto.length > 0 && (
+        <div className="fac-also">
+          <h3 className="fac-also__title">Also available</h3>
+          <ul className="fac-also__list">{noPhoto.map((e) => <li key={e.id}>{e.name}</li>)}</ul>
+        </div>
+      )}
       {box}
     </>
   )
@@ -97,8 +98,7 @@ function FacilitiesView() {
 
       <section data-block="facilities.photo-sections" id="manufacturing-plants" className="fac-sec">
         <div className="container">
-          <div className="fac-sec__head" data-rv>
-            <span className="eyebrow">Manufacturing</span>
+          <div className="fac-sec__head">
             <h2 className="section-title">Pilot plant &amp; manufacturing units</h2>
           </div>
           <DataState loading={blocksLoading} error={blocksError} data={facilityBlocks} emptyProps={{ title: 'Facility gallery coming soon' }}>
@@ -109,9 +109,8 @@ function FacilitiesView() {
 
       <section data-block="facilities.equipment" id="equipment" className="fac-sec fac-sec--alt">
         <div className="container">
-          <div className="fac-sec__head fac-sec__head--split" data-rv>
+          <div className="fac-sec__head fac-sec__head--split">
             <div>
-              <span className="eyebrow">Equipment</span>
               <h2 className="section-title">Lab &amp; testing equipment</h2>
             </div>
             <p>Select an instrument to see a larger photo.</p>
@@ -123,7 +122,7 @@ function FacilitiesView() {
       </section>
 
       <section className="fac-cta" id="use-a-facility">
-        <div className="container fac-cta__row" data-rv>
+        <div className="container fac-cta__row">
           <h2 className="fac-cta__title">Want to use a facility or run a test here?</h2>
           <a className="btn btn--primary" href="/contact/">Send an enquiry <ArrowUpRight size={18} aria-hidden="true" /></a>
         </div>

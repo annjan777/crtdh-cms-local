@@ -24,7 +24,6 @@ function PortfolioIndex({ items, all, cat, setCat, cats }) {
     <section className="tech-index" aria-labelledby="tech-index-title">
       <div className="container tech-index__grid">
         <div className="tech-index__aside">
-          <span className="eyebrow">Portfolio</span>
           <h2 className="section-title" id="tech-index-title">{all.length} technologies, from the lab bench to the clinic</h2>
           <p className="tech-index__lead">Choose a technology to read how it works, what it is for and how far it has come.</p>
           <div className={`tech-index__preview${previewImg ? ' is-on' : ''}`} aria-hidden="true">
@@ -43,7 +42,7 @@ function PortfolioIndex({ items, all, cat, setCat, cats }) {
         )}
         <ol className="tech-index__list" aria-live="polite">
           {items.map((t, k) => (
-            <li key={t.id} data-rv style={{ '--d': `${Math.min(k, 8) * 50}ms` }}>
+            <li key={t.id} style={{ '--d': `${Math.min(k, 8) * 50}ms` }}>
               <a
                 href={`#${anchor(t)}`}
                 className="tech-index__row"
@@ -109,7 +108,7 @@ function Technology({ t, flip }) {
           )}
         </div>
       )}
-      <div className="tech__copy" data-rv>
+      <div className="tech__copy">
         {(t.category || STATUS[t.status]) && (
           <p className="tech__tags">{t.category && <span className="tech-index__cat">{t.category}</span>}<Status t={t} /></p>
         )}
@@ -167,8 +166,7 @@ function InnovationsView() {
               {!slidesLoading && projectSlides && projectSlides.length > 0 && (
                 <section data-block="innovations.spotlight" className="tech-spot" aria-labelledby="tech-spot-title">
                   <div className="container tech-spot__grid">
-                    <div className="tech-spot__copy" data-rv>
-                      <span className="eyebrow eyebrow--on-dark">Spotlight</span>
+                    <div className="tech-spot__copy">
                       <h2 className="tech-spot__title" id="tech-spot-title">Project spotlight</h2>
                       <ul className="tech-spot__parts">{projectSlides.filter((s) => s.title).map((s) => <li key={s.id}>{s.title}</li>)}</ul>
                     </div>

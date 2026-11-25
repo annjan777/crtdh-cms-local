@@ -35,8 +35,7 @@ function PhotoEssay({ block, heroText }) {
   const [at, setAt] = useState(-1)
   return (
     <div className="ri-essay" id={block.anchor_slug || undefined}>
-      <div className="ri-essay__head" data-rv>
-        <span className="eyebrow">In the field</span>
+      <div className="ri-essay__head">
         <h2 className="section-title">{block.section_title || 'Community outreach'}</h2>
         {/* Skip the intro when it only repeats the page introduction above. */}
         {block.intro && block.intro.trim() !== heroText && <p>{block.intro}</p>}
@@ -102,7 +101,7 @@ function SocialImpactView() {
       />
       <ul className="ri-strands" aria-label="What the programme does">
         {STRANDS.map(({ Icon, title }, k) => (
-          <li key={title} data-rv style={{ '--d': `${k * 80}ms` }}>
+          <li key={title} style={{ '--d': `${k * 80}ms` }}>
             <span className="ri-strands__icon" aria-hidden="true"><Icon size={24} strokeWidth={1.6} /></span>
             <span>{title}</span>
           </li>
@@ -119,7 +118,7 @@ function SocialImpactView() {
                   <img src={storyImgs[k]} alt="" loading="lazy" data-px="0.06" />
                 </figure>
               )}
-              <p className={`ri-story__text${k === 0 ? ' ri-story__text--lead' : ''}`} data-rv>{text}</p>
+              <p className={`ri-story__text${k === 0 ? ' ri-story__text--lead' : ''}`}>{text}</p>
             </div>
           ))}
         </div>
@@ -136,8 +135,7 @@ function SocialImpactView() {
       {!videoLoading && impactVideos.length > 0 && (
         <section data-block="social-impact.videos" className="ri-videos">
           <div className="container">
-            <div className="ri-videos__head" data-rv>
-              <span className="eyebrow eyebrow--on-dark">Stories</span>
+            <div className="ri-videos__head">
               <h2 className="ri-videos__title">Community stories</h2>
             </div>
             <div className="grid grid--2">

@@ -19,7 +19,9 @@
 .v4 .section-head { margin-bottom: clamp(28px, 3vw, 44px); }
 .v4 .section-title { font-family: var(--serif); font-weight: 700; font-size: clamp(1.75rem, 1.2rem + 1.5vw, 2.6rem); line-height: 1.1; color: var(--forest-800); letter-spacing: -.005em; margin: 0; text-wrap: balance; }
 .v4 .section-subtitle { font-size: 1.0625rem; color: var(--ink-2); max-width: 62ch; }
-.v4 h2, .v4 h3 { font-family: var(--serif); color: var(--forest-800); }
+.v4 h2 { font-family: var(--serif); color: var(--forest-800); }
+/* Smaller headings (names, items, sub-sections) are set in the sans: the serif is kept for page and section titles. */
+.v4 h3, .v4 h4 { font-family: var(--sans); font-weight: 600; letter-spacing: -.005em; color: var(--forest-800); }
 .v4 .eyebrow { color: var(--sage-700); }
 .v4 .prose-block p, .v4 .rich-text p { text-align: left; hyphens: manual; font-size: 1.0625rem; line-height: 1.75; color: #1E2724; max-width: 72ch; }
 
@@ -93,7 +95,7 @@
 .v4 .ctl-map__label { font-family: var(--serif); color: var(--heading); }
 .v4 .ctl-map__address { color: var(--text-2); }
 .v4 .ctl-map__pin { background: var(--forest-800); color: #F7F5EF; }
-.v4 .ctl-map__btn { background: var(--forest-800); border-color: var(--forest-800); border-radius: var(--r-pill); color: #F7F5EF; }
+.v4 .ctl-map__btn { background: var(--forest-800); border-color: var(--forest-800); border-radius: 4px; color: #F7F5EF; }
 .v4 .ctl-map__link { color: var(--forest-800); }
 
 

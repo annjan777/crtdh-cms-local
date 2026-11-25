@@ -125,10 +125,11 @@ describe('previous design, built from the snapshot', async () => {
       globalThis.fetch = realFetch
     }
   })
-  it('Home shows the hero, the four figures and the membership and visit sections', () => {
+  it('Home shows the hero, the focus story, membership and visit sections, and no figures row', () => {
     const html = render('home')
-    for (const s of ['home.hero', 'home.membership', 'home.objective', 'home.visit']) expect(html).toContain(`data-block="${s}"`)
-    for (const label of ['technologies in the portfolio', 'enterprises engaged', 'team members', 'established at IIT Kharagpur']) expect(html).toContain(label)
+    for (const s of ['home.hero', 'home.pathways', 'home.focus', 'home.membership', 'home.visit']) expect(html).toContain(`data-block="${s}"`)
+    expect(html).toContain('Work with CRTDH')
+    expect(html).not.toContain('h4-figs')
   })
   it('the menu marks the current page and links carry the trailing slash', () => {
     const html = render('team')

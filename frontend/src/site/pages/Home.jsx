@@ -28,6 +28,9 @@ const PATHWAYS = [
   { title: 'Rural impact', text: 'Bringing healthcare innovations closer to underserved communities.', to: '/social-impact', Icon: Users },
 ]
 
+// The four stages named on the Research translation page.
+const STAGES = ['Discovery', 'Prototype', 'Validation', 'Translation']
+
 const firstSentence = (t) => {
   const m = String(t || '').trim().match(/^(.+?[.!?])(\s|$)/s)
   return m ? m[1] : String(t || '')
@@ -107,7 +110,7 @@ function Pathways({ home }) {
     <section className="h4-paths" aria-label="What CRTDH does" data-block="home.pathways">
       <div className="h4-wrap h4-paths__row">
         {items.map(({ title, text, to, Icon }, n) => (
-          <SiteLink key={n} to={to} className="h4-path" data-rv style={{ '--d': `${n * 120}ms` }}>
+          <SiteLink key={n} to={to} className="h4-path" style={{ '--d': `${n * 120}ms` }}>
             <span className="h4-path__icon"><Icon size={30} strokeWidth={1.6} aria-hidden="true" /></span>
             <span className="h4-path__body">
               <span className="h4-path__title">{title}</span>
@@ -127,10 +130,13 @@ function Focus({ home }) {
   return (
     <section className="h4-focus" data-block="home.focus" aria-labelledby="h4-focus-title">
       <div className="h4-wrap h4-focus__grid">
-        <div className="h4-focus__copy" data-rv>
+        <div className="h4-focus__copy">
           {home.focus_eyebrow && <p className="h4-focus__eyebrow">{home.focus_eyebrow}</p>}
           <h2 id="h4-focus-title" className="h4-focus__title">{home.focus_heading}</h2>
           {home.focus_text && <p className="h4-focus__text">{home.focus_text}</p>}
+          <ol className="h4-stages" aria-label="How a technology moves from the lab to the field">
+            {STAGES.map((st) => <li key={st}>{st}</li>)}
+          </ol>
           {home.focus_link && home.focus_link_label && (
             <SiteLink to={home.focus_link} className="h4-textlink">{home.focus_link_label} <Arrow size={16} /></SiteLink>
           )}
@@ -140,6 +146,90 @@ function Focus({ home }) {
             <img src={home.focus_image} alt={home.focus_image_alt || ''} loading="lazy" data-px="0.06" />
           </figure>
         )}
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------- technology showcase */
+const plain = (html) => String(html || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+// One line about a technology: its CMS summary, else the first sentence of its write-up when that says more than the title.
+function techLine(t) {
+  if (t.summary) return t.summary
+  const first = firstSentence(plain(t.body))
+  const norm = (x) => x.toLowerCase().replace(/[^a-z0-9]/g, '')
+  return first && first.length >= 24 && norm(first) !== norm(t.title) && !norm(first).startsWith(norm(t.title)) ? first : ''
+}
+
+function TechShowcase({ innovations }) {
+  // The first technologies in CMS order that have a photo; Covid-era work is on the archive page.
+  const items = (innovations || []).filter((t) => (t.images || []).length && !/covid/i.test(t.title)).slice(0, 4)
+  if (items.length < 2) return null
+  const [lead, ...rest] = items
+  const img = (t) => t.images[0]?.image
+  return (
+    <section className="h4-tech" aria-labelledby="h4-tech-title">
+      <div className="h4-wrap">
+        <div className="h4-head">
+          <h2 className="h4-h2" id="h4-tech-title">Technologies from the lab</h2>
+          <Link to="/innovations" className="h4-textlink">All {innovations.length} technologies <Arrow size={16} /></Link>
+        </div>
+        <div className="h4-tech__grid">
+          <SiteLink to={`/innovations#technology-${lead.id}`} className="h4-tech__lead">
+            <span className="h4-tech__img" data-rv="mask"><img src={img(lead)} alt="" loading="lazy" /></span>
+            <span className="h4-tech__name">{lead.title}</span>
+            {techLine(lead) && <span className="h4-tech__line">{techLine(lead)}</span>}
+          </SiteLink>
+          <ul className="h4-tech__list">
+            {rest.map((t) => (
+              <li key={t.id}>
+                <SiteLink to={`/innovations#technology-${t.id}`} className="h4-tech__row">
+                  <span className="h4-tech__thumb"><img src={img(t)} alt="" loading="lazy" /></span>
+                  <span>
+                    <span className="h4-tech__name">{t.title}</span>
+                    {techLine(t) && <span className="h4-tech__line">{techLine(t)}</span>}
+                  </span>
+                </SiteLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------- collaboration: who can work with CRTDH, and how */
+function Collaborate({ home }) {
+  const routes = [
+    { title: 'Use the facilities', text: 'Pilot manufacturing, sterile rooms and test equipment at IIT Kharagpur.', to: '/facilities#use-a-facility', action: 'Request facility access' },
+    { title: 'Develop or test a device', text: 'R&D support, prototyping and testing for a device, test or idea.', to: '/services', action: 'Discuss a prototype' },
+  ]
+  return (
+    <section className="h4-collab" aria-labelledby="h4-collab-title">
+      <div className="h4-wrap h4-collab__grid">
+        <div>
+          <h2 className="h4-h2" id="h4-collab-title">Work with CRTDH</h2>
+          <p className="h4-lead">For researchers, startups and MSMEs working on healthcare technology.</p>
+        </div>
+        <ul className="h4-collab__list">
+          {routes.map((r) => (
+            <li key={r.title}>
+              <h3 className="h4-collab__title">{r.title}</h3>
+              <p>{r.text}</p>
+              <SiteLink to={r.to} className="h4-textlink">{r.action} <Arrow size={16} /></SiteLink>
+            </li>
+          ))}
+          {(home?.membership_heading || home?.membership_pdf) && (
+            <li data-block="home.membership">
+              <h3 className="h4-collab__title">{home.membership_heading || 'Annual membership for MSMEs and startups'}</h3>
+              <p>Access to R&amp;D support, pilot-scale facilities, testing and validation, and technology-transfer support for MSMEs and startups.</p>
+              {home.membership_pdf && (
+                <a className="h4-textlink" href={safeHref(home.membership_pdf)} target="_blank" rel="noreferrer">Read the membership details (PDF) <Arrow size={16} /></a>
+              )}
+            </li>
+          )}
+        </ul>
       </div>
     </section>
   )
@@ -159,7 +249,7 @@ function Showcase({ gallery, news, eventThumb }) {
   if (!big && !items.length) return null
   return (
     <section className="h4-show">
-      <div className="h4-show__compo" data-rv>
+      <div className="h4-show__compo">
         {big && (
           <div className="h4-show__big">
             <img src={big.image} alt={big.caption || ''} loading="lazy" data-px="0.08" />
@@ -176,7 +266,7 @@ function Showcase({ gallery, news, eventThumb }) {
         </svg>
       </div>
       {items.length > 0 && (
-        <div data-block="home.news" className="h4-show__news" data-rv>
+        <div data-block="home.news" className="h4-show__news">
           <div className="h4-show__head">
             <h2 className="h4-rule-title"><span aria-hidden="true" />Latest updates</h2>
             <Link to="/media" className="h4-textlink">View all <Arrow size={16} /></Link>
@@ -204,65 +294,21 @@ function Showcase({ gallery, news, eventThumb }) {
   )
 }
 
-/* ---------------------------------------------------------------- figures: counts from the CMS lists */
-function Figures({ items }) {
-  return (
-    <section className="h4-figs" aria-label="CRTDH in numbers">
-      <dl className="h4-wrap h4-figs__row">
-        {items.map((f, k) => (
-          <div className="h4-fig" key={f.label} data-rv style={{ '--d': `${k * 90}ms` }}>
-            <dt className="h4-fig__label">{f.label}</dt>
-            <dd className="h4-fig__value">{f.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  )
-}
-
-/* ---------------------------------------------------------------- F..J: the rest of the CMS home content */
-function Objective({ home }) {
-  if (!home.objective_text && !home.membership_heading && !home.membership_pdf) return null
-  return (
-    <section className="h4-section">
-      <div className="h4-wrap h4-split">
-        {home.objective_text && (
-          <div data-block="home.objective" className="h4-objective" data-rv>
-            <p className="h4-statement">{firstSentence(home.objective_text)}</p>
-            <p className="h4-body">{home.objective_text.slice(firstSentence(home.objective_text).length).trim()}</p>
-            <Link to="/about" className="h4-textlink">About CRTDH <Arrow size={16} /></Link>
-          </div>
-        )}
-        {(home.membership_heading || home.membership_pdf) && (
-          <div data-block="home.membership" className="h4-member" data-rv style={{ '--d': '120ms' }}>
-            <h2 className="h4-h3">{home.membership_heading || 'Annual membership for MSMEs and startups'}</h2>
-            <p className="h4-body">Access to R&amp;D support, pilot-scale facilities, testing and validation, and technology-transfer support for MSMEs and startups.</p>
-            {home.membership_pdf && (
-              <a className="h4-pill h4-pill--forest" href={safeHref(home.membership_pdf)} target="_blank" rel="noreferrer">
-                Membership details <Arrow />
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
-
+/* ---------------------------------------------------------------- the rest of the CMS home content */
 function Enterprises({ home }) {
   if (!home.enterprises_text) return null
   const imgs = [home.enterprises_image_1, home.enterprises_image_2].filter(Boolean)
   return (
     <section data-block="home.enterprises" className="h4-section h4-ent">
       <div className="h4-wrap h4-split h4-split--media">
-        <div className="h4-ent__media" data-rv>
+        <div className="h4-ent__media">
           {imgs[0] && <div className="h4-ent__a"><img src={imgs[0]} alt="" loading="lazy" /></div>}
           {imgs[1] && <div className="h4-ent__b"><img src={imgs[1]} alt="" loading="lazy" /></div>}
         </div>
-        <div className="h4-stack" data-rv style={{ '--d': '120ms' }}>
+        <div className="h4-stack" style={{ '--d': '120ms' }}>
           <h2 className="h4-h2">From innovation to manufacturing</h2>
           <p className="h4-body">{home.enterprises_text}</p>
-          <Link to="/enterprises" className="h4-textlink">Work with CRTDH <Arrow size={16} /></Link>
+          <Link to="/enterprises" className="h4-textlink">Enterprises we work with <Arrow size={16} /></Link>
         </div>
       </div>
     </section>
@@ -277,12 +323,12 @@ function Rural({ home }) {
         <path d="M0 0 L1600 0 L1600 40 C 1380 110 1120 120 860 80 C 600 40 320 30 0 90 Z" />
       </svg>
       <div className="h4-wrap h4-split h4-split--media h4-band__inner">
-        <div className="h4-stack" data-rv>
+        <div className="h4-stack">
           <h2 className="h4-h2">E-health clinics where there was no clinic</h2>
           <p className="h4-body">{home.women_text_1}</p>
           <Link to="/social-impact" className="h4-textlink h4-textlink--light">Read the story <Arrow size={16} /></Link>
         </div>
-        <div className="h4-band__media" data-rv style={{ '--d': '120ms' }}>
+        <div className="h4-band__media" style={{ '--d': '120ms' }}>
           {home.women_image_2 && <div className="h4-band__a"><img src={home.women_image_2} alt="" loading="lazy" data-px="0.06" /></div>}
           {home.women_image_1 && <div className="h4-band__b"><img src={home.women_image_1} alt="" loading="lazy" /></div>}
         </div>
@@ -294,49 +340,20 @@ function Rural({ home }) {
   )
 }
 
-function Facilities({ home }) {
-  const cards = [
-    { title: home.facility_card_1_title, image: home.facility_card_1_image, link: home.facility_card_1_link },
-    { title: home.facility_card_2_title, image: home.facility_card_2_image, link: home.facility_card_2_link },
-    { title: home.facility_card_3_title, image: home.facility_card_3_image, link: home.facility_card_3_link },
-  ].filter((c) => c.title || c.image)
-  const hasVideos = home.chintan_shivir_youtube_id || home.viksit_bharat_youtube_id
+function Videos({ home }) {
+  if (!home.chintan_shivir_youtube_id && !home.viksit_bharat_youtube_id) return null
   return (
-    <section data-block="home.facilities" className="h4-section">
+    <section data-block="home.videos" className="h4-section h4-vid">
       <div className="h4-wrap">
-        <div className="h4-head" data-rv>
-          <h2 className="h4-h2">Pilot plant and laboratories</h2>
-          <Link to="/facilities" className="h4-textlink">All facilities <Arrow size={16} /></Link>
+        <h2 className="h4-h3">CRTDH on video</h2>
+        <div className="h4-videos__row">
+          {home.chintan_shivir_youtube_id && (
+            <VideoBlock block={{ title: 'Chintan Shivir at CRTDH', youtube_url: `https://www.youtube.com/watch?v=${home.chintan_shivir_youtube_id}` }} />
+          )}
+          {home.viksit_bharat_youtube_id && (
+            <VideoBlock block={{ title: 'Viksit Bharat Abhiyan', youtube_url: `https://www.youtube.com/watch?v=${home.viksit_bharat_youtube_id}` }} />
+          )}
         </div>
-        {home.location_description && <p className="h4-lead" data-rv>{home.location_description.replace(/\.*\s*$/, '')}.</p>}
-        <ul className="h4-fac">
-          {cards.map((c, n) => {
-            const inner = (
-              <>
-                <span className="h4-fac__img">{c.image && <img src={c.image} alt="" loading="lazy" />}</span>
-                <span className="h4-fac__title">{c.title}</span>
-              </>
-            )
-            return (
-              <li key={c.title || n} data-rv style={{ '--d': `${n * 100}ms` }}>
-                {c.link ? <SiteLink to={c.link} className="h4-fac__link">{inner}</SiteLink> : <span className="h4-fac__link">{inner}</span>}
-              </li>
-            )
-          })}
-        </ul>
-        {hasVideos && (
-          <div data-block="home.videos" className="h4-videos" data-rv>
-            <h3 className="h4-h3">See CRTDH in action</h3>
-            <div className="h4-videos__row">
-              {home.chintan_shivir_youtube_id && (
-                <VideoBlock block={{ title: 'Chintan Shivir at CRTDH', youtube_url: `https://www.youtube.com/watch?v=${home.chintan_shivir_youtube_id}` }} />
-              )}
-              {home.viksit_bharat_youtube_id && (
-                <VideoBlock block={{ title: 'Viksit Bharat Abhiyan', youtube_url: `https://www.youtube.com/watch?v=${home.viksit_bharat_youtube_id}` }} />
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )
@@ -347,7 +364,7 @@ function Visit({ home, siteSettings }) {
   return (
     <section data-block="home.visit" className="h4-section h4-section--alt">
       <div className="h4-wrap h4-split">
-        <div className="h4-stack" data-rv>
+        <div className="h4-stack">
           <h2 className="h4-h2">Visit CRTDH</h2>
           <p className="h4-lead">{home?.location_address || siteSettings.address}</p>
           <div className="h4-actions">
@@ -355,7 +372,7 @@ function Visit({ home, siteSettings }) {
             <Link to="/contact" className="h4-textlink">Contact us <Arrow size={16} /></Link>
           </div>
         </div>
-        <div className="h4-map" data-rv style={{ '--d': '120ms' }}>
+        <div className="h4-map" style={{ '--d': '120ms' }}>
           <MapFacade src={siteSettings.map_embed_url} address={siteSettings.address} />
         </div>
       </div>
@@ -372,16 +389,6 @@ function HomeView() {
   const { data: events } = useApi(() => fetchList('/media-events/'), [], [])
   const { data: eventImages } = useApi(() => fetchList('/media-event-images/'), [], [])
   const { data: innovations } = useApi(() => fetchList('/innovations/'), [], [])
-  const { data: enterprises } = useApi(() => fetchList('/enterprises/'), [], [])
-  const { data: team } = useApi(() => fetchList('/team-members/'), [], [])
-  // Counts of what the CMS lists, labelled by what is counted (C-10 to C-12, C-35 to C-37): no "+", no
-  // "incubated". The year is the one fixed figure: the About page text gives 2019 as the year CRTDH was set up (C-13).
-  const figures = [
-    { label: 'technologies in the portfolio', value: innovations?.length ?? 0 },
-    { label: 'enterprises engaged', value: enterprises?.length ?? 0 },
-    { label: 'team members', value: team?.length ?? 0 },
-    { label: 'established at IIT Kharagpur', value: 2019 },
-  ]
   const slides = useMemo(() => (slidesRaw || []).filter((s) => s.image), [slidesRaw])
 
   // News items link to /media#<event slug>; use that event's first photo as the thumbnail.
@@ -406,16 +413,16 @@ function HomeView() {
       <Hero slides={slides} />
       <Pathways home={home} />
       <Focus home={home} />
-      <Showcase gallery={gallery || []} news={news || []} eventThumb={eventThumb} />
-      <Figures items={figures} />
+      <TechShowcase innovations={innovations || []} />
       {home && (
         <>
-          <Objective home={home} />
           <Enterprises home={home} />
           <Rural home={home} />
-          <Facilities home={home} />
+          <Videos home={home} />
         </>
       )}
+      <Showcase gallery={gallery || []} news={news || []} eventThumb={eventThumb} />
+      <Collaborate home={home} />
       <Visit home={home} siteSettings={siteSettings} />
     </div>
   )

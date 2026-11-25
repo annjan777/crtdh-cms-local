@@ -2,7 +2,7 @@
 .ent-entries { border-bottom: 1px solid var(--sage-300); }
 .ent-entries__row { list-style: none; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .ent-entries__row > li + li { border-left: 1px solid var(--sage-300); }
-.ent-entry { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: start; height: 100%; padding: 28px 20px; color: var(--forest-800); text-decoration: none; transition: background-color 300ms; }
+.ent-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; height: 100%; padding: 28px 20px; color: var(--forest-800); text-decoration: none; transition: background-color 300ms; }
 .ent-entries__row > li:first-child .ent-entry { padding-left: 0; }
 .ent-entry:hover, .ent-entry:focus-visible { background: var(--sage-50); }
 .ent-entry__icon { display: grid; place-items: center; width: 56px; height: 50px; border-radius: 4px; background: var(--sage-100); }

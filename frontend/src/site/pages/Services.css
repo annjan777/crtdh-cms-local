@@ -26,3 +26,15 @@
 }
 .v4 .sv:not(:has(.sv__body)) .sv__head { align-items: center; }
 .v4 .sv:not(:has(.sv__body)) .sv__title { margin-top: 0; }
+
+/* The MSME process: a numbered sequence (the stages really are in order). */
+.v4 .sv-process { padding-block: clamp(56px, 6vw, 104px); background: #EAEFEA; }
+.v4 .sv-process__grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(28px, 5vw, 88px); align-items: start; }
+.v4 .sv-process__head p { margin: 12px 0 16px; color: var(--ink-2); max-width: 36ch; }
+.v4 .sv-process__list { margin: 0; padding: 0; list-style: none; counter-reset: st; border-top: 1px solid var(--forest-800); }
+.v4 .sv-process__list > li { counter-increment: st; display: grid; grid-template-columns: 3rem minmax(0, 1fr); column-gap: 12px; padding-block: 18px; border-bottom: 1px solid var(--sage-300); }
+.v4 .sv-process__list > li::before { content: counter(st, decimal-leading-zero); grid-row: span 2; font: 600 .95rem/1.6 var(--sans); color: var(--ember-700); font-variant-numeric: tabular-nums; }
+.v4 .sv-process__list h3 { margin: 0; font: 600 1.15rem/1.35 var(--sans); color: var(--forest-800); }
+.v4 .sv-process__list ul { margin: 6px 0 0; padding-left: 1.1em; color: var(--text-2); }
+.v4 .sv-process__list ul li { margin-block: 4px; }
+@media (max-width: 860px) { .v4 .sv-process__grid { grid-template-columns: minmax(0, 1fr); } }
