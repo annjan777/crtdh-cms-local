@@ -4,7 +4,7 @@ import { safeHref } from '../util.js'
 import { MapFacade, directionsUrl } from '../components/ClickToLoad.jsx'
 import SiteLink from '../link.jsx'
 import { Link } from '../router.jsx'
-import { ArrowRight, Cpu, FlaskConical, Users, Microscope, Handshake, GraduationCap, Pause, Play } from 'lucide-react'
+import { ArrowRight, Cpu, FlaskConical, Users, Microscope, Handshake, GraduationCap } from 'lucide-react'
 import { useApi } from '../hooks/useApi'
 import { fetchList, fetchOne } from '../api/client'
 import VideoBlock from '../components/VideoBlock'
@@ -40,18 +40,23 @@ function Arrow({ size = 18 }) {
 /* ---------------------------------------------------------------- A + B: hero */
 function Hero({ slides }) {
   const [i, setI] = useState(0)
+  // No on-screen controls: the photos rotate on their own, hold while the pointer or keyboard focus is on the
+  // hero, and stay on the first photo for visitors who ask for reduced motion.
   const [paused, setPaused] = useState(false)
+  const [hold, setHold] = useState(false)
   useEffect(() => { if (prefersReducedMotion()) setPaused(true) }, [])
   useEffect(() => {
-    if (paused || slides.length < 2) return undefined
+    if (paused || hold || slides.length < 2) return undefined
     const t = setTimeout(() => setI((n) => (n + 1) % slides.length), 7000)
     return () => clearTimeout(t)
-  }, [i, paused, slides.length])
+  }, [i, paused, hold, slides.length])
   const s = slides[i] || slides[0]
   if (!s) return null
   const line2 = [s.highlight_heading, s.heading_end].filter(Boolean).join(' ')
   return (
-    <section data-block="home.hero" className="h4-hero" aria-roledescription="carousel" aria-label="CRTDH at work">
+    <section data-block="home.hero" className="h4-hero" aria-label="CRTDH at work"
+      onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}
+      onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
       <div className="h4-hero__media" data-px="0.22" data-px-mode="top">
         {slides.map((sl, n) => (
           <div key={sl.id ?? n} className={`h4-hero__slide ${n === i ? 'is-on' : ''}`} aria-hidden={n !== i}>
@@ -77,21 +82,6 @@ function Hero({ slides }) {
             )}
           </div>
         </div>
-        {slides.length > 1 && (
-          <div className="h4-hero__controls">
-            <div className="h4-bars" role="group" aria-label="Choose photo">
-              {slides.map((sl, n) => (
-                <button key={sl.id ?? n} type="button" aria-label={`Photo ${n + 1} of ${slides.length}`}
-                  aria-current={n === i ? 'true' : undefined} onClick={() => setI(n)}
-                  className={n === i && !paused ? 'is-running' : undefined} />
-              ))}
-            </div>
-            <button type="button" className="h4-hero__pause" onClick={() => setPaused((p) => !p)}
-              aria-label={paused ? 'Play photos' : 'Pause photos'}>
-              {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-            </button>
-          </div>
-        )}
       </div>
       {/* C: the organic edge into the page */}
       <svg className="h4-hero__wave" viewBox="0 0 1600 200" preserveAspectRatio="none" aria-hidden="true">
