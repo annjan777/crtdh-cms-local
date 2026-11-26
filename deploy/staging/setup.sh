@@ -590,8 +590,8 @@ checklist() {
     echo
     bold "Done. Checklist:"
     cat <<EOF
-   [ ] https://$CMS_HOST  sign in -> "Set up two-step sign-in": scan the QR code with an authenticator app,
-       enter the 6-digit code, save the 10 recovery codes (shown once) in your password manager.
+   [ ] https://$CMS_HOST  sign in with your username and password (two-step sign-in is off
+       unless MFA_ENABLED=True is set in .env.staging).
    [ ] First publish: change one small thing (e.g. a news item), Review & publish -> Publish. Watch it go
        queued -> building -> uploading -> Live (deploy/staging/dc.sh logs -f worker publish-agent).
    [ ] https://$SITE_HOST shows the site (view source: <meta name="crtdh-build" ...>).

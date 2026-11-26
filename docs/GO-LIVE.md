@@ -342,18 +342,16 @@ Type the user name, email and password at the prompts. Never put the password on
 Use your own name (for example `annjan`), **not** `admin`. A superuser counts as the Admin role
 (`apps/accounts/roles.py`).
 
-### 4.4 First sign-in and MFA
+### 4.4 First sign-in
 
-1. Open `https://cms.<domain>`, pass the Access email code, and sign in.
-2. The CMS shows **Set up two-step sign-in**. Scan the QR code with an authenticator app (Google Authenticator,
-   Microsoft Authenticator, 1Password …), then enter the 6-digit code.
-3. **Save your recovery codes**: 10 codes, shown once. Put them in the password manager.
-4. Go to **Users** → **Add a user** for each staff member, with role Editor, Publisher or Admin. Each person gets a
-   one-time temporary password. They must change it and set up two-step sign-in at first sign-in. Send the
-   temporary password through a separate channel from the CMS address (for example tell them in person or by
-   phone).
+1. Open `https://cms.<domain>`, pass the Access email code, and sign in with your username and password.
+   Two-step sign-in (an authenticator app code) is off. It can be turned on later with `MFA_ENABLED=True`;
+   then the CMS asks each person to scan a QR code and save 10 recovery codes at their next sign-in.
+2. Go to **Users** → **Add a user** for each staff member, with role Editor, Publisher or Admin. Each person gets a
+   one-time temporary password, which they must change at first sign-in. Send it through a separate channel from
+   the CMS address (for example tell them in person or by phone).
 
-Verify: sign out, sign in again. A password alone never opens the CMS; it always asks for the code.
+Verify: sign out, sign in again with your password.
 Roll back for step 4: `docker compose down` stops everything and keeps the data. `docker compose down -v`
 **deletes the database and media volumes**. Use it only if you want to start this step again from nothing.
 

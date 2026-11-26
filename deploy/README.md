@@ -95,10 +95,10 @@ docker compose ps          # migrate should show "exited (0)"; everything else "
 docker compose run --rm cms python manage.py createsuperuser
 ```
 
-Type the password at the prompt (never on the command line or in a file). On first sign-in at
-`https://cms.<domain>` the CMS asks you to set up an authenticator app and shows 10 recovery codes
-once. Create everyone else from the CMS user screen; each gets a one-time temporary password and
-must enrol TOTP at first sign-in. There are no default accounts and no seed users in production.
+Type the password at the prompt (never on the command line or in a file). Sign in at
+`https://cms.<domain>` with that username and password; two-step sign-in is off unless
+`MFA_ENABLED=True` is set. Create everyone else from the CMS user screen; each gets a one-time
+temporary password and must change it at first sign-in. There are no default accounts and no seed users in production.
 
 To import the bundled content once into an empty database (never on a database that has edits):
 `docker compose run --rm -e CRTDH_ALLOW_SEED=1 cms python manage.py bootstrap_local`
