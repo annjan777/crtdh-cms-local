@@ -9,6 +9,8 @@ from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from ._refinement_copy import FILLS, PREFIX_FIXES, REFINEMENT_FIXES
+
 # (app_label.Model, field, old, new)
 FIXES = [
     ("facilities.Equipment", "name", "Two Sterile rooms BSL level 2", "Two sterile rooms (BSL-2)"),
@@ -124,6 +126,7 @@ FIXES = [
     ("core.NavItem", "label", "Contact Us", "Contact us"),
     # Review 25 Nov: the "Research translation" pathway now has its own page.
     ("core.HomePage", "pathway_2_link", "/enterprises", "/research-translation"),
+    *REFINEMENT_FIXES,
 ]
 
 
@@ -140,6 +143,24 @@ class Command(BaseCommand):
                 model = apps.get_model(label)
                 for obj in model.objects.filter(**{field: old}):
                     self.stdout.write(f"{label}#{obj.pk}.{field}: {old!r} -> {new!r}")
+                    if not dry_run:
+                        setattr(obj, field, new)
+                        obj.save()
+                    changed += 1
+            # Prefix fixes: replace the start of a long field (only where it still starts with the old text).
+            for label, field, old, new in PREFIX_FIXES:
+                model = apps.get_model(label)
+                for obj in model.objects.filter(**{f"{field}__startswith": old}):
+                    self.stdout.write(f"{label}#{obj.pk}.{field}: start {old[:40]!r}... -> {new[:40]!r}...")
+                    if not dry_run:
+                        setattr(obj, field, new + getattr(obj, field)[len(old):])
+                        obj.save()
+                    changed += 1
+            # Fills: set an empty field on one named record (never overwrite text an editor has written).
+            for label, lookup, field, new in FILLS:
+                model = apps.get_model(label)
+                for obj in model.objects.filter(**lookup).filter(**{field: ""}):
+                    self.stdout.write(f"{label}#{obj.pk}.{field}: (empty) -> {new[:60]!r}")
                     if not dry_run:
                         setattr(obj, field, new)
                         obj.save()

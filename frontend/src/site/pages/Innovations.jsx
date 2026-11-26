@@ -73,17 +73,29 @@ function PortfolioIndex({ items, all, cat, setCat, cats }) {
   )
 }
 
+/* A step-by-step operating procedure belongs to the people running the test, not to the portfolio overview:
+   everything from a "Test procedure" heading on is folded away under a disclosure (still in the page). */
+const PROCEDURE = /<h[2-4][^>]*>\s*Test procedure\s*<\/h[2-4]>/i
+function splitProcedure(body) {
+  const html = body || ''
+  const m = html.match(PROCEDURE)
+  if (!m) return { overview: html, procedure: '', steps: 0 }
+  const procedure = html.slice(m.index + m[0].length)
+  return { overview: html.slice(0, m.index), procedure, steps: (procedure.match(/<li[\s>]/gi) || []).length }
+}
+
 /* One technology: photos first (a large frame and the rest as a strip), then the write-up. Long write-ups open
    progressively; the full text is always in the page. */
 function Technology({ t, flip }) {
   const imgs = t.images || []
+  const { overview, procedure, steps } = splitProcedure(t.body)
   const [main, setMain] = useState(0)
   const [open, setOpen] = useState(false)
   const bodyRef = useRef(null)
   const [long, setLong] = useState(false)
   useEffect(() => {
     const el = bodyRef.current
-    if (el) setLong(el.scrollHeight > 420)
+    if (el) setLong(el.scrollHeight > 720)
     const onHash = () => { if (window.location.hash === `#${anchor(t)}`) setOpen(true) }
     onHash()
     window.addEventListener('hashchange', onHash)
@@ -114,10 +126,16 @@ function Technology({ t, flip }) {
         )}
         <h2 className="tech__title" id={`${anchor(t)}-h`}>{t.title}</h2>
         {t.summary && <p className="tech__summary">{t.summary}</p>}
-        {t.body && (
+        {overview && (
           <div className={`tech__body${long && !open ? ' is-clamped' : ''}`} ref={bodyRef} id={`${anchor(t)}-body`}>
-            <RichText html={t.body} className="rich-text" />
+            <RichText html={overview} className="rich-text" />
           </div>
+        )}
+        {procedure && (
+          <details className="tech__steps">
+            <summary>Test procedure{steps ? ` (${steps} steps)` : ''}</summary>
+            <RichText html={procedure} className="rich-text" />
+          </details>
         )}
         {long && (
           <button type="button" className="tech__more" aria-expanded={open} aria-controls={`${anchor(t)}-body`} onClick={() => setOpen((v) => !v)}>

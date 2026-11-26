@@ -37,31 +37,57 @@ function PlantBlock({ block }) {
   )
 }
 
-// Instruments with a photo as a photo grid (CMS order); those without one are listed by name below it,
-// so no placeholder tile is ever shown.
+// Equipment grouped by what it lets a user do. The CMS has no category for equipment, so the group comes from
+// the instrument's name; anything that matches no group is listed under "Other equipment", never dropped.
+const GROUPS = [
+  { id: 'sterile', title: 'Sterile work, storage and fluid handling', match: /sterile|bsl|cryogenic|refrigerat|autoclave|heat chamber|dispenser|syringe/i },
+  { id: 'prototyping', title: 'Prototyping and fabrication', match: /pcb|solder|laser|3d print/i },
+  { id: 'testing', title: 'Testing, imaging and computing', match: /amplifier|waveform|power supply|multimeter|spectrum|thermal imaging|ecg|server|computer/i },
+  { id: 'manufacturing', title: 'Pilot manufacturing and packaging', match: /manufactur|pilot plant|plant|packag|kit prep/i },
+  { id: 'clinical', title: 'Clinical and field', match: /pathology|clinic|lab at/i },
+]
+function groupEquipment(items) {
+  const groups = GROUPS.map((g) => ({ ...g, items: [] }))
+  const other = { id: 'other', title: 'Other equipment', items: [] }
+  for (const e of items) (groups.find((g) => g.match.test(e.name || '')) || other).items.push(e)
+  return [...groups, other].filter((g) => g.items.length)
+}
+
+// Each group: instruments with a photo as tiles (same square frame, photo shown whole), those without a photo
+// listed by name under them, so there is never a placeholder tile. One lightbox steps through every photo.
 function Equipment({ items }) {
-  const withPhoto = items.filter((e) => e.image)
-  const noPhoto = items.filter((e) => !e.image)
-  const [open, box] = useLightbox(withPhoto.map((e) => ({ ...e, caption: e.name })))
+  const groups = groupEquipment(items)
+  const photos = groups.flatMap((g) => g.items.filter((e) => e.image))
+  const [open, box] = useLightbox(photos.map((e) => ({ ...e, caption: e.name })))
   return (
     <>
-      <ul className="fac-equip">
-        {withPhoto.map((e, k) => (
-          <li key={e.id} style={{ '--d': `${(k % 4) * 70}ms` }}>
-            <button type="button" className="fac-equip__item" onClick={() => open(k)}>
-              <span className="fac-equip__img zoom"><img src={e.image} alt="" loading="lazy" /></span>
-              <h3 className="fac-equip__name">{e.name}</h3>
-              <span className="visually-hidden">Open a larger photo</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      {noPhoto.length > 0 && (
-        <div className="fac-also">
-          <h3 className="fac-also__title">Also available</h3>
-          <ul className="fac-also__list">{noPhoto.map((e) => <li key={e.id}>{e.name}</li>)}</ul>
-        </div>
-      )}
+      {groups.map((g) => {
+        const withPhoto = g.items.filter((e) => e.image)
+        const noPhoto = g.items.filter((e) => !e.image)
+        return (
+          <div className="fac-group" key={g.id} aria-labelledby={`fac-group-${g.id}`} role="group">
+            <h3 className="fac-group__title" id={`fac-group-${g.id}`}>{g.title}</h3>
+            {withPhoto.length > 0 && (
+              <ul className="fac-equip">
+                {withPhoto.map((e) => (
+                  <li key={e.id}>
+                    <button type="button" className="fac-equip__item" onClick={() => open(photos.indexOf(e))}>
+                      <span className="fac-equip__img"><img src={e.image} alt="" loading="lazy" /></span>
+                      <span className="fac-equip__name">{e.name}</span>
+                      <span className="visually-hidden">: open a larger photo</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {noPhoto.length > 0 && (
+              <ul className="fac-also__list" aria-label={`${g.title}: more equipment`}>
+                {noPhoto.map((e) => <li key={e.id}>{e.name}</li>)}
+              </ul>
+            )}
+          </div>
+        )
+      })}
       {box}
     </>
   )
@@ -75,6 +101,8 @@ function FacilitiesView() {
     [],
   )
   const facilityBlocks = (blocks || []).filter((b) => !b.page || b.page === 'facilities')
+  const { data: documents } = useApi(() => fetchList('/documents/'), [], [])
+  const membershipPdf = (documents || []).find((d) => d.category === 'membership' && d.file)?.file
   const ref = useRef(null)
   usePageMotion(ref, [equipment, blocks])
 
@@ -92,7 +120,7 @@ function FacilitiesView() {
         <div className="container fac-nav__row">
           <a href="#manufacturing-plants">Manufacturing units</a>
           <a href="#equipment">Lab &amp; testing equipment</a>
-          <a href="#use-a-facility">Use a facility</a>
+          <a href="#use-a-facility">Who can use them</a>
         </div>
       </nav>
 
@@ -113,7 +141,7 @@ function FacilitiesView() {
             <div>
               <h2 className="section-title">Lab &amp; testing equipment</h2>
             </div>
-            <p>Select an instrument to see a larger photo.</p>
+            <p>Select a photo to see it larger.</p>
           </div>
           <DataState loading={loading} error={error} data={equipment} emptyProps={{ title: 'Equipment list coming soon' }}>
             {(items) => <Equipment items={items} />}
@@ -121,10 +149,20 @@ function FacilitiesView() {
         </div>
       </section>
 
+      {/* Who can use the facilities and how: from the CRTDH membership details (PDF). */}
       <section className="fac-cta" id="use-a-facility">
         <div className="container fac-cta__row">
-          <h2 className="fac-cta__title">Want to use a facility or run a test here?</h2>
-          <a className="btn btn--primary" href="/contact/">Send an enquiry <ArrowUpRight size={18} aria-hidden="true" /></a>
+          <div className="fac-cta__copy">
+            <h2 className="fac-cta__title">Use a facility</h2>
+            <p>
+              MSMEs and startups can book CRTDH equipment and pilot plants by the hour through the annual membership
+              (Platinum, Gold or Silver). Slots depend on availability, and rates do not include consumables or consultancy.
+            </p>
+            {membershipPdf && (
+              <a className="fac-cta__doc" href={membershipPdf} target="_blank" rel="noreferrer">Membership tiers and hourly rates (PDF)</a>
+            )}
+          </div>
+          <a className="btn btn--primary" href="/contact/">Ask about a booking <ArrowUpRight size={18} aria-hidden="true" /></a>
         </div>
       </section>
     </div>

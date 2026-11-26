@@ -27,6 +27,44 @@ function linkLabel(link) {
   }
 }
 
+const isCatchAll = (e) => /ongoing activit|other activit/i.test(e.title || '') || /other-ongoing/.test(e.slug || '')
+const DOC_KIND = { newsletter: 'Newsletter', membership: 'Membership', report: 'Report', brochure: 'Brochure' }
+const docKind = (doc) => DOC_KIND[doc.category] || 'Document'
+const fileType = (href) => (String(href || '').match(/\.([a-z0-9]{2,4})(?:$|[?#])/i)?.[1] || '').toUpperCase()
+
+/* The catch-all album: the first photos as a grid, the rest on request; every photo opens in the lightbox. */
+const FIRST = 8
+function ActivityGrid({ event, openLightbox }) {
+  const [all, setAll] = useState(false)
+  const shown = all ? event.images : event.images.slice(0, FIRST)
+  const gridId = `${event.slug || 'activities'}-photos`
+  return (
+    <section className="news-acts" id={event.slug} aria-labelledby={`${gridId}-h`}>
+      <div className="container">
+        <div className="news-sec-head news-acts__head">
+          <h2 className="section-title" id={`${gridId}-h`}>{event.title}</h2>
+          <p>{event.images.length} photos</p>
+        </div>
+        <ul className="news-acts__grid" id={gridId}>
+          {shown.map((im, k) => (
+            <li key={im.id}>
+              <button type="button" className="news-acts__btn" onClick={() => openLightbox(event.images, k)}>
+                <img src={im.image} alt={im.caption || ''} loading="lazy" />
+                <span className="visually-hidden">Open photo {k + 1} of {event.images.length}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        {event.images.length > FIRST && (
+          <button type="button" className="news-acts__more" aria-expanded={all} aria-controls={gridId} onClick={() => setAll((v) => !v)}>
+            {all ? `Show the first ${FIRST} photos` : `Show all ${event.images.length} photos`}
+          </button>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function MediaView() {
   const { data: events, loading, error } = useApi(() => fetchList('/media-events/'), [], [])
   const { data: coverageLinks, loading: coverageLoading } = useApi(
@@ -83,7 +121,11 @@ function MediaView() {
 
   const ref = useRef(null)
   usePageMotion(ref, [events, galleryImages, coverageLinks, documents])
-  const withPhotos = (events || []).filter((e) => e.images?.length)
+  const allWithPhotos = (events || []).filter((e) => e.images?.length)
+  // A catch-all album ("Other ongoing activities") is not an event: it gets its own section further down,
+  // with a short selection first and the rest on request.
+  const catchAll = allWithPhotos.find(isCatchAll)
+  const withPhotos = allWithPhotos.filter((e) => e !== catchAll)
   const cats = [...new Set(withPhotos.map((e) => (e.category || '').trim()).filter(Boolean))]
   const filters = [
     { id: 'all', label: 'All' },
@@ -199,6 +241,8 @@ function MediaView() {
         </section>
       )}
 
+      {show('events') && catchAll && <ActivityGrid event={catchAll} openLightbox={openLightbox} />}
+
       {show('events') && !galleryLoading && galleryImages && galleryImages.length > 0 && (
         <section data-block="media.gallery" className="news-more">
           <div className="container">
@@ -235,12 +279,15 @@ function MediaView() {
                 <div className="news-sec-head">
                   <h2 className="section-title">Newsletters &amp; documents</h2>
                 </div>
-                <ul className="news-links">
+                <ul className="news-links news-docs__list">
                   {documents.map((doc, k) => (
                     <li key={doc.id} style={{ '--d': `${k * 50}ms` }}>
-                      <PlainLink href={doc.file}>
-                        <span>{doc.title}</span>
-                        <FileText size={16} aria-hidden="true" />
+                      <PlainLink href={doc.file} target="_blank" rel="noreferrer">
+                        <FileText size={20} aria-hidden="true" className="news-docs__icon" />
+                        <span className="news-docs__text">
+                          <span>{doc.title}</span>
+                          <span className="news-docs__meta">{docKind(doc)}{fileType(doc.file) ? ` · ${fileType(doc.file)}` : ''}</span>
+                        </span>
                       </PlainLink>
                     </li>
                   ))}

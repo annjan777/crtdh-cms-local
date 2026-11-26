@@ -37,7 +37,7 @@ export const PAGE_NEEDS = {
   },
   team: { singletons: [], collections: ['team-categories', 'team-members', 'page-heroes'] },
   innovations: { singletons: [], collections: ['innovations', 'project-slides', 'page-heroes'] },
-  facilities: { singletons: [], collections: ['equipment', 'image-grid-blocks', 'page-heroes'] },
+  facilities: { singletons: [], collections: ['equipment', 'image-grid-blocks', 'documents', 'page-heroes'] },
   services: { singletons: ['home-page'], collections: ['services', 'objective-rows', 'page-heroes'] },
   product: { singletons: [], collections: ['products', 'page-heroes'] },
   enterprises: { singletons: ['home-page'], collections: ['enterprises', 'image-grid-blocks', 'video-blocks', 'page-heroes'] },

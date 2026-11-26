@@ -195,3 +195,6 @@ Discarding can't be undone. Your other changes stay.
 | My photo was refused. | It is too small. Use the original photo, at least 1600 px wide for the Home page. |
 | I forgot my password. | Ask an Admin to reset it. You get a new temporary password. |
 | Who do I ask for help? | Your website admin. If you see a code like a request id, send it to them. |
+| A technology has a long step-by-step test procedure. | Put a heading **Test procedure** above the steps. The site shows the description first and folds the steps away under "Test procedure (N steps)". |
+| A claim about a technology needs its evidence. | Add an **Evidence** heading with the study size, the result as the paper states it (for example sensitivity and specificity, not "accuracy" unless the paper says accuracy), and a link to the paper. |
+| Where do equipment groups on the Facilities page come from? | From the instrument's name (for example "laser cutter" goes under Prototyping and fabrication). A name that fits no group is listed under "Other equipment". |

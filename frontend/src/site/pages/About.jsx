@@ -39,7 +39,7 @@ function AboutView() {
   }, [rawTimeline])
 
   const focusTaglines = (about?.focus_intro || '').split('\n').filter(Boolean)
-  const groupedObjectives = useGroupedObjectives(objectiveRows)
+  const stages = useObjectiveStages(objectiveRows)
 
   const { data: slides } = useApi(() => fetchList('/hero-slides/'), [], [])
   const ref = useRef(null)
@@ -87,7 +87,7 @@ function AboutView() {
         <div className="container">
           <div className="ab-focus__head">
             <div>
-              <h2 className="section-title">Where we work</h2>
+              <h2 className="section-title">Focus areas</h2>
             </div>
             {focusTaglines.length > 0 && (
               <div className="ab-focus__taglines">
@@ -144,41 +144,44 @@ function AboutView() {
         <div className="container">
           <div className="ab-support__head">
             <h2 className="section-title">How CRTDH supports MSMEs</h2>
+            <p>Seven stages, from an MSME's idea to its first sales.</p>
           </div>
           <DataState loading={objLoading} error={objError} data={objectiveRows} emptyProps={{ title: 'Objectives coming soon' }}>
             {() => (
-              <div className="table-wrap card" tabIndex={0} role="region" aria-label="How CRTDH supports MSMEs (table, scrolls sideways on small screens)">
-                <table className="objective-table">
-                  <thead>
-                    <tr>
-                      <th>Stage</th>
-                      <th>Task</th>
-                      <th>Outcome</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupedObjectives.map((row) => (
-                      <tr key={row.id}>
-                        {row.showCategory && <th rowSpan={row.span} scope="row">{row.category}</th>}
-                        <td>{row.task}</td>
-                        <td>{row.outcome || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ol className="ab-process">
+                {stages.map((st, k) => (
+                  <li className="ab-process__stage" key={st.name}>
+                    <span className="ab-process__num" aria-hidden="true">{String(k + 1).padStart(2, '0')}</span>
+                    <h3 className="ab-process__name">{st.name}</h3>
+                    <div className="ab-process__body">
+                      <ul className="ab-process__tasks">{st.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
+                      {st.outcomes.length > 0 && (
+                        <div className="ab-process__outcome">
+                          <h4>Outcome</h4>
+                          {st.outcomes.map((o) => <p key={o}>{o}</p>)}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
             )}
           </DataState>
         </div>
       </section>
 
-      {!aboutLoading && (about?.pi_desk_image || about?.dsir_about || about?.iitkgp_about) && (
+      {!aboutLoading && ((about?.pi_desk_image && about?.pi_desk_document) || about?.dsir_about || about?.iitkgp_about) && (
         <section data-block="about.partners" className="ab-orgs">
-          <div className="container ab-orgs__grid">
-            {about.pi_desk_image && (
+          <div className={`container ab-orgs__grid${about.pi_desk_image && about.pi_desk_document ? '' : ' ab-orgs__grid--two'}`}>
+            {/* The PI's note is shown only when its document is in the CMS: the cover image on its own is the
+                page title again, with nothing to read behind it. */}
+            {about.pi_desk_image && about.pi_desk_document && (
               <figure data-block="about.pi-note" className="ab-pi">
                 <span className="eyebrow">From the PI&apos;s desk</span>
-                <img src={about.pi_desk_image} alt="Note from the PI's desk" loading="lazy" />
+                <a href={about.pi_desk_document} target="_blank" rel="noreferrer">
+                  <img src={about.pi_desk_image} alt="" loading="lazy" />
+                  <span>Read the note from the PI&apos;s desk (PDF)</span>
+                </a>
               </figure>
             )}
             {about.dsir_about && (
@@ -204,23 +207,22 @@ function ProseBlock({ text }) {
   return <RichText html={text} className="prose-block" />
 }
 
-// The Objectives table groups rows under a shared row-header (rowSpan) by
-// `category`, matching the original site's table layout.
-function useGroupedObjectives(rows) {
+// The CMS objectives table as stages: rows grouped by `category` in CMS order. A task or outcome that the
+// table repeats (it came from merged cells in the original table) is shown once.
+function useObjectiveStages(rows) {
   return useMemo(() => {
-    if (!rows) return []
-    const spans = {}
-    rows.forEach((r) => {
-      const key = r.category || `__row-${r.id}`
-      spans[key] = (spans[key] || 0) + 1
-    })
-    const seen = new Set()
-    return rows.map((r) => {
-      const key = r.category || `__row-${r.id}`
-      const first = !seen.has(key)
-      seen.add(key)
-      return { ...r, showCategory: first, span: spans[key] }
-    })
+    const stages = []
+    for (const r of rows || []) {
+      const name = (r.category || '').trim()
+      if (!name) continue
+      let st = stages.find((x) => x.name === name)
+      if (!st) stages.push((st = { name, tasks: [], outcomes: [] }))
+      const task = (r.task || '').trim()
+      const outcome = (r.outcome || '').trim()
+      if (task && !st.tasks.includes(task)) st.tasks.push(task)
+      if (outcome && !st.outcomes.includes(outcome)) st.outcomes.push(outcome)
+    }
+    return stages
   }, [rows])
 }
 

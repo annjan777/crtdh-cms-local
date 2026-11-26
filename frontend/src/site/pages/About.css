@@ -15,42 +15,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-.objective-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 480px;
-}
-
-.objective-table th,
-.objective-table td {
-  text-align: left;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.objective-table th {
-  background: var(--color-maroon-50);
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--brand-primary-dark);
-  vertical-align: top;
-}
-
-.objective-table thead th {
-  background: var(--color-brand-800); /* white text needs AA contrast */
-  color: var(--color-white);
-}
-
-.objective-table tr:last-child td {
-  border-bottom: none;
-}
-
 /* --- Prose (About CRTDH intro, Mission & Vision, DSIR/IIT KGP notes) --- */
 .prose-block p {
   color: var(--text-primary);
@@ -240,3 +204,23 @@
   .ab-split__label { position: static; }
   .ab-timeline__entry { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
+
+/* How CRTDH supports MSMEs: the objectives as seven stages in order (was a table with repeated rows). */
+.ab-support__head p { margin: 8px 0 0; color: var(--ink-2); }
+.ab-process { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--forest-800); }
+.ab-process__stage { display: grid; grid-template-columns: 56px minmax(0, 3fr) minmax(0, 8fr); gap: 8px clamp(20px, 3vw, 48px); padding-block: 22px; border-bottom: 1px solid var(--sage-300); }
+.ab-process__num { font: 600 1rem/1.5 var(--sans); color: var(--ember-700); font-variant-numeric: tabular-nums; }
+.v4 .ab-process__name { margin: 0; font: 600 1.125rem/1.35 var(--sans); color: var(--forest-800); }
+.ab-process__body { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px clamp(20px, 3vw, 48px); }
+.ab-process__tasks { margin: 0; padding-left: 1.1em; }
+.ab-process__tasks li { margin: 0 0 6px; line-height: 1.55; }
+.ab-process__outcome { padding-left: 16px; border-left: 2px solid var(--sage-300); }
+.v4 .ab-process__outcome h4 { margin: 0 0 4px; font: 600 .875rem/1.3 var(--sans); color: var(--ink-2); }
+.ab-process__outcome p { margin: 0 0 6px; line-height: 1.5; }
+.ab-orgs__grid--two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ab-pi a { display: block; color: var(--forest-800); font-weight: 600; }
+@media (max-width: 900px) {
+  .ab-process__stage { grid-template-columns: 40px minmax(0, 1fr); }
+  .ab-process__body { grid-column: 2; grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 900px) { .ab-orgs__grid--two { grid-template-columns: minmax(0, 1fr); } }

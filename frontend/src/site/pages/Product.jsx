@@ -42,12 +42,14 @@ function ProductStage({ product, flip }) {
         {product.summary && <p className="pr__summary">{product.summary}</p>}
         {product.use_case && <p className="pr__use"><span>Use</span> {product.use_case}</p>}
         {product.partners && product.partners.length > 0 && (
-          <div className="pr__partners">
+          <div className={`pr__partners${product.partners.some((x) => x.logo) ? '' : ' pr__partners--names'}`}>
             <h3 className="pr__partners-label">Commercialisation partners</h3>
             <ul>
               {product.partners.map((partner) => (
                 <li key={partner.id}>
-                  <span className="pr__logo">{partner.logo && <img src={partner.logo} alt="" loading="lazy" />}</span>
+                  {product.partners.some((x) => x.logo) && (
+                    <span className="pr__logo">{partner.logo && <img src={partner.logo} alt="" loading="lazy" />}</span>
+                  )}
                   <span>{partner.name}</span>
                 </li>
               ))}

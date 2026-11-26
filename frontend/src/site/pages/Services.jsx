@@ -92,7 +92,7 @@ function Process({ rows }) {
         <div className="sv-process__head">
           <h2 className="section-title" id="sv-process-title">How CRTDH works with an MSME</h2>
           <p>From an idea to the first sales, in the order CRTDH supports it.</p>
-          <a className="sv__cta" href="/about/#objectives">See the full table on the About page <ArrowRight size={16} aria-hidden="true" /></a>
+          <a className="sv__cta" href="/about/#objectives">See each stage and its outcome on the About page <ArrowRight size={16} aria-hidden="true" /></a>
         </div>
         <ol className="sv-process__list">
           {stages.map((st) => (

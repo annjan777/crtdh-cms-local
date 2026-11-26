@@ -23,7 +23,7 @@ const isResearch = (name) => /research|member|scientist|fellow|scholar/i.test(na
 function roleFor(member, categoryName) {
   if (member.designation) return member.designation
   const n = categoryName || ''
-  if (/^other members?$/i.test(n)) return 'Research member'
+  if (/^other members?$/i.test(n)) return 'Research Member'
   return n.replace(/s$/, '')
 }
 
@@ -89,8 +89,9 @@ function Organisation({ categories, members }) {
         <article className="tlead" aria-labelledby={`tm-${lead.id}`}>
           <div className="tlead__photo" data-rv="mask"><Portrait member={lead} lead /></div>
           <div className="tlead__copy">
-            <p className="tlead__role">{roleFor(lead, piGroup.c.name)}</p>
+            {/* Same order as everyone else: name, then role, then institution. */}
             <h2 className="tlead__name" id={`tm-${lead.id}`}>{lead.name}</h2>
+            <p className="tlead__role">{roleFor(lead, piGroup.c.name)}</p>
             {lead.institution && <p className="tlead__inst">{lead.institution}</p>}
             {lead.description && <p className="tlead__desc">{lead.description}</p>}
             {lead.email && <a className="tperson__mail" href={`mailto:${lead.email}`}>{lead.email}</a>}
@@ -102,7 +103,7 @@ function Organisation({ categories, members }) {
         id="team-copi"
         title={coGroups.length === 1 && coGroups[0].list.length === 1 ? 'Co-Principal Investigator' : 'Co-Principal Investigators'}
         people={[...flat(piGroup ? [{ c: piGroup.c, list: piGroup.list.slice(1) }] : []), ...flat(coGroups)]}
-        cols="3"
+        cols="4"
         home={home}
       />
       <Tier id="team-research" title="Research members" people={flat(research)} cols="4" home={home} />

@@ -47,10 +47,23 @@ test('innovations: every innovation, in order, with its body text', async ({ pag
 
 test('facilities: equipment in order and the manufacturing anchor', async ({ page }) => {
   const t = await text(page, '/facilities/')
-  // Photographed instruments first, then the ones without a photo; CMS order within each.
-  expectInOrder(expect, t, visible(c.equipment).filter((e) => e.image).map((e) => e.name), 'equipment with photos')
-  expectInOrder(expect, t, visible(c.equipment).filter((e) => !e.image).map((e) => e.name), 'equipment without photos')
+  // Grouped by capability: every instrument is on the page, none is dropped; CMS order within a group.
+  for (const e of visible(c.equipment)) expect(t, `equipment "${e.name}"`).toContain(e.name)
+  const groups = await page.locator('.fac-group').count()
+  expect(groups).toBeGreaterThan(1)
+  const listed = await page.locator('.fac-group .fac-equip__name, .fac-group .fac-also__list li').count()
+  expect(listed).toBe(visible(c.equipment).length)
   await expect(page.locator('#manufacturing-plants')).toHaveCount(1)
+})
+
+test('innovations: a step-by-step procedure is folded away, closed, and opens on request', async ({ page }) => {
+  await page.goto('/innovations/')
+  const steps = page.locator('details.tech__steps')
+  if (!(await steps.count())) return // no technology has a procedure in this snapshot
+  await expect(steps.first()).not.toHaveAttribute('open', '')
+  await steps.first().locator('summary').click()
+  await expect(steps.first()).toHaveAttribute('open', '')
+  await expect(steps.first().locator('li').first()).toBeVisible()
 })
 
 test('services: every service in order', async ({ page }) => {

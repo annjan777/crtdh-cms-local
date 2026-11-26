@@ -223,7 +223,8 @@ function Collaborate({ home }) {
           {(home?.membership_heading || home?.membership_pdf) && (
             <li data-block="home.membership">
               <h3 className="h4-collab__title">{home.membership_heading || 'Annual membership for MSMEs and startups'}</h3>
-              <p>Access to R&amp;D support, pilot-scale facilities, testing and validation, and technology-transfer support for MSMEs and startups.</p>
+              {/* What the membership PDF itself offers: facility use at member rates, in three tiers. */}
+              <p>Book CRTDH equipment and pilot plants at member hourly rates. Platinum, Gold and Silver tiers each include some free uses.</p>
               {home.membership_pdf && (
                 <a className="h4-textlink" href={safeHref(home.membership_pdf)} target="_blank" rel="noreferrer">Read the membership details (PDF) <Arrow size={16} /></a>
               )}
